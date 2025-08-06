@@ -1,4 +1,38 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page import="java.util.*" %>
+<%@ page import="controller.apiBaoCao" %>
+<%@ page import="controller.KNCSDL" %>
+<%
+    // Lấy tham số từ request
+    String thangParam = request.getParameter("thang");
+    String namParam = request.getParameter("nam");
+    String phongBanParam = request.getParameter("phong_ban");
+    
+    // Nếu không có tham số, sử dụng tháng hiện tại
+    if (thangParam == null || thangParam.isEmpty()) {
+        Calendar cal = Calendar.getInstance();
+        thangParam = String.valueOf(cal.get(Calendar.MONTH) + 1);
+        namParam = String.valueOf(cal.get(Calendar.YEAR));
+    }
+    
+    // Lấy dữ liệu báo cáo
+    List<Map<String, Object>> baoCaoNhanVien = apiBaoCao.getBaoCaoNhanVien(thangParam, namParam, phongBanParam);
+    Map<String, Object> pieChartData = apiBaoCao.getDataForPieChart();
+    Map<String, Object> barChartData = apiBaoCao.getDataForBarChart();
+    
+    // Lấy danh sách phòng ban cho filter
+    List<Map<String, Object>> danhSachPhongBan = new ArrayList<>();
+    try {
+        KNCSDL kn = new KNCSDL();
+        danhSachPhongBan = kn.getAllPhongBan();
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+    
+    // Tạo JSON data cho JavaScript
+    String pieChartJson = apiBaoCao.convertToJson(pieChartData);
+    String barChartJson = apiBaoCao.convertToJson(barChartData);
+%>
     <!DOCTYPE html>
     <html lang="vi">
 
@@ -195,17 +229,27 @@
                             </div>
                             <div class="row mb-3 filter-row g-2">
                                 <div class="col-md-3">
-                                    <input type="text" class="form-control"
+                                    <input type="text" class="form-control" id="keywordFilter"
                                         placeholder="Tìm kiếm theo tên, phòng ban...">
                                 </div>
                                 <div class="col-md-3">
-                                    <select class="form-select">
-                                        <option>Tất cả phòng ban</option>
-                                        <!-- AJAX load phòng ban -->
+                                    <select class="form-select" id="phongBanFilter">
+                                        <option value="">Tất cả phòng ban</option>
+                                        <%
+                                        for (Map<String, Object> pb : danhSachPhongBan) {
+                                            String selected = "";
+                                            if (phongBanParam != null && phongBanParam.equals(pb.get("ten_phong"))) {
+                                                selected = "selected";
+                                            }
+                                        %>
+                                        <option value="<%= pb.get("ten_phong") %>" <%= selected %>><%= pb.get("ten_phong") %></option>
+                                        <%
+                                        }
+                                        %>
                                     </select>
                                 </div>
                                 <div class="col-md-3">
-                                    <select class="form-select">
+                                    <select class="form-select" id="trangThaiFilter">
                                         <option>Tất cả trạng thái</option>
                                         <option value="DangThucHien">Đang thực hiện</option>
                                         <option value="DaHoanThanh">Đã hoàn thành</option>
@@ -213,7 +257,8 @@
                                     </select>
                                 </div>
                                 <div class="col-md-3">
-                                    <input type="month" class="form-control">
+                                    <input type="month" class="form-control" id="thangFilter" 
+                                           value="<%= namParam %>-<%= String.format("%02d", Integer.parseInt(thangParam)) %>">
                                 </div>
                             </div>
                             <div class="row g-4">
@@ -247,17 +292,41 @@
                                         </tr>
                                     </thead>
                                     <tbody id="reportTableBody">
-                                        <!-- AJAX load dữ liệu báo cáo từ bao_cao_cong_viec, luu_kpi, cong_viec, nhanvien -->
+                                        <%
+                                        if (baoCaoNhanVien != null && !baoCaoNhanVien.isEmpty()) {
+                                            int stt = 1;
+                                            for (Map<String, Object> nv : baoCaoNhanVien) {
+                                        %>
                                         <tr>
-                                            <td>1</td>
-                                            <td>Nguyễn Văn A</td>
-                                            <td>Kỹ thuật</td>
-                                            <td>10</td>
-                                            <td>7</td>
-                                            <td>2</td>
-                                            <td>1</td>
-                                            <td>8.5</td>
+                                            <td><%= stt++ %></td>
+                                            <td><%= nv.get("ho_ten") != null ? nv.get("ho_ten") : "N/A" %></td>
+                                            <td><%= nv.get("ten_phong") != null ? nv.get("ten_phong") : "N/A" %></td>
+                                            <td><%= nv.get("so_task") != null ? nv.get("so_task") : 0 %></td>
+                                            <td><%= nv.get("da_hoan_thanh") != null ? nv.get("da_hoan_thanh") : 0 %></td>
+                                            <td><%= nv.get("dang_thuc_hien") != null ? nv.get("dang_thuc_hien") : 0 %></td>
+                                            <td><%= nv.get("tre_han") != null ? nv.get("tre_han") : 0 %></td>
+                                            <td>
+                                                <%
+                                                Object kpi = nv.get("diem_kpi");
+                                                if (kpi != null && !kpi.toString().equals("null")) {
+                                                    double kpiValue = Double.parseDouble(kpi.toString());
+                                                    out.print(String.format("%.1f", kpiValue));
+                                                } else {
+                                                    out.print("N/A");
+                                                }
+                                                %>
+                                            </td>
                                         </tr>
+                                        <%
+                                            }
+                                        } else {
+                                        %>
+                                        <tr>
+                                            <td colspan="8" class="text-center">Không có dữ liệu</td>
+                                        </tr>
+                                        <%
+                                        }
+                                        %>
                                     </tbody>
                                 </table>
                             </div>
@@ -310,7 +379,21 @@
                                                     <div class="mb-3">
                                                         <label class="form-label">Chọn nhân viên</label>
                                                         <select class="form-select" name="employeeKPI">
-                                                            <!-- AJAX load nhân viên -->
+                                                            <option value="">Tất cả nhân viên</option>
+                                                            <%
+                                                            try {
+                                                                KNCSDL kn2 = new KNCSDL();
+                                                                java.sql.ResultSet rsNV = kn2.layNhanVien();
+                                                                while (rsNV.next()) {
+                                                            %>
+                                                            <option value="<%= rsNV.getInt("id") %>"><%= rsNV.getString("ho_ten") %></option>
+                                                            <%
+                                                                }
+                                                                rsNV.close();
+                                                            } catch (Exception e) {
+                                                                e.printStackTrace();
+                                                            }
+                                                            %>
                                                         </select>
                                                     </div>
                                                     <div class="mb-3">
@@ -322,7 +405,14 @@
                                                     <div class="mb-3">
                                                         <label class="form-label">Chọn phòng ban</label>
                                                         <select class="form-select" name="departmentTask">
-                                                            <!-- AJAX load phòng ban -->
+                                                            <option value="">Tất cả phòng ban</option>
+                                                            <%
+                                                            for (Map<String, Object> pb : danhSachPhongBan) {
+                                                            %>
+                                                            <option value="<%= pb.get("ten_phong") %>"><%= pb.get("ten_phong") %></option>
+                                                            <%
+                                                            }
+                                                            %>
                                                         </select>
                                                     </div>
                                                     <div class="mb-3">
@@ -350,33 +440,99 @@
             </div>
         </div>
         <script>
-            // Chart.js demo
+            // Dữ liệu từ backend
+            var pieChartData = <%= pieChartJson %>;
+            var barChartData = <%= barChartJson %>;
+            
+            // Chart.js implementation
             $(function () {
-                new Chart(document.getElementById('pieChart'), {
-                    type: 'pie',
-                    data: {
-                        labels: ['Đã xong', 'Đang làm', 'Trễ'],
-                        datasets: [{
-                            data: [12, 7, 2],
-                            backgroundColor: ['#198754', '#ffc107', '#dc3545']
-                        }]
-                    },
-                    options: { responsive: true }
-                });
-                new Chart(document.getElementById('barChart'), {
-                    type: 'bar',
-                    data: {
-                        labels: ['Kỹ thuật', 'Kinh doanh', 'Nhân sự'],
-                        datasets: [{
-                            label: 'Tiến độ (%)',
-                            data: [80, 60, 90],
-                            backgroundColor: ['#0d6efd', '#198754', '#ffc107']
-                        }]
-                    },
-                    options: { responsive: true, plugins: { legend: { display: false } } }
+                // Pie Chart - Trạng thái công việc
+                if (pieChartData.labels && pieChartData.labels.length > 0) {
+                    new Chart(document.getElementById('pieChart'), {
+                        type: 'pie',
+                        data: {
+                            labels: pieChartData.labels,
+                            datasets: [{
+                                data: pieChartData.data,
+                                backgroundColor: ['#198754', '#ffc107', '#dc3545', '#0d6efd']
+                            }]
+                        },
+                        options: { 
+                            responsive: true,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom'
+                                }
+                            }
+                        }
+                    });
+                } else {
+                    // Hiển thị thông báo khi không có dữ liệu
+                    document.getElementById('pieChart').parentElement.innerHTML = 
+                        '<div class="text-center p-4"><i class="fa-solid fa-chart-pie fa-3x text-muted mb-3"></i><br><span class="text-muted">Không có dữ liệu để hiển thị</span></div>';
+                }
+                
+                // Bar Chart - Tiến độ phòng ban
+                if (barChartData.labels && barChartData.labels.length > 0) {
+                    new Chart(document.getElementById('barChart'), {
+                        type: 'bar',
+                        data: {
+                            labels: barChartData.labels,
+                            datasets: [{
+                                label: 'Tiến độ (%)',
+                                data: barChartData.data,
+                                backgroundColor: ['#0d6efd', '#198754', '#ffc107', '#dc3545', '#6f42c1', '#20c997']
+                            }]
+                        },
+                        options: { 
+                            responsive: true, 
+                            plugins: { 
+                                legend: { display: false } 
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    max: 100
+                                }
+                            }
+                        }
+                    });
+                } else {
+                    // Hiển thị thông báo khi không có dữ liệu
+                    document.getElementById('barChart').parentElement.innerHTML = 
+                        '<div class="text-center p-4"><i class="fa-solid fa-chart-bar fa-3x text-muted mb-3"></i><br><span class="text-muted">Không có dữ liệu để hiển thị</span></div>';
+                }
+            });
+            
+            // Filter functionality
+            $('#thangFilter, #phongBanFilter').change(function() {
+                var thang = $('#thangFilter').val();
+                var phongBan = $('#phongBanFilter').val();
+                
+                if (thang) {
+                    var parts = thang.split('-');
+                    var url = window.location.pathname + '?nam=' + parts[0] + '&thang=' + parseInt(parts[1]);
+                    if (phongBan) {
+                        url += '&phong_ban=' + encodeURIComponent(phongBan);
+                    }
+                    window.location.href = url;
+                }
+            });
+            
+            // Xuất báo cáo
+            $('form.modal-content').submit(function(e) {
+                e.preventDefault();
+                alert('Chức năng xuất báo cáo đang được phát triển!');
+            });
+            
+            // Filter table
+            $('#keywordFilter').on('input', function() {
+                var keyword = $(this).val().toLowerCase();
+                $('#reportTableBody tr').each(function() {
+                    var text = $(this).text().toLowerCase();
+                    $(this).toggle(text.indexOf(keyword) > -1);
                 });
             });
-            // TODO: AJAX load báo cáo tổng hợp từ các bảng liên quan
         </script>
     </body>
 
