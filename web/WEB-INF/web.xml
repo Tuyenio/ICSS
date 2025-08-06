@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app version="4.0" xmlns="http://xmlns.jcp.org/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd">
+    <welcome-file-list>
+        <welcome-file>login.jsp</welcome-file>
+    </welcome-file-list>
     <servlet>
         <servlet-name>dsnhanvien</servlet-name>
         <servlet-class>controller.dsnhanvien</servlet-class>
@@ -65,24 +68,28 @@
         <servlet-class>controller.xoaCongviec</servlet-class>
     </servlet>
     <servlet>
+        <servlet-name>dsCongviecNV</servlet-name>
+        <servlet-class>controller.dsCongviecNV</servlet-class>
+    </servlet>
+    <servlet>
         <servlet-name>dsPhongban</servlet-name>
         <servlet-class>controller.dsPhongban</servlet-class>
     </servlet>
     <servlet>
-        <servlet-name>themPhongban</servlet-name>
-        <servlet-class>controller.themPhongban</servlet-class>
+        <servlet-name>apiChiTietPhongban</servlet-name>
+        <servlet-class>controller.apiChiTietPhongban</servlet-class>
     </servlet>
     <servlet>
         <servlet-name>suaPhongban</servlet-name>
         <servlet-class>controller.suaPhongban</servlet-class>
     </servlet>
     <servlet>
-        <servlet-name>xoaPhongban</servlet-name>
-        <servlet-class>controller.xoaPhongban</servlet-class>
+        <servlet-name>themPhongban</servlet-name>
+        <servlet-class>controller.themPhongban</servlet-class>
     </servlet>
     <servlet>
-        <servlet-name>apiChiTietPhongban</servlet-name>
-        <servlet-class>controller.apiChiTietPhongban</servlet-class>
+        <servlet-name>xoaPhongban</servlet-name>
+        <servlet-class>controller.xoaPhongban</servlet-class>
     </servlet>
     <servlet>
         <servlet-name>dsChamCong</servlet-name>
@@ -91,10 +98,6 @@
     <servlet>
         <servlet-name>capnhatChamCong</servlet-name>
         <servlet-class>controller.capnhatChamCong</servlet-class>
-    </servlet>
-    <servlet>
-        <servlet-name>dsLuong</servlet-name>
-        <servlet-class>controller.dsLuong</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>dsnhanvien</servlet-name>
@@ -161,24 +164,28 @@
         <url-pattern>/xoaCongviec</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
+        <servlet-name>dsCongviecNV</servlet-name>
+        <url-pattern>/dsCongviecNV</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
         <servlet-name>dsPhongban</servlet-name>
         <url-pattern>/dsPhongban</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
-        <servlet-name>themPhongban</servlet-name>
-        <url-pattern>/themPhongban</url-pattern>
+        <servlet-name>apiChiTietPhongban</servlet-name>
+        <url-pattern>/apiChiTietPhongban</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>suaPhongban</servlet-name>
         <url-pattern>/suaPhongban</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
-        <servlet-name>xoaPhongban</servlet-name>
-        <url-pattern>/xoaPhongban</url-pattern>
+        <servlet-name>themPhongban</servlet-name>
+        <url-pattern>/themPhongban</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
-        <servlet-name>apiChiTietPhongban</servlet-name>
-        <url-pattern>/apiChiTietPhongban</url-pattern>
+        <servlet-name>xoaPhongban</servlet-name>
+        <url-pattern>/xoaPhongban</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>dsChamCong</servlet-name>
@@ -187,10 +194,6 @@
     <servlet-mapping>
         <servlet-name>capnhatChamCong</servlet-name>
         <url-pattern>/capnhatChamCong</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>dsLuong</servlet-name>
-        <url-pattern>/dsLuong</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>
