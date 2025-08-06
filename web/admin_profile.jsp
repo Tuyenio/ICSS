@@ -194,10 +194,10 @@
                     <a href="task.jsp"><i class="fa-solid fa-tasks"></i><span>Công việc</span></a>
                 </li>
                 <li>
-                    <a href="department.jsp"><i class="fa-solid fa-building"></i><span>Phòng ban</span></a>
+                    <a href="dsPhongban"><i class="fa-solid fa-building"></i><span>Phòng ban</span></a>
                 </li>
                 <li>
-                    <a href="attendance.jsp"><i class="fa-solid fa-calendar-check"></i><span>Chấm công</span></a>
+                    <a href="dsChamCong"><i class="fa-solid fa-calendar-check"></i><span>Chấm công</span></a>
                 </li>
                 <li>
                     <a href="report.jsp"><i class="fa-solid fa-chart-bar"></i><span>Báo cáo</span></a>

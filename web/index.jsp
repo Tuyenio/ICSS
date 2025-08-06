@@ -217,10 +217,10 @@
                         <a href="./dsCongviec"><i class="fa-solid fa-tasks"></i><span>Công việc</span></a>
                     </li>
                     <li>
-                        <a href="department.jsp"><i class="fa-solid fa-building"></i><span>Phòng ban</span></a>
+                        <a href="dsPhongban"><i class="fa-solid fa-building"></i><span>Phòng ban</span></a>
                     </li>
                     <li>
-                        <a href="attendance.jsp"><i class="fa-solid fa-calendar-check"></i><span>Chấm công</span></a>
+                        <a href="dsChamCong"><i class="fa-solid fa-calendar-check"></i><span>Chấm công</span></a>
                     </li>
                     <li>
                         <a href="report.jsp"><i class="fa-solid fa-chart-bar"></i><span>Báo cáo</span></a>
@@ -262,7 +262,7 @@
                                         <i class="fa-solid fa-building fa-2x text-warning mb-2"></i>
                                         <h5 class="card-title">Phòng ban</h5>
                                         <p class="card-text">Quản lý phòng ban, trưởng phòng, gán nhân viên...</p>
-                                        <a href="department.jsp"
+                                        <a href="dsPhongban"
                                             class="btn btn-outline-warning btn-sm rounded-pill px-3">Xem chi tiết</a>
                                     </div>
                                 </div>
@@ -274,7 +274,7 @@
                                         <h5 class="card-title">Chấm công</h5>
                                         <p class="card-text">Chấm công, check-in/out, xem lịch sử, xuất phiếu lương...
                                         </p>
-                                        <a href="attendance.jsp"
+                                        <a href="dsChamCong"
                                             class="btn btn-outline-info btn-sm rounded-pill px-3">Xem chi tiết</a>
                                     </div>
                                 </div>

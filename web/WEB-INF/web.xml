@@ -84,6 +84,18 @@
         <servlet-name>apiChiTietPhongban</servlet-name>
         <servlet-class>controller.apiChiTietPhongban</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>dsChamCong</servlet-name>
+        <servlet-class>controller.dsChamCong</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>capnhatChamCong</servlet-name>
+        <servlet-class>controller.capnhatChamCong</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>dsLuong</servlet-name>
+        <servlet-class>controller.dsLuong</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>dsnhanvien</servlet-name>
         <url-pattern>/dsnhanvien</url-pattern>
@@ -167,6 +179,18 @@
     <servlet-mapping>
         <servlet-name>apiChiTietPhongban</servlet-name>
         <url-pattern>/apiChiTietPhongban</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>dsChamCong</servlet-name>
+        <url-pattern>/dsChamCong</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>capnhatChamCong</servlet-name>
+        <url-pattern>/capnhatChamCong</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>dsLuong</servlet-name>
+        <url-pattern>/dsLuong</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>

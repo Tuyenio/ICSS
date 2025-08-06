@@ -1,4 +1,27 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page import="java.util.*" %>
+<%@ page import="java.util.Calendar" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%
+    // Lấy dữ liệu từ servlet
+    List<Map<String, Object>> danhSachChamCong = (List<Map<String, Object>>) request.getAttribute("danhSachChamCong");
+    List<Map<String, Object>> danhSachPhongBan = (List<Map<String, Object>>) request.getAttribute("danhSachPhongBan");
+    Map<String, Object> thongKe = (Map<String, Object>) request.getAttribute("thongKe");
+    String thangHienTai = (String) request.getAttribute("thangHienTai");
+    String namHienTai = (String) request.getAttribute("namHienTai");
+    String phongBanDaChon = (String) request.getAttribute("phongBanDaChon");
+    String keywordDaChon = (String) request.getAttribute("keywordDaChon");
+    
+    // Set default values nếu null
+    if (danhSachChamCong == null) danhSachChamCong = new ArrayList<>();
+    if (danhSachPhongBan == null) danhSachPhongBan = new ArrayList<>();
+    if (thongKe == null) thongKe = new HashMap<>();
+    if (thangHienTai == null) thangHienTai = "";
+    if (namHienTai == null) namHienTai = "";
+    if (phongBanDaChon == null) phongBanDaChon = "";
+    if (keywordDaChon == null) keywordDaChon = "";
+%>
     <!DOCTYPE html>
     <html lang="vi">
 
@@ -187,10 +210,10 @@
                         <a href="./dsCongviec"><i class="fa-solid fa-tasks"></i><span>Công việc</span></a>
                     </li>
                     <li>
-                        <a href="department.jsp"><i class="fa-solid fa-building"></i><span>Phòng ban</span></a>
+                        <a href="dsPhongban"><i class="fa-solid fa-building"></i><span>Phòng ban</span></a>
                     </li>
                     <li>
-                        <a href="attendance.jsp" class="active"><i class="fa-solid fa-calendar-check"></i><span>Chấm
+                        <a href="dsChamCong" class="active"><i class="fa-solid fa-calendar-check"></i><span>Chấm
                                 công</span></a>
                     </li>
                     <li>
@@ -211,27 +234,46 @@
                                     <i class="fa-solid fa-file-export"></i> Xuất phiếu lương
                                 </button>
                             </div>
-                            <div class="row mb-3 filter-row g-2">
-                                <div class="col-md-3">
-                                    <input type="text" class="form-control" placeholder="Tìm kiếm theo tên, email...">
+                            <form method="GET" action="dsChamCong">
+                                <div class="row mb-3 filter-row g-2">
+                                    <div class="col-md-3">
+                                        <input type="text" name="keyword" class="form-control" 
+                                               placeholder="Tìm kiếm theo tên, email..." 
+                                               value="<%= keywordDaChon %>">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <select name="phong_ban" class="form-select">
+                                            <option value="">Tất cả phòng ban</option>
+                                            <% for (Map<String, Object> pb : danhSachPhongBan) { %>
+                                                <option value="<%= pb.get("id") %>" 
+                                                    <%= String.valueOf(pb.get("id")).equals(phongBanDaChon) ? "selected" : "" %>>
+                                                    <%= pb.get("ten_phong") %>
+                                                </option>
+                                            <% } %>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <% 
+                                        String currentMonth = "";
+                                        if (thangHienTai != null && !thangHienTai.isEmpty() && 
+                                            namHienTai != null && !namHienTai.isEmpty()) {
+                                            currentMonth = namHienTai + "-" + String.format("%02d", Integer.parseInt(thangHienTai));
+                                        } else {
+                                            Calendar cal = Calendar.getInstance();
+                                            currentMonth = cal.get(Calendar.YEAR) + "-" + String.format("%02d", cal.get(Calendar.MONTH) + 1);
+                                        }
+                                        %>
+                                        <input type="month" name="month_filter" class="form-control" 
+                                               value="<%= currentMonth %>" 
+                                               onchange="this.form.submit()">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <button type="submit" class="btn btn-outline-secondary w-100 rounded-pill">
+                                            <i class="fa-solid fa-filter"></i> Lọc
+                                        </button>
+                                    </div>
                                 </div>
-                                <div class="col-md-3">
-                                    <select class="form-select">
-                                        <option>Phòng ban</option>
-                                        <!-- AJAX load phòng ban -->
-                                    </select>
-                                </div>
-                                <div class="col-md-3">
-                                    <select class="form-select">
-                                        <option>Tháng</option>
-                                        <!-- AJAX load tháng/năm -->
-                                    </select>
-                                </div>
-                                <div class="col-md-3">
-                                    <button class="btn btn-outline-secondary w-100 rounded-pill"><i
-                                            class="fa-solid fa-filter"></i> Lọc</button>
-                                </div>
-                            </div>
+                            </form>
                             <div class="table-responsive">
                                 <table class="table table-bordered align-middle table-hover">
                                     <thead class="table-light">
@@ -251,76 +293,63 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <!-- AJAX load dữ liệu chấm công -->
-                                        <tr>
-                                            <td>1</td>
-                                            <td><img src="https://i.pravatar.cc/40?img=1" class="rounded-circle"
-                                                    width="36"></td>
-                                            <td>
-                                                <span class="fw-semibold text-primary attendance-emp-detail"
-                                                    style="cursor:pointer;" data-bs-toggle="modal"
-                                                    data-bs-target="#modalDetailAttendance">Nguyễn Văn A</span>
-                                            </td>
-                                            <td>Kỹ thuật</td>
-                                            <td>01/06/2024</td>
-                                            <td>10/06/2024</td>
-                                            <td>08:00</td>
-                                            <td>17:00</td>
-                                            <td>8</td>
-                                            <td><span class="badge bg-success badge-status">Đủ công</span></td>
-                                            <td>350,000đ</td>
-                                            <td>
-                                                <button class="btn btn-sm btn-info rounded-circle"
-                                                    data-bs-toggle="modal" data-bs-target="#modalDetailAttendance"><i
-                                                        class="fa-solid fa-eye"></i></button>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>2</td>
-                                            <td><img src="https://i.pravatar.cc/40?img=2" class="rounded-circle"
-                                                    width="36"></td>
-                                            <td>
-                                                <span class="fw-semibold text-primary attendance-emp-detail"
-                                                    style="cursor:pointer;" data-bs-toggle="modal"
-                                                    data-bs-target="#modalDetailAttendance">Trần Thị B</span>
-                                            </td>
-                                            <td>Kinh doanh</td>
-                                            <td>01/06/2024</td>
-                                            <td>10/06/2024</td>
-                                            <td>08:10</td>
-                                            <td>17:00</td>
-                                            <td>7.8</td>
-                                            <td><span class="badge bg-warning text-dark badge-status">Đi trễ</span></td>
-                                            <td>7,800,000đ</td>
-                                            <td>
-                                                <button class="btn btn-sm btn-info rounded-circle"
-                                                    data-bs-toggle="modal" data-bs-target="#modalDetailAttendance"><i
-                                                        class="fa-solid fa-eye"></i></button>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>3</td>
-                                            <td><img src="https://i.pravatar.cc/40?img=3" class="rounded-circle"
-                                                    width="36"></td>
-                                            <td>
-                                                <span class="fw-semibold text-primary attendance-emp-detail"
-                                                    style="cursor:pointer;" data-bs-toggle="modal"
-                                                    data-bs-target="#modalDetailAttendance">Lê Văn C</span>
-                                            </td>
-                                            <td>Nhân sự</td>
-                                            <td>01/06/2024</td>
-                                            <td>10/06/2024</td>
-                                            <td>-</td>
-                                            <td>-</td>
-                                            <td>0</td>
-                                            <td><span class="badge bg-danger badge-status">Vắng</span></td>
-                                            <td>0đ</td>
-                                            <td>
-                                                <button class="btn btn-sm btn-info rounded-circle"
-                                                    data-bs-toggle="modal" data-bs-target="#modalDetailAttendance"><i
-                                                        class="fa-solid fa-eye"></i></button>
-                                            </td>
-                                        </tr>
+                                        <% if (danhSachChamCong != null && !danhSachChamCong.isEmpty()) { %>
+                                            <% 
+                                            int stt = 1;
+                                            for (Map<String, Object> item : danhSachChamCong) { 
+                                            %>
+                                                <tr>
+                                                    <td><%= stt++ %></td>
+                                                    <td><img src="https://i.pravatar.cc/40?img=<%= item.get("nhan_vien_id") %>" class="rounded-circle" width="36"></td>
+                                                    <td>
+                                                        <span class="fw-semibold text-primary attendance-emp-detail"
+                                                            style="cursor:pointer;" data-bs-toggle="modal"
+                                                            data-bs-target="#modalDetailAttendance"
+                                                            data-id="<%= item.get("nhan_vien_id") %>"><%= item.get("ho_ten") %></span>
+                                                    </td>
+                                                    <td><%= item.get("ten_phong") %></td>
+                                                    <td><%= item.get("ngay_vao_lam") %></td>
+                                                    <td><%= item.get("ngay") %></td>
+                                                    <td><%= item.get("check_in") != null ? item.get("check_in") : "-" %></td>
+                                                    <td><%= item.get("check_out") != null ? item.get("check_out") : "-" %></td>
+                                                    <td><%= item.get("so_gio_lam") != null ? String.format("%.1f", item.get("so_gio_lam")) : "0" %></td>
+                                                    <td>
+                                                        <% 
+                                                        String trangThai = (String) item.get("trang_thai");
+                                                        String badgeClass = "bg-secondary";
+                                                        if ("Đi trễ".equals(trangThai)) badgeClass = "bg-warning text-dark";
+                                                        else if ("Vắng".equals(trangThai)) badgeClass = "bg-danger";
+                                                        else if ("Đủ công".equals(trangThai)) badgeClass = "bg-success";
+                                                        %>
+                                                        <span class="badge <%= badgeClass %> badge-status"><%= trangThai %></span>
+                                                    </td>
+                                                    <td>
+                                                        <% 
+                                                        Object luongNgay = item.get("luong_ngay");
+                                                        if (luongNgay != null) {
+                                                            double luong = ((Number) luongNgay).doubleValue();
+                                                        %>
+                                                            <%= String.format("%,.0fđ", luong) %>
+                                                        <% } else { %>
+                                                            0đ
+                                                        <% } %>
+                                                    </td>
+                                                    <td>
+                                                        <button class="btn btn-sm btn-info rounded-circle"
+                                                            data-bs-toggle="modal" data-bs-target="#modalDetailAttendance"
+                                                            data-id="<%= item.get("nhan_vien_id") %>"><i
+                                                                class="fa-solid fa-eye"></i></button>
+                                                    </td>
+                                                </tr>
+                                            <% } %>
+                                        <% } else { %>
+                                            <tr>
+                                                <td colspan="12" class="text-center py-4">
+                                                    <i class="fa-solid fa-inbox text-muted fs-1"></i>
+                                                    <p class="text-muted mt-2">Không có dữ liệu chấm công</p>
+                                                </td>
+                                            </tr>
+                                        <% } %>
                                     </tbody>
                                 </table>
                             </div>

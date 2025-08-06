@@ -928,4 +928,424 @@ public class KNCSDL {
         return thongKe;
     }
 
+    // ============ PHƯƠNG THỨC CHO CHẤM CÔNG & LƯƠNG ============
+    
+    // Lấy danh sách chấm công với thông tin chi tiết
+    public List<Map<String, Object>> getDanhSachChamCong(String thang, String nam, String phongBan, String keyword) throws SQLException {
+        List<Map<String, Object>> danhSach = new ArrayList<>();
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT cc.id, cc.nhan_vien_id, cc.ngay, cc.check_in, cc.check_out, ");
+        sql.append("nv.ho_ten, nv.avatar_url, nv.ngay_vao_lam, nv.luong_co_ban, ");
+        sql.append("pb.ten_phong, ");
+        sql.append("CASE ");
+        sql.append("  WHEN cc.check_in IS NULL THEN 0 ");
+        sql.append("  WHEN cc.check_out IS NULL THEN 0 ");
+        sql.append("  ELSE TIMESTAMPDIFF(HOUR, cc.check_in, cc.check_out) ");
+        sql.append("END as so_gio_lam, ");
+        sql.append("CASE ");
+        sql.append("  WHEN cc.check_in IS NULL THEN 'Vắng' ");
+        sql.append("  WHEN cc.check_in > '08:30:00' THEN 'Đi trễ' ");
+        sql.append("  WHEN TIMESTAMPDIFF(HOUR, cc.check_in, cc.check_out) >= 8 THEN 'Đủ công' ");
+        sql.append("  ELSE 'Thiếu giờ' ");
+        sql.append("END as trang_thai ");
+        sql.append("FROM cham_cong cc ");
+        sql.append("LEFT JOIN nhanvien nv ON cc.nhan_vien_id = nv.id ");
+        sql.append("LEFT JOIN phong_ban pb ON nv.phong_ban_id = pb.id ");
+        sql.append("WHERE 1=1 ");
+        
+        List<Object> params = new ArrayList<>();
+        
+        if (thang != null && !thang.isEmpty() && nam != null && !nam.isEmpty()) {
+            sql.append("AND MONTH(cc.ngay) = ? AND YEAR(cc.ngay) = ? ");
+            params.add(Integer.parseInt(thang));
+            params.add(Integer.parseInt(nam));
+        }
+        
+        if (phongBan != null && !phongBan.isEmpty()) {
+            sql.append("AND pb.ten_phong = ? ");
+            params.add(phongBan);
+        }
+        
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            sql.append("AND (nv.ho_ten LIKE ? OR nv.email LIKE ?) ");
+            params.add("%" + keyword + "%");
+            params.add("%" + keyword + "%");
+        }
+        
+        sql.append("ORDER BY cc.ngay DESC, nv.ho_ten ASC");
+        
+        try (PreparedStatement stmt = cn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                stmt.setObject(i + 1, params.get(i));
+            }
+            
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> record = new HashMap<>();
+                    record.put("id", rs.getInt("id"));
+                    record.put("nhan_vien_id", rs.getInt("nhan_vien_id"));
+                    record.put("ho_ten", rs.getString("ho_ten"));
+                    record.put("avatar_url", rs.getString("avatar_url"));
+                    record.put("ten_phong", rs.getString("ten_phong"));
+                    record.put("ngay_vao_lam", rs.getDate("ngay_vao_lam"));
+                    record.put("ngay", rs.getDate("ngay"));
+                    record.put("check_in", rs.getTime("check_in"));
+                    record.put("check_out", rs.getTime("check_out"));
+                    record.put("so_gio_lam", rs.getDouble("so_gio_lam"));
+                    record.put("trang_thai", rs.getString("trang_thai"));
+                    record.put("luong_co_ban", rs.getDouble("luong_co_ban"));
+                    
+                    // Tính lương ngày
+                    double luongCoBan = rs.getDouble("luong_co_ban");
+                    double soGioLam = rs.getDouble("so_gio_lam");
+                    double luongNgay = (luongCoBan / 22) * (soGioLam / 8); // 22 ngày làm việc/tháng, 8 giờ/ngày
+                    record.put("luong_ngay", luongNgay);
+                    
+                    danhSach.add(record);
+                }
+            }
+        }
+        return danhSach;
+    }
+    
+    // Lấy lịch sử chấm công của nhân viên
+    public List<Map<String, Object>> getLichSuChamCong(int nhanVienId, int thang, int nam) throws SQLException {
+        List<Map<String, Object>> lichSu = new ArrayList<>();
+        String sql = "SELECT ngay, check_in, check_out, " +
+                    "CASE " +
+                    "  WHEN check_in IS NULL THEN 'Vắng' " +
+                    "  WHEN check_in > '08:30:00' THEN 'Đi trễ' " +
+                    "  WHEN TIMESTAMPDIFF(HOUR, check_in, check_out) >= 8 THEN 'Đủ công' " +
+                    "  ELSE 'Thiếu giờ' " +
+                    "END as trang_thai " +
+                    "FROM cham_cong " +
+                    "WHERE nhan_vien_id = ? AND MONTH(ngay) = ? AND YEAR(ngay) = ? " +
+                    "ORDER BY ngay DESC";
+        
+        try (PreparedStatement stmt = cn.prepareStatement(sql)) {
+            stmt.setInt(1, nhanVienId);
+            stmt.setInt(2, thang);
+            stmt.setInt(3, nam);
+            
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> record = new HashMap<>();
+                    record.put("ngay", rs.getDate("ngay"));
+                    record.put("check_in", rs.getTime("check_in"));
+                    record.put("check_out", rs.getTime("check_out"));
+                    record.put("trang_thai", rs.getString("trang_thai"));
+                    lichSu.add(record);
+                }
+            }
+        }
+        return lichSu;
+    }
+    
+    // Lấy thông tin lương của nhân viên theo tháng
+    public Map<String, Object> getThongTinLuong(int nhanVienId, int thang, int nam) throws SQLException {
+        Map<String, Object> luongInfo = new HashMap<>();
+        String sql = "SELECT l.*, nv.ho_ten, nv.luong_co_ban " +
+                    "FROM luong l " +
+                    "LEFT JOIN nhanvien nv ON l.nhan_vien_id = nv.id " +
+                    "WHERE l.nhan_vien_id = ? AND l.thang = ? AND l.nam = ?";
+        
+        try (PreparedStatement stmt = cn.prepareStatement(sql)) {
+            stmt.setInt(1, nhanVienId);
+            stmt.setInt(2, thang);
+            stmt.setInt(3, nam);
+            
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    luongInfo.put("id", rs.getInt("id"));
+                    luongInfo.put("ho_ten", rs.getString("ho_ten"));
+                    luongInfo.put("luong_co_ban", rs.getDouble("luong_co_ban"));
+                    luongInfo.put("phu_cap", rs.getDouble("phu_cap"));
+                    luongInfo.put("thuong", rs.getDouble("thuong"));
+                    luongInfo.put("phat", rs.getDouble("phat"));
+                    luongInfo.put("bao_hiem", rs.getDouble("bao_hiem"));
+                    luongInfo.put("thue", rs.getDouble("thue"));
+                    luongInfo.put("luong_thuc_te", rs.getDouble("luong_thuc_te"));
+                    luongInfo.put("trang_thai", rs.getString("trang_thai"));
+                    luongInfo.put("ngay_tra_luong", rs.getDate("ngay_tra_luong"));
+                    luongInfo.put("ghi_chu", rs.getString("ghi_chu"));
+                }
+            }
+        }
+        return luongInfo;
+    }
+    
+    // Thêm/cập nhật chấm công
+    public boolean capNhatChamCong(int nhanVienId, String ngay, String checkIn, String checkOut) throws SQLException {
+        String checkSql = "SELECT COUNT(*) FROM cham_cong WHERE nhan_vien_id = ? AND ngay = ?";
+        boolean exists = false;
+        
+        try (PreparedStatement checkStmt = cn.prepareStatement(checkSql)) {
+            checkStmt.setInt(1, nhanVienId);
+            checkStmt.setDate(2, java.sql.Date.valueOf(ngay));
+            
+            try (ResultSet rs = checkStmt.executeQuery()) {
+                if (rs.next() && rs.getInt(1) > 0) {
+                    exists = true;
+                }
+            }
+        }
+        
+        String sql;
+        if (exists) {
+            sql = "UPDATE cham_cong SET check_in = ?, check_out = ? WHERE nhan_vien_id = ? AND ngay = ?";
+        } else {
+            sql = "INSERT INTO cham_cong (check_in, check_out, nhan_vien_id, ngay) VALUES (?, ?, ?, ?)";
+        }
+        
+        try (PreparedStatement stmt = cn.prepareStatement(sql)) {
+            if (checkIn != null && !checkIn.isEmpty()) {
+                stmt.setTime(1, java.sql.Time.valueOf(checkIn + ":00"));
+            } else {
+                stmt.setNull(1, Types.TIME);
+            }
+            
+            if (checkOut != null && !checkOut.isEmpty()) {
+                stmt.setTime(2, java.sql.Time.valueOf(checkOut + ":00"));
+            } else {
+                stmt.setNull(2, Types.TIME);
+            }
+            
+            stmt.setInt(3, nhanVienId);
+            stmt.setDate(4, java.sql.Date.valueOf(ngay));
+            
+            return stmt.executeUpdate() > 0;
+        }
+    }
+    
+    // Tính toán và cập nhật lương tháng
+    public boolean tinhToanLuongThang(int nhanVienId, int thang, int nam) throws SQLException {
+        // Lấy thông tin nhân viên
+        String empSql = "SELECT luong_co_ban FROM nhanvien WHERE id = ?";
+        double luongCoBan = 0;
+        
+        try (PreparedStatement empStmt = cn.prepareStatement(empSql)) {
+            empStmt.setInt(1, nhanVienId);
+            try (ResultSet empRs = empStmt.executeQuery()) {
+                if (empRs.next()) {
+                    luongCoBan = empRs.getDouble("luong_co_ban");
+                }
+            }
+        }
+        
+        // Tính số ngày làm việc thực tế
+        String attSql = "SELECT COUNT(*) as ngay_lam, " +
+                       "SUM(CASE WHEN check_in > '08:30:00' THEN 1 ELSE 0 END) as ngay_di_tre " +
+                       "FROM cham_cong " +
+                       "WHERE nhan_vien_id = ? AND MONTH(ngay) = ? AND YEAR(ngay) = ? " +
+                       "AND check_in IS NOT NULL";
+        
+        int ngayLam = 0;
+        int ngayDiTre = 0;
+        
+        try (PreparedStatement attStmt = cn.prepareStatement(attSql)) {
+            attStmt.setInt(1, nhanVienId);
+            attStmt.setInt(2, thang);
+            attStmt.setInt(3, nam);
+            
+            try (ResultSet attRs = attStmt.executeQuery()) {
+                if (attRs.next()) {
+                    ngayLam = attRs.getInt("ngay_lam");
+                    ngayDiTre = attRs.getInt("ngay_di_tre");
+                }
+            }
+        }
+        
+        // Tính toán lương
+        double phuCap = luongCoBan * 0.1; // 10% lương cơ bản
+        double phat = ngayDiTre * 50000; // 50k mỗi lần đi trễ
+        double thuong = 0; // Có thể tính từ KPI
+        double baoHiem = luongCoBan * 0.105; // 10.5% bảo hiểm
+        double thue = luongCoBan * 0.05; // 5% thuế
+        
+        double luongThucTe = luongCoBan + phuCap + thuong - phat - baoHiem - thue;
+        
+        // Kiểm tra xem đã có bản ghi lương chưa
+        String checkLuongSql = "SELECT COUNT(*) FROM luong WHERE nhan_vien_id = ? AND thang = ? AND nam = ?";
+        boolean luongExists = false;
+        
+        try (PreparedStatement checkStmt = cn.prepareStatement(checkLuongSql)) {
+            checkStmt.setInt(1, nhanVienId);
+            checkStmt.setInt(2, thang);
+            checkStmt.setInt(3, nam);
+            
+            try (ResultSet rs = checkStmt.executeQuery()) {
+                if (rs.next() && rs.getInt(1) > 0) {
+                    luongExists = true;
+                }
+            }
+        }
+        
+        String luongSql;
+        if (luongExists) {
+            luongSql = "UPDATE luong SET luong_co_ban = ?, phu_cap = ?, thuong = ?, phat = ?, " +
+                      "bao_hiem = ?, thue = ?, luong_thuc_te = ?, " +
+                      "ghi_chu = ? WHERE nhan_vien_id = ? AND thang = ? AND nam = ?";
+        } else {
+            luongSql = "INSERT INTO luong (nhan_vien_id, thang, nam, luong_co_ban, phu_cap, thuong, phat, " +
+                      "bao_hiem, thue, luong_thuc_te, ghi_chu, trang_thai) " +
+                      "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Chưa trả')";
+        }
+        
+        try (PreparedStatement luongStmt = cn.prepareStatement(luongSql)) {
+            if (luongExists) {
+                luongStmt.setDouble(1, luongCoBan);
+                luongStmt.setDouble(2, phuCap);
+                luongStmt.setDouble(3, thuong);
+                luongStmt.setDouble(4, phat);
+                luongStmt.setDouble(5, baoHiem);
+                luongStmt.setDouble(6, thue);
+                luongStmt.setDouble(7, luongThucTe);
+                luongStmt.setString(8, "Làm " + ngayLam + " ngày, đi trễ " + ngayDiTre + " lần");
+                luongStmt.setInt(9, nhanVienId);
+                luongStmt.setInt(10, thang);
+                luongStmt.setInt(11, nam);
+            } else {
+                luongStmt.setInt(1, nhanVienId);
+                luongStmt.setInt(2, thang);
+                luongStmt.setInt(3, nam);
+                luongStmt.setDouble(4, luongCoBan);
+                luongStmt.setDouble(5, phuCap);
+                luongStmt.setDouble(6, thuong);
+                luongStmt.setDouble(7, phat);
+                luongStmt.setDouble(8, baoHiem);
+                luongStmt.setDouble(9, thue);
+                luongStmt.setDouble(10, luongThucTe);
+                luongStmt.setString(11, "Làm " + ngayLam + " ngày, đi trễ " + ngayDiTre + " lần");
+                luongStmt.setString(12, "Chưa trả");
+            }
+            
+            return luongStmt.executeUpdate() > 0;
+        }
+    }
+    
+    // Lấy thống kê chấm công tổng quan
+    public Map<String, Object> getThongKeChamCongTongQuan(int thang, int nam) throws SQLException {
+        Map<String, Object> thongKe = new HashMap<>();
+        
+        // Tổng số ngày làm việc
+        String sql1 = "SELECT COUNT(DISTINCT ngay) as tong_ngay FROM cham_cong " +
+                     "WHERE MONTH(ngay) = ? AND YEAR(ngay) = ?";
+        
+        // Số lượt đi trễ
+        String sql2 = "SELECT COUNT(*) as di_tre FROM cham_cong " +
+                     "WHERE MONTH(ngay) = ? AND YEAR(ngay) = ? AND check_in > '08:30:00'";
+        
+        // Số lượt vắng mặt
+        String sql3 = "SELECT COUNT(*) as vang_mat FROM cham_cong " +
+                     "WHERE MONTH(ngay) = ? AND YEAR(ngay) = ? AND check_in IS NULL";
+        
+        // Trung bình giờ làm việc
+        String sql4 = "SELECT AVG(TIMESTAMPDIFF(HOUR, check_in, check_out)) as gio_tb FROM cham_cong " +
+                     "WHERE MONTH(ngay) = ? AND YEAR(ngay) = ? AND check_in IS NOT NULL AND check_out IS NOT NULL";
+        
+        try (PreparedStatement stmt1 = cn.prepareStatement(sql1);
+             PreparedStatement stmt2 = cn.prepareStatement(sql2);
+             PreparedStatement stmt3 = cn.prepareStatement(sql3);
+             PreparedStatement stmt4 = cn.prepareStatement(sql4)) {
+            
+            stmt1.setInt(1, thang);
+            stmt1.setInt(2, nam);
+            stmt2.setInt(1, thang);
+            stmt2.setInt(2, nam);
+            stmt3.setInt(1, thang);
+            stmt3.setInt(2, nam);
+            stmt4.setInt(1, thang);
+            stmt4.setInt(2, nam);
+            
+            try (ResultSet rs1 = stmt1.executeQuery()) {
+                if (rs1.next()) thongKe.put("tong_ngay", rs1.getInt("tong_ngay"));
+            }
+            
+            try (ResultSet rs2 = stmt2.executeQuery()) {
+                if (rs2.next()) thongKe.put("di_tre", rs2.getInt("di_tre"));
+            }
+            
+            try (ResultSet rs3 = stmt3.executeQuery()) {
+                if (rs3.next()) thongKe.put("vang_mat", rs3.getInt("vang_mat"));
+            }
+            
+            try (ResultSet rs4 = stmt4.executeQuery()) {
+                if (rs4.next()) thongKe.put("gio_trung_binh", rs4.getDouble("gio_tb"));
+            }
+        }
+        
+        return thongKe;
+    }
+    
+    // Phương thức lấy danh sách lương theo filter
+    public List<Map<String, Object>> getDanhSachLuong(String thang, String nam, String phongBan, String keyword) throws SQLException {
+        List<Map<String, Object>> danhSach = new ArrayList<>();
+        
+        Connection con = cn;
+        
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT l.id, l.nhan_vien_id, nv.ho_ten, nv.email, pb.ten_phong, ");
+        sql.append("l.luong_co_ban, l.phu_cap, l.thuong, l.tru_khoan, l.luong_thuc_te, ");
+        sql.append("l.thang, l.nam, l.ngay_tra, l.trang_thai, l.ghi_chu ");
+        sql.append("FROM luong l ");
+        sql.append("JOIN nhanvien nv ON l.nhan_vien_id = nv.id ");
+        sql.append("JOIN phong_ban pb ON nv.phong_ban_id = pb.id ");
+        sql.append("WHERE 1=1 ");
+        
+        List<Object> params = new ArrayList<>();
+        
+        if (thang != null && !thang.isEmpty()) {
+            sql.append("AND l.thang = ? ");
+            params.add(Integer.parseInt(thang));
+        }
+        
+        if (nam != null && !nam.isEmpty()) {
+            sql.append("AND l.nam = ? ");
+            params.add(Integer.parseInt(nam));
+        }
+        
+        if (phongBan != null && !phongBan.isEmpty()) {
+            sql.append("AND pb.id = ? ");
+            params.add(Integer.parseInt(phongBan));
+        }
+        
+        if (keyword != null && !keyword.isEmpty()) {
+            sql.append("AND (nv.ho_ten LIKE ? OR nv.email LIKE ?) ");
+            params.add("%" + keyword + "%");
+            params.add("%" + keyword + "%");
+        }
+        
+        sql.append("ORDER BY l.nam DESC, l.thang DESC, nv.ho_ten ASC");
+        
+        try (PreparedStatement stmt = con.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                stmt.setObject(i + 1, params.get(i));
+            }
+            
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> item = new HashMap<>();
+                    item.put("id", rs.getInt("id"));
+                    item.put("nhan_vien_id", rs.getInt("nhan_vien_id"));
+                    item.put("ho_ten", rs.getString("ho_ten"));
+                    item.put("email", rs.getString("email"));
+                    item.put("ten_phong", rs.getString("ten_phong"));
+                    item.put("luong_co_ban", rs.getDouble("luong_co_ban"));
+                    item.put("phu_cap", rs.getDouble("phu_cap"));
+                    item.put("thuong", rs.getDouble("thuong"));
+                    item.put("tru_khoan", rs.getDouble("tru_khoan"));
+                    item.put("luong_thuc_te", rs.getDouble("luong_thuc_te"));
+                    item.put("thang", rs.getInt("thang"));
+                    item.put("nam", rs.getInt("nam"));
+                    item.put("ngay_tra", rs.getDate("ngay_tra"));
+                    item.put("trang_thai", rs.getString("trang_thai"));
+                    item.put("ghi_chu", rs.getString("ghi_chu"));
+                    danhSach.add(item);
+                }
+            }
+        }
+        
+        return danhSach;
+    }
+
 }

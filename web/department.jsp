@@ -120,7 +120,7 @@
                 <a href="./dsPhongban" class="active"><i class="fa-solid fa-building"></i><span>Phòng ban</span></a>
             </li>
             <li>
-                <a href="attendance.jsp"><i class="fa-solid fa-calendar-check"></i><span>Chấm công</span></a>
+                <a href="dsChamCong"><i class="fa-solid fa-calendar-check"></i><span>Chấm công</span></a>
             </li>
             <li>
                 <a href="report.jsp"><i class="fa-solid fa-chart-bar"></i><span>Báo cáo</span></a>
