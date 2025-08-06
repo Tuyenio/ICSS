@@ -520,4 +520,177 @@ public class KNCSDL {
         }
     }
 
+    // ============ QUẢN LÝ PHÒNG BAN ============
+    
+    // Lấy danh sách tất cả phòng ban
+    public List<Map<String, Object>> getAllPhongBan() throws SQLException {
+        List<Map<String, Object>> danhSach = new ArrayList<>();
+        String sql = "SELECT pb.id, pb.ten_phong, pb.truong_phong_id, " +
+                    "tp.ho_ten AS truong_phong_ten, pb.ngay_tao, " +
+                    "COUNT(nv.id) AS so_nhan_vien " +
+                    "FROM phong_ban pb " +
+                    "LEFT JOIN nhanvien tp ON pb.truong_phong_id = tp.id " +
+                    "LEFT JOIN nhanvien nv ON pb.id = nv.phong_ban_id " +
+                    "GROUP BY pb.id, pb.ten_phong, pb.truong_phong_id, tp.ho_ten, pb.ngay_tao " +
+                    "ORDER BY pb.id";
+        
+        try (PreparedStatement stmt = cn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            
+            while (rs.next()) {
+                Map<String, Object> phongBan = new HashMap<>();
+                phongBan.put("id", rs.getInt("id"));
+                phongBan.put("ten_phong", rs.getString("ten_phong"));
+                phongBan.put("truong_phong_id", rs.getInt("truong_phong_id"));
+                phongBan.put("truong_phong_ten", rs.getString("truong_phong_ten"));
+                phongBan.put("ngay_tao", rs.getTimestamp("ngay_tao"));
+                phongBan.put("so_nhan_vien", rs.getInt("so_nhan_vien"));
+                danhSach.add(phongBan);
+            }
+        }
+        return danhSach;
+    }
+    
+    // Lấy chi tiết phòng ban theo ID
+    public Map<String, Object> getPhongBanById(int id) throws SQLException {
+        Map<String, Object> phongBan = new HashMap<>();
+        String sql = "SELECT pb.*, tp.ho_ten AS truong_phong_ten " +
+                    "FROM phong_ban pb " +
+                    "LEFT JOIN nhanvien tp ON pb.truong_phong_id = tp.id " +
+                    "WHERE pb.id = ?";
+        
+        try (PreparedStatement stmt = cn.prepareStatement(sql)) {
+            stmt.setInt(1, id);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    phongBan.put("id", rs.getInt("id"));
+                    phongBan.put("ten_phong", rs.getString("ten_phong"));
+                    phongBan.put("truong_phong_id", rs.getInt("truong_phong_id"));
+                    phongBan.put("truong_phong_ten", rs.getString("truong_phong_ten"));
+                    phongBan.put("ngay_tao", rs.getTimestamp("ngay_tao"));
+                }
+            }
+        }
+        return phongBan;
+    }
+    
+    // Lấy danh sách nhân viên trong phòng ban
+    public List<Map<String, Object>> getNhanVienByPhongBan(int phongBanId) throws SQLException {
+        List<Map<String, Object>> danhSach = new ArrayList<>();
+        String sql = "SELECT id, ho_ten, email, chuc_vu, vai_tro FROM nhanvien WHERE phong_ban_id = ?";
+        
+        try (PreparedStatement stmt = cn.prepareStatement(sql)) {
+            stmt.setInt(1, phongBanId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> nhanVien = new HashMap<>();
+                    nhanVien.put("id", rs.getInt("id"));
+                    nhanVien.put("ho_ten", rs.getString("ho_ten"));
+                    nhanVien.put("email", rs.getString("email"));
+                    nhanVien.put("chuc_vu", rs.getString("chuc_vu"));
+                    nhanVien.put("vai_tro", rs.getString("vai_tro"));
+                    danhSach.add(nhanVien);
+                }
+            }
+        }
+        return danhSach;
+    }
+    
+    // Thêm phòng ban mới
+    public boolean themPhongBan(String tenPhong, Integer truongPhongId) throws SQLException {
+        String sql = "INSERT INTO phong_ban (ten_phong, truong_phong_id, ngay_tao) VALUES (?, ?, NOW())";
+        
+        try (PreparedStatement stmt = cn.prepareStatement(sql)) {
+            stmt.setString(1, tenPhong);
+            if (truongPhongId != null && truongPhongId > 0) {
+                stmt.setInt(2, truongPhongId);
+            } else {
+                stmt.setNull(2, Types.INTEGER);
+            }
+            return stmt.executeUpdate() > 0;
+        }
+    }
+    
+    // Cập nhật thông tin phòng ban
+    public boolean capNhatPhongBan(int id, String tenPhong, Integer truongPhongId) throws SQLException {
+        String sql = "UPDATE phong_ban SET ten_phong = ?, truong_phong_id = ? WHERE id = ?";
+        
+        try (PreparedStatement stmt = cn.prepareStatement(sql)) {
+            stmt.setString(1, tenPhong);
+            if (truongPhongId != null && truongPhongId > 0) {
+                stmt.setInt(2, truongPhongId);
+            } else {
+                stmt.setNull(2, Types.INTEGER);
+            }
+            stmt.setInt(3, id);
+            return stmt.executeUpdate() > 0;
+        }
+    }
+    
+    // Xóa phòng ban
+    public boolean xoaPhongBan(int id) throws SQLException {
+        // Kiểm tra có nhân viên không trước khi xóa
+        String checkSql = "SELECT COUNT(*) FROM nhanvien WHERE phong_ban_id = ?";
+        try (PreparedStatement checkStmt = cn.prepareStatement(checkSql)) {
+            checkStmt.setInt(1, id);
+            try (ResultSet rs = checkStmt.executeQuery()) {
+                if (rs.next() && rs.getInt(1) > 0) {
+                    return false; // Không được xóa vì còn nhân viên
+                }
+            }
+        }
+        
+        String sql = "DELETE FROM phong_ban WHERE id = ?";
+        try (PreparedStatement stmt = cn.prepareStatement(sql)) {
+            stmt.setInt(1, id);
+            return stmt.executeUpdate() > 0;
+        }
+    }
+    
+    // Lấy lịch sử thay đổi phòng ban
+    public List<Map<String, Object>> getLichSuPhongBan(int phongBanId) throws SQLException {
+        List<Map<String, Object>> danhSach = new ArrayList<>();
+        String sql = "SELECT lsh.*, nv.ho_ten AS nguoi_thay_doi " +
+                    "FROM nhan_su_lich_su lsh " +
+                    "LEFT JOIN nhanvien nv ON lsh.nguoi_thay_doi_id = nv.id " +
+                    "WHERE lsh.nhan_vien_id IN (SELECT id FROM nhanvien WHERE phong_ban_id = ?) " +
+                    "OR lsh.loai_thay_doi LIKE '%phòng ban%' " +
+                    "ORDER BY lsh.thoi_gian DESC";
+        
+        try (PreparedStatement stmt = cn.prepareStatement(sql)) {
+            stmt.setInt(1, phongBanId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> lichSu = new HashMap<>();
+                    lichSu.put("id", rs.getInt("id"));
+                    lichSu.put("loai_thay_doi", rs.getString("loai_thay_doi"));
+                    lichSu.put("gia_tri_cu", rs.getString("gia_tri_cu"));
+                    lichSu.put("gia_tri_moi", rs.getString("gia_tri_moi"));
+                    lichSu.put("nguoi_thay_doi", rs.getString("nguoi_thay_doi"));
+                    lichSu.put("ghi_chu", rs.getString("ghi_chu"));
+                    lichSu.put("thoi_gian", rs.getTimestamp("thoi_gian"));
+                    danhSach.add(lichSu);
+                }
+            }
+        }
+        return danhSach;
+    }
+    
+    // Ghi lại lịch sử thay đổi
+    public void ghiLichSuThayDoi(int nhanVienId, String loaiThayDoi, String giaTriCu, String giaTriMoi, 
+                                int nguoiThayDoiId, String ghiChu) throws SQLException {
+        String sql = "INSERT INTO nhan_su_lich_su (nhan_vien_id, loai_thay_doi, gia_tri_cu, gia_tri_moi, " +
+                    "nguoi_thay_doi_id, ghi_chu, thoi_gian) VALUES (?, ?, ?, ?, ?, ?, NOW())";
+        
+        try (PreparedStatement stmt = cn.prepareStatement(sql)) {
+            stmt.setInt(1, nhanVienId);
+            stmt.setString(2, loaiThayDoi);
+            stmt.setString(3, giaTriCu);
+            stmt.setString(4, giaTriMoi);
+            stmt.setInt(5, nguoiThayDoiId);
+            stmt.setString(6, ghiChu);
+            stmt.executeUpdate();
+        }
+    }
+
 }

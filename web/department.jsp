@@ -1,4 +1,12 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page import="java.util.*" %>
+<%@ page import="java.text.SimpleDateFormat" %>
+<%
+    List<Map<String, Object>> danhSachPhongBan = (List<Map<String, Object>>) request.getAttribute("danhSachPhongBan");
+    if (danhSachPhongBan == null) {
+        danhSachPhongBan = new ArrayList<>();
+    }
+%>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -109,7 +117,7 @@
                 <a href="./dsCongviec"><i class="fa-solid fa-tasks"></i><span>Công việc</span></a>
             </li>
             <li>
-                <a href="department.jsp" class="active"><i class="fa-solid fa-building"></i><span>Phòng ban</span></a>
+                <a href="./dsPhongban" class="active"><i class="fa-solid fa-building"></i><span>Phòng ban</span></a>
             </li>
             <li>
                 <a href="attendance.jsp"><i class="fa-solid fa-calendar-check"></i><span>Chấm công</span></a>
@@ -144,28 +152,56 @@
                             </tr>
                         </thead>
                         <tbody id="departmentTableBody">
-                            <!-- AJAX load phòng ban -->
+                            <%
+                                SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+                                if (danhSachPhongBan != null && !danhSachPhongBan.isEmpty()) {
+                                    for (Map<String, Object> pb : danhSachPhongBan) {
+                            %>
                             <tr>
-                                <td>1</td>
-                                <td>Kỹ thuật</td>
+                                <td><%= pb.get("id") %></td>
+                                <td><strong><%= pb.get("ten_phong") %></strong></td>
                                 <td>
-                                    <img src="https://i.pravatar.cc/40?img=1" class="rounded-circle me-1" width="28">
-                                    <span class="fw-semibold text-primary">Nguyễn Văn A</span>
-                                    <span class="badge bg-info ms-1">Trưởng phòng</span>
+                                    <% if (pb.get("truong_phong_ten") != null) { %>
+                                        <img src="https://i.pravatar.cc/40?img=1" class="rounded-circle me-1" width="28">
+                                        <span class="fw-semibold text-primary"><%= pb.get("truong_phong_ten") %></span>
+                                        <span class="badge bg-info ms-1">Trưởng phòng</span>
+                                    <% } else { %>
+                                        <span class="text-muted">Chưa có trưởng phòng</span>
+                                    <% } %>
                                 </td>
                                 <td>
-                                    <span class="badge bg-primary">Nguyễn Văn A</span>
-                                    <span class="badge bg-secondary">Trần Thị B</span>
-                                    <span class="badge bg-light text-dark">Tổng: 2</span>
+                                    <span class="badge bg-light text-dark">Tổng: <%= pb.get("so_nhan_vien") %> người</span>
+                                    <button class="btn btn-sm btn-outline-primary ms-1" onclick="xemNhanVien(<%= pb.get("id") %>)">
+                                        <i class="fa-solid fa-users"></i> Xem
+                                    </button>
                                 </td>
-                                <td>01/06/2024</td>
                                 <td>
-                                    <button class="btn btn-sm btn-warning edit-dept-btn"><i class="fa-solid fa-pen"></i></button>
-                                    <button class="btn btn-sm btn-danger delete-dept-btn"><i class="fa-solid fa-trash"></i></button>
-                                    <button class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#modalDeptDetail"><i class="fa-solid fa-eye"></i></button>
+                                    <% if (pb.get("ngay_tao") != null) { %>
+                                        <%= sdf.format(pb.get("ngay_tao")) %>
+                                    <% } %>
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-warning edit-dept-btn" data-id="<%= pb.get("id") %>">
+                                        <i class="fa-solid fa-pen"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-danger delete-dept-btn" data-id="<%= pb.get("id") %>">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#modalDeptDetail" data-id="<%= pb.get("id") %>">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </button>
                                 </td>
                             </tr>
-                            <!-- ... -->
+                            <%
+                                    }
+                                } else {
+                            %>
+                            <tr>
+                                <td colspan="6" class="text-center">Chưa có dữ liệu phòng ban</td>
+                            </tr>
+                            <%
+                                }
+                            %>
                         </tbody>
                     </table>
                 </div>
@@ -315,41 +351,177 @@
     </div>
 </div>
 <script>
-    // Nút sửa
-    $(document).on('click', '.edit-dept-btn', function() {
-        // TODO: Load dữ liệu lên form
+    // Load danh sách nhân viên cho select
+    function loadNhanVien() {
+        $.get('./apiNhanvien', function(data) {
+            let options = '<option value="">-- Chọn nhân viên --</option>';
+            $(data).each(function(index, item) {
+                options += '<option value="' + $(item).attr('value') + '">' + $(item).text() + '</option>';
+            });
+            $('#deptLeader').html(options);
+        });
+    }
+
+    // Hiển thị modal thêm phòng ban
+    function showAddModal() {
+        $('#deptId').val('');
+        $('#deptName').val('');
+        $('#deptLeader').val('');
+        $('.modal-title').html('<i class="fa-solid fa-building"></i> Thêm phòng ban mới');
+        loadNhanVien();
         $('#modalDepartment').modal('show');
+    }
+
+    // Nút sửa phòng ban
+    $(document).on('click', '.edit-dept-btn', function() {
+        let id = $(this).data('id');
+        
+        // Load dữ liệu phòng ban
+        $.get('./apiChiTietPhongban?id=' + id, function(data) {
+            $('#deptId').val(data.id);
+            $('#deptName').val(data.ten_phong);
+            loadNhanVien();
+            
+            // Set trưởng phòng sau khi load xong danh sách
+            setTimeout(function() {
+                $('#deptLeader').val(data.truong_phong_id);
+            }, 500);
+            
+            $('.modal-title').html('<i class="fa-solid fa-building"></i> Sửa thông tin phòng ban');
+            $('#modalDepartment').modal('show');
+        }).fail(function() {
+            showToast('error', 'Không thể tải thông tin phòng ban!');
+        });
     });
 
-    // Nút xoá
+    // Nút xóa phòng ban
     $(document).on('click', '.delete-dept-btn', function() {
+        let id = $(this).data('id');
+        
         Swal.fire({
-            title: 'Xác nhận xoá?',
+            title: 'Xác nhận xóa?',
+            text: 'Bạn có chắc chắn muốn xóa phòng ban này?',
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonText: 'Xoá',
-            cancelButtonText: 'Huỷ'
+            confirmButtonText: 'Xóa',
+            cancelButtonText: 'Hủy',
+            confirmButtonColor: '#dc3545'
         }).then((result) => {
             if (result.isConfirmed) {
-                // TODO: AJAX xoá
-                $('#toastSuccess').toast('show');
+                $.post('./xoaPhongban', { id: id }, function(response) {
+                    if (response.status === 'success') {
+                        showToast('success', response.message);
+                        setTimeout(function() {
+                            location.reload();
+                        }, 1500);
+                    } else {
+                        showToast('error', response.message);
+                    }
+                }, 'json').fail(function() {
+                    showToast('error', 'Lỗi khi xóa phòng ban!');
+                });
             }
         });
     });
 
-    // Submit form thêm/sửa
+    // Submit form thêm/sửa phòng ban
     $('#departmentForm').on('submit', function(e) {
         e.preventDefault();
-        // TODO: AJAX submit form
-        $('#modalDepartment').modal('hide');
-        $('#toastSuccess').toast('show');
+        
+        let formData = {
+            id: $('#deptId').val(),
+            ten_phong: $('#deptName').val(),
+            truong_phong_id: $('#deptLeader').val()
+        };
+        
+        let url = formData.id ? './suaPhongban' : './themPhongban';
+        
+        $.post(url, formData, function(response) {
+            if (response.status === 'success') {
+                $('#modalDepartment').modal('hide');
+                showToast('success', response.message);
+                setTimeout(function() {
+                    location.reload();
+                }, 1500);
+            } else {
+                showToast('error', response.message);
+            }
+        }, 'json').fail(function() {
+            showToast('error', 'Lỗi khi lưu dữ liệu!');
+        });
+    });
+
+    // Hiển thị chi tiết phòng ban
+    $(document).on('click', '[data-bs-target="#modalDeptDetail"]', function() {
+        let id = $(this).data('id');
+        
+        $.get('./apiChiTietPhongban?id=' + id, function(data) {
+            let infoHtml = '<b>Tên phòng ban:</b> ' + data.ten_phong + '<br>';
+            infoHtml += '<b>Trưởng phòng:</b> ' + (data.truong_phong_ten || 'Chưa có') + '<br>';
+            infoHtml += '<b>Tổng nhân viên:</b> ' + data.nhan_vien_list.length + '<br>';
+            infoHtml += '<b>Ngày tạo:</b> ' + formatDate(data.ngay_tao) + '<br><br>';
+            
+            if (data.nhan_vien_list.length > 0) {
+                infoHtml += '<b>Danh sách nhân viên:</b><br>';
+                infoHtml += '<div class="row">';
+                data.nhan_vien_list.forEach(function(nv) {
+                    infoHtml += '<div class="col-md-6 mb-2">';
+                    infoHtml += '<div class="card card-body p-2">';
+                    infoHtml += '<small><b>' + nv.ho_ten + '</b><br>';
+                    infoHtml += nv.email + '<br>';
+                    infoHtml += '<span class="badge bg-secondary">' + nv.chuc_vu + '</span> ';
+                    infoHtml += '<span class="badge bg-info">' + nv.vai_tro + '</span>';
+                    infoHtml += '</small></div></div>';
+                });
+                infoHtml += '</div>';
+            } else {
+                infoHtml += '<i class="text-muted">Chưa có nhân viên nào trong phòng ban này.</i>';
+            }
+            
+            $('#tabDeptInfo').html(infoHtml);
+        }).fail(function() {
+            $('#tabDeptInfo').html('<div class="alert alert-danger">Không thể tải thông tin phòng ban!</div>');
+        });
+    });
+
+    // Hàm hiển thị toast
+    function showToast(type, message) {
+        if (type === 'success') {
+            $('#toastSuccess .toast-body').text(message);
+            $('#toastSuccess').toast('show');
+        } else {
+            $('#toastError .toast-body').text(message);
+            $('#toastError').toast('show');
+        }
+    }
+
+    // Hàm format ngày
+    function formatDate(dateString) {
+        if (!dateString) return '';
+        let date = new Date(dateString);
+        return date.getDate().toString().padStart(2, '0') + '/' + 
+               (date.getMonth() + 1).toString().padStart(2, '0') + '/' + 
+               date.getFullYear();
+    }
+
+    // Xem nhân viên trong phòng ban
+    function xemNhanVien(phongBanId) {
+        // Chuyển đến trang nhân viên với filter phòng ban
+        window.location.href = './dsnhanvien?phong_ban=' + phongBanId;
+    }
+
+    // Event listener cho nút thêm mới
+    $(document).on('click', '[data-bs-target="#modalDepartment"]', function() {
+        showAddModal();
     });
 
     // Toast init
-    $('.toast').toast({ delay: 2000 });
+    $('.toast').toast({ delay: 3000 });
 
-    // TODO: AJAX load phòng ban, nhân viên cho select
-    // TODO: AJAX load lịch sử thay đổi phòng ban từ nhan_su_lich_su
+    // Load dữ liệu ban đầu
+    $(document).ready(function() {
+        console.log('Trang quản lý phòng ban đã được tải');
+    });
 </script>
 </body>
 </html>

@@ -64,6 +64,26 @@
         <servlet-name>xoaCongviec</servlet-name>
         <servlet-class>controller.xoaCongviec</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>dsPhongban</servlet-name>
+        <servlet-class>controller.dsPhongban</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>themPhongban</servlet-name>
+        <servlet-class>controller.themPhongban</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>suaPhongban</servlet-name>
+        <servlet-class>controller.suaPhongban</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>xoaPhongban</servlet-name>
+        <servlet-class>controller.xoaPhongban</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>apiChiTietPhongban</servlet-name>
+        <servlet-class>controller.apiChiTietPhongban</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>dsnhanvien</servlet-name>
         <url-pattern>/dsnhanvien</url-pattern>
@@ -127,6 +147,26 @@
     <servlet-mapping>
         <servlet-name>xoaCongviec</servlet-name>
         <url-pattern>/xoaCongviec</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>dsPhongban</servlet-name>
+        <url-pattern>/dsPhongban</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>themPhongban</servlet-name>
+        <url-pattern>/themPhongban</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>suaPhongban</servlet-name>
+        <url-pattern>/suaPhongban</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>xoaPhongban</servlet-name>
+        <url-pattern>/xoaPhongban</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>apiChiTietPhongban</servlet-name>
+        <url-pattern>/apiChiTietPhongban</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>
