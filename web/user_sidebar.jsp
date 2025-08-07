@@ -85,10 +85,10 @@
             <a href="./dsCongviecNV"><i class="fa-solid fa-tasks"></i><span>Công việc của tôi</span></a>
         </li>
         <li>
-            <a href="user_attendance.jsp"><i class="fa-solid fa-calendar-check"></i><span>Chấm công</span></a>
+            <a href="./userChamCong"><i class="fa-solid fa-calendar-check"></i><span>Chấm công</span></a>
         </li>
         <li>
-            <a href="user_salary.jsp"><i class="fa-solid fa-money-bill"></i><span>Lương & KPI</span></a>
+            <a href="./userLuong"><i class="fa-solid fa-money-bill"></i><span>Lương & KPI</span></a>
         </li>
         <li>
             <a href="user_profile.jsp"><i class="fa-solid fa-user-circle"></i><span>Hồ sơ cá nhân</span></a>

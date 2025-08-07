@@ -99,6 +99,14 @@
         <servlet-name>capnhatChamCong</servlet-name>
         <servlet-class>controller.capnhatChamCong</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>userChamCong</servlet-name>
+        <servlet-class>controller.userChamCong</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>userLuong</servlet-name>
+        <servlet-class>controller.userLuong</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>dsnhanvien</servlet-name>
         <url-pattern>/dsnhanvien</url-pattern>
@@ -194,6 +202,14 @@
     <servlet-mapping>
         <servlet-name>capnhatChamCong</servlet-name>
         <url-pattern>/capnhatChamCong</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>userChamCong</servlet-name>
+        <url-pattern>/userChamCong</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>userLuong</servlet-name>
+        <url-pattern>/userLuong</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>
