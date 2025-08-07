@@ -326,10 +326,10 @@
                             tôi</span></a>
                 </li>
                 <li>
-                    <a href="user_attendance.jsp"><i class="fa-solid fa-calendar-check"></i><span>Chấm công</span></a>
+                    <a href="./userChamCong"><i class="fa-solid fa-calendar-check"></i><span>Chấm công</span></a>
                 </li>
                 <li>
-                    <a href="user_salary.jsp"><i class="fa-solid fa-money-bill"></i><span>Lương & KPI</span></a>
+                    <a href="./userLuong"><i class="fa-solid fa-money-bill"></i><span>Lương & KPI</span></a>
                 </li>
 
             </ul>

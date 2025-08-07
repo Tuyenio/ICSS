@@ -20,8 +20,8 @@ public class userLuong extends HttpServlet {
         
         try {
             HttpSession session = request.getSession();
-            String email = (String) session.getAttribute("email");
-            
+            String email = (String) session.getAttribute("userEmail");
+
             if (email == null) {
                 response.sendRedirect("login.jsp");
                 return;
