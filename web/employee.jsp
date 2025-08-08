@@ -238,8 +238,10 @@
                                 <input type="text" class="form-control" id="searchName"
                                        placeholder="Tìm kiếm tên, email...">
                             </div>
+                            <% String vaiTro = (String) session.getAttribute("vaiTro"); %>
                             <div class="col-md-3">
-                                <select class="form-select" name="ten_phong_ban" id="filterDepartment">
+                                <select class="form-select" name="ten_phong_ban" id="filterDepartment"
+                                        <%= !"Admin".equalsIgnoreCase(vaiTro) ? "disabled" : "" %>>
                                 </select>
                             </div>
                             <div class="col-md-2">

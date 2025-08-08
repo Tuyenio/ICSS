@@ -18,20 +18,39 @@ public class locNhanvien extends HttpServlet {
         response.setContentType("text/html;charset=UTF-8");
 
         String keyword = request.getParameter("keyword");
-        String phong = request.getParameter("phong_ban");
+        String phong = request.getParameter("phong_ban");   // id phòng (dành cho admin)
         String trangThai = request.getParameter("trang_thai");
-        String vaiTro = request.getParameter("vai_tro");
-        
-        String phongban = null;
+        String vaiTroFlt = request.getParameter("vai_tro");     // filter vai trò NV (không phải vai trò người xem)
+
+        // Lấy info người đang đăng nhập
+        HttpSession session = request.getSession(false);
+        String currentEmail = (session != null) ? (String) session.getAttribute("userEmail") : null;
+        String currentRole = (session != null) ? (String) session.getAttribute("vaiTro") : null;
 
         try (PrintWriter out = response.getWriter()) {
-            if (phong != null && !phong.trim().isEmpty()) {
-                int idphong = Integer.parseInt(phong);
-                KNCSDL db = new KNCSDL();
-                phongban = db.getPhongNameById(idphong); // Chỉ khi có ID hợp lệ mới gọi
+
+            if (currentRole == null || currentEmail == null) {
+                out.println("<tr><td colspan='13' class='text-center text-danger'>Phiên đăng nhập hết hạn</td></tr>");
+                return;
             }
-            KNCSDL kn = new KNCSDL();
-            List<Map<String, Object>> danhSach = kn.locNhanVien(keyword, phongban, trangThai, vaiTro);
+
+            KNCSDL db = new KNCSDL();
+            List<Map<String, Object>> danhSach;
+
+            if ("Admin".equalsIgnoreCase(currentRole)) {
+                // --- CHẾ ĐỘ ADMIN ---
+                String phongbanName = null;
+                if (phong != null && !phong.trim().isEmpty()) {
+                    int idPhong = Integer.parseInt(phong);
+                    phongbanName = db.getPhongNameById(idPhong);
+                }
+                danhSach = db.locNhanVien(keyword, phongbanName, trangThai, vaiTroFlt);
+
+            } else {
+                // --- CHẾ ĐỘ TRƯỞNG PHÒNG (QUẢN LÝ) ---
+                // Bỏ qua tham số "phong_ban" từ form, fix theo phòng của người đang đăng nhập
+                danhSach = db.locNhanVienQL(keyword, trangThai, currentEmail,vaiTroFlt);
+            }
 
             if (danhSach != null && !danhSach.isEmpty()) {
                 for (Map<String, Object> nv : danhSach) {
@@ -80,6 +99,6 @@ public class locNhanvien extends HttpServlet {
 
     @Override
     public String getServletInfo() {
-        return "Lọc nhân viên và trả HTML thay vì JSON";
+        return "Lọc nhân viên cho Admin (toàn cục) và Trưởng phòng (theo phòng ban của chính họ)";
     }
 }

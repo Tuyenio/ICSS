@@ -7,6 +7,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 public class apiNhanvien extends HttpServlet {
 
@@ -15,8 +16,10 @@ public class apiNhanvien extends HttpServlet {
         response.setContentType("text/html;charset=UTF-8");
 
         try (PrintWriter out = response.getWriter()) {
+            HttpSession session = request.getSession();
+            String email = (String) session.getAttribute("userEmail");
             KNCSDL kn = new KNCSDL(); // Đảm bảo KNCSDL đã kết nối DB
-            ResultSet rs = kn.laydl(); // Giả sử truy vấn SELECT id, ho_ten FROM nhan_vien
+            ResultSet rs = kn.laydl(email); // Giả sử truy vấn SELECT id, ho_ten FROM nhan_vien
 
             while (rs.next()) {
                 int id = rs.getInt("id");

@@ -10,6 +10,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.logging.Level;
@@ -27,7 +28,15 @@ public class dsCongviec extends HttpServlet {
         try {
             KNCSDL kn = new KNCSDL();
             try {
-                List<Map<String, Object>> taskList = kn.getAllTasks();
+                HttpSession session = request.getSession();
+                String email = (String) session.getAttribute("userEmail");
+                List<Map<String, Object>> taskList = kn.getAllTasks(email);
+
+                // 2. Cập nhật trạng thái từng công việc trước khi render
+                for (Map<String, Object> task : taskList) {
+                    int congViecId = (int) task.get("id"); // hoặc "cong_viec_id" tùy DB trả về
+                    kn.capNhatTrangThaiTuTienDo(congViecId);
+                }
 
                 // Thêm map giữ thứ tự hiển thị các cột
                 LinkedHashMap<String, String> trangThaiLabels = new LinkedHashMap<>();

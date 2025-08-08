@@ -4,8 +4,6 @@ import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.*;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
@@ -26,8 +24,8 @@ public class locCongviec extends HttpServlet {
 
             List<Map<String, Object>> taskList;
 
-            if ("Quản lý".equalsIgnoreCase(vaiTro)) {
-                // Lọc theo phòng ban (của quản lý)
+            if ("Admin".equalsIgnoreCase(vaiTro)) {
+                // Admin lọc toàn bộ
                 String phong = request.getParameter("phong_ban");
                 String phongban = null;
 
@@ -38,16 +36,27 @@ public class locCongviec extends HttpServlet {
 
                 taskList = db.locCongViec(keyword, phongban, trangThai);
 
+                request.setAttribute("taskList", taskList);
+                RequestDispatcher dispatcher = request.getRequestDispatcher("kanban-board.jsp");
+                dispatcher.forward(request, response);
+
+            } else if ("Quản lý".equalsIgnoreCase(vaiTro)) {
+                // Trưởng phòng lọc theo phòng ban của họ và công việc của họ
+                taskList = db.locCongViecQL(keyword, trangThai, email);
+
+                request.setAttribute("taskList", taskList);
+                RequestDispatcher dispatcher = request.getRequestDispatcher("kanban-board.jsp");
+                dispatcher.forward(request, response);
             } else {
-                // Nhân viên: lọc theo email người nhận
+                // Nhân viên hoặc các vai trò khác
                 taskList = db.locCongViecNV(keyword, trangThai, email);
+
+                request.setAttribute("taskList", taskList);
+
+                // Gửi tới kanban riêng cho nhân viên
+                RequestDispatcher dispatcher = request.getRequestDispatcher("kanban-board-nv.jsp");
+                dispatcher.forward(request, response);
             }
-
-            request.setAttribute("taskList", taskList);
-
-            // Render partial HTML Kanban
-            RequestDispatcher dispatcher = request.getRequestDispatcher("kanban-board.jsp");
-            dispatcher.forward(request, response);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -57,6 +66,6 @@ public class locCongviec extends HttpServlet {
 
     @Override
     public String getServletInfo() {
-        return "Lọc nhân viên và trả HTML thay vì JSON";
+        return "Lọc công việc theo vai trò và trả HTML phù hợp";
     }
 }

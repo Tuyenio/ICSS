@@ -15,7 +15,7 @@
                 <%
                     String userName = (String) session.getAttribute("userName");
                     if (userName == null || userName.isEmpty()) {
-                        userName = "Quản lý"; // fallback nếu chưa đăng nhập
+                        userName = "Ban quản lý"; // fallback nếu chưa đăng nhập
                     }
                 %>
                 <img src="https://ui-avatars.com/api/?name=Admin" alt="avatar" class="avatar">

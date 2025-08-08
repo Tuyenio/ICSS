@@ -337,8 +337,10 @@
                             <div class="col-md-3">
                                 <input type="text" name="keyword" class="form-control" placeholder="Tìm kiếm tên công việc...">
                             </div>
+                            <% String vaiTro = (String) session.getAttribute("vaiTro"); %>
                             <div class="col-md-3">
-                                <select class="form-select" name="ten_phong_ban" id="phongSelect">
+                                <select class="form-select" name="ten_phong_ban" id="phongSelect"
+                                        <%= !"Admin".equalsIgnoreCase(vaiTro) ? "disabled" : "" %>>
                                 </select>
                             </div>
                             <div class="col-md-3">
@@ -390,15 +392,15 @@
                         %>
                         <div class="kanban-col <%= columnClass %>">
                             <% if ("Chưa bắt đầu".equals(status)) { %>
-                                <h5><i  class="fa-solid fa-hourglass-start"></i><%= trangThaiLabels.get(status) %></h5>
-                            <% }else if("Đang thực hiện".equals(status)) { %>
-                                <h5><i class="fa-solid fa-hourglass-start"></i><%= trangThaiLabels.get(status) %></h5>
-                            <% }else if("Đã hoàn thành".equals(status)) { %>
-                                <h5><i class="fa-solid fa-check-circle"></i><%= trangThaiLabels.get(status) %></h5> 
-                            <% }else if("Trễ hạn".equals(status)) { %>
-                                <h5><i class="fa-solid fa-exclamation-circle"></i><%= trangThaiLabels.get(status) %></h5>
-                            <% } %>   
-                            <% if ("Chưa bắt đầu".equals(status)) { %>
+                            <h5><i  class="fa-solid fa-hourglass-start"></i><%= trangThaiLabels.get(status) %></h5>
+                                <% }else if("Đang thực hiện".equals(status)) { %>
+                            <h5><i class="fa-solid fa-hourglass-start"></i><%= trangThaiLabels.get(status) %></h5>
+                                <% }else if("Đã hoàn thành".equals(status)) { %>
+                            <h5><i class="fa-solid fa-check-circle"></i><%= trangThaiLabels.get(status) %></h5> 
+                                <% }else if("Trễ hạn".equals(status)) { %>
+                            <h5><i class="fa-solid fa-exclamation-circle"></i><%= trangThaiLabels.get(status) %></h5>
+                                <% } %>   
+                                <% if ("Chưa bắt đầu".equals(status)) { %>
                             <button class="btn btn-outline-secondary kanban-add-btn" data-bs-toggle="modal"
                                     data-bs-target="#modalTask">
                                 <i class="fa-solid fa-plus"></i> Thêm task

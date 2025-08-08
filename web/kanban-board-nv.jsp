@@ -42,10 +42,6 @@
         <h5><i class="fa-solid fa-exclamation-circle"></i><%= trangThaiLabels.get(status) %></h5>
             <% } %>   
             <% if ("Chưa bắt đầu".equals(status)) { %>
-        <button class="btn btn-outline-secondary kanban-add-btn" data-bs-toggle="modal"
-                data-bs-target="#modalTask">
-            <i class="fa-solid fa-plus"></i> Thêm task
-        </button>
         <% } %>
         <% for (Map<String, Object> task : taskList) {
                if (status.equals(task.get("trang_thai"))) {
@@ -81,14 +77,6 @@
             %>
             <div class="progress">
                 <div class="progress-bar <%= badgeClass.getOrDefault(status, "bg-secondary") %>" style="width: <%= percent %>%;"></div>
-            </div>
-            <div class="task-actions">
-                <form action="./xoaCongviec" method="post" onsubmit="return confirm('Bạn có chắc muốn xóa công việc này không?');">
-                    <input type="hidden" name="id" value="<%= task.get("id") %>">
-                    <button type="submit" class="btn btn-sm btn-danger">
-                        <i class="fa-solid fa-trash"></i>
-                    </button>
-                </form>
             </div>
         </div>
         <% }} %>

@@ -14,8 +14,10 @@ public class dsnhanvien extends HttpServlet {
         List<Map<String, Object>> danhSach = new ArrayList<>();
 
         try {
+            HttpSession session = request.getSession();
+            String email = (String) session.getAttribute("userEmail");
             KNCSDL kn = new KNCSDL(); // Lớp này đã bạn tạo trước rồi
-            ResultSet rs = kn.laydl();
+            ResultSet rs = kn.laydl(email);
 
             while (rs.next()) {
                 Map<String, Object> nv = new HashMap<>();
@@ -34,11 +36,6 @@ public class dsnhanvien extends HttpServlet {
                 nv.put("vai_tro", rs.getString("vai_tro"));
                 danhSach.add(nv);
             }
-//            System.out.println("🟢 Danh sách nhân viên:");
-//            for (Map<String, Object> nv : danhSach) {
-//                System.out.println(nv.get("ho_ten") + " - " + nv.get("email"));
-//            }
-
             rs.close();
 
             // Gửi dữ liệu sang JSP
@@ -69,7 +66,7 @@ public class dsnhanvien extends HttpServlet {
         String trangThai = request.getParameter("trang_thai_lam_viec");
         String vaiTro = request.getParameter("vai_tro");
         //String avatar = request.getParameter("avatar_url");
-        
+
         int sophongban = Integer.parseInt(phongban);
         boolean success = false;
 
