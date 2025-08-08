@@ -234,10 +234,10 @@
                     <a href="./dsCongviecNV"><i class="fa-solid fa-tasks"></i><span>Công việc của tôi</span></a>
                 </li>
                 <li>
-                    <a href="user_attendance.jsp"><i class="fa-solid fa-calendar-check"></i><span>Chấm công</span></a>
+                    <a href="./userChamCong"><i class="fa-solid fa-calendar-check"></i><span>Chấm công</span></a>
                 </li>
                 <li>
-                    <a href="user_salary.jsp"><i class="fa-solid fa-money-bill"></i><span>Lương & KPI</span></a>
+                    <a href="./userLuong"><i class="fa-solid fa-money-bill"></i><span>Lương & KPI</span></a>
                 </li>
 
             </ul>
@@ -262,7 +262,7 @@
                                 <i class="fa-solid fa-calendar-check fa-2x text-info mb-2"></i>
                                 <h5 class="card-title">Chấm công</h5>
                                 <p class="card-text">Chấm công, xem lịch sử, kiểm tra trạng thái ngày công...</p>
-                                <a href="user_attendance.jsp" class="btn btn-outline-info btn-sm rounded-pill px-3">Xem
+                                <a href="./userChamCong" class="btn btn-outline-info btn-sm rounded-pill px-3">Xem
                                     chi tiết</a>
                             </div>
                         </div>
@@ -273,7 +273,7 @@
                                 <i class="fa-solid fa-money-bill fa-2x text-warning mb-2"></i>
                                 <h5 class="card-title">Lương & KPI</h5>
                                 <p class="card-text">Xem bảng lương, thưởng, phạt, KPI cá nhân từng tháng...</p>
-                                <a href="user_salary.jsp" class="btn btn-outline-warning btn-sm rounded-pill px-3">Xem
+                                <a href="./userLuong" class="btn btn-outline-warning btn-sm rounded-pill px-3">Xem
                                     chi tiết</a>
                             </div>
                         </div>
