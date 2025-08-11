@@ -1,6 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-    <!DOCTYPE html>
-    <html lang="vi">
+<%@ page import="java.util.*" %>
+<!DOCTYPE html>
+<html lang="vi">
 
     <head>
         <meta charset="UTF-8">
@@ -176,78 +177,103 @@
         </script>
     </head>
 
+    <%
+    // Lấy dữ liệu từ Servlet
+    Map<String,Object> hs = (Map<String,Object>) request.getAttribute("hs");
+    String error = (String) request.getAttribute("error");
+
+    String avatarUrl = (hs != null && hs.get("avatarUrl") != null) ? hs.get("avatarUrl").toString() : "https://ui-avatars.com/api/?name=User";
+    String hoTen = (hs != null && hs.get("ho_ten") != null) ? hs.get("ho_ten").toString() : "Chưa cập nhật";
+    String email = (hs != null && hs.get("email") != null) ? hs.get("email").toString() : "";
+    String soDienThoai = (hs != null && hs.get("so_dien_thoai") != null) ? hs.get("so_dien_thoai").toString() : "";
+    String gioiTinh = (hs != null && hs.get("gioi_tinh") != null) ? hs.get("gioi_tinh").toString() : "";
+    String ngaySinh = (hs != null && hs.get("ngay_sinh") != null) ? hs.get("ngay_sinh").toString() : "";
+    String tenPhongBan = (hs != null && hs.get("ten_phong_ban") != null) ? hs.get("ten_phong_ban").toString() : "";
+    String chucVu = (hs != null && hs.get("chuc_vu") != null) ? hs.get("chuc_vu").toString() : "";
+    String ngayVaoLam = (hs != null && hs.get("ngay_vao_lam") != null) ? hs.get("ngay_vao_lam").toString() : "";
+    String trangThaiLV = (hs != null && hs.get("trang_thai_lam_viec") != null) ? hs.get("trang_thai_lam_viec").toString() : "";
+    String vaiTro = (hs != null && hs.get("vai_tro") != null) ? hs.get("vai_tro").toString() : "";
+    String statusBadgeClass = (hs != null && hs.get("statusBadgeClass") != null) ? hs.get("statusBadgeClass").toString() : "bg-secondary";
+    String roleBadgeClass = (hs != null && hs.get("roleBadgeClass") != null) ? hs.get("roleBadgeClass").toString() : "bg-info text-dark";
+    String ngayTao = (hs != null && hs.get("ngay_tao") != null) ? hs.get("ngay_tao").toString() : "";
+    %>
+
     <body>
         <!-- Sidebar -->
         <nav class="sidebar p-0">
             <div class="sidebar-title text-center py-4 border-bottom border-secondary" style="cursor:pointer;"
-                onclick="location.href='index.jsp'">
+                 onclick="location.href = 'index.jsp'">
                 <i class="fa-solid fa-people-group me-2"></i>ICSS
             </div>
             <ul class="sidebar-nav mt-3">
-                <li>
-                    <a href="index.jsp"><i class="fa-solid fa-chart-line"></i><span>Dashboard</span></a>
-                </li>
-                <li>
-                    <a href="./dsnhanvien"><i class="fa-solid fa-users"></i><span>Nhân sự</span></a>
-                </li>
-                <li>
-                    <a href="./dsCongviec"><i class="fa-solid fa-tasks"></i><span>Công việc</span></a>
-                </li>
-                <li>
-                    <a href="./dsPhongban"><i class="fa-solid fa-building"></i><span>Phòng ban</span></a>
-                </li>
-                <li>
-                    <a href="./dsChamCong"><i class="fa-solid fa-calendar-check"></i><span>Chấm công</span></a>
-                </li>
-                <li>
-                    <a href="report.jsp"><i class="fa-solid fa-chart-bar"></i><span>Báo cáo</span></a>
-                </li>
+                <li><a href="index.jsp"><i class="fa-solid fa-chart-line"></i><span>Dashboard</span></a></li>
+                <li><a href="./dsnhanvien"><i class="fa-solid fa-users"></i><span>Nhân sự</span></a></li>
+                <li><a href="./dsCongviec"><i class="fa-solid fa-tasks"></i><span>Công việc</span></a></li>
+                <li><a href="./dsPhongban"><i class="fa-solid fa-building"></i><span>Phòng ban</span></a></li>
+                <li><a href="./dsChamCong"><i class="fa-solid fa-calendar-check"></i><span>Chấm công</span></a></li>
+                <li><a href="report.jsp"><i class="fa-solid fa-chart-bar"></i><span>Báo cáo</span></a></li>
             </ul>
         </nav>
+
         <%@ include file="header.jsp" %>
-            <div class="main-content">
-                <div class="main-box mb-3">
-                    <h3 class="mb-0"><i class="fa-solid fa-user-circle me-2"></i>Hồ sơ cá nhân</h3>
-                    <div class="row">
-                        <div class="col-md-3 text-center">
-                            <img src="https://ui-avatars.com/api/?name=User" class="rounded-circle mb-2" width="100"
-                                id="profileAvatar">
-                            <div class="fw-bold fs-5" id="profileName">Nguyễn Văn A</div>
-                            <div class="text-muted small" id="profileEmail">nguyenvana@email.com</div>
+
+        <div class="main-content">
+            <div class="main-box mb-3">
+                <h3 class="mb-0"><i class="fa-solid fa-user-circle me-2"></i>Hồ sơ cá nhân</h3>
+
+                <% if (error != null && !error.isEmpty()) { %>
+                <div class="alert alert-danger mt-3"><%= error %></div>
+                <% } %>
+
+                <div class="row mt-2">
+                    <!-- Avatar + tên + email -->
+                    <div class="col-md-3 text-center">
+                        <img src="<%= avatarUrl %>" class="rounded-circle mb-2" width="100" id="profileAvatar" alt="Avatar">
+                        <div class="fw-bold fs-5" id="profileName"><%= hoTen %></div>
+                        <div class="text-muted small" id="profileEmail"><%= email %></div>
+                    </div>
+
+                    <div class="col-md-9">
+                        <div class="profile-section">
+                            <span class="profile-label">SĐT:</span>
+                            <span class="profile-value" id="profilePhone"><%= soDienThoai %></span><br>
+
+                            <span class="profile-label">Giới tính:</span>
+                            <span class="profile-value" id="profileGender"><%= gioiTinh %></span><br>
+
+                            <span class="profile-label">Ngày sinh:</span>
+                            <span class="profile-value" id="profileBirth"><%= ngaySinh %></span><br>
+
+                            <span class="profile-label">Phòng ban:</span>
+                            <span class="profile-value" id="profileDept"><%= tenPhongBan %></span><br>
+
+                            <span class="profile-label">Chức vụ:</span>
+                            <span class="profile-value" id="profilePosition"><%= chucVu %></span><br>
+
+                            <span class="profile-label">Ngày vào làm:</span>
+                            <span class="profile-value" id="profileStart"><%= ngayVaoLam %></span><br>
+
+                            <span class="profile-label">Trạng thái:</span>
+                            <span class="profile-value" id="profileStatus">
+                                <span class="badge <%= statusBadgeClass %>"><%= trangThaiLV %></span>
+                            </span><br>
+
+                            <span class="profile-label">Vai trò:</span>
+                            <span class="profile-value" id="profileRole">
+                                <span class="badge <%= roleBadgeClass %>"><%= vaiTro %></span>
+                            </span>
                         </div>
-                        <div class="col-md-9">
-                            <div class="profile-section">
-                                <span class="profile-label">SĐT:</span>
-                                <span class="profile-value" id="profilePhone">0901234567</span><br>
-                                <span class="profile-label">Giới tính:</span>
-                                <span class="profile-value" id="profileGender">Nam</span><br>
-                                <span class="profile-label">Ngày sinh:</span>
-                                <span class="profile-value" id="profileBirth">01/01/1990</span><br>
-                                <span class="profile-label">Phòng ban:</span>
-                                <span class="profile-value" id="profileDept">Kỹ thuật</span><br>
-                                <span class="profile-label">Chức vụ:</span>
-                                <span class="profile-value" id="profilePosition">Kỹ sư</span><br>
-                                <span class="profile-label">Ngày vào làm:</span>
-                                <span class="profile-value" id="profileStart">01/06/2024</span><br>
-                                <span class="profile-label">Trạng thái:</span>
-                                <span class="profile-value" id="profileStatus"><span class="badge bg-success">Đang
-                                        làm</span></span><br>
-                                <span class="profile-label">Vai trò:</span>
-                                <span class="profile-value" id="profileRole"><span class="badge bg-info text-dark">Nhân
-                                        viên</span></span>
-                            </div>
-                            <div class="profile-section">
-                                <span class="profile-label">Ngày tạo tài khoản:</span>
-                                <span class="profile-value" id="profileCreated">10/06/2024</span><br>
-                                <span class="profile-label">Avatar URL:</span>
-                                <span class="profile-value"
-                                    id="profileAvatarUrl">https://ui-avatars.com/api/?name=User</span>
-                            </div>
+
+                        <div class="profile-section">
+                            <span class="profile-label">Ngày tạo tài khoản:</span>
+                            <span class="profile-value" id="profileCreated"><%= ngayTao %></span><br>
                         </div>
                     </div>
                 </div>
             </div>
-            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+        </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     </body>
 
-    </html>
+</html>

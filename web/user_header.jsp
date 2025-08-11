@@ -21,7 +21,7 @@
                 <span class="fw-semibold ms-2"><%= userName %></span>
             </a>
             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                <li><a class="dropdown-item" href="user_profile.jsp"><i class="fa-solid fa-user-circle me-2"></i>Hồ sơ cá nhân</a></li>
+                <li><a class="dropdown-item" href="./apiHoso"><i class="fa-solid fa-user-circle me-2"></i>Hồ sơ cá nhân</a></li>
                 <li><a class="dropdown-item" href="user_change_password.jsp"><i class="fa-solid fa-key me-2"></i>Đổi mật khẩu</a></li>
                 <li><hr class="dropdown-divider"></li>
                 <li><a class="dropdown-item text-danger" href="logout.jsp"><i class="fa-solid fa-sign-out-alt me-2"></i>Đăng xuất</a></li>

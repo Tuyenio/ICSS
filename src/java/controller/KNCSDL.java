@@ -67,6 +67,24 @@ public class KNCSDL {
         return stmt.executeQuery();  // Gọi servlet phải đóng ResultSet và Connection
     }
 
+    public ResultSet layThongTinNhanVienTheoEmail(String email) throws SQLException {
+        if (email == null || email.trim().isEmpty()) {
+            return null; // Email không hợp lệ
+        }
+
+        String sql = "SELECT nv.id, nv.ho_ten, nv.email, nv.mat_khau, nv.so_dien_thoai, "
+                + "nv.gioi_tinh, nv.ngay_sinh, nv.phong_ban_id, pb.ten_phong AS ten_phong_ban, "
+                + "nv.chuc_vu, nv.ngay_vao_lam, nv.trang_thai_lam_viec, nv.vai_tro, nv.ngay_tao "
+                + "FROM nhanvien nv "
+                + "LEFT JOIN phong_ban pb ON nv.phong_ban_id = pb.id "
+                + "WHERE nv.email = ?";
+
+        PreparedStatement stmt = this.cn.prepareStatement(sql);
+        stmt.setString(1, email);
+
+        return stmt.executeQuery();
+    }
+
     public boolean capNhatNhanVien(int id, String hoTen, String email, String matKhau, String sdt, String gioiTinh,
             String ngaySinh, String ngayVaoLam, String tenPhongBan, String chucVu,
             String trangThai, String vaiTro, String avatar) throws SQLException {
@@ -632,6 +650,11 @@ public class KNCSDL {
                 trangThaiHienTai = rs.getString("trang_thai");
             }
 
+            // >>> NEW: Nếu đã hoàn thành (đúng hạn hoặc trước hạn) thì không đổi sang Trễ hạn
+            if ("Đã hoàn thành".equalsIgnoreCase(trangThaiHienTai)) {
+                return;
+            }
+
             // 1) Kiểm tra quá hạn
             boolean quaHan = false;
             if (han != null) {
@@ -646,7 +669,7 @@ public class KNCSDL {
                     ps2.setInt(2, congViecId);
                     ps2.executeUpdate();
                 }
-                return; // sẽ chạy lại logic thường khi hạn được gia hạn (không còn quá hạn)
+                return; // sẽ chạy lại logic thường khi hạn được gia hạn
             }
 
             // 3) Không quá hạn -> chạy logic gốc (percent + có quy trình đang TH)
@@ -669,11 +692,7 @@ public class KNCSDL {
                         coQuyTrinhDangTH = rs2.getInt("cnt");
                     }
                 }
-                if (coQuyTrinhDangTH > 0) {
-                    trangThai = "Đang thực hiện";
-                } else {
-                    trangThai = "Chưa bắt đầu";
-                }
+                trangThai = (coQuyTrinhDangTH > 0) ? "Đang thực hiện" : "Chưa bắt đầu";
             } else if (percent >= 100) {
                 trangThai = "Đã hoàn thành";
             } else {
@@ -1835,7 +1854,6 @@ public class KNCSDL {
     }
 
     // ============ PHƯƠNG THỨC CHO USER ATTENDANCE ============
-    
     // Lấy thông tin nhân viên theo email
     public Map<String, Object> getNhanVienByEmail(String email) throws SQLException {
         Map<String, Object> nhanVien = new HashMap<>();
@@ -1843,7 +1861,7 @@ public class KNCSDL {
                 + "FROM nhanvien nv "
                 + "LEFT JOIN phong_ban pb ON nv.phong_ban_id = pb.id "
                 + "WHERE nv.email = ?";
-        
+
         try (PreparedStatement stmt = cn.prepareStatement(sql)) {
             stmt.setString(1, email);
             try (ResultSet rs = stmt.executeQuery()) {
@@ -1863,7 +1881,7 @@ public class KNCSDL {
         }
         return nhanVien;
     }
-    
+
     // Lấy lịch sử chấm công của user
     public List<Map<String, Object>> getLichSuChamCongUser(int nhanVienId, int thang, int nam) throws SQLException {
         List<Map<String, Object>> lichSu = new ArrayList<>();
@@ -1902,41 +1920,46 @@ public class KNCSDL {
         }
         return lichSu;
     }
-    
+
     // Lấy thống kê chấm công cá nhân
     public Map<String, Object> getThongKeChamCongCaNhan(int nhanVienId, int thang, int nam) throws SQLException {
         Map<String, Object> thongKe = new HashMap<>();
-        
+
         // Tổng số ngày đã chấm công
         String sql1 = "SELECT COUNT(*) as tong_ngay_cham FROM cham_cong "
                 + "WHERE nhan_vien_id = ? AND MONTH(ngay) = ? AND YEAR(ngay) = ? "
                 + "AND check_in IS NOT NULL";
-        
+
         // Số ngày đi trễ
         String sql2 = "SELECT COUNT(*) as ngay_di_tre FROM cham_cong "
                 + "WHERE nhan_vien_id = ? AND MONTH(ngay) = ? AND YEAR(ngay) = ? "
                 + "AND check_in > '08:30:00'";
-        
+
         // Tổng giờ làm việc
         String sql3 = "SELECT SUM(TIMESTAMPDIFF(HOUR, check_in, check_out)) as tong_gio_lam FROM cham_cong "
                 + "WHERE nhan_vien_id = ? AND MONTH(ngay) = ? AND YEAR(ngay) = ? "
                 + "AND check_in IS NOT NULL AND check_out IS NOT NULL";
-        
+
         // Số ngày đủ công (>= 8 giờ)
         String sql4 = "SELECT COUNT(*) as ngay_du_cong FROM cham_cong "
                 + "WHERE nhan_vien_id = ? AND MONTH(ngay) = ? AND YEAR(ngay) = ? "
                 + "AND TIMESTAMPDIFF(HOUR, check_in, check_out) >= 8";
 
-        try (PreparedStatement stmt1 = cn.prepareStatement(sql1);
-             PreparedStatement stmt2 = cn.prepareStatement(sql2);
-             PreparedStatement stmt3 = cn.prepareStatement(sql3);
-             PreparedStatement stmt4 = cn.prepareStatement(sql4)) {
+        try (PreparedStatement stmt1 = cn.prepareStatement(sql1); PreparedStatement stmt2 = cn.prepareStatement(sql2); PreparedStatement stmt3 = cn.prepareStatement(sql3); PreparedStatement stmt4 = cn.prepareStatement(sql4)) {
 
             // Thực hiện các truy vấn
-            stmt1.setInt(1, nhanVienId); stmt1.setInt(2, thang); stmt1.setInt(3, nam);
-            stmt2.setInt(1, nhanVienId); stmt2.setInt(2, thang); stmt2.setInt(3, nam);
-            stmt3.setInt(1, nhanVienId); stmt3.setInt(2, thang); stmt3.setInt(3, nam);
-            stmt4.setInt(1, nhanVienId); stmt4.setInt(2, thang); stmt4.setInt(3, nam);
+            stmt1.setInt(1, nhanVienId);
+            stmt1.setInt(2, thang);
+            stmt1.setInt(3, nam);
+            stmt2.setInt(1, nhanVienId);
+            stmt2.setInt(2, thang);
+            stmt2.setInt(3, nam);
+            stmt3.setInt(1, nhanVienId);
+            stmt3.setInt(2, thang);
+            stmt3.setInt(3, nam);
+            stmt4.setInt(1, nhanVienId);
+            stmt4.setInt(2, thang);
+            stmt4.setInt(3, nam);
 
             try (ResultSet rs1 = stmt1.executeQuery()) {
                 if (rs1.next()) {
@@ -1965,7 +1988,7 @@ public class KNCSDL {
 
         return thongKe;
     }
-    
+
     // Lấy trạng thái chấm công hôm nay
     public Map<String, Object> getChamCongHomNay(int nhanVienId) throws SQLException {
         Map<String, Object> chamCong = new HashMap<>();
@@ -1991,7 +2014,7 @@ public class KNCSDL {
         }
         return chamCong;
     }
-    
+
     // Check-in
     public boolean checkIn(int nhanVienId) throws SQLException {
         // Kiểm tra đã check-in hôm nay chưa
@@ -2021,7 +2044,7 @@ public class KNCSDL {
             return stmt.executeUpdate() > 0;
         }
     }
-    
+
     // Check-out
     public boolean checkOut(int nhanVienId) throws SQLException {
         String sql = "UPDATE cham_cong SET check_out = CURRENT_TIME "
@@ -2032,9 +2055,8 @@ public class KNCSDL {
             return stmt.executeUpdate() > 0;
         }
     }
-    
+
     // ============ PHƯƠNG THỨC CHO USER SALARY & KPI ============
-    
     // Lấy thông tin lương của user theo tháng
     public Map<String, Object> getThongTinLuongUser(int nhanVienId, int thang, int nam) throws SQLException {
         Map<String, Object> luongInfo = new HashMap<>();
@@ -2065,7 +2087,7 @@ public class KNCSDL {
         }
         return luongInfo;
     }
-    
+
     // Lấy lịch sử lương của user
     public List<Map<String, Object>> getLichSuLuongUser(int nhanVienId) throws SQLException {
         List<Map<String, Object>> lichSu = new ArrayList<>();
@@ -2096,7 +2118,7 @@ public class KNCSDL {
         }
         return lichSu;
     }
-    
+
     // Lấy thông tin KPI của user theo tháng
     public List<Map<String, Object>> getKPIUser(int nhanVienId, int thang, int nam) throws SQLException {
         List<Map<String, Object>> kpiList = new ArrayList<>();
@@ -2122,25 +2144,28 @@ public class KNCSDL {
         }
         return kpiList;
     }
-    
+
     // Lấy tổng hợp KPI của user
     public Map<String, Object> getTongHopKPIUser(int nhanVienId, int thang, int nam) throws SQLException {
         Map<String, Object> tongHop = new HashMap<>();
-        
+
         // Điểm KPI trung bình
         String sql1 = "SELECT AVG(diem_kpi) as diem_tb, COUNT(*) as so_chi_tieu FROM luu_kpi "
                 + "WHERE nhan_vien_id = ? AND thang = ? AND nam = ?";
-        
+
         // Số công việc hoàn thành trong tháng
         String sql2 = "SELECT COUNT(*) as cong_viec_hoan_thanh FROM cong_viec "
                 + "WHERE nguoi_nhan_id = ? AND trang_thai = 'Đã hoàn thành' "
                 + "AND MONTH(ngay_tao) = ? AND YEAR(ngay_tao) = ?";
 
-        try (PreparedStatement stmt1 = cn.prepareStatement(sql1);
-             PreparedStatement stmt2 = cn.prepareStatement(sql2)) {
+        try (PreparedStatement stmt1 = cn.prepareStatement(sql1); PreparedStatement stmt2 = cn.prepareStatement(sql2)) {
 
-            stmt1.setInt(1, nhanVienId); stmt1.setInt(2, thang); stmt1.setInt(3, nam);
-            stmt2.setInt(1, nhanVienId); stmt2.setInt(2, thang); stmt2.setInt(3, nam);
+            stmt1.setInt(1, nhanVienId);
+            stmt1.setInt(2, thang);
+            stmt1.setInt(3, nam);
+            stmt2.setInt(1, nhanVienId);
+            stmt2.setInt(2, thang);
+            stmt2.setInt(3, nam);
 
             try (ResultSet rs1 = stmt1.executeQuery()) {
                 if (rs1.next()) {
@@ -2158,7 +2183,7 @@ public class KNCSDL {
 
         return tongHop;
     }
-    
+
     // Lấy danh sách lương & KPI kết hợp cho user
     public List<Map<String, Object>> getLuongKPIUser(int nhanVienId) throws SQLException {
         List<Map<String, Object>> danhSach = new ArrayList<>();
@@ -2199,6 +2224,63 @@ public class KNCSDL {
         return danhSach;
     }
     
+    public boolean kiemTraMatKhau(String email, String oldPass) throws SQLException {
+        if (email == null || email.trim().isEmpty()) return false;
+
+        String sql = "SELECT mat_khau FROM nhanvien WHERE email = ?";
+        try (PreparedStatement ps = cn.prepareStatement(sql)) {
+            ps.setString(1, email);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (!rs.next()) return false;
+                String mkDb = rs.getString("mat_khau");
+                // BCrypt: return BCrypt.checkpw(oldPass, mkDb);
+                return mkDb != null && mkDb.equals(oldPass);
+            }
+        }
+    }
+
+    public int capNhatMatKhau(String email, String newPass) throws SQLException {
+        if (email == null || email.trim().isEmpty()) return 0;
+
+        // BCrypt: String hashed = BCrypt.hashpw(newPass, BCrypt.gensalt());
+        String hashed = newPass;
+
+        String sql = "UPDATE nhanvien SET mat_khau = ? WHERE email = ?";
+        try (PreparedStatement ps = cn.prepareStatement(sql)) {
+            ps.setString(1, hashed);
+            ps.setString(2, email);
+            return ps.executeUpdate();
+        }
+    }
+
+    public boolean doiMatKhau(String email, String oldPass, String newPass) throws SQLException {
+        if (email == null || email.trim().isEmpty()) return false;
+
+        boolean oldAutoCommit = cn.getAutoCommit();
+        try {
+            cn.setAutoCommit(false);
+
+            if (!kiemTraMatKhau(email, oldPass)) {
+                cn.rollback();
+                return false;
+            }
+
+            int rows = capNhatMatKhau(email, newPass);
+            if (rows <= 0) {
+                cn.rollback();
+                return false;
+            }
+
+            cn.commit();
+            return true;
+        } catch (SQLException ex) {
+            try { cn.rollback(); } catch (SQLException ignore) {}
+            throw ex;
+        } finally {
+            try { cn.setAutoCommit(oldAutoCommit); } catch (SQLException ignore) {}
+        }
+    }
+
     public void close() throws SQLException {
         if (cn != null && !cn.isClosed()) {
             cn.close();
