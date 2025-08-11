@@ -1354,6 +1354,30 @@ public class KNCSDL {
         return data;
     }
 
+    // Lấy cơ cấu nhân sự (số nhân viên theo phòng ban)
+    public Map<String, Object> getNhanSuCoCau() throws SQLException {
+        Map<String, Object> data = new HashMap<>();
+        List<String> labels = new ArrayList<>();
+        List<Integer> values = new ArrayList<>();
+
+        String sql = "SELECT pb.ten_phong, COUNT(nv.id) AS so_nv "
+                + "FROM phong_ban pb "
+                + "LEFT JOIN nhanvien nv ON pb.id = nv.phong_ban_id "
+                + "GROUP BY pb.id, pb.ten_phong "
+                + "ORDER BY pb.ten_phong";
+
+        try (PreparedStatement stmt = cn.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                labels.add(rs.getString("ten_phong"));
+                values.add(rs.getInt("so_nv"));
+            }
+        }
+
+        data.put("labels", labels);
+        data.put("data", values);
+        return data;
+    }
+
     // Lấy báo cáo KPI nhân viên theo tháng
     public List<Map<String, Object>> getBaoCaoKPINhanVien(int nhanVienId, int thang, int nam) throws SQLException {
         List<Map<String, Object>> baoCao = new ArrayList<>();
@@ -2286,15 +2310,24 @@ public class KNCSDL {
     // Lấy thống kê tổng quan hệ thống
     public Map<String, Object> getThongKeTongQuan() throws SQLException {
         Map<String, Object> thongKe = new HashMap<>();
-        
-        // Tổng số nhân viên đang làm việc
-        String sql1 = "SELECT COUNT(*) as tong FROM nhanvien WHERE trang_thai_lam_viec = 'Đang làm'";
-        try (PreparedStatement stmt = cn.prepareStatement(sql1);
-             ResultSet rs = stmt.executeQuery()) {
-            if (rs.next()) {
-                thongKe.put("tong_nhan_vien", rs.getInt("tong"));
+        // Thống kê nhân viên theo trạng thái
+        String sql1 = "SELECT trang_thai_lam_viec, COUNT(*) as so_luong FROM nhanvien GROUP BY trang_thai_lam_viec";
+        int totalNV = 0;
+        int dangLam = 0, tamNghi = 0, nghiViec = 0;
+        try (PreparedStatement stmt = cn.prepareStatement(sql1); ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                String st = rs.getString("trang_thai_lam_viec");
+                int count = rs.getInt("so_luong");
+                totalNV += count;
+                if ("Đang làm".equalsIgnoreCase(st)) dangLam = count;
+                else if ("Tạm nghỉ".equalsIgnoreCase(st)) tamNghi = count;
+                else if ("Nghỉ việc".equalsIgnoreCase(st) || "Đã nghỉ".equalsIgnoreCase(st)) nghiViec = count;
             }
         }
+        thongKe.put("tong_nhan_vien", totalNV);
+        thongKe.put("nv_dang_lam", dangLam);
+        thongKe.put("nv_tam_nghi", tamNghi);
+        thongKe.put("nv_nghi_viec", nghiViec);
         
         // Tổng số phòng ban
         String sql2 = "SELECT COUNT(*) as tong FROM phong_ban";
@@ -2330,6 +2363,99 @@ public class KNCSDL {
         }
         
         return thongKe;
+    }
+
+    // Thống kê chấm công toàn bộ (loại trừ Admin / Quản lý / Trưởng phòng)
+    public Map<String, Object> getThongKeChamCongNhanVienThuong(int thang, int nam) throws SQLException {
+        Map<String, Object> tk = new HashMap<>();
+        String base = " FROM cham_cong cc INNER JOIN nhanvien nv ON cc.nhan_vien_id = nv.id " +
+                "WHERE MONTH(cc.ngay) = ? AND YEAR(cc.ngay) = ? " +
+                "AND (nv.vai_tro IS NULL OR nv.vai_tro NOT IN ('Admin','Quản lý')) " +
+                "AND (nv.chuc_vu IS NULL OR nv.chuc_vu <> 'Trưởng phòng')";
+
+        String sqlTotal = "SELECT COUNT(*) AS tong_luot" + base;
+        String sqlLate = "SELECT COUNT(*) AS di_muon" + base + " AND cc.check_in > '08:30:00'";
+        String sqlDistinctNV = "SELECT COUNT(DISTINCT nv.id) AS so_nv" + base;
+
+        int tongLuot = 0, diMuon = 0, soNV = 0;
+        try (PreparedStatement stmt = cn.prepareStatement(sqlTotal)) {
+            stmt.setInt(1, thang); stmt.setInt(2, nam);
+            try (ResultSet rs = stmt.executeQuery()) { if (rs.next()) tongLuot = rs.getInt("tong_luot"); }
+        }
+        try (PreparedStatement stmt = cn.prepareStatement(sqlLate)) {
+            stmt.setInt(1, thang); stmt.setInt(2, nam);
+            try (ResultSet rs = stmt.executeQuery()) { if (rs.next()) diMuon = rs.getInt("di_muon"); }
+        }
+        try (PreparedStatement stmt = cn.prepareStatement(sqlDistinctNV)) {
+            stmt.setInt(1, thang); stmt.setInt(2, nam);
+            try (ResultSet rs = stmt.executeQuery()) { if (rs.next()) soNV = rs.getInt("so_nv"); }
+        }
+        int dungGio = tongLuot - diMuon;
+        double tyLeMuon = tongLuot > 0 ? (diMuon * 100.0 / tongLuot) : 0;
+        tk.put("tong_luot", tongLuot);
+        tk.put("di_muon", diMuon);
+        tk.put("dung_gio", dungGio);
+        tk.put("so_nv", soNV);
+        tk.put("ty_le_di_muon", Math.round(tyLeMuon * 10)/10.0);
+        return tk;
+    }
+
+    // Thống kê chấm công theo từng ngày trong tháng (nhân viên thường)
+    public Map<String, Object> getChamCongTheoNgayNhanVienThuong(int thang, int nam) throws SQLException {
+        Map<String, Object> data = new HashMap<>();
+        List<Integer> days = new ArrayList<>();
+        List<Integer> duCong = new ArrayList<>();
+        List<Integer> diMuon = new ArrayList<>();
+        List<Integer> thieuGio = new ArrayList<>();
+        List<Integer> vang = new ArrayList<>();
+        List<Integer> lamThem = new ArrayList<>(); // tạm thời 0 nếu chưa xác định OT/WFH
+
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.YEAR, nam);
+        cal.set(Calendar.MONTH, thang - 1);
+        int maxDay = cal.getActualMaximum(Calendar.DAY_OF_MONTH);
+        for (int d = 1; d <= maxDay; d++) {
+            days.add(d);
+            duCong.add(0); diMuon.add(0); thieuGio.add(0); vang.add(0); lamThem.add(0);
+        }
+
+        String sql = "SELECT DAY(cc.ngay) AS d, " +
+                "SUM(CASE WHEN cc.check_in IS NOT NULL AND cc.check_out IS NOT NULL " +
+                "AND cc.check_in <= '08:30:00' AND TIMESTAMPDIFF(HOUR, cc.check_in, cc.check_out) >= 8 THEN 1 ELSE 0 END) AS du_cong, " +
+                "SUM(CASE WHEN cc.check_in > '08:30:00' THEN 1 ELSE 0 END) AS di_muon, " +
+                "SUM(CASE WHEN cc.check_in IS NOT NULL AND cc.check_out IS NOT NULL " +
+                "AND TIMESTAMPDIFF(HOUR, cc.check_in, cc.check_out) < 8 AND cc.check_in <= '08:30:00' THEN 1 ELSE 0 END) AS thieu_gio, " +
+                "SUM(CASE WHEN cc.check_in IS NULL THEN 1 ELSE 0 END) AS vang " +
+                "FROM cham_cong cc INNER JOIN nhanvien nv ON cc.nhan_vien_id = nv.id " +
+                "WHERE MONTH(cc.ngay) = ? AND YEAR(cc.ngay) = ? " +
+                "AND (nv.vai_tro IS NULL OR nv.vai_tro NOT IN ('Admin','Quản lý')) " +
+                "AND (nv.chuc_vu IS NULL OR nv.chuc_vu <> 'Trưởng phòng') " +
+                "GROUP BY d ORDER BY d";
+
+        try (PreparedStatement stmt = cn.prepareStatement(sql)) {
+            stmt.setInt(1, thang);
+            stmt.setInt(2, nam);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    int d = rs.getInt("d");
+                    int idx = d - 1;
+                    if (idx >= 0 && idx < maxDay) {
+                        duCong.set(idx, rs.getInt("du_cong"));
+                        diMuon.set(idx, rs.getInt("di_muon"));
+                        thieuGio.set(idx, rs.getInt("thieu_gio"));
+                        vang.set(idx, rs.getInt("vang"));
+                    }
+                }
+            }
+        }
+
+        data.put("days", days);
+        data.put("du_cong", duCong);
+        data.put("di_muon", diMuon);
+        data.put("thieu_gio", thieuGio);
+        data.put("vang", vang);
+        data.put("lam_them", lamThem); // placeholder
+        return data;
     }
     
     // Lấy thống kê công việc theo nhân viên
