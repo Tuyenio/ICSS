@@ -99,13 +99,21 @@
         <servlet-name>capnhatChamCong</servlet-name>
         <servlet-class>controller.capnhatChamCong</servlet-class>
     </servlet>
-        <servlet>
+    <servlet>
         <servlet-name>userChamCong</servlet-name>
         <servlet-class>controller.userChamCong</servlet-class>
     </servlet>
     <servlet>
         <servlet-name>userLuong</servlet-name>
         <servlet-class>controller.userLuong</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>apiHoso</servlet-name>
+        <servlet-class>controller.apiHoso</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>apidoiMK</servlet-name>
+        <servlet-class>controller.apidoiMK</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>dsnhanvien</servlet-name>
@@ -203,13 +211,21 @@
         <servlet-name>capnhatChamCong</servlet-name>
         <url-pattern>/capnhatChamCong</url-pattern>
     </servlet-mapping>
-        <servlet-mapping>
+    <servlet-mapping>
         <servlet-name>userChamCong</servlet-name>
         <url-pattern>/userChamCong</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>userLuong</servlet-name>
         <url-pattern>/userLuong</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>apiHoso</servlet-name>
+        <url-pattern>/apiHoso</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>apidoiMK</servlet-name>
+        <url-pattern>/apidoiMK</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>
