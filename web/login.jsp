@@ -22,7 +22,7 @@
                 if ("Admin".equalsIgnoreCase(vaiTro) || "Quản lý".equalsIgnoreCase(vaiTro)) {
                     response.sendRedirect("index.jsp");
                 } else {
-                    response.sendRedirect("user_dashboard.jsp");
+                    response.sendRedirect("./userDashboard");
                 }
                 return;
             } else {
@@ -159,7 +159,7 @@
     <body>
         <div class="login-container">
             <div class="login-left">
-                <img src="Img/logo.png" alt="Logo">
+                <img src="Img/logoics.png" alt="Logo">
                 <h5>Kết nối - Hiệu quả - Thành công</h5>
             </div>
             <div class="login-right">

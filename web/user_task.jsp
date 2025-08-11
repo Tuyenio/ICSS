@@ -319,7 +319,7 @@
             </div>
             <ul class="sidebar-nav mt-3">
                 <li>
-                    <a href="user_dashboard.jsp"><i class="fa-solid fa-chart-line"></i><span>Dashboard</span></a>
+                    <a href="./userDashboard"><i class="fa-solid fa-chart-line"></i><span>Dashboard</span></a>
                 </li>
                 <li>
                     <a href="./dsCongviecNV" class="active"><i class="fa-solid fa-tasks"></i><span>Công việc của
