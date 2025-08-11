@@ -54,6 +54,7 @@
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
         <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
         <script src="https://cdn.ckeditor.com/4.22.1/standard/ckeditor.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <style>
             html,
             body {
@@ -247,6 +248,71 @@
                 font-family: "Font Awesome 6 Free" !important;
                 font-weight: 900;
             }
+
+            /* Cải tiến hiển thị nút chấm công */
+            .btn {
+                border-radius: 8px;
+                font-weight: 500;
+                transition: all 0.3s ease;
+            }
+
+            .btn:hover {
+                transform: translateY(-1px);
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            }
+
+            .btn:disabled {
+                transform: none;
+                box-shadow: none;
+            }
+
+            /* Style cho badge trạng thái */
+            .badge {
+                font-size: 0.85rem;
+                padding: 6px 12px;
+                border-radius: 20px;
+            }
+
+            /* Hiệu ứng loading */
+            .loading-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.5);
+                display: none;
+                justify-content: center;
+                align-items: center;
+                z-index: 9999;
+            }
+
+            .loading-spinner {
+                width: 50px;
+                height: 50px;
+                border: 4px solid #f3f3f3;
+                border-top: 4px solid #007bff;
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+            }
+
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+
+            /* Responsive cho mobile */
+            @media (max-width: 768px) {
+                .btn {
+                    font-size: 0.9rem;
+                    padding: 8px 16px;
+                }
+                
+                .badge {
+                    font-size: 0.75rem;
+                    padding: 4px 8px;
+                }
+            }
         </style>
         <script>
             var USER_PAGE_TITLE = '<i class="fa-solid fa-calendar-check me-2"></i>Chấm công';
@@ -254,6 +320,11 @@
     </head>
 
     <body>
+        <!-- Loading overlay -->
+        <div class="loading-overlay" id="loadingOverlay">
+            <div class="loading-spinner"></div>
+        </div>
+        
         <nav class="sidebar p-0">
             <div class="sidebar-title text-center py-4 border-bottom border-secondary" style="cursor:pointer;"
                 onclick="location.href='user_dashboard.jsp'">
@@ -309,25 +380,48 @@
                 <div class="main-box mb-3">
                     <h3 class="mb-4"><i class="fa-solid fa-calendar-check me-2"></i>Chấm công tháng <%=thangHienTai%>/<%=namHienTai%></h3>
                     
-                    <!-- Nút chấm công -->
-                    <div class="d-flex align-items-center mb-4">
-                        <button class="btn btn-success me-2" id="btnCheckIn" 
-                                <%=chamCongHomNay.get("da_check_in") != null && (Boolean)chamCongHomNay.get("da_check_in") ? "disabled" : ""%>>
-                            <i class="fa-solid fa-sign-in-alt"></i> Check-in
-                        </button>
-                        <button class="btn btn-danger me-3" id="btnCheckOut"
-                                <%=chamCongHomNay.get("da_check_out") != null && (Boolean)chamCongHomNay.get("da_check_out") ? "disabled" : ""%>>
-                            <i class="fa-solid fa-sign-out-alt"></i> Check-out
-                        </button>
-                        
-                        <!-- Hiển thị trạng thái hôm nay -->
-                        <div class="ms-3">
-                            <% if (chamCongHomNay.get("check_in") != null) { %>
-                                <span class="badge bg-success me-2">Check-in: <%=chamCongHomNay.get("check_in")%></span>
-                            <% } %>
-                            <% if (chamCongHomNay.get("check_out") != null) { %>
-                                <span class="badge bg-danger">Check-out: <%=chamCongHomNay.get("check_out")%></span>
-                            <% } %>
+                    <!-- Nút chấm công và trạng thái -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center">
+                                <button class="btn btn-success me-2" id="btnCheckIn" 
+                                        <%=chamCongHomNay.get("da_check_in") != null && (Boolean)chamCongHomNay.get("da_check_in") ? "disabled" : ""%>>
+                                    <i class="fa-solid fa-sign-in-alt"></i> Check-in
+                                </button>
+                                <button class="btn btn-danger me-3" id="btnCheckOut"
+                                        <%=chamCongHomNay.get("da_check_out") != null && (Boolean)chamCongHomNay.get("da_check_out") ? "disabled" : ""%>>
+                                    <i class="fa-solid fa-sign-out-alt"></i> Check-out
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <!-- Hiển thị trạng thái hôm nay -->
+                            <div class="d-flex align-items-center justify-content-end">
+                                <div class="me-3">
+                                    <strong>Trạng thái hôm nay:</strong>
+                                </div>
+                                <div>
+                                    <% if (chamCongHomNay.get("check_in") != null) { %>
+                                        <span class="badge bg-success me-2">
+                                            <i class="fa-solid fa-clock"></i> Check-in: <%=chamCongHomNay.get("check_in")%>
+                                        </span>
+                                    <% } else { %>
+                                        <span class="badge bg-secondary me-2">
+                                            <i class="fa-solid fa-clock"></i> Chưa check-in
+                                        </span>
+                                    <% } %>
+                                    
+                                    <% if (chamCongHomNay.get("check_out") != null) { %>
+                                        <span class="badge bg-danger">
+                                            <i class="fa-solid fa-clock"></i> Check-out: <%=chamCongHomNay.get("check_out")%>
+                                        </span>
+                                    <% } else { %>
+                                        <span class="badge bg-secondary">
+                                            <i class="fa-solid fa-clock"></i> Chưa check-out
+                                        </span>
+                                    <% } %>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -366,7 +460,7 @@
                                     <th>Trạng thái</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody id="attendanceTableBody">
                                 <% if (lichSuChamCong != null && !lichSuChamCong.isEmpty()) { %>
                                     <% for (Map<String, Object> record : lichSuChamCong) { %>
                                         <tr>
@@ -404,74 +498,143 @@
                 $(document).ready(function() {
                     // Xử lý check-in
                     $('#btnCheckIn').click(function() {
-                        $.ajax({
-                            url: './userChamCong',
-                            type: 'POST',
-                            data: {action: 'checkin'},
-                            success: function(response) {
-                                if (response.success) {
-                                    Swal.fire({
-                                        icon: 'success',
-                                        title: 'Thành công!',
-                                        text: response.message,
-                                        showConfirmButton: false,
-                                        timer: 1500
-                                    }).then(() => {
-                                        location.reload();
-                                    });
-                                } else {
-                                    Swal.fire({
-                                        icon: 'error',
-                                        title: 'Lỗi!',
-                                        text: response.message
-                                    });
-                                }
-                            },
-                            error: function() {
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Lỗi!',
-                                    text: 'Không thể kết nối đến server'
-                                });
+                        Swal.fire({
+                            title: 'Xác nhận check-in?',
+                            text: 'Bạn có chắc chắn muốn check-in không?',
+                            icon: 'question',
+                            showCancelButton: true,
+                            confirmButtonColor: '#3085d6',
+                            cancelButtonColor: '#d33',
+                            confirmButtonText: 'Có, check-in!',
+                            cancelButtonText: 'Hủy'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                performCheckIn();
                             }
                         });
                     });
 
                     // Xử lý check-out
                     $('#btnCheckOut').click(function() {
-                        $.ajax({
-                            url: './userChamCong',
-                            type: 'POST',
-                            data: {action: 'checkout'},
-                            success: function(response) {
-                                if (response.success) {
-                                    Swal.fire({
-                                        icon: 'success',
-                                        title: 'Thành công!',
-                                        text: response.message,
-                                        showConfirmButton: false,
-                                        timer: 1500
-                                    }).then(() => {
-                                        location.reload();
-                                    });
-                                } else {
-                                    Swal.fire({
-                                        icon: 'error',
-                                        title: 'Lỗi!',
-                                        text: response.message
-                                    });
-                                }
-                            },
-                            error: function() {
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Lỗi!',
-                                    text: 'Không thể kết nối đến server'
-                                });
+                        Swal.fire({
+                            title: 'Xác nhận check-out?',
+                            text: 'Bạn có chắc chắn muốn check-out không?',
+                            icon: 'question',
+                            showCancelButton: true,
+                            confirmButtonColor: '#3085d6',
+                            cancelButtonColor: '#d33',
+                            confirmButtonText: 'Có, check-out!',
+                            cancelButtonText: 'Hủy'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                performCheckOut();
                             }
                         });
                     });
                 });
+
+                function performCheckIn() {
+                    // Hiển thị loading
+                    showLoading();
+                    
+                    // Disable nút để tránh click nhiều lần
+                    $('#btnCheckIn').prop('disabled', true);
+                    
+                    $.ajax({
+                        url: './userChamCong',
+                        type: 'POST',
+                        data: {action: 'checkin'},
+                        dataType: 'json',
+                        success: function(response) {
+                            hideLoading();
+                            if (response.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Check-in thành công!',
+                                    text: response.message,
+                                    showConfirmButton: false,
+                                    timer: 2000
+                                }).then(() => {
+                                    // Reload trang để cập nhật dữ liệu mới
+                                    location.reload();
+                                });
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Lỗi check-in!',
+                                    text: response.message
+                                });
+                                $('#btnCheckIn').prop('disabled', false);
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            hideLoading();
+                            console.error('Error:', error);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Lỗi kết nối!',
+                                text: 'Không thể kết nối đến server. Vui lòng thử lại!'
+                            });
+                            $('#btnCheckIn').prop('disabled', false);
+                        }
+                    });
+                }
+
+                function performCheckOut() {
+                    // Hiển thị loading
+                    showLoading();
+                    
+                    // Disable nút để tránh click nhiều lần
+                    $('#btnCheckOut').prop('disabled', true);
+                    
+                    $.ajax({
+                        url: './userChamCong',
+                        type: 'POST',
+                        data: {action: 'checkout'},
+                        dataType: 'json',
+                        success: function(response) {
+                            hideLoading();
+                            if (response.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Check-out thành công!',
+                                    text: response.message,
+                                    showConfirmButton: false,
+                                    timer: 2000
+                                }).then(() => {
+                                    // Reload trang để cập nhật dữ liệu mới
+                                    location.reload();
+                                });
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Lỗi check-out!',
+                                    text: response.message
+                                });
+                                $('#btnCheckOut').prop('disabled', false);
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            hideLoading();
+                            console.error('Error:', error);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Lỗi kết nối!',
+                                text: 'Không thể kết nối đến server. Vui lòng thử lại!'
+                            });
+                            $('#btnCheckOut').prop('disabled', false);
+                        }
+                    });
+                }
+
+                // Hàm hiển thị/ẩn loading
+                function showLoading() {
+                    $('#loadingOverlay').show();
+                }
+
+                function hideLoading() {
+                    $('#loadingOverlay').hide();
+                }
 
                 // Hàm lọc theo tháng
                 function filterByMonth() {

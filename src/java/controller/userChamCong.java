@@ -101,21 +101,53 @@ public class userChamCong extends HttpServlet {
             String action = request.getParameter("action");
             
             if ("checkin".equals(action)) {
-                // Chấm công vào
+                // Kiểm tra đã check-in hôm nay chưa
+                Map<String, Object> chamCongHomNay = kn.getChamCongHomNay(nhanVienId);
+                Boolean daCheckIn = (Boolean) chamCongHomNay.get("da_check_in");
+                
+                if (daCheckIn != null && daCheckIn) {
+                    response.getWriter().write("{\"success\": false, \"message\": \"Bạn đã check-in hôm nay rồi!\"}");
+                    return;
+                }
+                
+                // Thực hiện check-in
                 boolean success = kn.checkIn(nhanVienId);
                 if (success) {
-                    response.getWriter().write("{\"success\": true, \"message\": \"Check-in thành công!\"}");
+                    // Lấy thời gian check-in vừa thực hiện
+                    java.text.SimpleDateFormat timeFormat = new java.text.SimpleDateFormat("HH:mm:ss");
+                    String checkInTime = timeFormat.format(new java.util.Date());
+                    
+                    response.getWriter().write("{\"success\": true, \"message\": \"Check-in thành công lúc " + checkInTime + "!\"}");
                 } else {
-                    response.getWriter().write("{\"success\": false, \"message\": \"Lỗi check-in hoặc đã check-in rồi!\"}");
+                    response.getWriter().write("{\"success\": false, \"message\": \"Lỗi check-in, vui lòng thử lại!\"}");
                 }
                 
             } else if ("checkout".equals(action)) {
-                // Chấm công ra
+                // Kiểm tra đã check-in chưa
+                Map<String, Object> chamCongHomNay = kn.getChamCongHomNay(nhanVienId);
+                Boolean daCheckIn = (Boolean) chamCongHomNay.get("da_check_in");
+                Boolean daCheckOut = (Boolean) chamCongHomNay.get("da_check_out");
+                
+                if (daCheckIn == null || !daCheckIn) {
+                    response.getWriter().write("{\"success\": false, \"message\": \"Bạn chưa check-in hôm nay!\"}");
+                    return;
+                }
+                
+                if (daCheckOut != null && daCheckOut) {
+                    response.getWriter().write("{\"success\": false, \"message\": \"Bạn đã check-out hôm nay rồi!\"}");
+                    return;
+                }
+                
+                // Thực hiện check-out
                 boolean success = kn.checkOut(nhanVienId);
                 if (success) {
-                    response.getWriter().write("{\"success\": true, \"message\": \"Check-out thành công!\"}");
+                    // Lấy thời gian check-out vừa thực hiện
+                    java.text.SimpleDateFormat timeFormat = new java.text.SimpleDateFormat("HH:mm:ss");
+                    String checkOutTime = timeFormat.format(new java.util.Date());
+                    
+                    response.getWriter().write("{\"success\": true, \"message\": \"Check-out thành công lúc " + checkOutTime + "!\"}");
                 } else {
-                    response.getWriter().write("{\"success\": false, \"message\": \"Lỗi check-out hoặc chưa check-in!\"}");
+                    response.getWriter().write("{\"success\": false, \"message\": \"Lỗi check-out, vui lòng thử lại!\"}");
                 }
                 
             } else {
@@ -128,7 +160,6 @@ public class userChamCong extends HttpServlet {
         }
     }
 
-    @Override
     public String getServletInfo() {
         return "Servlet xử lý chấm công cho nhân viên";
     }
