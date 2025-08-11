@@ -251,7 +251,7 @@
                                 <i class="fa-solid fa-tasks fa-2x text-success mb-2"></i>
                                 <h5 class="card-title">Công việc của tôi</h5>
                                 <p class="card-text">Xem, cập nhật tiến độ, tải file, nhận đánh giá công việc...</p>
-                                <a href="user_task.jsp" class="btn btn-outline-success btn-sm rounded-pill px-3">Xem chi
+                                <a href="./dsCongviecNV" class="btn btn-outline-success btn-sm rounded-pill px-3">Xem chi
                                     tiết</a>
                             </div>
                         </div>

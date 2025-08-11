@@ -274,7 +274,7 @@
                                         <h5 class="card-title">Chấm công</h5>
                                         <p class="card-text">Chấm công, check-in/out, xem lịch sử, xuất phiếu lương...
                                         </p>
-                                        <a href="attendance.jsp"
+                                        <a href="./dsChamCong"
                                             class="btn btn-outline-info btn-sm rounded-pill px-3">Xem chi tiết</a>
                                     </div>
                                 </div>
