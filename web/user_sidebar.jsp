@@ -74,7 +74,7 @@
     <!-- ...existing code... -->
 </head>
 <nav class="sidebar p-0">
-    <div class="sidebar-title text-center py-4 border-bottom border-secondary" style="cursor:pointer;" onclick="location.href='user_dashboard.jsp'">
+    <div class="sidebar-title text-center py-4 border-bottom border-secondary" style="cursor:pointer;" onclick="location.href='./userDashboard'">
         <i class="fa-solid fa-user me-2"></i>ICSS
     </div>
     <ul class="sidebar-nav mt-3">

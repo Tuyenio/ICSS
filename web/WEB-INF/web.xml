@@ -115,6 +115,10 @@
         <servlet-name>apidoiMK</servlet-name>
         <servlet-class>controller.apidoiMK</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>UserDashboard</servlet-name>
+        <servlet-class>controller.UserDashboard</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>dsnhanvien</servlet-name>
         <url-pattern>/dsnhanvien</url-pattern>
@@ -226,6 +230,10 @@
     <servlet-mapping>
         <servlet-name>apidoiMK</servlet-name>
         <url-pattern>/apidoiMK</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>UserDashboard</servlet-name>
+        <url-pattern>/userDashboard</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>
