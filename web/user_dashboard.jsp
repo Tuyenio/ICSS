@@ -515,55 +515,29 @@
                     </div>
                 </div>
             </div>
-            <!-- Quick report -->
-            <div class="quick-report-box mt-4">
-                <h5 class="mb-3"><i class="fa-solid fa-chart-pie me-2 text-primary"></i>Báo cáo nhanh - Công việc của tôi</h5>
-                <div class="row g-3">
-                    <div class="col-md-4">
-                        <div class="d-flex align-items-center">
-                            <i class="fa-solid fa-circle text-success me-2"></i>
-                            <span>Đã hoàn thành: <b><%= thongKeCongViec.getOrDefault("Đã hoàn thành", 0) %></b></span>
-                        </div>
-                        <div class="d-flex align-items-center mt-2">
-                            <i class="fa-solid fa-circle text-warning me-2"></i>
-                            <span>Đang làm: <b><%= thongKeCongViec.getOrDefault("Đang thực hiện", 0) %></b></span>
-                        </div>
-                        <div class="d-flex align-items-center mt-2">
-                            <i class="fa-solid fa-circle text-danger me-2"></i>
-                            <span>Trễ hạn: <b><%= thongKeCongViec.getOrDefault("Trễ hạn", 0) %></b></span>
-                        </div>
-                        <div class="d-flex align-items-center mt-2">
-                            <i class="fa-solid fa-circle text-secondary me-2"></i>
-                            <span>Chưa bắt đầu: <b><%= thongKeCongViec.getOrDefault("Chưa bắt đầu", 0) %></b></span>
+            <!-- Quick report (doughnut giống admin) -->
+            <div class="quick-report-box mt-4" id="userQuickReport"
+                 data-ht="<%= thongKeCongViec.getOrDefault("Đã hoàn thành",0) %>"
+                 data-th="<%= thongKeCongViec.getOrDefault("Đang thực hiện",0) %>"
+                 data-tre="<%= thongKeCongViec.getOrDefault("Trễ hạn",0) %>"
+                 data-cbd="<%= thongKeCongViec.getOrDefault("Chưa bắt đầu",0) %>">
+                <div class="d-flex justify-content-start align-items-center flex-wrap mb-2">
+                    <h5 class="mb-0"><i class="fa-solid fa-chart-pie me-2 text-primary"></i>Báo cáo nhanh - Công việc của tôi</h5>
+                </div>
+                <div class="row g-3 align-items-center">
+                    <div class="col-md-5">
+                        <div class="position-relative" style="height:210px;">
+                            <canvas id="chartTrangThaiCaNhan"></canvas>
                         </div>
                     </div>
-                    <div class="col-md-8">
-                        <%
-                            int tongCongViec = thongKeCongViec.getOrDefault("Đã hoàn thành", 0) + 
-                                              thongKeCongViec.getOrDefault("Đang thực hiện", 0) + 
-                                              thongKeCongViec.getOrDefault("Trễ hạn", 0) + 
-                                              thongKeCongViec.getOrDefault("Chưa bắt đầu", 0);
-                                
-                            double phanTramHoanThanh = tongCongViec > 0 ? (thongKeCongViec.getOrDefault("Đã hoàn thành", 0) * 100.0 / tongCongViec) : 0;
-                            double phanTramDangLam = tongCongViec > 0 ? (thongKeCongViec.getOrDefault("Đang thực hiện", 0) * 100.0 / tongCongViec) : 0;
-                            double phanTramTreHan = tongCongViec > 0 ? (thongKeCongViec.getOrDefault("Trễ hạn", 0) * 100.0 / tongCongViec) : 0;
-                            double phanTramChuaBatDau = tongCongViec > 0 ? (thongKeCongViec.getOrDefault("Chưa bắt đầu", 0) * 100.0 / tongCongViec) : 0;
-                        %>
-                        <div class="progress mt-2" style="height: 18px;">
-                            <% if (phanTramHoanThanh > 0) { %>
-                            <div class="progress-bar bg-success" style="width: <%= Math.round(phanTramHoanThanh) + "%" %>"><%= Math.round(phanTramHoanThanh) %>%</div>
-                            <% } %>
-                            <% if (phanTramDangLam > 0) { %>
-                            <div class="progress-bar bg-warning" style="width: <%= Math.round(phanTramDangLam) + "%" %>"><%= Math.round(phanTramDangLam) %>%</div>
-                            <% } %>
-                            <% if (phanTramTreHan > 0) { %>
-                            <div class="progress-bar bg-danger" style="width: <%= Math.round(phanTramTreHan) + "%" %>"><%= Math.round(phanTramTreHan) %>%</div>
-                            <% } %>
-                            <% if (phanTramChuaBatDau > 0) { %>
-                            <div class="progress-bar bg-secondary" style="width: <%= Math.round(phanTramChuaBatDau) + "%" %>"><%= Math.round(phanTramChuaBatDau) %>%</div>
-                            <% } %>
+                    <div class="col-md-7">
+                        <div class="row g-2 small">
+                            <div class="col-6"><div class="p-2 rounded-3 d-flex align-items-center gap-2 bg-light border"><span class="d-inline-block rounded-circle" style="width:10px;height:10px;background:#198754;"></span><span>HT: <b><span id="cvHT"></span></b><br><small class="text-muted" id="pctHT"></small></span></div></div>
+                            <div class="col-6"><div class="p-2 rounded-3 d-flex align-items-center gap-2 bg-light border"><span class="d-inline-block rounded-circle" style="width:10px;height:10px;background:#0d6efd;"></span><span>TH: <b><span id="cvTH"></span></b><br><small class="text-muted" id="pctTH"></small></span></div></div>
+                            <div class="col-6"><div class="p-2 rounded-3 d-flex align-items-center gap-2 bg-light border"><span class="d-inline-block rounded-circle" style="width:10px;height:10px;background:#dc3545;"></span><span>Trễ: <b><span id="cvTre"></span></b><br><small class="text-muted" id="pctTre"></small></span></div></div>
+                            <div class="col-6"><div class="p-2 rounded-3 d-flex align-items-center gap-2 bg-light border"><span class="d-inline-block rounded-circle" style="width:10px;height:10px;background:#6c757d;"></span><span>CBĐ: <b><span id="cvCBD"></span></b><br><small class="text-muted" id="pctCBD"></small></span></div></div>
                         </div>
-                        <small class="text-muted mt-2 d-block">Tổng: <%= tongCongViec %> công việc</small>
+                        <div class="mt-3 small text-muted">Tổng: <b><span id="cvTotal"></span></b> công việc</div>
                     </div>
                 </div>
             </div>
@@ -578,7 +552,25 @@
             <% } %>
         </div>
 
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
         <script>
+            // Doughnut chart giống admin cho báo cáo nhanh cá nhân
+            (function(){
+                const box=document.getElementById('userQuickReport'); if(!box) return;
+                const ht=parseInt(box.dataset.ht||'0');
+                const th=parseInt(box.dataset.th||'0');
+                const tre=parseInt(box.dataset.tre||'0');
+                const cbd=parseInt(box.dataset.cbd||'0');
+                const total=ht+th+tre+cbd;
+                // cập nhật số
+                const set=(id,val)=>{const el=document.getElementById(id); if(el) el.textContent=val;};
+                set('cvHT',ht); set('cvTH',th); set('cvTre',tre); set('cvCBD',cbd); set('cvTotal',total);
+                const pct=(v)=> total? Math.round(v*100/total)+'%':'0%';
+                set('pctHT',pct(ht)); set('pctTH',pct(th)); set('pctTre',pct(tre)); set('pctCBD',pct(cbd));
+                const ctx=document.getElementById('chartTrangThaiCaNhan'); if(!ctx) return;
+                const data=[ht,th,tre,cbd]; const colors=['#198754','#0d6efd','#dc3545','#6c757d'];
+                new Chart(ctx,{type:'doughnut',data:{labels:['Hoàn thành','Đang thực hiện','Trễ hạn','Chưa bắt đầu'],datasets:[{data,backgroundColor:colors,borderWidth:1}]},options:{cutout:'70%',plugins:{legend:{display:false},tooltip:{callbacks:{label:(c)=> c.label+': '+c.parsed+' ('+(total?Math.round(c.parsed*100/total):0)+'%)'}}}},plugins:[{id:'centerTxtUser',afterDraw(chart){const meta=chart.getDatasetMeta(0); if(!meta.data.length) return; const {ctx}=chart; const x=meta.data[0].x,y=meta.data[0].y; ctx.save(); ctx.font='600 16px system-ui'; ctx.fillStyle='#212529'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(total+' CV',x,y-4); ctx.font='400 11px system-ui'; ctx.fillStyle='#6c757d'; ctx.fillText('Tổng',x,y+14); ctx.restore();}}]});
+            })();
                      // Hàm check-in
                      function checkIn() {
                          fetch('./userChamCong', {
