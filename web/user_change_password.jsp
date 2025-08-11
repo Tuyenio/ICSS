@@ -143,13 +143,13 @@
                     <a href="./userDashboard"><i class="fa-solid fa-chart-line"></i><span>Dashboard</span></a>
                 </li>
                 <li>
-                    <a href="user_task.jsp"><i class="fa-solid fa-tasks"></i><span>Công việc của tôi</span></a>
+                    <a href="./dsCongviecNV"><i class="fa-solid fa-tasks"></i><span>Công việc của tôi</span></a>
                 </li>
                 <li>
-                    <a href="user_attendance.jsp"><i class="fa-solid fa-calendar-check"></i><span>Chấm công</span></a>
+                    <a href="./userChamCong"><i class="fa-solid fa-calendar-check"></i><span>Chấm công</span></a>
                 </li>
                 <li>
-                    <a href="user_salary.jsp"><i class="fa-solid fa-money-bill"></i><span>Lương & KPI</span></a>
+                    <a href="./userLuong"><i class="fa-solid fa-money-bill"></i><span>Lương & KPI</span></a>
                 </li>
 
             </ul>
@@ -177,7 +177,7 @@
             </div>
         </div>
     </body>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
     <script>
                      document.getElementById('changePasswordForm').addEventListener('submit', async function (e) {
                          e.preventDefault();
