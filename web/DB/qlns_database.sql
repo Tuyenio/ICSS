@@ -129,6 +129,7 @@ CREATE TABLE thong_bao (
     nguoi_nhan_id INT,
     loai_thong_bao ENUM('Công việc mới', 'Hạn chót', 'Trễ hạn', 'Lương', 'Khác') DEFAULT 'Khác',
     da_doc BOOLEAN DEFAULT FALSE,
+    ngay_doc TIMESTAMP NULL DEFAULT NULL,
     ngay_tao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (nguoi_nhan_id) REFERENCES nhanvien(id) ON DELETE CASCADE
 );
