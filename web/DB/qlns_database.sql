@@ -127,7 +127,7 @@ CREATE TABLE thong_bao (
     tieu_de VARCHAR(255),
     noi_dung TEXT,
     nguoi_nhan_id INT,
-    loai_thong_bao ENUM('Công việc mới', 'Hạn chót', 'Trễ hạn', 'Lương', 'Khác') DEFAULT 'Khác',
+    loai_thong_bao TEXT,
     da_doc BOOLEAN DEFAULT FALSE,
     ngay_doc TIMESTAMP NULL DEFAULT NULL,
     ngay_tao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -451,6 +451,10 @@ COMMIT;
 -- PHẦN 3: BỔ SUNG DỮ LIỆU 07-08/2025, HOÀN THIỆN QUY TRÌNH & CHẤM CÔNG
 -- ============================================
 
+-- 3.0 Migration: chuyển loai_thong_bao từ ENUM sang TEXT (nếu CSDL đã tồn tại)
+-- Bỏ qua lỗi nếu cột đã là TEXT
+ALTER TABLE thong_bao MODIFY COLUMN loai_thong_bao TEXT;
+
 -- 3.1 Bổ sung nhân sự quản lý để đủ Trưởng phòng cho tất cả phòng ban
 -- Thêm Quản lý phòng Kế toán (dept 3) và Quản lý phòng Marketing (dept 5)
 INSERT INTO nhanvien (ho_ten, email, mat_khau, so_dien_thoai, gioi_tinh, ngay_sinh, phong_ban_id, chuc_vu, luong_co_ban, trang_thai_lam_viec, vai_tro, ngay_vao_lam, avatar_url) VALUES
@@ -464,6 +468,15 @@ UPDATE phong_ban SET truong_phong_id = 1 WHERE id = 2;  -- Kỹ thuật: Lê Qu�
 UPDATE phong_ban SET truong_phong_id = 10 WHERE id = 3; -- Kế toán: Trần Hải Nam (Quản lý)
 UPDATE phong_ban SET truong_phong_id = 3 WHERE id = 4;  -- Kinh doanh: Bùi Quang Dũng (Quản lý)
 UPDATE phong_ban SET truong_phong_id = 11 WHERE id = 5; -- Marketing: Phạm Minh Anh (Quản lý)
+
+-- 3.1b Bổ sung Nhân viên Kinh doanh (Sales) để quản lý không tự giao việc cho chính mình
+INSERT INTO nhanvien (ho_ten, email, mat_khau, so_dien_thoai, gioi_tinh, ngay_sinh, phong_ban_id, chuc_vu, luong_co_ban, trang_thai_lam_viec, vai_tro, ngay_vao_lam, avatar_url) VALUES
+('Nguyễn Văn Phúc', 'nguyenvanphuc@icss.com.vn', 'password123', '0914666888', 'Nam', '1996-06-06', 4, 'Nhân viên Kinh doanh', 10000000, 'Đang làm', 'Nhân viên', '2024-11-01', NULL);
+
+-- Sửa công việc Sales: giao bởi quản lý (id=3) nhưng người nhận phải là nhân viên (Sales) mới thêm
+UPDATE cong_viec
+SET nguoi_nhan_id = (SELECT id FROM nhanvien WHERE email = 'nguyenvanphuc@icss.com.vn')
+WHERE ten_cong_viec = 'Chuẩn bị proposal khách hàng XYZ';
 
 -- 3.2 Bổ sung công việc để tất cả phòng ban đều có đủ công việc (thêm mỗi phòng 1-2 việc)
 INSERT INTO cong_viec (ten_cong_viec, mo_ta, han_hoan_thanh, muc_do_uu_tien, nguoi_giao_id, nguoi_nhan_id, phong_ban_id, trang_thai) VALUES
@@ -526,6 +539,60 @@ INSERT INTO cong_viec_quy_trinh (cong_viec_id, ten_buoc, mo_ta, trang_thai, ngay
 (27,'Soạn thảo','Soạn proposal','Đang thực hiện','2025-08-16','2025-08-18'),
 (28,'Lên lịch','Sắp lịch đăng bài','Đang thực hiện','2025-08-12','2025-08-14'),
 (29,'Phân tích','Rà soát chiến dịch','Chưa bắt đầu','2025-08-20','2025-08-22');
+
+-- Bổ sung chấm công cho nhân viên Sales mới (id sẽ là tự tăng kế tiếp)
+INSERT IGNORE INTO cham_cong (nhan_vien_id, ngay, check_in, check_out)
+SELECT id, '2025-07-07', '08:15:00', '17:35:00' FROM nhanvien WHERE email = 'nguyenvanphuc@icss.com.vn';
+INSERT IGNORE INTO cham_cong (nhan_vien_id, ngay, check_in, check_out)
+SELECT id, '2025-07-08', '08:10:00', '17:40:00' FROM nhanvien WHERE email = 'nguyenvanphuc@icss.com.vn';
+INSERT IGNORE INTO cham_cong (nhan_vien_id, ngay, check_in, check_out)
+SELECT id, '2025-07-09', '08:20:00', '17:45:00' FROM nhanvien WHERE email = 'nguyenvanphuc@icss.com.vn';
+INSERT IGNORE INTO cham_cong (nhan_vien_id, ngay, check_in, check_out)
+SELECT id, '2025-07-10', '08:05:00', '17:30:00' FROM nhanvien WHERE email = 'nguyenvanphuc@icss.com.vn';
+INSERT IGNORE INTO cham_cong (nhan_vien_id, ngay, check_in, check_out)
+SELECT id, '2025-07-11', '08:25:00', '17:40:00' FROM nhanvien WHERE email = 'nguyenvanphuc@icss.com.vn';
+INSERT IGNORE INTO cham_cong (nhan_vien_id, ngay, check_in, check_out)
+SELECT id, '2025-07-14', '08:10:00', '17:35:00' FROM nhanvien WHERE email = 'nguyenvanphuc@icss.com.vn';
+INSERT IGNORE INTO cham_cong (nhan_vien_id, ngay, check_in, check_out)
+SELECT id, '2025-07-15', '08:15:00', '17:45:00' FROM nhanvien WHERE email = 'nguyenvanphuc@icss.com.vn';
+INSERT IGNORE INTO cham_cong (nhan_vien_id, ngay, check_in, check_out)
+SELECT id, '2025-07-16', '08:12:00', '17:42:00' FROM nhanvien WHERE email = 'nguyenvanphuc@icss.com.vn';
+INSERT IGNORE INTO cham_cong (nhan_vien_id, ngay, check_in, check_out)
+SELECT id, '2025-07-17', '08:18:00', '17:48:00' FROM nhanvien WHERE email = 'nguyenvanphuc@icss.com.vn';
+INSERT IGNORE INTO cham_cong (nhan_vien_id, ngay, check_in, check_out)
+SELECT id, '2025-07-18', '08:20:00', '17:50:00' FROM nhanvien WHERE email = 'nguyenvanphuc@icss.com.vn';
+INSERT IGNORE INTO cham_cong (nhan_vien_id, ngay, check_in, check_out)
+SELECT id, '2025-08-01', '08:15:00', '17:35:00' FROM nhanvien WHERE email = 'nguyenvanphuc@icss.com.vn';
+INSERT IGNORE INTO cham_cong (nhan_vien_id, ngay, check_in, check_out)
+SELECT id, '2025-08-04', '08:20:00', '17:45:00' FROM nhanvien WHERE email = 'nguyenvanphuc@icss.com.vn';
+INSERT IGNORE INTO cham_cong (nhan_vien_id, ngay, check_in, check_out)
+SELECT id, '2025-08-05', '08:10:00', '17:40:00' FROM nhanvien WHERE email = 'nguyenvanphuc@icss.com.vn';
+INSERT IGNORE INTO cham_cong (nhan_vien_id, ngay, check_in, check_out)
+SELECT id, '2025-08-06', '08:25:00', '17:50:00' FROM nhanvien WHERE email = 'nguyenvanphuc@icss.com.vn';
+INSERT IGNORE INTO cham_cong (nhan_vien_id, ngay, check_in, check_out)
+SELECT id, '2025-08-07', '08:05:00', '17:30:00' FROM nhanvien WHERE email = 'nguyenvanphuc@icss.com.vn';
+INSERT IGNORE INTO cham_cong (nhan_vien_id, ngay, check_in, check_out)
+SELECT id, '2025-08-08', '08:12:00', '17:42:00' FROM nhanvien WHERE email = 'nguyenvanphuc@icss.com.vn';
+INSERT IGNORE INTO cham_cong (nhan_vien_id, ngay, check_in, check_out)
+SELECT id, '2025-08-11', '08:18:00', '17:48:00' FROM nhanvien WHERE email = 'nguyenvanphuc@icss.com.vn';
+INSERT IGNORE INTO cham_cong (nhan_vien_id, ngay, check_in, check_out)
+SELECT id, '2025-08-12', '08:10:00', '17:40:00' FROM nhanvien WHERE email = 'nguyenvanphuc@icss.com.vn';
+
+-- 3.8 Chuẩn hóa email: chỉ dùng tên, không chứa từ khóa chức vụ/phòng ban
+UPDATE nhanvien SET email = 'lequochuy@icss.com.vn' WHERE id = 1;
+UPDATE nhanvien SET email = 'tranthibichngoc@icss.com.vn' WHERE id = 2;
+UPDATE nhanvien SET email = 'buiquangdung@icss.com.vn' WHERE id = 3;
+UPDATE nhanvien SET email = 'nguyenminhkhoi@icss.com.vn' WHERE id = 4;
+UPDATE nhanvien SET email = 'phamthuha@icss.com.vn' WHERE id = 5;
+UPDATE nhanvien SET email = 'vuanhtuan@icss.com.vn' WHERE id = 6;
+UPDATE nhanvien SET email = 'lyngochan@icss.com.vn' WHERE id = 7;
+UPDATE nhanvien SET email = 'danghoanglong@icss.com.vn' WHERE id = 8;
+UPDATE nhanvien SET email = 'ngothaolinh@icss.com.vn' WHERE id = 9;
+UPDATE nhanvien SET email = 'tranhainam@icss.com.vn' WHERE id = 10;
+UPDATE nhanvien SET email = 'phamminhanh@icss.com.vn' WHERE id = 11;
+-- Nhân viên Sales mới đã là định dạng tên-only: nguyenvanphuc@icss.com.vn
+
+COMMIT;
 
 -- 3.4 Mở rộng chấm công: toàn bộ tháng 7/2025 đến 12/08/2025 cho tất cả NV/QL (loại trừ Admin)
 -- Dùng INSERT IGNORE để tránh trùng với dữ liệu đã có
@@ -674,5 +741,60 @@ WHERE n.vai_tro IN ('Nhân viên','Quản lý')
     AND NOT EXISTS (
         SELECT 1 FROM luong l WHERE l.nhan_vien_id = n.id AND l.thang = 8 AND l.nam = 2025
     );
+
+COMMIT;
+
+-- 3.7b Ràng buộc logic giao việc (đảm bảo đúng vai trò)
+-- Nếu người giao là Nhân viên thì chuyển thành Admin (id=1) để đúng quy tắc
+UPDATE cong_viec cv
+JOIN nhanvien n ON n.id = cv.nguoi_giao_id
+SET cv.nguoi_giao_id = 1
+WHERE n.vai_tro = 'Nhân viên';
+
+-- Nếu người giao là Quản lý và người nhận không phải Nhân viên, chuyển người nhận thành một Nhân viên cùng phòng (ưu tiên id nhỏ nhất)
+UPDATE cong_viec cv
+JOIN nhanvien giver ON giver.id = cv.nguoi_giao_id AND giver.vai_tro = 'Quản lý'
+JOIN nhanvien rec ON rec.id = cv.nguoi_nhan_id AND rec.vai_tro <> 'Nhân viên'
+JOIN (
+    SELECT e.phong_ban_id, MIN(e.id) AS emp_id
+    FROM nhanvien e
+    WHERE e.vai_tro = 'Nhân viên'
+    GROUP BY e.phong_ban_id
+) pick ON pick.phong_ban_id = giver.phong_ban_id
+SET cv.nguoi_nhan_id = pick.emp_id;
+
+-- Không có chấm công cho Admin (xóa nếu có)
+DELETE cc FROM cham_cong cc
+JOIN nhanvien n ON n.id = cc.nhan_vien_id
+WHERE n.vai_tro = 'Admin';
+
+-- Nếu người giao là Admin và người nhận là Admin, chuyển người nhận thành 1 Quản lý/Nhân viên cùng phòng (ưu tiên Quản lý, nếu không có thì Nhân viên id nhỏ nhất)
+UPDATE cong_viec cv
+JOIN nhanvien giver ON giver.id = cv.nguoi_giao_id AND giver.vai_tro = 'Admin'
+JOIN nhanvien rec ON rec.id = cv.nguoi_nhan_id AND rec.vai_tro = 'Admin'
+LEFT JOIN (
+    SELECT pb.id AS phong_ban_id,
+                 COALESCE(
+                     (SELECT MIN(n1.id) FROM nhanvien n1 WHERE n1.phong_ban_id = pb.id AND n1.vai_tro = 'Quản lý'),
+                     (SELECT MIN(n2.id) FROM nhanvien n2 WHERE n2.phong_ban_id = pb.id AND n2.vai_tro = 'Nhân viên')
+                 ) AS target_id
+    FROM phong_ban pb
+) pick ON pick.phong_ban_id = giver.phong_ban_id
+SET cv.nguoi_nhan_id = pick.target_id
+WHERE pick.target_id IS NOT NULL;
+
+-- Thông báo cho nhân viên Sales mới về công việc đã được giao
+INSERT INTO thong_bao (tieu_de, noi_dung, nguoi_nhan_id, loai_thong_bao, da_doc)
+SELECT 'Công việc mới', 'Bạn được giao "Chuẩn bị proposal khách hàng XYZ"', id, 'Công việc mới', FALSE
+FROM nhanvien WHERE email = 'nguyenvanphuc@icss.com.vn';
+
+-- 3.9 Bổ sung KPI cho các nhân sự mới (10,11, và Sales mới)
+INSERT INTO luu_kpi (nhan_vien_id, thang, nam, chi_tieu, ket_qua, diem_kpi, ghi_chu) VALUES
+((SELECT id FROM nhanvien WHERE id=10),7,2025,'Đối soát số liệu quý II','Đã hoàn thành 95%',9.0,'Đúng hạn'),
+((SELECT id FROM nhanvien WHERE id=11),7,2025,'Kế hoạch nội dung tháng 8','Hoàn thành',8.8,'Sáng tạo'),
+((SELECT id FROM nhanvien WHERE email='nguyenvanphuc@icss.com.vn'),7,2025,'Tạo 5 lead mới','Đã tạo 6 lead',8.5,'Vượt mục tiêu'),
+((SELECT id FROM nhanvien WHERE id=10),8,2025,'Rà soát công nợ Q2','Đang thực hiện',7.8,'Cần bổ sung số liệu'),
+((SELECT id FROM nhanvien WHERE id=11),8,2025,'Chiến dịch Social tháng 8','Đang triển khai',7.9,'Đúng kế hoạch'),
+((SELECT id FROM nhanvien WHERE email='nguyenvanphuc@icss.com.vn'),8,2025,'Chốt 2 deal nhỏ','Đang đàm phán',7.6,'Cần follow');
 
 COMMIT;
