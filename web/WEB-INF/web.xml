@@ -119,6 +119,18 @@
         <servlet-name>UserDashboard</servlet-name>
         <servlet-class>controller.UserDashboard</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>apiThongbao</servlet-name>
+        <servlet-class>controller.apiThongbao</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>ApiThongbaoMarkRead</servlet-name>
+        <servlet-class>controller.ApiThongbaoMarkRead</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>ApiThongbaoUnreadCount</servlet-name>
+        <servlet-class>controller.ApiThongbaoUnreadCount</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>dsnhanvien</servlet-name>
         <url-pattern>/dsnhanvien</url-pattern>
@@ -234,6 +246,18 @@
     <servlet-mapping>
         <servlet-name>UserDashboard</servlet-name>
         <url-pattern>/userDashboard</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>apiThongbao</servlet-name>
+        <url-pattern>/apiThongbao</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ApiThongbaoMarkRead</servlet-name>
+        <url-pattern>/ApiThongbaoMarkRead</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ApiThongbaoUnreadCount</servlet-name>
+        <url-pattern>/ApiThongbaoUnreadCount</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>

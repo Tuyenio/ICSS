@@ -38,6 +38,9 @@ public class themCongviec extends HttpServlet {
             }
 
             db.insertTask(ten, moTa, han, uuTien, giaoId, nhanId, phongId, trangThai);
+            String tieuDeTB = "Công việc mới";
+            String noiDungTB = "Bạn được giao công việc: "+ ten + ". Hạn: " + han + ".";
+            db.insertThongBao(nhanId, tieuDeTB, noiDungTB, "Công việc mới");
             out.print("{\"success\": true}");
         } catch (Exception e) {
             e.printStackTrace();

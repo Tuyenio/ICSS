@@ -13,8 +13,10 @@
             db.close();
 
             if (user != null) {
+                String id = user.get("id");
                 String hoten = user.get("ho_ten");
                 String vaiTro = user.get("vai_tro");
+                session.setAttribute("userId", id);
                 session.setAttribute("userEmail", email);
                 session.setAttribute("userName", hoten);
                 session.setAttribute("vaiTro", vaiTro);
@@ -38,7 +40,7 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Đăng nhập - ICSS</title>
+        <title>Đăng nhập - ICS</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
         <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
         <style>
@@ -163,7 +165,7 @@
                 <h5>Kết nối - Hiệu quả - Thành công</h5>
             </div>
             <div class="login-right">
-                <h3>Welcome ICSS Company</h3>
+                <h3>Welcome ICS Company</h3>
                 <p class="text-muted">Sign in to continue</p>
                 <% if (!errorMsg.isEmpty()) { %>
                 <div class="alert alert-danger py-2 mb-3" role="alert">

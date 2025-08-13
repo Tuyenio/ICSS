@@ -174,7 +174,7 @@
     <body>
         <nav class="sidebar p-0">
             <div class="sidebar-title text-center py-4 border-bottom border-secondary" style="cursor:pointer;" onclick="location.href = 'user_dashboard.jsp'">
-                <i class="fa-solid fa-user me-2"></i>ICSS
+                <i class="fa-solid fa-user me-2"></i>ICS
             </div>
             <ul class="sidebar-nav mt-3">
                 <li>
@@ -249,5 +249,6 @@
                 </div>
             </div>
         </div>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     </body>
 </html>

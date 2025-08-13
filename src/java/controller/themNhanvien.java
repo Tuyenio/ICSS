@@ -38,6 +38,10 @@ public class themNhanvien extends HttpServlet {
             String tenPhongBan = kn.getPhongNameById(sophongban);
             boolean result = kn.themNhanVien(hoTen, email, matKhau, sdt, gioiTinh,
                     ngaySinh, ngayVaoLam, tenPhongBan, chucVu, trangThai, vaiTro, "null");
+            int nhanId = kn.getTruongPhongIdByTenPhong(phongban);
+            String tieuDeTB = "Nhân viên mới";
+            String noiDungTB = phongban + ": vừa thêm một nhân viên mới.";
+            kn.insertThongBao(nhanId, tieuDeTB, noiDungTB, "Nhân viên mới");
 
             out.print(result ? "ok" : "error");
 

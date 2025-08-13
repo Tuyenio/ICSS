@@ -1,7 +1,17 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-    <!DOCTYPE html>
-    <html lang="vi">
+<%@ page import="java.util.*, java.text.SimpleDateFormat" %>
+<!DOCTYPE html>
+<html lang="vi">
 
+    <%!
+        // Escape HTML đơn giản
+        private String esc(Object o) {
+            if (o == null) return "";
+            String s = String.valueOf(o);
+            return s.replace("&","&amp;").replace("<","&lt;").replace(">","&gt;")
+                    .replace("\"","&quot;").replace("'","&#39;");
+        }
+    %>
     <head>
         <meta charset="UTF-8">
         <title>Thông báo quản lý</title>
@@ -244,8 +254,8 @@
             <!-- Sidebar -->
             <nav class="sidebar p-0">
                 <div class="sidebar-title text-center py-4 border-bottom border-secondary" style="cursor:pointer;"
-                    onclick="location.href='index.jsp'">
-                    <i class="fa-solid fa-people-group me-2"></i>ICSS
+                     onclick="location.href = 'index.jsp'">
+                    <i class="fa-solid fa-people-group me-2"></i>ICS
                 </div>
                 <ul class="sidebar-nav mt-3">
                     <li>
@@ -275,102 +285,120 @@
             <!-- Main -->
             <div class="flex-grow-1">
                 <%@ include file="header.jsp" %>
-                    <div class="main-content">
-                        <div class="main-box mb-3">
-                            <h3 class="mb-0"><i class="fa-solid fa-bell me-2"></i>Thông báo quản lý</h3>
-                            <ul class="list-group" id="notificationList">
-                                <!-- AJAX load thông báo quản lý/admin -->
-                                <li class="list-group-item">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <i class="fa-solid fa-info-circle me-2 text-primary"></i>
-                                            <span class="fw-semibold">Thông báo hệ thống</span>
-                                            <div class="text-muted small">Cập nhật phiên bản mới<br>
-                                                <span class="badge bg-light text-dark me-1">Hệ thống</span>
-                                                <i class="fa-regular fa-clock me-1"></i>10/06/2024 08:00
-                                            </div>
+                <div class="main-content">
+                    <div class="main-box mb-3">
+                        <h3 class="mb-0"><i class="fa-solid fa-bell me-2"></i>Thông báo quản lý</h3>
+                        <ul class="list-group" id="notificationList">
+                            <%
+                                List ds = (List) request.getAttribute("dsThongBao");
+                                if (ds != null && !ds.isEmpty()) {
+                                    SimpleDateFormat fmt = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+                                    for (Object it : ds) {
+                                        Map row = (Map) it;
+                                        String tieuDe = esc(row.get("tieu_de"));
+                                        String noiDung = esc(row.get("noi_dung"));
+                                        String loai = esc(row.get("loai_thong_bao"));
+                                        Boolean daDoc = (Boolean) row.get("da_doc");
+                                        java.util.Date ngayTao = (java.util.Date) row.get("ngay_tao");
+                                        String timeStr = (ngayTao != null) ? fmt.format(ngayTao) : "";
+                
+                                        // icon theo loại (nếu chưa chắc dữ liệu, dùng chuông mặc định)
+                                        String iconClass = "fa-regular fa-bell text-primary";
+                                        if (loai != null) {
+                                            String l = loai.toLowerCase();
+                                            if (l.contains("nhân") || l.contains("nhan")) iconClass = "fa-solid fa-user-plus text-success";
+                                            else if (l.contains("phòng") || l.contains("phong")) iconClass = "fa-solid fa-building text-secondary";
+                                            else if (l.contains("báo cáo") || l.contains("bao cao")) iconClass = "fa-solid fa-chart-line text-primary";
+                                            else if (l.contains("hệ thống") || l.contains("he thong")) iconClass = "fa-solid fa-info-circle text-primary";
+                                        }
+                            %>
+                            <%
+                        // --- bổ sung ngay trước <li> ---
+                        int idTB = ((Number) row.get("id")).intValue();
+                        String itemClass = (daDoc != null && daDoc) ? "is-read" : "is-unread";
+                            %>
+                            <li class="list-group-item <%= itemClass %>" data-id="<%= idTB %>">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <i class="<%= iconClass %> me-2"></i>
+                                        <span class="fw-semibold"><%= tieuDe %></span>
+                                        <div class="text-muted small">
+                                            <%= noiDung %><br>
+                                            <span class="badge bg-light text-dark me-1"><%= loai %></span>
+                                            <i class="fa-regular fa-clock me-1"></i><%= esc(timeStr) %>
                                         </div>
-                                        <span class="badge bg-success rounded-pill badge-status">Đã đọc</span>
                                     </div>
-                                </li>
-                                <li class="list-group-item">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <i class="fa-solid fa-user-plus me-2 text-success"></i>
-                                            <span class="fw-semibold">Nhân viên mới</span>
-                                            <div class="text-muted small">Nguyễn Văn B vừa được thêm vào phòng Kỹ
-                                                thuật<br>
-                                                <span class="badge bg-success me-1">Nhân sự</span>
-                                                <i class="fa-regular fa-clock me-1"></i>10/06/2024 09:30
-                                            </div>
-                                        </div>
-                                        <span class="badge bg-danger rounded-pill badge-status">Chưa đọc</span>
-                                    </div>
-                                </li>
-                                <li class="list-group-item">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <i class="fa-solid fa-calendar-check me-2 text-info"></i>
-                                            <span class="fw-semibold">Chấm công bất thường</span>
-                                            <div class="text-muted small">Trần Thị B check-in muộn ngày 10/06/2024<br>
-                                                <span class="badge bg-info text-dark me-1">Chấm công</span>
-                                                <i class="fa-regular fa-clock me-1"></i>10/06/2024 08:15
-                                            </div>
-                                        </div>
-                                        <span class="badge bg-warning text-dark rounded-pill badge-status">Chưa
-                                            đọc</span>
-                                    </div>
-                                </li>
-                                <li class="list-group-item">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <i class="fa-solid fa-tasks me-2 text-warning"></i>
-                                            <span class="fw-semibold">Công việc mới cần duyệt</span>
-                                            <div class="text-muted small">Có 2 công việc mới chờ duyệt<br>
-                                                <span class="badge bg-warning text-dark me-1">Công việc</span>
-                                                <i class="fa-regular fa-clock me-1"></i>10/06/2024 10:00
-                                            </div>
-                                        </div>
-                                        <span class="badge bg-danger rounded-pill badge-status">Chưa đọc</span>
-                                    </div>
-                                </li>
-                                <li class="list-group-item">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <i class="fa-solid fa-building me-2 text-secondary"></i>
-                                            <span class="fw-semibold">Thay đổi phòng ban</span>
-                                            <div class="text-muted small">Phòng Kinh doanh vừa cập nhật trưởng phòng<br>
-                                                <span class="badge bg-secondary me-1">Phòng ban</span>
-                                                <i class="fa-regular fa-clock me-1"></i>09/06/2024 17:00
-                                            </div>
-                                        </div>
-                                        <span class="badge bg-success rounded-pill badge-status">Đã đọc</span>
-                                    </div>
-                                </li>
-                                <li class="list-group-item">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <i class="fa-solid fa-chart-line me-2 text-primary"></i>
-                                            <span class="fw-semibold">Báo cáo mới</span>
-                                            <div class="text-muted small">Báo cáo tổng hợp tháng 6 đã được tạo<br>
-                                                <span class="badge bg-primary me-1">Báo cáo</span>
-                                                <i class="fa-regular fa-clock me-1"></i>08/06/2024 16:00
-                                            </div>
-                                        </div>
-                                        <span class="badge bg-success rounded-pill badge-status">Đã đọc</span>
-                                    </div>
-                                </li>
-                                <!-- ...thêm các thông báo khác... -->
-                            </ul>
-                        </div>
+                                    <span class="badge <%= (daDoc != null && daDoc) ? "bg-success" : "bg-danger" %> rounded-pill badge-status">
+                                        <%= (daDoc != null && daDoc) ? "Đã đọc" : "Mới" %>
+                                    </span>
+                                </div>
+                            </li>
+
+                            <%
+                                    } // end for
+                                } else {
+                            %>
+                            <li class="list-group-item text-center text-muted">Chưa có thông báo</li>
+                                <%
+                                    }
+                                %>
+                        </ul>
                     </div>
+                </div>
             </div>
         </div>
-        <!-- <script>
-            // TODO: AJAX load thông báo quản lý/admin
-        </script> -->
-        <!-- Thêm Bootstrap JS nếu chưa có -->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <script>
+                         (function () {
+                             var list = document.getElementById('notificationList');
+                             if (!list)
+                                 return;
+
+                             list.addEventListener('click', function (e) {
+                                 var li = e.target.closest('li.list-group-item');
+                                 if (!li)
+                                     return;
+
+                                 if (li.classList.contains('is-unread')) {
+                                     var id = li.getAttribute('data-id');
+                                     if (!id)
+                                         return;
+
+                                     var xhr = new XMLHttpRequest();
+                                     xhr.open('POST', '<%= request.getContextPath() %>/ApiThongbaoMarkRead', true);
+                                     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
+
+                                     xhr.onreadystatechange = function () {
+                                         if (xhr.readyState === 4) {
+                                             console.log('MarkRead status=', xhr.status, 'resp=', (xhr.responseText || '').slice(0, 120));
+                                             if (xhr.status >= 200 && xhr.status < 300) {
+                                                 var body = (xhr.responseText || '').trim();
+                                                 if (body === 'OK') {
+                                                     li.classList.remove('is-unread');
+                                                     li.classList.add('is-read');
+                                                     var badge = li.querySelector('.badge-status');
+                                                     if (badge) {
+                                                         badge.classList.remove('bg-danger');
+                                                         badge.classList.add('bg-success');
+                                                         badge.textContent = 'Đã đọc';
+                                                     }
+                                                     if (window.updateNotifyBadgeCount)
+                                                         window.updateNotifyBadgeCount();
+                                                 } else {
+                                                     // Nếu body KHÔNG phải 'OK', khả năng bị redirect sang trang đăng nhập (HTML)
+                                                     console.warn('MarkRead returned non-OK body.');
+                                                 }
+                                             } else {
+                                                 console.error('MarkRead HTTP error:', xhr.status);
+                                             }
+                                         }
+                                     };
+
+                                     xhr.send('id=' + encodeURIComponent(id));
+                                 }
+                             });
+                         })();
+        </script>
     </body>
 
-    </html>
+</html>

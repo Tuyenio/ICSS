@@ -943,6 +943,7 @@ public class KNCSDL {
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     Map<String, String> userInfo = new HashMap<>();
+                    userInfo.put("id", rs.getString("id"));
                     userInfo.put("ho_ten", rs.getString("ho_ten"));
                     userInfo.put("email", email);
                     userInfo.put("vai_tro", rs.getString("vai_tro"));
@@ -2247,15 +2248,19 @@ public class KNCSDL {
         }
         return danhSach;
     }
-    
+
     public boolean kiemTraMatKhau(String email, String oldPass) throws SQLException {
-        if (email == null || email.trim().isEmpty()) return false;
+        if (email == null || email.trim().isEmpty()) {
+            return false;
+        }
 
         String sql = "SELECT mat_khau FROM nhanvien WHERE email = ?";
         try (PreparedStatement ps = cn.prepareStatement(sql)) {
             ps.setString(1, email);
             try (ResultSet rs = ps.executeQuery()) {
-                if (!rs.next()) return false;
+                if (!rs.next()) {
+                    return false;
+                }
                 String mkDb = rs.getString("mat_khau");
                 // BCrypt: return BCrypt.checkpw(oldPass, mkDb);
                 return mkDb != null && mkDb.equals(oldPass);
@@ -2264,7 +2269,9 @@ public class KNCSDL {
     }
 
     public int capNhatMatKhau(String email, String newPass) throws SQLException {
-        if (email == null || email.trim().isEmpty()) return 0;
+        if (email == null || email.trim().isEmpty()) {
+            return 0;
+        }
 
         // BCrypt: String hashed = BCrypt.hashpw(newPass, BCrypt.gensalt());
         String hashed = newPass;
@@ -2278,7 +2285,9 @@ public class KNCSDL {
     }
 
     public boolean doiMatKhau(String email, String oldPass, String newPass) throws SQLException {
-        if (email == null || email.trim().isEmpty()) return false;
+        if (email == null || email.trim().isEmpty()) {
+            return false;
+        }
 
         boolean oldAutoCommit = cn.getAutoCommit();
         try {
@@ -2298,15 +2307,20 @@ public class KNCSDL {
             cn.commit();
             return true;
         } catch (SQLException ex) {
-            try { cn.rollback(); } catch (SQLException ignore) {}
+            try {
+                cn.rollback();
+            } catch (SQLException ignore) {
+            }
             throw ex;
         } finally {
-            try { cn.setAutoCommit(oldAutoCommit); } catch (SQLException ignore) {}
+            try {
+                cn.setAutoCommit(oldAutoCommit);
+            } catch (SQLException ignore) {
+            }
         }
     }
-    
+
     // ============ PHƯƠNG THỨC BỔ SUNG CHO DASHBOARD ============
-    
     // Lấy thống kê tổng quan hệ thống
     public Map<String, Object> getThongKeTongQuan() throws SQLException {
         Map<String, Object> thongKe = new HashMap<>();
@@ -2319,41 +2333,42 @@ public class KNCSDL {
                 String st = rs.getString("trang_thai_lam_viec");
                 int count = rs.getInt("so_luong");
                 totalNV += count;
-                if ("Đang làm".equalsIgnoreCase(st)) dangLam = count;
-                else if ("Tạm nghỉ".equalsIgnoreCase(st)) tamNghi = count;
-                else if ("Nghỉ việc".equalsIgnoreCase(st) || "Đã nghỉ".equalsIgnoreCase(st)) nghiViec = count;
+                if ("Đang làm".equalsIgnoreCase(st)) {
+                    dangLam = count;
+                } else if ("Tạm nghỉ".equalsIgnoreCase(st)) {
+                    tamNghi = count;
+                } else if ("Nghỉ việc".equalsIgnoreCase(st) || "Đã nghỉ".equalsIgnoreCase(st)) {
+                    nghiViec = count;
+                }
             }
         }
         thongKe.put("tong_nhan_vien", totalNV);
         thongKe.put("nv_dang_lam", dangLam);
         thongKe.put("nv_tam_nghi", tamNghi);
         thongKe.put("nv_nghi_viec", nghiViec);
-        
+
         // Tổng số phòng ban
         String sql2 = "SELECT COUNT(*) as tong FROM phong_ban";
-        try (PreparedStatement stmt = cn.prepareStatement(sql2);
-             ResultSet rs = stmt.executeQuery()) {
+        try (PreparedStatement stmt = cn.prepareStatement(sql2); ResultSet rs = stmt.executeQuery()) {
             if (rs.next()) {
                 thongKe.put("tong_phong_ban", rs.getInt("tong"));
             }
         }
-        
+
         // Tổng số công việc
         String sql3 = "SELECT COUNT(*) as tong FROM cong_viec";
-        try (PreparedStatement stmt = cn.prepareStatement(sql3);
-             ResultSet rs = stmt.executeQuery()) {
+        try (PreparedStatement stmt = cn.prepareStatement(sql3); ResultSet rs = stmt.executeQuery()) {
             if (rs.next()) {
                 thongKe.put("tong_cong_viec", rs.getInt("tong"));
             }
         }
-        
+
         // Tỷ lệ công việc hoàn thành
-        String sql4 = "SELECT " +
-                "COUNT(*) as tong_cv, " +
-                "SUM(CASE WHEN trang_thai = 'Đã hoàn thành' THEN 1 ELSE 0 END) as hoan_thanh " +
-                "FROM cong_viec";
-        try (PreparedStatement stmt = cn.prepareStatement(sql4);
-             ResultSet rs = stmt.executeQuery()) {
+        String sql4 = "SELECT "
+                + "COUNT(*) as tong_cv, "
+                + "SUM(CASE WHEN trang_thai = 'Đã hoàn thành' THEN 1 ELSE 0 END) as hoan_thanh "
+                + "FROM cong_viec";
+        try (PreparedStatement stmt = cn.prepareStatement(sql4); ResultSet rs = stmt.executeQuery()) {
             if (rs.next()) {
                 int tong = rs.getInt("tong_cv");
                 int hoanThanh = rs.getInt("hoan_thanh");
@@ -2361,17 +2376,17 @@ public class KNCSDL {
                 thongKe.put("ty_le_hoan_thanh", Math.round(tyLe * 10) / 10.0);
             }
         }
-        
+
         return thongKe;
     }
 
     // Thống kê chấm công toàn bộ (loại trừ Admin / Quản lý / Trưởng phòng)
     public Map<String, Object> getThongKeChamCongNhanVienThuong(int thang, int nam) throws SQLException {
         Map<String, Object> tk = new HashMap<>();
-        String base = " FROM cham_cong cc INNER JOIN nhanvien nv ON cc.nhan_vien_id = nv.id " +
-                "WHERE MONTH(cc.ngay) = ? AND YEAR(cc.ngay) = ? " +
-                "AND (nv.vai_tro IS NULL OR nv.vai_tro NOT IN ('Admin','Quản lý')) " +
-                "AND (nv.chuc_vu IS NULL OR nv.chuc_vu <> 'Trưởng phòng')";
+        String base = " FROM cham_cong cc INNER JOIN nhanvien nv ON cc.nhan_vien_id = nv.id "
+                + "WHERE MONTH(cc.ngay) = ? AND YEAR(cc.ngay) = ? "
+                + "AND (nv.vai_tro IS NULL OR nv.vai_tro NOT IN ('Admin','Quản lý')) "
+                + "AND (nv.chuc_vu IS NULL OR nv.chuc_vu <> 'Trưởng phòng')";
 
         String sqlTotal = "SELECT COUNT(*) AS tong_luot" + base;
         String sqlLate = "SELECT COUNT(*) AS di_muon" + base + " AND cc.check_in > '08:30:00'";
@@ -2379,16 +2394,31 @@ public class KNCSDL {
 
         int tongLuot = 0, diMuon = 0, soNV = 0;
         try (PreparedStatement stmt = cn.prepareStatement(sqlTotal)) {
-            stmt.setInt(1, thang); stmt.setInt(2, nam);
-            try (ResultSet rs = stmt.executeQuery()) { if (rs.next()) tongLuot = rs.getInt("tong_luot"); }
+            stmt.setInt(1, thang);
+            stmt.setInt(2, nam);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    tongLuot = rs.getInt("tong_luot");
+                }
+            }
         }
         try (PreparedStatement stmt = cn.prepareStatement(sqlLate)) {
-            stmt.setInt(1, thang); stmt.setInt(2, nam);
-            try (ResultSet rs = stmt.executeQuery()) { if (rs.next()) diMuon = rs.getInt("di_muon"); }
+            stmt.setInt(1, thang);
+            stmt.setInt(2, nam);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    diMuon = rs.getInt("di_muon");
+                }
+            }
         }
         try (PreparedStatement stmt = cn.prepareStatement(sqlDistinctNV)) {
-            stmt.setInt(1, thang); stmt.setInt(2, nam);
-            try (ResultSet rs = stmt.executeQuery()) { if (rs.next()) soNV = rs.getInt("so_nv"); }
+            stmt.setInt(1, thang);
+            stmt.setInt(2, nam);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    soNV = rs.getInt("so_nv");
+                }
+            }
         }
         int dungGio = tongLuot - diMuon;
         double tyLeMuon = tongLuot > 0 ? (diMuon * 100.0 / tongLuot) : 0;
@@ -2396,7 +2426,7 @@ public class KNCSDL {
         tk.put("di_muon", diMuon);
         tk.put("dung_gio", dungGio);
         tk.put("so_nv", soNV);
-        tk.put("ty_le_di_muon", Math.round(tyLeMuon * 10)/10.0);
+        tk.put("ty_le_di_muon", Math.round(tyLeMuon * 10) / 10.0);
         return tk;
     }
 
@@ -2416,21 +2446,25 @@ public class KNCSDL {
         int maxDay = cal.getActualMaximum(Calendar.DAY_OF_MONTH);
         for (int d = 1; d <= maxDay; d++) {
             days.add(d);
-            duCong.add(0); diMuon.add(0); thieuGio.add(0); vang.add(0); lamThem.add(0);
+            duCong.add(0);
+            diMuon.add(0);
+            thieuGio.add(0);
+            vang.add(0);
+            lamThem.add(0);
         }
 
-        String sql = "SELECT DAY(cc.ngay) AS d, " +
-                "SUM(CASE WHEN cc.check_in IS NOT NULL AND cc.check_out IS NOT NULL " +
-                "AND cc.check_in <= '08:30:00' AND TIMESTAMPDIFF(HOUR, cc.check_in, cc.check_out) >= 8 THEN 1 ELSE 0 END) AS du_cong, " +
-                "SUM(CASE WHEN cc.check_in > '08:30:00' THEN 1 ELSE 0 END) AS di_muon, " +
-                "SUM(CASE WHEN cc.check_in IS NOT NULL AND cc.check_out IS NOT NULL " +
-                "AND TIMESTAMPDIFF(HOUR, cc.check_in, cc.check_out) < 8 AND cc.check_in <= '08:30:00' THEN 1 ELSE 0 END) AS thieu_gio, " +
-                "SUM(CASE WHEN cc.check_in IS NULL THEN 1 ELSE 0 END) AS vang " +
-                "FROM cham_cong cc INNER JOIN nhanvien nv ON cc.nhan_vien_id = nv.id " +
-                "WHERE MONTH(cc.ngay) = ? AND YEAR(cc.ngay) = ? " +
-                "AND (nv.vai_tro IS NULL OR nv.vai_tro NOT IN ('Admin','Quản lý')) " +
-                "AND (nv.chuc_vu IS NULL OR nv.chuc_vu <> 'Trưởng phòng') " +
-                "GROUP BY d ORDER BY d";
+        String sql = "SELECT DAY(cc.ngay) AS d, "
+                + "SUM(CASE WHEN cc.check_in IS NOT NULL AND cc.check_out IS NOT NULL "
+                + "AND cc.check_in <= '08:30:00' AND TIMESTAMPDIFF(HOUR, cc.check_in, cc.check_out) >= 8 THEN 1 ELSE 0 END) AS du_cong, "
+                + "SUM(CASE WHEN cc.check_in > '08:30:00' THEN 1 ELSE 0 END) AS di_muon, "
+                + "SUM(CASE WHEN cc.check_in IS NOT NULL AND cc.check_out IS NOT NULL "
+                + "AND TIMESTAMPDIFF(HOUR, cc.check_in, cc.check_out) < 8 AND cc.check_in <= '08:30:00' THEN 1 ELSE 0 END) AS thieu_gio, "
+                + "SUM(CASE WHEN cc.check_in IS NULL THEN 1 ELSE 0 END) AS vang "
+                + "FROM cham_cong cc INNER JOIN nhanvien nv ON cc.nhan_vien_id = nv.id "
+                + "WHERE MONTH(cc.ngay) = ? AND YEAR(cc.ngay) = ? "
+                + "AND (nv.vai_tro IS NULL OR nv.vai_tro NOT IN ('Admin','Quản lý')) "
+                + "AND (nv.chuc_vu IS NULL OR nv.chuc_vu <> 'Trưởng phòng') "
+                + "GROUP BY d ORDER BY d";
 
         try (PreparedStatement stmt = cn.prepareStatement(sql)) {
             stmt.setInt(1, thang);
@@ -2457,20 +2491,20 @@ public class KNCSDL {
         data.put("lam_them", lamThem); // placeholder
         return data;
     }
-    
+
     // Lấy thống kê công việc theo nhân viên
     public Map<String, Integer> getThongKeCongViecTheoNhanVien(int nhanVienId) throws SQLException {
         Map<String, Integer> thongKe = new HashMap<>();
-        
+
         // Khởi tạo giá trị mặc định
         thongKe.put("Chưa bắt đầu", 0);
         thongKe.put("Đang thực hiện", 0);
         thongKe.put("Đã hoàn thành", 0);
         thongKe.put("Trễ hạn", 0);
-        
-        String sql = "SELECT trang_thai, COUNT(*) as so_luong " +
-                "FROM cong_viec WHERE nguoi_nhan_id = ? GROUP BY trang_thai";
-        
+
+        String sql = "SELECT trang_thai, COUNT(*) as so_luong "
+                + "FROM cong_viec WHERE nguoi_nhan_id = ? GROUP BY trang_thai";
+
         try (PreparedStatement stmt = cn.prepareStatement(sql)) {
             stmt.setInt(1, nhanVienId);
             try (ResultSet rs = stmt.executeQuery()) {
@@ -2479,27 +2513,27 @@ public class KNCSDL {
                 }
             }
         }
-        
+
         return thongKe;
     }
-    
+
     // Lấy danh sách công việc sắp đến hạn
     public List<Map<String, Object>> getCongViecSapDenHan(int nhanVienId, int soNgay) throws SQLException {
         List<Map<String, Object>> danhSach = new ArrayList<>();
-        
-        String sql = "SELECT cv.id, cv.ten_cong_viec, cv.han_hoan_thanh, cv.muc_do_uu_tien, " +
-                "nv.ho_ten as nguoi_giao_ten " +
-                "FROM cong_viec cv " +
-                "LEFT JOIN nhanvien nv ON cv.nguoi_giao_id = nv.id " +
-                "WHERE cv.nguoi_nhan_id = ? " +
-                "AND cv.trang_thai NOT IN ('Đã hoàn thành', 'Trễ hạn') " +
-                "AND cv.han_hoan_thanh BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL ? DAY) " +
-                "ORDER BY cv.han_hoan_thanh ASC";
-        
+
+        String sql = "SELECT cv.id, cv.ten_cong_viec, cv.han_hoan_thanh, cv.muc_do_uu_tien, "
+                + "nv.ho_ten as nguoi_giao_ten "
+                + "FROM cong_viec cv "
+                + "LEFT JOIN nhanvien nv ON cv.nguoi_giao_id = nv.id "
+                + "WHERE cv.nguoi_nhan_id = ? "
+                + "AND cv.trang_thai NOT IN ('Đã hoàn thành', 'Trễ hạn') "
+                + "AND cv.han_hoan_thanh BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL ? DAY) "
+                + "ORDER BY cv.han_hoan_thanh ASC";
+
         try (PreparedStatement stmt = cn.prepareStatement(sql)) {
             stmt.setInt(1, nhanVienId);
             stmt.setInt(2, soNgay);
-            
+
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     Map<String, Object> congViec = new HashMap<>();
@@ -2512,14 +2546,14 @@ public class KNCSDL {
                 }
             }
         }
-        
+
         return danhSach;
     }
-    
+
     // Lấy số thông báo chưa đọc
     public int getSoThongBaoChuaDoc(int nhanVienId) throws SQLException {
         String sql = "SELECT COUNT(*) FROM thong_bao WHERE nguoi_nhan_id = ? AND da_doc = FALSE";
-        
+
         try (PreparedStatement stmt = cn.prepareStatement(sql)) {
             stmt.setInt(1, nhanVienId);
             try (ResultSet rs = stmt.executeQuery()) {
@@ -2528,24 +2562,24 @@ public class KNCSDL {
                 }
             }
         }
-        
+
         return 0;
     }
-    
+
     // Lấy thống kê phòng ban theo ID
     public Map<String, Object> getThongKePhongBanById(int phongBanId) throws SQLException {
         Map<String, Object> thongKe = new HashMap<>();
-        
+
         if (phongBanId <= 0) {
             return thongKe;
         }
-        
+
         // Thông tin cơ bản phòng ban
-        String sql1 = "SELECT pb.ten_phong, nv.ho_ten as truong_phong_ten " +
-                "FROM phong_ban pb " +
-                "LEFT JOIN nhanvien nv ON pb.truong_phong_id = nv.id " +
-                "WHERE pb.id = ?";
-        
+        String sql1 = "SELECT pb.ten_phong, nv.ho_ten as truong_phong_ten "
+                + "FROM phong_ban pb "
+                + "LEFT JOIN nhanvien nv ON pb.truong_phong_id = nv.id "
+                + "WHERE pb.id = ?";
+
         try (PreparedStatement stmt = cn.prepareStatement(sql1)) {
             stmt.setInt(1, phongBanId);
             try (ResultSet rs = stmt.executeQuery()) {
@@ -2555,11 +2589,11 @@ public class KNCSDL {
                 }
             }
         }
-        
+
         // Số nhân viên trong phòng ban
-        String sql2 = "SELECT COUNT(*) as so_nv FROM nhanvien " +
-                "WHERE phong_ban_id = ? AND trang_thai_lam_viec = 'Đang làm'";
-        
+        String sql2 = "SELECT COUNT(*) as so_nv FROM nhanvien "
+                + "WHERE phong_ban_id = ? AND trang_thai_lam_viec = 'Đang làm'";
+
         try (PreparedStatement stmt = cn.prepareStatement(sql2)) {
             stmt.setInt(1, phongBanId);
             try (ResultSet rs = stmt.executeQuery()) {
@@ -2568,10 +2602,10 @@ public class KNCSDL {
                 }
             }
         }
-        
+
         // Số công việc của phòng ban
         String sql3 = "SELECT COUNT(*) as so_cv FROM cong_viec WHERE phong_ban_id = ?";
-        
+
         try (PreparedStatement stmt = cn.prepareStatement(sql3)) {
             stmt.setInt(1, phongBanId);
             try (ResultSet rs = stmt.executeQuery()) {
@@ -2580,10 +2614,130 @@ public class KNCSDL {
                 }
             }
         }
-        
+
         return thongKe;
     }
-    
+
+    public List<Map<String, Object>> getDanhSachThongBao(Integer nguoiNhanId, Integer limit, Integer offset) throws SQLException {
+        List<Map<String, Object>> ds = new ArrayList<>();
+        StringBuilder sql = new StringBuilder(
+                "SELECT id, tieu_de, noi_dung, nguoi_nhan_id, loai_thong_bao, da_doc, ngay_tao "
+                + "FROM thong_bao "
+        );
+        List<Object> params = new ArrayList<>();
+
+        if (nguoiNhanId != null && nguoiNhanId > 0) {
+            sql.append("WHERE nguoi_nhan_id = ? ");
+            params.add(nguoiNhanId);
+        }
+
+        sql.append("ORDER BY ngay_tao DESC ");
+
+        if (limit != null && limit > 0) {
+            sql.append("LIMIT ? ");
+            params.add(limit);
+        }
+        if (offset != null && offset >= 0) {
+            sql.append("OFFSET ? ");
+            params.add(offset);
+        }
+
+        try (PreparedStatement ps = cn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> row = new HashMap<>();
+                    row.put("id", rs.getInt("id"));
+                    row.put("tieu_de", rs.getString("tieu_de"));
+                    row.put("noi_dung", rs.getString("noi_dung"));
+                    row.put("nguoi_nhan_id", rs.getInt("nguoi_nhan_id"));
+                    row.put("loai_thong_bao", rs.getString("loai_thong_bao"));
+                    row.put("da_doc", rs.getBoolean("da_doc"));
+                    row.put("ngay_tao", rs.getTimestamp("ngay_tao"));
+                    ds.add(row);
+                }
+            }
+        }
+        return ds;
+    }
+
+    // Đánh dấu đã đọc 1 thông báo
+    public int markThongBaoDaDoc(int tbId, Integer userId) throws SQLException {
+        String sql = "UPDATE thong_bao SET da_doc = 1, ngay_doc = NOW() WHERE id = ?"
+                + (userId != null ? " AND nguoi_nhan_id = ?" : "");
+        try (PreparedStatement ps = cn.prepareStatement(sql)) {
+            ps.setInt(1, tbId);
+            if (userId != null) {
+                ps.setInt(2, userId);
+            }
+            return ps.executeUpdate();
+        }
+    }
+
+// Đếm số thông báo chưa đọc cho 1 người
+    public int getSoThongBaoChuaDoc(Integer userId) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM thong_bao WHERE da_doc = 0"
+                + (userId != null ? " AND nguoi_nhan_id = ?" : "");
+        try (PreparedStatement ps = cn.prepareStatement(sql)) {
+            if (userId != null) {
+                ps.setInt(1, userId);
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        }
+        return 0;
+    }
+
+    // Thêm 1 thông báo
+    public int insertThongBao(int nguoiNhanId, String tieuDe, String noiDung, String loai) throws SQLException {
+        String sql = "INSERT INTO thong_bao (tieu_de, noi_dung, nguoi_nhan_id, loai_thong_bao, da_doc, ngay_doc, ngay_tao) "
+                + "VALUES (?, ?, ?, ?, 0, NOW(), NOW())";
+        try (PreparedStatement ps = cn.prepareStatement(sql)) {
+            ps.setString(1, tieuDe);
+            ps.setString(2, noiDung);
+            ps.setInt(3, nguoiNhanId);
+            ps.setString(4, loai);
+            return ps.executeUpdate();
+        }
+    }
+
+    // Lấy ID trưởng phòng theo TÊN phòng ban (trả về null nếu không có/không đặt trưởng phòng)
+    public Integer getTruongPhongIdByTenPhong(String tenPhong) throws SQLException {
+        if (tenPhong == null) {
+            return null;
+        }
+        String sql = "SELECT truong_phong_id FROM phong_ban WHERE ten_phong = ? LIMIT 1";
+        try (PreparedStatement ps = cn.prepareStatement(sql)) {
+            ps.setString(1, tenPhong.trim());
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    // getObject để nhận được null nếu chưa có trưởng phòng
+                    return (Integer) rs.getObject(1);
+                }
+            }
+        }
+        return null;
+    }
+
+    public Integer getNguoiNhanIdByCongViecId(int congViecId) throws SQLException {
+        String sql = "SELECT nguoi_nhan_id FROM cong_viec WHERE id = ? LIMIT 1";
+        try (PreparedStatement ps = cn.prepareStatement(sql)) {
+            ps.setInt(1, congViecId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    // Dùng getObject để giữ được giá trị NULL nếu cột đang null
+                    return (Integer) rs.getObject(1);
+                }
+            }
+        }
+        return null;
+    }
+
     public void close() throws SQLException {
         if (cn != null && !cn.isClosed()) {
             cn.close();

@@ -191,7 +191,7 @@
             <nav class="sidebar p-0">
                 <div class="sidebar-title text-center py-4 border-bottom border-secondary" style="cursor:pointer;"
                     onclick="location.href='index.jsp'">
-                    <i class="fa-solid fa-people-group me-2"></i>ICSS
+                    <i class="fa-solid fa-people-group me-2"></i>ICS
                 </div>
                 <ul class="sidebar-nav mt-3">
                     <li>

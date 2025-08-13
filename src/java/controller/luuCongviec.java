@@ -53,9 +53,15 @@ public class luuCongviec extends HttpServlet {
             if (id != null && !id.trim().isEmpty()) {
                 db.updateTask(Integer.parseInt(id), ten, moTa, han, uuTien,
                         giaoId, nhanId, nhomId, trangThai);
+                String tieuDeTB = "Cập nhật công việc";
+                String noiDungTB = "Công việc: "+ ten + " vừa được cập nhật mới";
+                db.insertThongBao(nhanId, tieuDeTB, noiDungTB, "Cập nhật");
             } else {
                 db.insertTask(ten, moTa, han, uuTien,
                         giaoId, nhanId, nhomId, trangThai);
+                String tieuDeTB = "Công việc mới";
+                String noiDungTB = "Bạn được giao công việc: "+ ten + ". Hạn: " + han + ".";
+                db.insertThongBao(nhanId, tieuDeTB, noiDungTB, "Công việc mới");
             }
 
             out.print("{\"success\": true}");

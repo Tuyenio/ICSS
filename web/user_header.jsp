@@ -6,7 +6,7 @@
     <div class="d-flex align-items-center gap-3">
         <div class="notification-bell position-relative" id="notificationBell" style="cursor:pointer;">
             <i class="fa-solid fa-bell fs-4"></i>
-            <span class="badge bg-danger rounded-pill" id="userNotiCount" style="font-size:0.7em;position:absolute;top:0;right:0;">2</span>
+            <span class="badge bg-danger rounded-pill" id="notiCount" style="font-size:0.7em;position:absolute;top:0;right:0;">2</span>
         </div>
         <!-- Dropdown user menu -->
         <div class="dropdown">
@@ -29,14 +29,68 @@
         </div>
     </div>
 </div>
-<!-- Thêm Bootstrap JS nếu chưa có -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 <script>
-    if (typeof USER_PAGE_TITLE !== 'undefined') {
-        document.getElementById('userPageTitle').innerHTML = USER_PAGE_TITLE;
+    // Đặt tiêu đề động cho từng trang
+    if (typeof PAGE_TITLE !== 'undefined') {
+        var pageTitleEl = document.getElementById('pageTitle');
+        if (pageTitleEl)
+            pageTitleEl.innerHTML = PAGE_TITLE;
     }
-    // Thêm sự kiện click vào chuông để chuyển sang trang thông báo
-    document.getElementById('notificationBell').onclick = function() {
-        window.location.href = 'user_notification.jsp';
-    };
+
+    // Nhảy sang trang thông báo khi bấm chuông
+    (function () {
+        var bell = document.getElementById('notificationBell');
+        if (bell) {
+            bell.onclick = function () {
+                // Trang danh sách thông báo (servlet bạn đã dùng)
+                window.location.href = './apiThongbao';
+            };
+        }
+    })();
+
+    // ====== CẬP NHẬT SỐ THÔNG BÁO CHƯA ĐỌC TRÊN CHUÔNG ======
+    (function () {
+        var badge = document.getElementById('notiCount');
+        if (!badge)
+            return; // không có badge thì bỏ qua
+
+        function setBadge(n) {
+            // n là số chưa đọc (int)
+            if (isNaN(n) || n < 0)
+                n = 0;
+            badge.textContent = n;
+            // Ẩn badge nếu = 0 (giữ nguyên CSS, chỉ thay display)
+            badge.style.display = (n > 0) ? 'inline-block' : 'none';
+        }
+
+        function fetchUnreadCount() {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', '<%= request.getContextPath() %>/ApiThongbaoUnreadCount', true);
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        var n = parseInt(xhr.responseText, 10);
+                        setBadge(isNaN(n) ? 0 : n);
+                    } else {
+                        // lỗi thì không thay đổi
+                    }
+                }
+            };
+            xhr.send();
+        }
+
+        // Lộ ra hàm global để trang notification gọi lại sau khi mark read
+        window.updateNotifyBadgeCount = fetchUnreadCount;
+
+        // Gọi khi header load
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', fetchUnreadCount);
+        } else {
+            fetchUnreadCount();
+        }
+
+        // (tuỳ chọn) cập nhật định kỳ mỗi 60 giây
+        // setInterval(fetchUnreadCount, 60000);
+    })();
 </script>

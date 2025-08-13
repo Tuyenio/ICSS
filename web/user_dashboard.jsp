@@ -278,7 +278,7 @@
         <nav class="sidebar p-0">
             <div class="sidebar-title text-center py-4 border-bottom border-secondary" style="cursor:pointer;"
                  onclick="location.href = './userDashboard'">
-                <i class="fa-solid fa-user me-2"></i>ICSS
+                <i class="fa-solid fa-user me-2"></i>ICS
             </div>
             <ul class="sidebar-nav mt-3">
                 <li>
@@ -552,6 +552,7 @@
             <% } %>
         </div>
 
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
         <script>
             // Doughnut chart giống admin cho báo cáo nhanh cá nhân

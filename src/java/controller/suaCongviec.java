@@ -44,6 +44,9 @@ public class suaCongviec extends HttpServlet {
             }
 
             db.updateTask(Integer.parseInt(id), ten, moTa, han, uuTien, giaoId, nhanId, nhomId, trangThai);
+            String tieuDeTB = "Cập nhật công việc";
+            String noiDungTB = "Công việc: "+ ten + " vừa được cập nhật mới";
+            db.insertThongBao(nhanId, tieuDeTB, noiDungTB, "Cập nhật");
             out.print("{\"success\": true}");
         } catch (Exception e) {
             e.printStackTrace();

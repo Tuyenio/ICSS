@@ -1,6 +1,18 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page import="java.util.*, java.text.SimpleDateFormat" %>
 <!DOCTYPE html>
 <html lang="vi">
+
+    <%!
+        // Escape HTML đơn giản
+        private String esc(Object o) {
+            if (o == null) return "";
+            String s = String.valueOf(o);
+            return s.replace("&","&amp;").replace("<","&lt;").replace(">","&gt;")
+                    .replace("\"","&quot;").replace("'","&#39;");
+        }
+    %>
+
     <head>
         <meta charset="UTF-8">
         <title>Thông báo</title>
@@ -218,7 +230,7 @@
     <body>
         <nav class="sidebar p-0">
             <div class="sidebar-title text-center py-4 border-bottom border-secondary" style="cursor:pointer;" onclick="location.href = 'user_dashboard.jsp'">
-                <i class="fa-solid fa-user me-2"></i>ICSS
+                <i class="fa-solid fa-user me-2"></i>ICS
             </div>
             <ul class="sidebar-nav mt-3">
                 <li>
@@ -240,149 +252,113 @@
             <div class="main-box mb-3">
                 <h3 class="mb-0"><i class="fa-solid fa-bell me-2"></i>Thông báo</h3>
                 <ul class="list-group" id="notificationList">
-                    <!-- AJAX load thông báo cá nhân -->
-                    <li class="list-group-item">
+                    <%
+                        List ds = (List) request.getAttribute("dsThongBao");
+                        if (ds != null && !ds.isEmpty()) {
+                            SimpleDateFormat fmt = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+                            for (Object it : ds) {
+                                Map row = (Map) it;
+                                String tieuDe = esc(row.get("tieu_de"));
+                                String noiDung = esc(row.get("noi_dung"));
+                                String loai = esc(row.get("loai_thong_bao"));
+                                Boolean daDoc = (Boolean) row.get("da_doc");
+                                java.util.Date ngayTao = (java.util.Date) row.get("ngay_tao");
+                                String timeStr = (ngayTao != null) ? fmt.format(ngayTao) : "";
+                
+                                // icon theo loại (nếu chưa chắc dữ liệu, dùng chuông mặc định)
+                                String iconClass = "fa-regular fa-bell text-primary";
+                                if (loai != null) {
+                                    String l = loai.toLowerCase();
+                                    if (l.contains("nhân") || l.contains("nhan")) iconClass = "fa-solid fa-user-plus text-success";
+                                    else if (l.contains("phòng") || l.contains("phong")) iconClass = "fa-solid fa-building text-secondary";
+                                    else if (l.contains("báo cáo") || l.contains("bao cao")) iconClass = "fa-solid fa-chart-line text-primary";
+                                    else if (l.contains("hệ thống") || l.contains("he thong")) iconClass = "fa-solid fa-info-circle text-primary";
+                                }
+                    %>
+                    <%
+                // --- bổ sung ngay trước <li> ---
+                int idTB = ((Number) row.get("id")).intValue();
+                String itemClass = (daDoc != null && daDoc) ? "is-read" : "is-unread";
+                    %>
+                    <li class="list-group-item <%= itemClass %>" data-id="<%= idTB %>">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <i class="fa-solid fa-info-circle me-2 text-primary"></i>
-                                <span class="fw-semibold">Thông báo hệ thống</span>
-                                <div class="text-muted small">Cập nhật phiên bản mới<br>
-                                    <span class="badge bg-light text-dark me-1">Hệ thống</span>
-                                    <i class="fa-regular fa-clock me-1"></i>10/06/2024 08:00
+                                <i class="<%= iconClass %> me-2"></i>
+                                <span class="fw-semibold"><%= tieuDe %></span>
+                                <div class="text-muted small">
+                                    <%= noiDung %><br>
+                                    <span class="badge bg-light text-dark me-1"><%= loai %></span>
+                                    <i class="fa-regular fa-clock me-1"></i><%= esc(timeStr) %>
                                 </div>
                             </div>
-                            <span class="badge bg-success rounded-pill badge-status">Đã đọc</span>
+                            <span class="badge <%= (daDoc != null && daDoc) ? "bg-success" : "bg-danger" %> rounded-pill badge-status">
+                                <%= (daDoc != null && daDoc) ? "Đã đọc" : "Mới" %>
+                            </span>
                         </div>
                     </li>
-                    <li class="list-group-item">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <i class="fa-solid fa-tasks me-2 text-warning"></i>
-                                <span class="fw-semibold">Công việc mới</span>
-                                <div class="text-muted small">Bạn có 3 công việc mới được giao<br>
-                                    <span class="badge bg-warning text-dark me-1">Task mới</span>
-                                    <i class="fa-regular fa-clock me-1"></i>10/06/2024 09:15
-                                </div>
-                            </div>
-                            <span class="badge bg-danger rounded-pill badge-status">Chưa đọc</span>
-                        </div>
-                    </li>
-                    <li class="list-group-item">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <i class="fa-solid fa-calendar-check me-2 text-success"></i>
-                                <span class="fw-semibold">Chấm công thành công</span>
-                                <div class="text-muted small">Bạn đã chấm công ngày 10/06/2024<br>
-                                    <span class="badge bg-info text-dark me-1">Chấm công</span>
-                                    <i class="fa-regular fa-clock me-1"></i>10/06/2024 08:05
-                                </div>
-                            </div>
-                            <span class="badge bg-success rounded-pill badge-status">Đã đọc</span>
-                        </div>
-                    </li>
-                    <!-- Thông báo deadline sắp đến -->
-                    <li class="list-group-item">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <i class="fa-solid fa-clock me-2 text-info"></i>
-                                <span class="fw-semibold">Nhắc deadline</span>
-                                <div class="text-muted small">Công việc "Thiết kế giao diện" sắp đến hạn (11/06/2024)<br>
-                                    <span class="badge bg-primary me-1">Deadline</span>
-                                    <i class="fa-regular fa-clock me-1"></i>10/06/2024 10:00
-                                </div>
-                            </div>
-                            <span class="badge bg-warning text-dark rounded-pill badge-status">Chưa đọc</span>
-                        </div>
-                    </li>
-                    <!-- Thông báo công việc trễ hạn -->
-                    <li class="list-group-item">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <i class="fa-solid fa-exclamation-triangle me-2 text-danger"></i>
-                                <span class="fw-semibold">Công việc trễ hạn</span>
-                                <div class="text-muted small">Công việc "Báo cáo tiến độ" đã trễ hạn<br>
-                                    <span class="badge bg-danger me-1">Trễ hạn</span>
-                                    <i class="fa-regular fa-clock me-1"></i>09/06/2024 17:30
-                                </div>
-                            </div>
-                            <span class="badge bg-danger rounded-pill badge-status">Chưa đọc</span>
-                        </div>
-                    </li>
-                    <!-- Thông báo lương -->
-                    <li class="list-group-item">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <i class="fa-solid fa-money-bill-wave me-2 text-success"></i>
-                                <span class="fw-semibold">Lương tháng 6/2024</span>
-                                <div class="text-muted small">Lương tháng này đã được chuyển khoản<br>
-                                    <span class="badge bg-success me-1">Lương</span>
-                                    <i class="fa-regular fa-clock me-1"></i>08/06/2024 16:00
-                                </div>
-                            </div>
-                            <span class="badge bg-success rounded-pill badge-status">Đã đọc</span>
-                        </div>
-                    </li>
-                    <!-- Thông báo khen thưởng -->
-                    <li class="list-group-item">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <i class="fa-solid fa-award me-2 text-warning"></i>
-                                <span class="fw-semibold">Khen thưởng</span>
-                                <div class="text-muted small">Bạn được khen thưởng vì hoàn thành xuất sắc công việc<br>
-                                    <span class="badge bg-warning text-dark me-1">Khen thưởng</span>
-                                    <i class="fa-regular fa-clock me-1"></i>07/06/2024 15:00
-                                </div>
-                            </div>
-                            <span class="badge bg-success rounded-pill badge-status">Đã đọc</span>
-                        </div>
-                    </li>
-                    <!-- Thông báo đánh giá công việc -->
-                    <li class="list-group-item">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <i class="fa-solid fa-star me-2 text-warning"></i>
-                                <span class="fw-semibold">Đánh giá công việc</span>
-                                <div class="text-muted small">Bạn nhận được đánh giá 9/10 cho công việc "Xây dựng API"<br>
-                                    <span class="badge bg-info text-dark me-1">Đánh giá</span>
-                                    <i class="fa-regular fa-clock me-1"></i>06/06/2024 18:00
-                                </div>
-                            </div>
-                            <span class="badge bg-success rounded-pill badge-status">Đã đọc</span>
-                        </div>
-                    </li>
-                    <!-- Thông báo cập nhật KPI -->
-                    <li class="list-group-item">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <i class="fa-solid fa-chart-line me-2 text-primary"></i>
-                                <span class="fw-semibold">Cập nhật KPI</span>
-                                <div class="text-muted small">KPI tháng 6/2024 của bạn đã được cập nhật: 8.5<br>
-                                    <span class="badge bg-primary me-1">KPI</span>
-                                    <i class="fa-regular fa-clock me-1"></i>06/06/2024 09:00
-                                </div>
-                            </div>
-                            <span class="badge bg-success rounded-pill badge-status">Đã đọc</span>
-                        </div>
-                    </li>
-                    <!-- Thông báo file đính kèm mới -->
-                    <li class="list-group-item">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <i class="fa-solid fa-paperclip me-2 text-secondary"></i>
-                                <span class="fw-semibold">File đính kèm mới</span>
-                                <div class="text-muted small">Có file đính kèm mới cho công việc "Thiết kế giao diện"<br>
-                                    <span class="badge bg-secondary me-1">File</span>
-                                    <i class="fa-regular fa-clock me-1"></i>05/06/2024 14:30
-                                </div>
-                            </div>
-                            <span class="badge bg-success rounded-pill badge-status">Đã đọc</span>
-                        </div>
-                    </li>
+
+                    <%
+                            } // end for
+                        } else {
+                    %>
+                    <li class="list-group-item text-center text-muted">Chưa có thông báo</li>
+                        <%
+                            }
+                        %>
                 </ul>
             </div>
         </div>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
         <script>
-            // TODO: AJAX load thông báo cá nhân
+                (function () {
+                    var list = document.getElementById('notificationList');
+                    if (!list)
+                        return;
+
+                    list.addEventListener('click', function (e) {
+                        var li = e.target.closest('li.list-group-item');
+                        if (!li)
+                            return;
+
+                        if (li.classList.contains('is-unread')) {
+                            var id = li.getAttribute('data-id');
+                            if (!id)
+                                return;
+
+                            var xhr = new XMLHttpRequest();
+                            xhr.open('POST', '<%= request.getContextPath() %>/ApiThongbaoMarkRead', true);
+                            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
+
+                            xhr.onreadystatechange = function () {
+                                if (xhr.readyState === 4) {
+                                    console.log('MarkRead status=', xhr.status, 'resp=', (xhr.responseText || '').slice(0, 120));
+                                    if (xhr.status >= 200 && xhr.status < 300) {
+                                        var body = (xhr.responseText || '').trim();
+                                        if (body === 'OK') {
+                                            li.classList.remove('is-unread');
+                                            li.classList.add('is-read');
+                                            var badge = li.querySelector('.badge-status');
+                                            if (badge) {
+                                                badge.classList.remove('bg-danger');
+                                                badge.classList.add('bg-success');
+                                                badge.textContent = 'Đã đọc';
+                                            }
+                                            if (window.updateNotifyBadgeCount)
+                                                window.updateNotifyBadgeCount();
+                                        } else {
+                                            // Nếu body KHÔNG phải 'OK', khả năng bị redirect sang trang đăng nhập (HTML)
+                                            console.warn('MarkRead returned non-OK body.');
+                                        }
+                                    } else {
+                                        console.error('MarkRead HTTP error:', xhr.status);
+                                    }
+                                }
+                            };
+
+                            xhr.send('id=' + encodeURIComponent(id));
+                        }
+                    });
+                })();
         </script>
     </body>
 </html>

@@ -72,6 +72,10 @@ public class apiDanhgiaCV extends HttpServlet {
 
             if (result) {
                 out.print("{\"success\":true}");
+                int nhanId = db.getNguoiNhanIdByCongViecId(congViecId);
+                String tieuDeTB = "Đánh giá công việc mới";
+                String noiDungTB = "Bạn vừa có thêm đánh giá cho công việc";
+                db.insertThongBao(nhanId, tieuDeTB, noiDungTB, "Đánh giá");
             } else {
                 out.print("{\"success\":false,\"message\":\"Không thể thêm đánh giá.\"}");
             }

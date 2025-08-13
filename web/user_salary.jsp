@@ -49,291 +49,326 @@
 %>
 <!DOCTYPE html>
 <html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <title>QLNS - Lương & KPI</title>
+    <head>
+        <meta charset="UTF-8">
+        <title>QLNS - Lương & KPI</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
         <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
         <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
         <script src="https://cdn.ckeditor.com/4.22.1/standard/ckeditor.js"></script>
-    <style>
-        html, body {
-            font-family: 'Inter', 'Roboto', Arial, sans-serif !important;
-            background: #f4f6fa;
-            color: #23272f;
-        }
-        .sidebar, .sidebar * {
-            font-family: inherit !important;
-        }
-        .sidebar {
-            min-height: 100vh;
-            background: linear-gradient(180deg, #23272f 0%, #343a40 100%);
-            color: #fff;
-            width: 240px;
-            transition: width 0.2s;
-            box-shadow: 2px 0 8px #0001;
-            z-index: 10;
-            position: fixed;
-            top: 0; left: 0; bottom: 0;
-        }
-        .sidebar .sidebar-title {
-            font-size: 1.7rem;
-            font-weight: bold;
-            letter-spacing: 1px;
-            color: #0dcaf0;
-            background: #23272f;
-        }
-        .sidebar-nav {
-            padding: 0;
-            margin: 0;
-            list-style: none;
-        }
-        .sidebar-nav li {
-            margin-bottom: 2px;
-        }
-        .sidebar-nav a {
-            color: #fff;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            padding: 14px 28px;
-            border-radius: 8px;
-            font-size: 1.08rem;
-            font-weight: 500;
-            transition: background 0.15s, color 0.15s;
-            font-family: inherit !important;
-        }
-        .sidebar-nav a.active, .sidebar-nav a:hover {
-            background: #0dcaf0;
-            color: #23272f;
-        }
-        .sidebar-nav a .fa-solid, .sidebar-nav a .fa-regular, .sidebar-nav a .fa {
-            width: 26px;
-            text-align: center;
-            font-size: 1.25rem;
-            min-width: 26px;
-        }
-        .sidebar-nav a span {
-            display: inline;
-        }
-        @media (max-width: 992px) {
-            .sidebar { width: 60px; }
-            .sidebar .sidebar-title { font-size: 1.1rem; padding: 12px 0; }
-            .sidebar-nav a span { display: none; }
-            .sidebar-nav a { justify-content: center; padding: 14px 0; }
-            .main-content { padding: 18px 6px; margin-left: 60px; }
-        }
-        .main-content { padding: 36px 36px 24px 36px; min-height: 100vh; margin-left: 240px; }
-        .header {
-                    background: #fff;
-                    border-bottom: 1px solid #dee2e6;
-                    min-height: 64px;
-                    box-shadow: 0 2px 8px #0001;
-                    margin-left: 240px;
+        <style>
+            html, body {
+                font-family: 'Inter', 'Roboto', Arial, sans-serif !important;
+                background: #f4f6fa;
+                color: #23272f;
+            }
+            .sidebar, .sidebar * {
+                font-family: inherit !important;
+            }
+            .sidebar {
+                min-height: 100vh;
+                background: linear-gradient(180deg, #23272f 0%, #343a40 100%);
+                color: #fff;
+                width: 240px;
+                transition: width 0.2s;
+                box-shadow: 2px 0 8px #0001;
+                z-index: 10;
+                position: fixed;
+                top: 0;
+                left: 0;
+                bottom: 0;
+            }
+            .sidebar .sidebar-title {
+                font-size: 1.7rem;
+                font-weight: bold;
+                letter-spacing: 1px;
+                color: #0dcaf0;
+                background: #23272f;
+            }
+            .sidebar-nav {
+                padding: 0;
+                margin: 0;
+                list-style: none;
+            }
+            .sidebar-nav li {
+                margin-bottom: 2px;
+            }
+            .sidebar-nav a {
+                color: #fff;
+                text-decoration: none;
+                display: flex;
+                align-items: center;
+                gap: 14px;
+                padding: 14px 28px;
+                border-radius: 8px;
+                font-size: 1.08rem;
+                font-weight: 500;
+                transition: background 0.15s, color 0.15s;
+                font-family: inherit !important;
+            }
+            .sidebar-nav a.active, .sidebar-nav a:hover {
+                background: #0dcaf0;
+                color: #23272f;
+            }
+            .sidebar-nav a .fa-solid, .sidebar-nav a .fa-regular, .sidebar-nav a .fa {
+                width: 26px;
+                text-align: center;
+                font-size: 1.25rem;
+                min-width: 26px;
+            }
+            .sidebar-nav a span {
+                display: inline;
+            }
+            @media (max-width: 992px) {
+                .sidebar {
+                    width: 60px;
                 }
-        .avatar { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; }
-        .main-box { background: #fff; border-radius: 14px; box-shadow: 0 2px 12px #0001; padding: 32px 24px; }
-        
-        .salary-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: 12px;
-            padding: 25px;
-            margin-bottom: 20px;
-        }
-        
-        .salary-item {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-        }
-        
-        .salary-item:last-child {
-            margin-bottom: 0;
-            padding-top: 10px;
-            border-top: 1px solid rgba(255,255,255,0.3);
-            font-weight: bold;
-            font-size: 1.2em;
-        }
-        
-        .kpi-card {
-            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-            color: white;
-            border-radius: 12px;
-            padding: 25px;
-            margin-bottom: 20px;
-        }
-        
-        .kpi-score {
-            font-size: 3rem;
-            font-weight: bold;
-            text-align: center;
-            margin: 20px 0;
-        }
-        
-        @media (max-width: 576px) {
-            .main-content { padding: 8px 2px; }
-            .header { margin-left: 60px; }
-            .main-box { padding: 10px 2px; }
-        }
-        .sidebar i {
-                    font-family: "Font Awesome 6 Free" !important;
-                    font-weight: 900;
-        }
-        
-        .nav-tabs .nav-link {
-            border-radius: 12px 12px 0 0;
-        }
-        
-        .nav-tabs .nav-link.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-color: transparent;
-        }
-    </style>
-    <script>
-        var USER_PAGE_TITLE = '<i class="fa-solid fa-money-bill me-2"></i>Lương & KPI';
-    </script>
-</head>
-<body>
-<nav class="sidebar p-0">
-    <div class="sidebar-title text-center py-4 border-bottom border-secondary" style="cursor:pointer;" onclick="location.href='user_dashboard.jsp'">
-        <i class="fa-solid fa-user me-2"></i>ICSS
-    </div>
-    <ul class="sidebar-nav mt-3">
-        <li>
-            <a href="./userDashboard"><i class="fa-solid fa-chart-line"></i><span>Dashboard</span></a>
-        </li>
-        <li>
-            <a href="./dsCongviecNV"><i class="fa-solid fa-tasks"></i><span>Công việc của tôi</span></a>
-        </li>
-        <li>
-            <a href="./userChamCong"><i class="fa-solid fa-calendar-check"></i><span>Chấm công</span></a>
-        </li>
-        <li>
-            <a href="./userLuong" class="active"><i class="fa-solid fa-money-bill"></i><span>Lương & KPI</span></a>
-        </li>
-        
-    </ul>
-</nav>
-<%@ include file="user_header.jsp" %>
-<div class="main-content">
-    <!-- Thông tin lương tháng hiện tại -->
-    <div class="row mb-4">
-        <div class="col-md-8">
-            <div class="salary-card">
-                <h4><i class="fa-solid fa-money-bill me-2"></i>Lương tháng <%=thangHienTai%>/<%=namHienTai%></h4>
-                <% if (thongTinLuong != null && !thongTinLuong.isEmpty()) { %>
-                    <div class="salary-item">
-                        <span>Lương cơ bản:</span>
-                        <span><fmt:formatNumber value="<%=thongTinLuong.get("luong_co_ban")%>" type="number" pattern="#,###"/>₫</span>
-                    </div>
-                    <div class="salary-item">
-                        <span>Phụ cấp:</span>
-                        <span><fmt:formatNumber value="<%=thongTinLuong.get("phu_cap")%>" type="number" pattern="#,###"/>₫</span>
-                    </div>
-                    <div class="salary-item">
-                        <span>Thưởng:</span>
-                        <span><fmt:formatNumber value="<%=thongTinLuong.get("thuong")%>" type="number" pattern="#,###"/>₫</span>
-                    </div>
-                    <div class="salary-item">
-                        <span>Phạt:</span>
-                        <span>-<fmt:formatNumber value="<%=thongTinLuong.get("phat")%>" type="number" pattern="#,###"/>₫</span>
-                    </div>
-                    <div class="salary-item">
-                        <span>Bảo hiểm:</span>
-                        <span>-<fmt:formatNumber value="<%=thongTinLuong.get("bao_hiem")%>" type="number" pattern="#,###"/>₫</span>
-                    </div>
-                    <div class="salary-item">
-                        <span>Thuế:</span>
-                        <span>-<fmt:formatNumber value="<%=thongTinLuong.get("thue")%>" type="number" pattern="#,###"/>₫</span>
-                    </div>
-                    <div class="salary-item">
-                        <span>Thực lĩnh:</span>
-                        <span><fmt:formatNumber value="<%=thongTinLuong.get("luong_thuc_te")%>" type="number" pattern="#,###"/>₫</span>
-                    </div>
-                    <% 
-                        String trangThaiLuong = (String) thongTinLuong.get("trang_thai");
-                        String badgeClass = "Đã trả".equals(trangThaiLuong) ? "success" : "warning";
-                    %>
-                    <div class="mt-3">
-                        <span class="badge bg-<%=badgeClass%> p-2"><%=trangThaiLuong%></span>
-                        <% if (thongTinLuong.get("ngay_tra_luong") != null) { %>
+                .sidebar .sidebar-title {
+                    font-size: 1.1rem;
+                    padding: 12px 0;
+                }
+                .sidebar-nav a span {
+                    display: none;
+                }
+                .sidebar-nav a {
+                    justify-content: center;
+                    padding: 14px 0;
+                }
+                .main-content {
+                    padding: 18px 6px;
+                    margin-left: 60px;
+                }
+            }
+            .main-content {
+                padding: 36px 36px 24px 36px;
+                min-height: 100vh;
+                margin-left: 240px;
+            }
+            .header {
+                background: #fff;
+                border-bottom: 1px solid #dee2e6;
+                min-height: 64px;
+                box-shadow: 0 2px 8px #0001;
+                margin-left: 240px;
+            }
+            .avatar {
+                width: 38px;
+                height: 38px;
+                border-radius: 50%;
+                object-fit: cover;
+            }
+            .main-box {
+                background: #fff;
+                border-radius: 14px;
+                box-shadow: 0 2px 12px #0001;
+                padding: 32px 24px;
+            }
+
+            .salary-card {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                border-radius: 12px;
+                padding: 25px;
+                margin-bottom: 20px;
+            }
+
+            .salary-item {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 10px;
+            }
+
+            .salary-item:last-child {
+                margin-bottom: 0;
+                padding-top: 10px;
+                border-top: 1px solid rgba(255,255,255,0.3);
+                font-weight: bold;
+                font-size: 1.2em;
+            }
+
+            .kpi-card {
+                background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+                color: white;
+                border-radius: 12px;
+                padding: 25px;
+                margin-bottom: 20px;
+            }
+
+            .kpi-score {
+                font-size: 3rem;
+                font-weight: bold;
+                text-align: center;
+                margin: 20px 0;
+            }
+
+            @media (max-width: 576px) {
+                .main-content {
+                    padding: 8px 2px;
+                }
+                .header {
+                    margin-left: 60px;
+                }
+                .main-box {
+                    padding: 10px 2px;
+                }
+            }
+            .sidebar i {
+                font-family: "Font Awesome 6 Free" !important;
+                font-weight: 900;
+            }
+
+            .nav-tabs .nav-link {
+                border-radius: 12px 12px 0 0;
+            }
+
+            .nav-tabs .nav-link.active {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                border-color: transparent;
+            }
+        </style>
+        <script>
+            var USER_PAGE_TITLE = '<i class="fa-solid fa-money-bill me-2"></i>Lương & KPI';
+        </script>
+    </head>
+    <body>
+        <nav class="sidebar p-0">
+            <div class="sidebar-title text-center py-4 border-bottom border-secondary" style="cursor:pointer;" onclick="location.href = 'user_dashboard.jsp'">
+                <i class="fa-solid fa-user me-2"></i>ICS
+            </div>
+            <ul class="sidebar-nav mt-3">
+                <li>
+                    <a href="./userDashboard"><i class="fa-solid fa-chart-line"></i><span>Dashboard</span></a>
+                </li>
+                <li>
+                    <a href="./dsCongviecNV"><i class="fa-solid fa-tasks"></i><span>Công việc của tôi</span></a>
+                </li>
+                <li>
+                    <a href="./userChamCong"><i class="fa-solid fa-calendar-check"></i><span>Chấm công</span></a>
+                </li>
+                <li>
+                    <a href="./userLuong" class="active"><i class="fa-solid fa-money-bill"></i><span>Lương & KPI</span></a>
+                </li>
+
+            </ul>
+        </nav>
+        <%@ include file="user_header.jsp" %>
+        <div class="main-content">
+            <!-- Thông tin lương tháng hiện tại -->
+            <div class="row mb-4">
+                <div class="col-md-8">
+                    <div class="salary-card">
+                        <h4><i class="fa-solid fa-money-bill me-2"></i>Lương tháng <%=thangHienTai%>/<%=namHienTai%></h4>
+                        <% if (thongTinLuong != null && !thongTinLuong.isEmpty()) { %>
+                        <div class="salary-item">
+                            <span>Lương cơ bản:</span>
+                            <span><fmt:formatNumber value="<%=thongTinLuong.get("luong_co_ban")%>" type="number" pattern="#,###"/>₫</span>
+                        </div>
+                        <div class="salary-item">
+                            <span>Phụ cấp:</span>
+                            <span><fmt:formatNumber value="<%=thongTinLuong.get("phu_cap")%>" type="number" pattern="#,###"/>₫</span>
+                        </div>
+                        <div class="salary-item">
+                            <span>Thưởng:</span>
+                            <span><fmt:formatNumber value="<%=thongTinLuong.get("thuong")%>" type="number" pattern="#,###"/>₫</span>
+                        </div>
+                        <div class="salary-item">
+                            <span>Phạt:</span>
+                            <span>-<fmt:formatNumber value="<%=thongTinLuong.get("phat")%>" type="number" pattern="#,###"/>₫</span>
+                        </div>
+                        <div class="salary-item">
+                            <span>Bảo hiểm:</span>
+                            <span>-<fmt:formatNumber value="<%=thongTinLuong.get("bao_hiem")%>" type="number" pattern="#,###"/>₫</span>
+                        </div>
+                        <div class="salary-item">
+                            <span>Thuế:</span>
+                            <span>-<fmt:formatNumber value="<%=thongTinLuong.get("thue")%>" type="number" pattern="#,###"/>₫</span>
+                        </div>
+                        <div class="salary-item">
+                            <span>Thực lĩnh:</span>
+                            <span><fmt:formatNumber value="<%=thongTinLuong.get("luong_thuc_te")%>" type="number" pattern="#,###"/>₫</span>
+                        </div>
+                        <% 
+                            String trangThaiLuong = (String) thongTinLuong.get("trang_thai");
+                            String badgeClass = "Đã trả".equals(trangThaiLuong) ? "success" : "warning";
+                        %>
+                        <div class="mt-3">
+                            <span class="badge bg-<%=badgeClass%> p-2"><%=trangThaiLuong%></span>
+                            <% if (thongTinLuong.get("ngay_tra_luong") != null) { %>
                             <small class="ms-2">Ngày trả: <%=thongTinLuong.get("ngay_tra_luong")%></small>
-                        <% } %>
-                    </div>
-                    <% if (thongTinLuong.get("ghi_chu") != null) { %>
+                            <% } %>
+                        </div>
+                        <% if (thongTinLuong.get("ghi_chu") != null) { %>
                         <div class="mt-2">
                             <small><strong>Ghi chú:</strong> <%=thongTinLuong.get("ghi_chu")%></small>
                         </div>
-                    <% } %>
-                <% } else { %>
-                    <div class="text-center py-4">
-                        <i class="fa-solid fa-inbox fa-2x mb-3"></i>
-                        <p>Chưa có thông tin lương tháng này</p>
-                    </div>
-                <% } %>
-            </div>
-        </div>
-        
-        <div class="col-md-4">
-            <div class="kpi-card">
-                <h4 class="text-center"><i class="fa-solid fa-chart-line me-2"></i>KPI tháng <%=thangHienTai%>/<%=namHienTai%></h4>
-                <div class="kpi-score">
-                    <%=tongHopKPI.get("diem_kpi_trung_binh") != null ? String.format("%.1f", tongHopKPI.get("diem_kpi_trung_binh")) : "0.0"%>
-                </div>
-                <div class="text-center">
-                    <div class="mb-2">
-                        <strong><%=tongHopKPI.get("so_chi_tieu") != null ? tongHopKPI.get("so_chi_tieu") : 0%></strong> chỉ tiêu
-                    </div>
-                    <div>
-                        <strong><%=tongHopKPI.get("cong_viec_hoan_thanh") != null ? tongHopKPI.get("cong_viec_hoan_thanh") : 0%></strong> công việc hoàn thành
+                        <% } %>
+                        <% } else { %>
+                        <div class="text-center py-4">
+                            <i class="fa-solid fa-inbox fa-2x mb-3"></i>
+                            <p>Chưa có thông tin lương tháng này</p>
+                        </div>
+                        <% } %>
                     </div>
                 </div>
+
+                <div class="col-md-4">
+                    <div class="kpi-card">
+                        <h4 class="text-center"><i class="fa-solid fa-chart-line me-2"></i>KPI tháng <%=thangHienTai%>/<%=namHienTai%></h4>
+                        <div class="kpi-score">
+                            <%=tongHopKPI.get("diem_kpi_trung_binh") != null ? String.format("%.1f", tongHopKPI.get("diem_kpi_trung_binh")) : "0.0"%>
+                        </div>
+                        <div class="text-center">
+                            <div class="mb-2">
+                                <strong><%=tongHopKPI.get("so_chi_tieu") != null ? tongHopKPI.get("so_chi_tieu") : 0%></strong> chỉ tiêu
+                            </div>
+                            <div>
+                                <strong><%=tongHopKPI.get("cong_viec_hoan_thanh") != null ? tongHopKPI.get("cong_viec_hoan_thanh") : 0%></strong> công việc hoàn thành
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
-    </div>
 
-    <div class="main-box">
-        <ul class="nav nav-tabs mb-4" id="myTab" role="tablist">
-            <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="salary-tab" data-bs-toggle="tab" data-bs-target="#salary-pane" type="button" role="tab">
-                    <i class="fa-solid fa-money-bill me-2"></i>Lịch sử lương
-                </button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="kpi-tab" data-bs-toggle="tab" data-bs-target="#kpi-pane" type="button" role="tab">
-                    <i class="fa-solid fa-chart-bar me-2"></i>Chi tiết KPI
-                </button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="combined-tab" data-bs-toggle="tab" data-bs-target="#combined-pane" type="button" role="tab">
-                    <i class="fa-solid fa-table me-2"></i>Tổng hợp
-                </button>
-            </li>
-        </ul>
+            <div class="main-box">
+                <ul class="nav nav-tabs mb-4" id="myTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="salary-tab" data-bs-toggle="tab" data-bs-target="#salary-pane" type="button" role="tab">
+                            <i class="fa-solid fa-money-bill me-2"></i>Lịch sử lương
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="kpi-tab" data-bs-toggle="tab" data-bs-target="#kpi-pane" type="button" role="tab">
+                            <i class="fa-solid fa-chart-bar me-2"></i>Chi tiết KPI
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="combined-tab" data-bs-toggle="tab" data-bs-target="#combined-pane" type="button" role="tab">
+                            <i class="fa-solid fa-table me-2"></i>Tổng hợp
+                        </button>
+                    </li>
+                </ul>
 
-        <div class="tab-content" id="myTabContent">
-            <!-- Tab lịch sử lương -->
-            <div class="tab-pane fade show active" id="salary-pane" role="tabpanel">
-                <div class="table-responsive">
-                    <table class="table table-bordered align-middle table-hover">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Tháng/Năm</th>
-                                <th>Lương cơ bản</th>
-                                <th>Phụ cấp</th>
-                                <th>Thưởng</th>
-                                <th>Phạt</th>
-                                <th>Thực lĩnh</th>
-                                <th>Trạng thái</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <% if (lichSuLuong != null && !lichSuLuong.isEmpty()) { %>
-                                <% for (Map<String, Object> luong : lichSuLuong) { %>
+                <div class="tab-content" id="myTabContent">
+                    <!-- Tab lịch sử lương -->
+                    <div class="tab-pane fade show active" id="salary-pane" role="tabpanel">
+                        <div class="table-responsive">
+                            <table class="table table-bordered align-middle table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Tháng/Năm</th>
+                                        <th>Lương cơ bản</th>
+                                        <th>Phụ cấp</th>
+                                        <th>Thưởng</th>
+                                        <th>Phạt</th>
+                                        <th>Thực lĩnh</th>
+                                        <th>Trạng thái</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% if (lichSuLuong != null && !lichSuLuong.isEmpty()) { %>
+                                    <% for (Map<String, Object> luong : lichSuLuong) { %>
                                     <tr>
                                         <td><%=luong.get("thang")%>/<%=luong.get("nam")%></td>
                                         <td><fmt:formatNumber value="<%=luong.get("luong_co_ban")%>" type="number" pattern="#,###"/>₫</td>
@@ -349,47 +384,47 @@
                                             <span class="badge bg-<%=badgeClass%>"><%=trangThai%></span>
                                         </td>
                                     </tr>
-                                <% } %>
-                            <% } else { %>
-                                <tr>
-                                    <td colspan="7" class="text-center text-muted">
-                                        <i class="fa-solid fa-inbox"></i> Chưa có lịch sử lương
-                                    </td>
-                                </tr>
-                            <% } %>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Tab chi tiết KPI -->
-            <div class="tab-pane fade" id="kpi-pane" role="tabpanel">
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <div class="d-flex gap-2">
-                            <select class="form-select" id="filterThangKPI" style="width: 120px;">
-                                <% for(int i = 1; i <= 12; i++) { %>
-                                    <option value="<%=i%>" <%=i == thangInt ? "selected" : ""%>>Tháng <%=i%></option>
-                                <% } %>
-                            </select>
-                            <select class="form-select" id="filterNamKPI" style="width: 120px;">
-                                <% 
-                                    int currentYear = Calendar.getInstance().get(Calendar.YEAR);
-                                    for(int year = currentYear - 2; year <= currentYear + 1; year++) { 
-                                %>
-                                    <option value="<%=year%>" <%=year == namInt ? "selected" : ""%>><%=year%></option>
-                                <% } %>
-                            </select>
-                            <button class="btn btn-primary" onclick="loadKPIByMonth()">
-                                <i class="fa-solid fa-filter"></i> Lọc
-                            </button>
+                                    <% } %>
+                                    <% } else { %>
+                                    <tr>
+                                        <td colspan="7" class="text-center text-muted">
+                                            <i class="fa-solid fa-inbox"></i> Chưa có lịch sử lương
+                                        </td>
+                                    </tr>
+                                    <% } %>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
-                </div>
 
-                <div id="kpiContent">
-                    <% if (kpiList != null && !kpiList.isEmpty()) { %>
-                        <% for (Map<String, Object> kpi : kpiList) { %>
+                    <!-- Tab chi tiết KPI -->
+                    <div class="tab-pane fade" id="kpi-pane" role="tabpanel">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="d-flex gap-2">
+                                    <select class="form-select" id="filterThangKPI" style="width: 120px;">
+                                        <% for(int i = 1; i <= 12; i++) { %>
+                                        <option value="<%=i%>" <%=i == thangInt ? "selected" : ""%>>Tháng <%=i%></option>
+                                        <% } %>
+                                    </select>
+                                    <select class="form-select" id="filterNamKPI" style="width: 120px;">
+                                        <% 
+                                            int currentYear = Calendar.getInstance().get(Calendar.YEAR);
+                                            for(int year = currentYear - 2; year <= currentYear + 1; year++) { 
+                                        %>
+                                        <option value="<%=year%>" <%=year == namInt ? "selected" : ""%>><%=year%></option>
+                                        <% } %>
+                                    </select>
+                                    <button class="btn btn-primary" onclick="loadKPIByMonth()">
+                                        <i class="fa-solid fa-filter"></i> Lọc
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="kpiContent">
+                            <% if (kpiList != null && !kpiList.isEmpty()) { %>
+                            <% for (Map<String, Object> kpi : kpiList) { %>
                             <div class="card mb-3">
                                 <div class="card-body">
                                     <div class="row">
@@ -397,7 +432,7 @@
                                             <h6 class="card-title"><%=kpi.get("chi_tieu")%></h6>
                                             <p class="card-text"><%=kpi.get("ket_qua")%></p>
                                             <% if (kpi.get("ghi_chu") != null) { %>
-                                                <small class="text-muted"><%=kpi.get("ghi_chu")%></small>
+                                            <small class="text-muted"><%=kpi.get("ghi_chu")%></small>
                                             <% } %>
                                         </div>
                                         <div class="col-md-4 text-end">
@@ -407,35 +442,35 @@
                                     </div>
                                 </div>
                             </div>
-                        <% } %>
-                    <% } else { %>
-                        <div class="text-center py-5">
-                            <i class="fa-solid fa-chart-line fa-3x text-muted mb-3"></i>
-                            <p class="text-muted">Chưa có dữ liệu KPI tháng này</p>
+                            <% } %>
+                            <% } else { %>
+                            <div class="text-center py-5">
+                                <i class="fa-solid fa-chart-line fa-3x text-muted mb-3"></i>
+                                <p class="text-muted">Chưa có dữ liệu KPI tháng này</p>
+                            </div>
+                            <% } %>
                         </div>
-                    <% } %>
-                </div>
-            </div>
+                    </div>
 
-            <!-- Tab tổng hợp -->
-            <div class="tab-pane fade" id="combined-pane" role="tabpanel">
-                <div class="table-responsive">
-                    <table class="table table-bordered align-middle table-hover">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Tháng/Năm</th>
-                                <th>Tổng giờ làm</th>
-                                <th>Lương cơ bản</th>
-                                <th>Thưởng</th>
-                                <th>Phạt</th>
-                                <th>Tổng lương</th>
-                                <th>KPI</th>
-                                <th>Trạng thái</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <% if (luongKPIList != null && !luongKPIList.isEmpty()) { %>
-                                <% for (Map<String, Object> item : luongKPIList) { %>
+                    <!-- Tab tổng hợp -->
+                    <div class="tab-pane fade" id="combined-pane" role="tabpanel">
+                        <div class="table-responsive">
+                            <table class="table table-bordered align-middle table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Tháng/Năm</th>
+                                        <th>Tổng giờ làm</th>
+                                        <th>Lương cơ bản</th>
+                                        <th>Thưởng</th>
+                                        <th>Phạt</th>
+                                        <th>Tổng lương</th>
+                                        <th>KPI</th>
+                                        <th>Trạng thái</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% if (luongKPIList != null && !luongKPIList.isEmpty()) { %>
+                                    <% for (Map<String, Object> item : luongKPIList) { %>
                                     <tr>
                                         <td><%=item.get("thang")%>/<%=item.get("nam")%></td>
                                         <td><%=String.format("%.1f", item.get("tong_gio_lam"))%>h</td>
@@ -448,9 +483,9 @@
                                                 Double kpiScore = (Double) item.get("diem_kpi");
                                                 if (kpiScore != null && kpiScore > 0) {
                                             %>
-                                                <span class="badge bg-info"><%=String.format("%.1f", kpiScore)%></span>
+                                            <span class="badge bg-info"><%=String.format("%.1f", kpiScore)%></span>
                                             <% } else { %>
-                                                <span class="text-muted">-</span>
+                                            <span class="text-muted">-</span>
                                             <% } %>
                                         </td>
                                         <td>
@@ -461,84 +496,85 @@
                                             <span class="badge bg-<%=badgeClass%>"><%=trangThai%></span>
                                         </td>
                                     </tr>
-                                <% } %>
-                            <% } else { %>
-                                <tr>
-                                    <td colspan="8" class="text-center text-muted">
-                                        <i class="fa-solid fa-inbox"></i> Chưa có dữ liệu
-                                    </td>
-                                </tr>
-                            <% } %>
-                        </tbody>
-                    </table>
+                                    <% } %>
+                                    <% } else { %>
+                                    <tr>
+                                        <td colspan="8" class="text-center text-muted">
+                                            <i class="fa-solid fa-inbox"></i> Chưa có dữ liệu
+                                        </td>
+                                    </tr>
+                                    <% } %>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-</div>
 
-<script>
-    function loadKPIByMonth() {
-        const thang = document.getElementById('filterThangKPI').value;
-        const nam = document.getElementById('filterNamKPI').value;
-        
-        $.ajax({
-            url: './userLuong',
-            type: 'POST',
-            data: {
-                action: 'getKPIByMonth',
-                thang: thang,
-                nam: nam
-            },
-            success: function(response) {
-                if (response.success) {
-                    let html = '';
-                    
-                    if (response.kpiList && response.kpiList.length > 0) {
-                        response.kpiList.forEach(function(kpi) {
-                            html += '<div class="card mb-3">';
-                            html += '<div class="card-body">';
-                            html += '<div class="row">';
-                            html += '<div class="col-md-8">';
-                            html += '<h6 class="card-title">' + kpi.chi_tieu + '</h6>';
-                            html += '<p class="card-text">' + kpi.ket_qua + '</p>';
-                            if (kpi.ghi_chu) {
-                                html += '<small class="text-muted">' + kpi.ghi_chu + '</small>';
-                            }
-                            html += '</div>';
-                            html += '<div class="col-md-4 text-end">';
-                            html += '<h3 class="text-primary">' + parseFloat(kpi.diem_kpi).toFixed(1) + '</h3>';
-                            html += '<small class="text-muted">' + kpi.ngay_tao + '</small>';
-                            html += '</div>';
-                            html += '</div>';
-                            html += '</div>';
-                            html += '</div>';
-                        });
-                    } else {
-                        html = '<div class="text-center py-5">';
-                        html += '<i class="fa-solid fa-chart-line fa-3x text-muted mb-3"></i>';
-                        html += '<p class="text-muted">Chưa có dữ liệu KPI tháng này</p>';
-                        html += '</div>';
-                    }
-                    
-                    document.getElementById('kpiContent').innerHTML = html;
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Lỗi!',
-                        text: response.message
-                    });
-                }
-            },
-            error: function() {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Lỗi!',
-                    text: 'Không thể kết nối đến server'
-                });
-            }
-        });
-    }
-</script>
-</body>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <script>
+                                        function loadKPIByMonth() {
+                                            const thang = document.getElementById('filterThangKPI').value;
+                                            const nam = document.getElementById('filterNamKPI').value;
+
+                                            $.ajax({
+                                                url: './userLuong',
+                                                type: 'POST',
+                                                data: {
+                                                    action: 'getKPIByMonth',
+                                                    thang: thang,
+                                                    nam: nam
+                                                },
+                                                success: function (response) {
+                                                    if (response.success) {
+                                                        let html = '';
+
+                                                        if (response.kpiList && response.kpiList.length > 0) {
+                                                            response.kpiList.forEach(function (kpi) {
+                                                                html += '<div class="card mb-3">';
+                                                                html += '<div class="card-body">';
+                                                                html += '<div class="row">';
+                                                                html += '<div class="col-md-8">';
+                                                                html += '<h6 class="card-title">' + kpi.chi_tieu + '</h6>';
+                                                                html += '<p class="card-text">' + kpi.ket_qua + '</p>';
+                                                                if (kpi.ghi_chu) {
+                                                                    html += '<small class="text-muted">' + kpi.ghi_chu + '</small>';
+                                                                }
+                                                                html += '</div>';
+                                                                html += '<div class="col-md-4 text-end">';
+                                                                html += '<h3 class="text-primary">' + parseFloat(kpi.diem_kpi).toFixed(1) + '</h3>';
+                                                                html += '<small class="text-muted">' + kpi.ngay_tao + '</small>';
+                                                                html += '</div>';
+                                                                html += '</div>';
+                                                                html += '</div>';
+                                                                html += '</div>';
+                                                            });
+                                                        } else {
+                                                            html = '<div class="text-center py-5">';
+                                                            html += '<i class="fa-solid fa-chart-line fa-3x text-muted mb-3"></i>';
+                                                            html += '<p class="text-muted">Chưa có dữ liệu KPI tháng này</p>';
+                                                            html += '</div>';
+                                                        }
+
+                                                        document.getElementById('kpiContent').innerHTML = html;
+                                                    } else {
+                                                        Swal.fire({
+                                                            icon: 'error',
+                                                            title: 'Lỗi!',
+                                                            text: response.message
+                                                        });
+                                                    }
+                                                },
+                                                error: function () {
+                                                    Swal.fire({
+                                                        icon: 'error',
+                                                        title: 'Lỗi!',
+                                                        text: 'Không thể kết nối đến server'
+                                                    });
+                                                }
+                                            });
+                                        }
+        </script>
+    </body>
 </html>

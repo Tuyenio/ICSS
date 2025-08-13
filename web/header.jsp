@@ -1,7 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <div class="header d-flex align-items-center justify-content-between px-4 py-2">
     <div>
-        <!-- Tiêu đề sẽ được đặt bởi từng trang, dùng JS hoặc include động -->
         <span class="fs-5 fw-bold" id="pageTitle"></span>
     </div>
     <div class="d-flex align-items-center gap-3">
@@ -34,10 +33,65 @@
 <script>
     // Đặt tiêu đề động cho từng trang
     if (typeof PAGE_TITLE !== 'undefined') {
-        document.getElementById('pageTitle').innerHTML = PAGE_TITLE;
+        var pageTitleEl = document.getElementById('pageTitle');
+        if (pageTitleEl)
+            pageTitleEl.innerHTML = PAGE_TITLE;
     }
-    // Thêm sự kiện click vào chuông để chuyển sang trang thông báo cho admin/manager
-    document.getElementById('adminNotificationBell').onclick = function () {
-        window.location.href = 'notification.jsp';
-    };
+
+    // Nhảy sang trang thông báo khi bấm chuông
+    (function () {
+        var bell = document.getElementById('adminNotificationBell');
+        if (bell) {
+            bell.onclick = function () {
+                // Trang danh sách thông báo (servlet bạn đã dùng)
+                window.location.href = './apiThongbao';
+            };
+        }
+    })();
+
+    // ====== CẬP NHẬT SỐ THÔNG BÁO CHƯA ĐỌC TRÊN CHUÔNG ======
+    (function () {
+        var badge = document.getElementById('notiCount');
+        if (!badge)
+            return; // không có badge thì bỏ qua
+
+        function setBadge(n) {
+            // n là số chưa đọc (int)
+            if (isNaN(n) || n < 0)
+                n = 0;
+            badge.textContent = n;
+            // Ẩn badge nếu = 0 (giữ nguyên CSS, chỉ thay display)
+            badge.style.display = (n > 0) ? 'inline-block' : 'none';
+        }
+
+        function fetchUnreadCount() {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', '<%= request.getContextPath() %>/ApiThongbaoUnreadCount', true);
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        var n = parseInt(xhr.responseText, 10);
+                        setBadge(isNaN(n) ? 0 : n);
+                    } else {
+                        // lỗi thì không thay đổi
+                    }
+                }
+            };
+            xhr.send();
+        }
+
+        // Lộ ra hàm global để trang notification gọi lại sau khi mark read
+        window.updateNotifyBadgeCount = fetchUnreadCount;
+
+        // Gọi khi header load
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', fetchUnreadCount);
+        } else {
+            fetchUnreadCount();
+        }
+
+        // (tuỳ chọn) cập nhật định kỳ mỗi 60 giây
+        // setInterval(fetchUnreadCount, 60000);
+    })();
 </script>
+
