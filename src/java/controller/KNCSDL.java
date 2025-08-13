@@ -946,6 +946,7 @@ public class KNCSDL {
                     userInfo.put("id", rs.getString("id"));
                     userInfo.put("ho_ten", rs.getString("ho_ten"));
                     userInfo.put("email", email);
+                    userInfo.put("chuc_vu", rs.getString("chuc_vu"));
                     userInfo.put("vai_tro", rs.getString("vai_tro"));
                     // Thêm thông tin khác nếu cần
                     return userInfo;
@@ -2736,6 +2737,16 @@ public class KNCSDL {
             }
         }
         return null;
+    }
+
+    public int getGiamDocId() throws SQLException {
+        String sql = "SELECT id FROM nhanvien WHERE chuc_vu = 'Giám đốc' LIMIT 1";
+        try (PreparedStatement ps = cn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt("id");
+            }
+        }
+        return -1;
     }
 
     public void close() throws SQLException {
