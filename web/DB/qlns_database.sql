@@ -798,3 +798,216 @@ INSERT INTO luu_kpi (nhan_vien_id, thang, nam, chi_tieu, ket_qua, diem_kpi, ghi_
 ((SELECT id FROM nhanvien WHERE email='nguyenvanphuc@icss.com.vn'),8,2025,'Chốt 2 deal nhỏ','Đang đàm phán',7.6,'Cần follow');
 
 COMMIT;
+
+-- ============================================
+-- PHẦN 4: CHUẨN HÓA CHỨC VỤ THEO VAI TRÒ & BỔ SUNG TRƯỞNG PHÒNG CÒN THIẾU
+-- ============================================
+
+-- 4.1 Chuẩn hóa chức vụ theo vai trò (đảm bảo chuẩn logic, đồng nhất dữ liệu)
+UPDATE nhanvien SET chuc_vu = 'Giám đốc'   WHERE vai_tro = 'Admin';
+UPDATE nhanvien SET chuc_vu = 'Trưởng phòng' WHERE vai_tro = 'Quản lý';
+
+-- 4.2 Bổ sung Trưởng phòng cho Phòng Kỹ thuật (id=2) nếu chưa có Quản lý thuộc phòng này
+INSERT INTO nhanvien (
+    ho_ten, email, mat_khau, so_dien_thoai, gioi_tinh, ngay_sinh,
+    phong_ban_id, chuc_vu, luong_co_ban, trang_thai_lam_viec, vai_tro, ngay_vao_lam, avatar_url
+) 
+SELECT 'Nguyễn Văn Nam', 'nguyenvannam@icss.com.vn', 'password123', '0912000222', 'Nam', '1985-03-15',
+       2, 'Trưởng phòng', 14500000, 'Đang làm', 'Quản lý', '2020-01-10', NULL
+WHERE NOT EXISTS (
+    SELECT 1 FROM nhanvien WHERE phong_ban_id = 2 AND vai_tro = 'Quản lý'
+);
+
+-- Cập nhật Trưởng phòng của Phòng Kỹ thuật là một Quản lý thuộc chính phòng đó
+UPDATE phong_ban pb
+SET pb.truong_phong_id = (
+  SELECT MIN(nv.id) FROM nhanvien nv
+  WHERE nv.phong_ban_id = pb.id AND nv.vai_tro = 'Quản lý'
+)
+WHERE pb.id = 2;
+
+-- 4.3 Thêm ràng buộc đảm bảo vai trò - chức vụ đúng chuẩn
+ALTER TABLE nhanvien
+ADD CONSTRAINT chk_role_chucvu CHECK (
+    (vai_tro = 'Admin'    AND chuc_vu = 'Giám đốc') OR
+    (vai_tro = 'Quản lý'  AND chuc_vu = 'Trưởng phòng') OR
+    (vai_tro = 'Nhân viên')
+);
+
+COMMIT;
+
+-- ============================================
+-- PHẦN 5: DỮ LIỆU MẪU ĐẦY ĐỦ CHO NHÂN SỰ MỚI (TRƯỞNG PHÒNG KỸ THUẬT)
+-- ============================================
+
+-- 5.0 Lấy id nhân sự liên quan (sử dụng subquery trực tiếp trong các lệnh INSERT để an toàn id)
+--   nv_nam:   Quản lý phòng Kỹ thuật mới:   'nguyenvannam@icss.com.vn'
+--   nv_khoi:  Nhân viên kỹ thuật:           'nguyenminhkhoi@icss.com.vn'
+--   nv_tuan:  Nhân viên kỹ thuật:           'vuanhtuan@icss.com.vn'
+--   nv_long:  Nhân viên kỹ thuật:           'danghoanglong@icss.com.vn'
+
+-- 5.1 Thêm 3 công việc do Trưởng phòng Kỹ thuật giao cho các nhân viên trong phòng
+INSERT INTO cong_viec (ten_cong_viec, mo_ta, han_hoan_thanh, muc_do_uu_tien, nguoi_giao_id, nguoi_nhan_id, phong_ban_id, trang_thai)
+SELECT 'Rà soát kiến trúc microservices', 'Đánh giá kiến trúc, đề xuất tối ưu', '2025-08-25', 'Cao',
+             (SELECT id FROM nhanvien WHERE email = 'nguyenvannam@icss.com.vn'),
+             (SELECT id FROM nhanvien WHERE email = 'vuanhtuan@icss.com.vn'),
+             2, 'Đang thực hiện'
+WHERE NOT EXISTS (SELECT 1 FROM cong_viec WHERE ten_cong_viec = 'Rà soát kiến trúc microservices');
+
+INSERT INTO cong_viec (ten_cong_viec, mo_ta, han_hoan_thanh, muc_do_uu_tien, nguoi_giao_id, nguoi_nhan_id, phong_ban_id, trang_thai)
+SELECT 'Chuẩn hóa CI/CD pipeline', 'Chuẩn hóa pipeline build/test/deploy', '2025-08-28', 'Trung bình',
+             (SELECT id FROM nhanvien WHERE email = 'nguyenvannam@icss.com.vn'),
+             (SELECT id FROM nhanvien WHERE email = 'danghoanglong@icss.com.vn'),
+             2, 'Chưa bắt đầu'
+WHERE NOT EXISTS (SELECT 1 FROM cong_viec WHERE ten_cong_viec = 'Chuẩn hóa CI/CD pipeline');
+
+INSERT INTO cong_viec (ten_cong_viec, mo_ta, han_hoan_thanh, muc_do_uu_tien, nguoi_giao_id, nguoi_nhan_id, phong_ban_id, trang_thai)
+SELECT 'Xây dựng guideline code review', 'Đặt tiêu chuẩn review cho backend/front-end', '2025-08-22', 'Thấp',
+             (SELECT id FROM nhanvien WHERE email = 'nguyenvannam@icss.com.vn'),
+             (SELECT id FROM nhanvien WHERE email = 'nguyenminhkhoi@icss.com.vn'),
+             2, 'Đang thực hiện'
+WHERE NOT EXISTS (SELECT 1 FROM cong_viec WHERE ten_cong_viec = 'Xây dựng guideline code review');
+
+-- 5.2 Thêm tiến độ, lịch sử, đánh giá cho các công việc mới
+INSERT INTO cong_viec_tien_do (cong_viec_id, nguoi_cap_nhat_id, phan_tram, ghi_chu)
+SELECT cv.id, (SELECT id FROM nhanvien WHERE email = 'vuanhtuan@icss.com.vn'), 35, 'Đã rà soát 3 service cốt lõi'
+FROM cong_viec cv WHERE cv.ten_cong_viec = 'Rà soát kiến trúc microservices'
+    AND NOT EXISTS (
+            SELECT 1 FROM cong_viec_tien_do td WHERE td.cong_viec_id = cv.id AND td.phan_tram = 35
+    );
+
+INSERT INTO cong_viec_lich_su (cong_viec_id, nguoi_thay_doi_id, mo_ta_thay_doi)
+SELECT cv.id, (SELECT id FROM nhanvien WHERE email = 'nguyenvannam@icss.com.vn'), 'Tạo công việc'
+FROM cong_viec cv WHERE cv.ten_cong_viec IN ('Rà soát kiến trúc microservices','Chuẩn hóa CI/CD pipeline','Xây dựng guideline code review')
+    AND NOT EXISTS (
+        SELECT 1 FROM cong_viec_lich_su ls WHERE ls.cong_viec_id = cv.id AND ls.mo_ta_thay_doi = 'Tạo công việc'
+    );
+
+INSERT INTO cong_viec_danh_gia (cong_viec_id, nguoi_danh_gia_id, nhan_xet)
+SELECT cv.id, (SELECT id FROM nhanvien WHERE email = 'nguyenvannam@icss.com.vn'), 'Tiến độ phù hợp kế hoạch'
+FROM cong_viec cv WHERE cv.ten_cong_viec = 'Rà soát kiến trúc microservices'
+    AND NOT EXISTS (
+        SELECT 1 FROM cong_viec_danh_gia dg WHERE dg.cong_viec_id = cv.id AND dg.nhan_xet = 'Tiến độ phù hợp kế hoạch'
+    );
+
+-- 5.3 Bổ sung quy trình cho 3 công việc mới (3 bước mỗi công việc)
+INSERT INTO cong_viec_quy_trinh (cong_viec_id, ten_buoc, mo_ta, trang_thai, ngay_bat_dau, ngay_ket_thuc)
+SELECT cv.id, 'Lập kế hoạch', 'Xác định phạm vi & mục tiêu', 'Đang thực hiện', '2025-08-10', '2025-08-12'
+FROM cong_viec cv WHERE cv.ten_cong_viec IN ('Rà soát kiến trúc microservices','Chuẩn hóa CI/CD pipeline','Xây dựng guideline code review')
+AND NOT EXISTS (
+    SELECT 1 FROM cong_viec_quy_trinh qt WHERE qt.cong_viec_id = cv.id AND qt.ten_buoc = 'Lập kế hoạch'
+);
+
+INSERT INTO cong_viec_quy_trinh (cong_viec_id, ten_buoc, mo_ta, trang_thai, ngay_bat_dau, ngay_ket_thuc)
+SELECT cv.id, 'Thực hiện', 'Rà soát/triển khai, cập nhật tài liệu', 'Chưa bắt đầu', '2025-08-13', '2025-08-20'
+FROM cong_viec cv WHERE cv.ten_cong_viec IN ('Rà soát kiến trúc microservices','Chuẩn hóa CI/CD pipeline','Xây dựng guideline code review')
+AND NOT EXISTS (
+    SELECT 1 FROM cong_viec_quy_trinh qt WHERE qt.cong_viec_id = cv.id AND qt.ten_buoc = 'Thực hiện'
+);
+
+INSERT INTO cong_viec_quy_trinh (cong_viec_id, ten_buoc, mo_ta, trang_thai, ngay_bat_dau, ngay_ket_thuc)
+SELECT cv.id, 'Nghiệm thu', 'Kiểm thử/UAT/duyệt guideline', 'Chưa bắt đầu', '2025-08-21', '2025-08-25'
+FROM cong_viec cv WHERE cv.ten_cong_viec IN ('Rà soát kiến trúc microservices','Chuẩn hóa CI/CD pipeline','Xây dựng guideline code review')
+AND NOT EXISTS (
+    SELECT 1 FROM cong_viec_quy_trinh qt WHERE qt.cong_viec_id = cv.id AND qt.ten_buoc = 'Nghiệm thu'
+);
+
+-- 5.4 Thông báo cho các nhân viên nhận việc mới
+INSERT INTO thong_bao (tieu_de, noi_dung, nguoi_nhan_id, loai_thong_bao, da_doc)
+SELECT 'Công việc mới', 'Bạn được giao "Rà soát kiến trúc microservices"',
+             (SELECT id FROM nhanvien WHERE email = 'vuanhtuan@icss.com.vn'), 'Công việc mới', FALSE
+WHERE NOT EXISTS (
+    SELECT 1 FROM thong_bao WHERE noi_dung LIKE '%Rà soát kiến trúc microservices%' AND nguoi_nhan_id = (SELECT id FROM nhanvien WHERE email = 'vuanhtuan@icss.com.vn')
+);
+
+INSERT INTO thong_bao (tieu_de, noi_dung, nguoi_nhan_id, loai_thong_bao, da_doc)
+SELECT 'Công việc mới', 'Bạn được giao "Chuẩn hóa CI/CD pipeline"',
+             (SELECT id FROM nhanvien WHERE email = 'danghoanglong@icss.com.vn'), 'Công việc mới', FALSE
+WHERE NOT EXISTS (
+    SELECT 1 FROM thong_bao WHERE noi_dung LIKE '%CI/CD pipeline%' AND nguoi_nhan_id = (SELECT id FROM nhanvien WHERE email = 'danghoanglong@icss.com.vn')
+);
+
+-- 5.5 Báo cáo & file đính kèm liên quan
+INSERT INTO bao_cao_cong_viec (loai_bao_cao, duong_dan, nguoi_tao_id)
+SELECT 'TechStandards', '/reports/tech_standards_2025_08.pdf', (SELECT id FROM nhanvien WHERE email = 'nguyenvannam@icss.com.vn')
+WHERE NOT EXISTS (
+    SELECT 1 FROM bao_cao_cong_viec WHERE duong_dan = '/reports/tech_standards_2025_08.pdf'
+);
+
+INSERT INTO file_dinh_kem (cong_viec_id, duong_dan_file, mo_ta)
+SELECT cv.id, '/uploads/cicd_pipeline.yml', 'Mẫu pipeline chuẩn'
+FROM cong_viec cv WHERE cv.ten_cong_viec = 'Chuẩn hóa CI/CD pipeline'
+    AND NOT EXISTS (
+        SELECT 1 FROM file_dinh_kem f WHERE f.cong_viec_id = cv.id AND f.duong_dan_file = '/uploads/cicd_pipeline.yml'
+    );
+
+-- 5.6 Chấm công cho Trưởng phòng Kỹ thuật mới (mẫu tuần làm việc)
+INSERT IGNORE INTO cham_cong (nhan_vien_id, ngay, check_in, check_out)
+SELECT id, '2025-07-21', '08:15:00', '17:45:00' FROM nhanvien WHERE email = 'nguyenvannam@icss.com.vn';
+INSERT IGNORE INTO cham_cong (nhan_vien_id, ngay, check_in, check_out)
+SELECT id, '2025-07-22', '08:12:00', '17:42:00' FROM nhanvien WHERE email = 'nguyenvannam@icss.com.vn';
+INSERT IGNORE INTO cham_cong (nhan_vien_id, ngay, check_in, check_out)
+SELECT id, '2025-07-23', '08:20:00', '17:50:00' FROM nhanvien WHERE email = 'nguyenvannam@icss.com.vn';
+INSERT IGNORE INTO cham_cong (nhan_vien_id, ngay, check_in, check_out)
+SELECT id, '2025-07-24', '08:10:00', '17:40:00' FROM nhanvien WHERE email = 'nguyenvannam@icss.com.vn';
+INSERT IGNORE INTO cham_cong (nhan_vien_id, ngay, check_in, check_out)
+SELECT id, '2025-07-25', '08:05:00', '17:35:00' FROM nhanvien WHERE email = 'nguyenvannam@icss.com.vn';
+INSERT IGNORE INTO cham_cong (nhan_vien_id, ngay, check_in, check_out)
+SELECT id, '2025-08-04', '08:18:00', '17:48:00' FROM nhanvien WHERE email = 'nguyenvannam@icss.com.vn';
+INSERT IGNORE INTO cham_cong (nhan_vien_id, ngay, check_in, check_out)
+SELECT id, '2025-08-05', '08:08:00', '17:38:00' FROM nhanvien WHERE email = 'nguyenvannam@icss.com.vn';
+INSERT IGNORE INTO cham_cong (nhan_vien_id, ngay, check_in, check_out)
+SELECT id, '2025-08-06', '08:22:00', '17:52:00' FROM nhanvien WHERE email = 'nguyenvannam@icss.com.vn';
+INSERT IGNORE INTO cham_cong (nhan_vien_id, ngay, check_in, check_out)
+SELECT id, '2025-08-07', '08:14:00', '17:44:00' FROM nhanvien WHERE email = 'nguyenvannam@icss.com.vn';
+INSERT IGNORE INTO cham_cong (nhan_vien_id, ngay, check_in, check_out)
+SELECT id, '2025-08-08', '08:09:00', '17:39:00' FROM nhanvien WHERE email = 'nguyenvannam@icss.com.vn';
+
+-- 5.7 Bảng lương tháng 7, 8/2025 cho Trưởng phòng Kỹ thuật mới (nếu chưa có)
+INSERT INTO luong (nhan_vien_id, thang, nam, luong_co_ban, phu_cap, thuong, phat, bao_hiem, thue, luong_thuc_te, ghi_chu, trang_thai, ngay_tra_luong)
+SELECT n.id, 7, 2025, n.luong_co_ban, 1200000, 600000, 0,
+             ROUND(n.luong_co_ban * 0.105), ROUND(n.luong_co_ban * 0.05),
+             (n.luong_co_ban + 1200000 + 600000 - ROUND(n.luong_co_ban * 0.105) - ROUND(n.luong_co_ban * 0.05)),
+             'Lương 07/2025', 'Đã trả', '2025-08-05'
+FROM nhanvien n
+WHERE n.email = 'nguyenvannam@icss.com.vn'
+    AND NOT EXISTS (
+        SELECT 1 FROM luong l WHERE l.nhan_vien_id = n.id AND l.thang = 7 AND l.nam = 2025
+    );
+
+INSERT INTO luong (nhan_vien_id, thang, nam, luong_co_ban, phu_cap, thuong, phat, bao_hiem, thue, luong_thuc_te, ghi_chu, trang_thai, ngay_tra_luong)
+SELECT n.id, 8, 2025, n.luong_co_ban, 1200000, 650000, 0,
+             ROUND(n.luong_co_ban * 0.105), ROUND(n.luong_co_ban * 0.05),
+             (n.luong_co_ban + 1200000 + 650000 - ROUND(n.luong_co_ban * 0.105) - ROUND(n.luong_co_ban * 0.05)),
+             'Lương 08/2025', 'Chưa trả', NULL
+FROM nhanvien n
+WHERE n.email = 'nguyenvannam@icss.com.vn'
+    AND NOT EXISTS (
+        SELECT 1 FROM luong l WHERE l.nhan_vien_id = n.id AND l.thang = 8 AND l.nam = 2025
+    );
+
+-- 5.8 KPI cho Trưởng phòng Kỹ thuật mới
+INSERT INTO luu_kpi (nhan_vien_id, thang, nam, chi_tieu, ket_qua, diem_kpi, ghi_chu)
+SELECT id, 7, 2025, 'Chuẩn hóa quy trình kỹ thuật', 'Hoàn thành 90%', 9.0, 'Đúng hạn'
+FROM nhanvien WHERE email = 'nguyenvannam@icss.com.vn'
+AND NOT EXISTS (
+    SELECT 1 FROM luu_kpi k WHERE k.nhan_vien_id = (SELECT id FROM nhanvien WHERE email = 'nguyenvannam@icss.com.vn') AND k.thang=7 AND k.nam=2025
+);
+
+INSERT INTO luu_kpi (nhan_vien_id, thang, nam, chi_tieu, ket_qua, diem_kpi, ghi_chu)
+SELECT id, 8, 2025, 'Triển khai CI/CD chuẩn', 'Đang triển khai', 8.0, 'Theo kế hoạch'
+FROM nhanvien WHERE email = 'nguyenvannam@icss.com.vn'
+AND NOT EXISTS (
+    SELECT 1 FROM luu_kpi k WHERE k.nhan_vien_id = (SELECT id FROM nhanvien WHERE email = 'nguyenvannam@icss.com.vn') AND k.thang=8 AND k.nam=2025
+);
+
+-- 5.9 Lịch sử nhân sự: bổ nhiệm Trưởng phòng
+INSERT INTO nhan_su_lich_su (nhan_vien_id, loai_thay_doi, gia_tri_cu, gia_tri_moi, nguoi_thay_doi_id, ghi_chu)
+SELECT n.id, 'Bổ nhiệm', 'Nhân viên', 'Trưởng phòng', (SELECT id FROM nhanvien WHERE vai_tro = 'Admin' ORDER BY id LIMIT 1), 'Bổ nhiệm Trưởng phòng Kỹ thuật'
+FROM nhanvien n
+WHERE n.email = 'nguyenvannam@icss.com.vn'
+    AND NOT EXISTS (
+        SELECT 1 FROM nhan_su_lich_su h WHERE h.nhan_vien_id = n.id AND h.loai_thay_doi = 'Bổ nhiệm'
+    );
+
+COMMIT;
