@@ -16,6 +16,9 @@
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+        <script>
+            const CURRENT_USER_CHUCVU = '<%= session.getAttribute("chucVu") != null ? session.getAttribute("chucVu") : "" %>';
+        </script>
         <style>
             body {
                 background: #f4f6fa;
@@ -295,7 +298,7 @@
                                         <td><%= nv.get("id") %></td>
                                         <td><img src="https://i.pravatar.cc/40?img=1" class="rounded-circle"
                                                  width="36"></td>
-                                        <td><a href="#" class="emp-detail-link fw-semibold text-primary"><%= nv.get("ho_ten") %></a></td>
+                                        <td><a href="#" class="emp-detail-link fw-semibold text-primary" data-email="<%= nv.get("email") %>"> <%= nv.get("ho_ten") %></a></td>
                                         <td><%= nv.get("email") %></td>
                                         <td><%= nv.get("so_dien_thoai") %></td>
                                         <td><%= nv.get("gioi_tinh") %></td>
@@ -454,11 +457,6 @@
                                                     data-bs-target="#tabTask" type="button" role="tab">Lịch sử công
                                                 việc</button>
                                         </li>
-                                        <li class="nav-item" role="presentation">
-                                            <button class="nav-link" id="tab-history" data-bs-toggle="tab"
-                                                    data-bs-target="#tabHistory" type="button" role="tab">Lịch sử thay
-                                                đổi</button>
-                                        </li>
                                     </ul>
                                     <div class="tab-content" id="empDetailTabContent">
                                         <div class="tab-pane fade show active" id="tabInfo" role="tabpanel">
@@ -466,20 +464,18 @@
                                                 <div class="col-md-3 text-center">
                                                     <img src="https://i.pravatar.cc/100?img=1"
                                                          class="rounded-circle mb-2" width="80">
-                                                    <div class="fw-bold">Nguyễn Văn A</div>
-                                                    <div class="text-muted small">nguyenvana@email.com</div>
+                                                    <div class="fw-bold emp-name">Nguyễn Văn A</div>
+                                                    <div class="text-muted small emp-email">nguyenvana@email.com</div>
                                                 </div>
                                                 <div class="col-md-9">
-                                                    <b>SĐT:</b> 0901234567<br>
-                                                    <b>Giới tính:</b> Nam<br>
-                                                    <b>Ngày sinh:</b> 01/01/1990<br>
-                                                    <b>Phòng ban:</b> Kỹ thuật<br>
-                                                    <b>Chức vụ:</b> Kỹ sư<br>
-                                                    <b>Ngày vào làm:</b> 01/06/2024<br>
-                                                    <b>Trạng thái:</b> <span class="badge bg-success">Đang
-                                                        làm</span><br>
-                                                    <b>Vai trò:</b> <span class="badge bg-info text-dark">Nhân
-                                                        viên</span>
+                                                    <b>SĐT:</b> <span class="emp-phone"></span><br>
+                                                    <b>Giới tính:</b> <span class="emp-gender"></span><br>
+                                                    <b>Ngày sinh:</b> <span class="emp-birth"></span><br>
+                                                    <b>Phòng ban:</b> <span class="emp-dept"></span><br>
+                                                    <b>Chức vụ:</b> <span class="emp-position"></span><br>
+                                                    <b>Ngày vào làm:</b> <span class="emp-start"></span><br>
+                                                    <b>Trạng thái:</b> <span class="emp-status badge"></span><br>
+                                                    <b>Vai trò:</b> <span class="emp-role badge"></span>
                                                 </div>
                                             </div>
                                         </div>
@@ -488,13 +484,6 @@
                                                 <li>Task 1 - Đã hoàn thành</li>
                                                 <li>Task 2 - Đang làm</li>
                                                 <!-- AJAX load lịch sử công việc -->
-                                            </ul>
-                                        </div>
-                                        <div class="tab-pane fade" id="tabHistory" role="tabpanel">
-                                            <ul>
-                                                <li>01/06/2024: Thêm mới nhân viên</li>
-                                                <li>05/06/2024: Đổi phòng ban từ Kỹ thuật sang Kinh doanh</li>
-                                                <!-- AJAX load từ nhan_su_lich_su -->
                                             </ul>
                                         </div>
                                     </div>
@@ -582,11 +571,81 @@
                 // $.get('api/employee', {...}, function(data){ ... });
             });
 
+            function getBadgeClass(status) {
+                switch (status) {
+                    case 'Đang làm':
+                        return 'bg-success';
+                    case 'Tạm nghỉ':
+                        return 'bg-warning text-dark';
+                    case 'Nghỉ việc':
+                        return 'bg-danger';
+                    default:
+                        return 'bg-secondary';
+                }
+            }
+
+            function getRoleClass(role) {
+                switch (role) {
+                    case 'Admin':
+                        return 'bg-danger text-white';
+                    case 'Quản lý':
+                        return 'bg-warning text-dark';
+                    case 'Nhân viên':
+                        return 'bg-info text-dark';
+                    default:
+                        return 'bg-secondary';
+                }
+            }
             // Nút xem chi tiết
             $(document).on('click', '.emp-detail-link', function (e) {
                 e.preventDefault();
-                // TODO: AJAX load chi tiết nhân viên
-                $('#modalEmpDetail').modal('show');
+
+                const email = $(this).data('email');
+
+                $.ajax({
+                    url: './chitietNV',
+                    method: 'GET',
+                    data: {email: email},
+                    dataType: 'json',
+                    success: function (data) {
+                        // Gán dữ liệu vào modal
+                        $('#modalEmpDetail .emp-name').text(data.ho_ten);
+                        $('#modalEmpDetail .emp-email').text(data.email);
+                        $('#modalEmpDetail .emp-phone').text(data.so_dien_thoai);
+                        $('#modalEmpDetail .emp-gender').text(data.gioi_tinh);
+                        $('#modalEmpDetail .emp-birth').text(data.ngay_sinh);
+                        $('#modalEmpDetail .emp-dept').text(data.ten_phong_ban);
+                        $('#modalEmpDetail .emp-position').text(data.chuc_vu);
+                        $('#modalEmpDetail .emp-start').text(data.ngay_vao_lam);
+
+                        // Xử lý badge màu trạng thái
+                        const statusClass = getBadgeClass(data.trang_thai_lam_viec);
+                        $('#modalEmpDetail .emp-status')
+                                .text(data.trang_thai_lam_viec)
+                                .removeClass('bg-success bg-warning bg-danger bg-secondary')
+                                .addClass(statusClass);
+
+                        // Xử lý badge màu vai trò
+                        const roleClass = getRoleClass(data.vai_tro);
+                        $('#modalEmpDetail .emp-role')
+                                .text(data.vai_tro)
+                                .removeClass('bg-danger bg-warning bg-info bg-secondary text-white text-dark')
+                                .addClass(roleClass);
+
+                        // Reset tab về tab đầu tiên
+                        $('#empDetailTab .nav-link').removeClass('active');
+                        $('#empDetailTabContent .tab-pane').removeClass('show active');
+                        $('#tab-info').addClass('active');
+                        $('#tabInfo').addClass('show active');
+
+                        // Hiển thị modal
+                        const modal = new bootstrap.Modal(document.getElementById('modalEmpDetail'));
+                        modal.show();
+                    },
+                    error: function () {
+                        showToast('error', 'Không thể tải chi tiết nhân viên');
+                    }
+                });
             });
 
             // Xem password
@@ -601,7 +660,7 @@
             // Nút sửa
             $(document).on('click', '.edit-emp-btn', function () {
                 const button = $(this);
-                const phongBanId = button.data('phong-ban-id'); // <-- ID phòng ban thật
+                const phongBanId = button.data('phong-ban-id');
 
                 function fillForm() {
                     $('#empId').val(button.data('id'));
@@ -627,6 +686,12 @@
 
                     // Hiển thị modal
                     $('#modalEmployee').modal('show');
+                }
+                
+                if (CURRENT_USER_CHUCVU.toLowerCase().includes('trưởng phòng')) {
+                    $('#empRole').prop('disabled', true); // Không cho chỉnh vai trò nếu người đăng nhập là Trưởng phòng
+                } else {
+                    $('#empRole').prop('disabled', false);
                 }
 
                 // Nếu phòng ban đã load, thì điền luôn

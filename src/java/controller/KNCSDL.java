@@ -64,7 +64,7 @@ public class KNCSDL {
             stmt.setInt(1, phongBanId);
         }
 
-        return stmt.executeQuery();  // Gọi servlet phải đóng ResultSet và Connection
+        return stmt.executeQuery();
     }
 
     public ResultSet layThongTinNhanVienTheoEmail(String email) throws SQLException {
@@ -584,6 +584,19 @@ public class KNCSDL {
         stmt.close();
         cn.close();
         return newId;
+    }
+
+    public String getTenCongViecById(int congViecId) throws SQLException {
+        String sql = "SELECT ten_cong_viec FROM cong_viec WHERE id = ? LIMIT 1";
+        try (PreparedStatement ps = cn.prepareStatement(sql)) {
+            ps.setInt(1, congViecId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("ten_cong_viec");
+                }
+            }
+        }
+        return null;
     }
 
     public List<Map<String, String>> layDanhGiaTheoCongViec(int congViecId) {
@@ -2731,7 +2744,19 @@ public class KNCSDL {
             ps.setInt(1, congViecId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    // Dùng getObject để giữ được giá trị NULL nếu cột đang null
+                    return (Integer) rs.getObject(1);
+                }
+            }
+        }
+        return null;
+    }
+
+    public Integer getCongViecIdByBuocId(int buocId) throws SQLException {
+        String sql = "SELECT cong_viec_id FROM cong_viec_quy_trinh WHERE id = ? LIMIT 1";
+        try (PreparedStatement ps = cn.prepareStatement(sql)) {
+            ps.setInt(1, buocId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
                     return (Integer) rs.getObject(1);
                 }
             }

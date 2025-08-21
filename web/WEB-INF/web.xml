@@ -131,6 +131,10 @@
         <servlet-name>ApiThongbaoUnreadCount</servlet-name>
         <servlet-class>controller.ApiThongbaoUnreadCount</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>chitietNV</servlet-name>
+        <servlet-class>controller.chitietNV</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>dsnhanvien</servlet-name>
         <url-pattern>/dsnhanvien</url-pattern>
@@ -258,6 +262,10 @@
     <servlet-mapping>
         <servlet-name>ApiThongbaoUnreadCount</servlet-name>
         <url-pattern>/ApiThongbaoUnreadCount</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>chitietNV</servlet-name>
+        <url-pattern>/chitietNV</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>

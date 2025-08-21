@@ -4,6 +4,7 @@
  */
 package controller;
 
+import com.mysql.cj.xdevapi.DbDoc;
 import java.io.IOException;
 import java.sql.*;
 import java.io.PrintWriter;
@@ -97,8 +98,15 @@ public class apiTaskSteps extends HttpServlet {
             boolean success = db.updateStepById(stepId, name, desc, status, start, end);
 
             if (success) {
+                db = new KNCSDL();
+                int congviecId = db.getCongViecIdByBuocId(stepId);
+                int nhanId = db.getNguoiNhanIdByCongViecId(congviecId);
+                String tencv = db.getTenCongViecById(congviecId);
+                String tieuDeTB = "Cập nhật quy trình";
+                String noiDungTB = "Công việc: "+ tencv + " vừa được cập nhật quy trình mới";
+                db.insertThongBao(nhanId, tieuDeTB, noiDungTB, "Cập nhật");
                 response.setStatus(HttpServletResponse.SC_OK);
-                out.print("OK");
+                
             } else {
                 response.setStatus(HttpServletResponse.SC_NOT_FOUND);
                 out.print("Không tìm thấy bước để cập nhật.");
@@ -109,6 +117,7 @@ public class apiTaskSteps extends HttpServlet {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             out.print("Lỗi máy chủ: " + e.getMessage());
         }
+        
     }
 
     // Escape chuỗi JSON thủ công

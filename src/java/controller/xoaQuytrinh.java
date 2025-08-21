@@ -22,19 +22,28 @@ public class xoaQuytrinh extends HttpServlet {
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String action = request.getParameter("action");
+
+        
+
         if ("delete".equals(action)) {
             String stepIdStr = request.getParameter("step_id");
             try {
                 KNCSDL db = new KNCSDL();
                 int stepId = Integer.parseInt(stepIdStr);
+                int congViecId = db.getCongViecIdByBuocId(stepId);
+                String tencv = db.getTenCongViecById(congViecId);
+                int nhanId = db.getNguoiNhanIdByCongViecId(congViecId);
+                String tieuDeTB = "Xóa bỏ quy trình";
+                String noiDungTB = "Công việc: " + tencv + " vừa xóa bỏ một quy trình";
                 boolean deleted = db.deleteStepById(stepId);
                 if (deleted) {
+                    db = new KNCSDL();
+                    db.insertThongBao(nhanId, tieuDeTB, noiDungTB, "Xóa bỏ");
                     response.setStatus(HttpServletResponse.SC_OK);
                 } else {
                     response.setStatus(HttpServletResponse.SC_NOT_FOUND); // Không tìm thấy để xóa
                 }
             } catch (NumberFormatException | SQLException e) {
-                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                 e.printStackTrace(); // Ghi log hoặc log ra file
             } catch (ClassNotFoundException ex) {
                 Logger.getLogger(xoaQuytrinh.class.getName()).log(Level.SEVERE, null, ex);
@@ -49,15 +58,19 @@ public class xoaQuytrinh extends HttpServlet {
             String trangThai = request.getParameter("status");
             String ngayBatDau = request.getParameter("start");
             String ngayKetThuc = request.getParameter("end");
-
+            int congViecId = Integer.parseInt(congViecIdStr);
             try {
-                int congViecId = Integer.parseInt(congViecIdStr);
                 KNCSDL db = new KNCSDL();
                 int newId = db.insertStep(congViecId, tenBuoc, moTa, trangThai, ngayBatDau, ngayKetThuc);
-
                 if (newId > 0) {
+                    db = new KNCSDL();
+                    int nhanId = db.getNguoiNhanIdByCongViecId(congViecId);
+                    String tencv = db.getTenCongViecById(congViecId);
+                    String tieuDeTB = "Thêm mới quy trình";
+                    String noiDungTB = "Công việc: " + tencv + " vừa được thêm quy trình mới";
+                    db.insertThongBao(nhanId, tieuDeTB, noiDungTB, "Thêm mới");
                     response.setStatus(HttpServletResponse.SC_OK);
-                    response.getWriter().write(String.valueOf(newId));
+                    db.close();
                 } else {
                     response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                     response.getWriter().write("Không thể thêm bước.");

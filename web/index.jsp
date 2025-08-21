@@ -467,7 +467,6 @@
                     </div>
             </div>
         </div>
-        <!-- Toast/Alert demo -->
         <script>
             // Ví dụ toast khi đăng nhập thành công
             $(function () {
@@ -573,12 +572,4 @@
             })();
         </script>
     </body>
-    <!-- Toast/Alert demo -->
-    <!-- <script>
-        // Ví dụ toast khi đăng nhập thành công
-        $(function () {
-            // Swal.fire({icon:'success',title:'Đăng nhập thành công!',toast:true,position:'top-end',timer:2000,showConfirmButton:false});
-        });
-    </script> -->
-
 </html>

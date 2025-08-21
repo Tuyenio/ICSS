@@ -1032,7 +1032,7 @@
                             end: processSteps[idx].end
                         },
                         success: function () {
-                            console.log("Cập nhật thành công");
+                            alert("Cập nhật thành công");
                         },
                         error: function () {
                             alert("Cập nhật thất bại");

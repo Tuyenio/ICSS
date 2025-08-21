@@ -42,18 +42,18 @@ public class themNhanvien extends HttpServlet {
             // Lấy thông tin người đang đăng nhập (vai trò & chức vụ)
             HttpSession session = request.getSession();
             //String vaiTroDangNhap = (String) session.getAttribute("vaiTro");
-            String chucVuDangNhap = (String) session.getAttribute("chucVu");
+            String vaiTroDangNhap = (String) session.getAttribute("vaiTro");
 
             String tieuDeTB = "Nhân viên mới";
             String noiDungTB = tenPhongBan + ": vừa thêm một nhân viên mới.";
 
-            if ("Giám đốc".equalsIgnoreCase(chucVuDangNhap)) {
+            if ("Admin".equalsIgnoreCase(vaiTroDangNhap)) {
                 // Nếu là Giám đốc -> gửi thông báo cho Trưởng phòng của phòng ban mới
                 int truongPhongId = kn.getTruongPhongIdByTenPhong(tenPhongBan);
                 if (truongPhongId > 0) {
                     kn.insertThongBao(truongPhongId, tieuDeTB, noiDungTB, "Nhân viên mới");
                 }
-            } else if ("Trưởng phòng".equalsIgnoreCase(chucVuDangNhap)) {
+            } else if ("Quản lý".equalsIgnoreCase(vaiTroDangNhap)) {
                 // Nếu là Quản lý -> gửi thông báo cho Giám đốc
                 int giamDocId = kn.getGiamDocId(); // Bạn cần viết hàm này trong KNCSDL
                 if (giamDocId > 0) {
