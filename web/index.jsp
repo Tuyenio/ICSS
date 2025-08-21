@@ -291,7 +291,7 @@
                         <a href="./dsChamCong"><i class="fa-solid fa-calendar-check"></i><span>Chấm công</span></a>
                     </li>
                     <li>
-                        <a href="report.jsp"><i class="fa-solid fa-chart-bar"></i><span>Báo cáo</span></a>
+                        <a href="./svBaocao"><i class="fa-solid fa-chart-bar"></i><span>Báo cáo</span></a>
                     </li>
                 </ul>
             </nav>

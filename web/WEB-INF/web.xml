@@ -135,6 +135,14 @@
         <servlet-name>chitietNV</servlet-name>
         <servlet-class>controller.chitietNV</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>svletBaocao</servlet-name>
+        <servlet-class>controller.svletBaocao</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>svBaocao</servlet-name>
+        <servlet-class>controller.svBaocao</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>dsnhanvien</servlet-name>
         <url-pattern>/dsnhanvien</url-pattern>
@@ -266,6 +274,14 @@
     <servlet-mapping>
         <servlet-name>chitietNV</servlet-name>
         <url-pattern>/chitietNV</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>svletBaocao</servlet-name>
+        <url-pattern>/svletBaocao</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>svBaocao</servlet-name>
+        <url-pattern>/svBaocao</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>

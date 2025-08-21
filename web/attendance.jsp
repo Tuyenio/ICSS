@@ -217,7 +217,7 @@
                                 công</span></a>
                     </li>
                     <li>
-                        <a href="report.jsp"><i class="fa-solid fa-chart-bar"></i><span>Báo cáo</span></a>
+                        <a href="./svBaocao"><i class="fa-solid fa-chart-bar"></i><span>Báo cáo</span></a>
                     </li>
                 </ul>
             </nav>
@@ -234,7 +234,7 @@
                                     <i class="fa-solid fa-file-export"></i> Xuất phiếu lương
                                 </button>
                             </div>
-                            <form method="GET" action="dsChamCong">
+                            <form method="post" action="dsChamCong">
                                 <div class="row mb-3 filter-row g-2">
                                     <div class="col-md-3">
                                         <input type="text" name="keyword" class="form-control" 
@@ -451,5 +451,3 @@
     </body>
 
     </html>
-    </div>
-    </form

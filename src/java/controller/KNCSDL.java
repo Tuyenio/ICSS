@@ -1278,26 +1278,29 @@ public class KNCSDL {
         sql.append("LEFT JOIN luu_kpi kpi ON nv.id = kpi.nhan_vien_id ");
 
         List<Object> params = new ArrayList<>();
-        boolean hasWhere = false;
+        List<String> whereConditions = new ArrayList<>();
 
+        // Lọc theo tháng và năm (cho KPI)
         if (thang != null && !thang.isEmpty() && nam != null && !nam.isEmpty()) {
-            sql.append(" WHERE (kpi.thang = ? AND kpi.nam = ?) OR kpi.thang IS NULL ");
+            whereConditions.add("(kpi.thang = ? AND kpi.nam = ?)");
             params.add(Integer.parseInt(thang));
             params.add(Integer.parseInt(nam));
-            hasWhere = true;
         }
 
-        if (phongBan != null && !phongBan.isEmpty()) {
-            if (hasWhere) {
-                sql.append(" AND pb.ten_phong = ? ");
-            } else {
-                sql.append(" WHERE pb.ten_phong = ? ");
-            }
-            params.add(phongBan);
+        // Lọc theo tên phòng ban
+        if (phongBan != null && !phongBan.trim().isEmpty()) {
+            whereConditions.add("pb.ten_phong = ?");
+            params.add(phongBan.trim());
         }
 
-        sql.append("GROUP BY nv.id, nv.ho_ten, pb.ten_phong ");
-        sql.append("ORDER BY nv.ho_ten");
+        // Ghép điều kiện WHERE
+        if (!whereConditions.isEmpty()) {
+            sql.append(" WHERE ");
+            sql.append(String.join(" AND ", whereConditions));
+        }
+
+        sql.append(" GROUP BY nv.id, nv.ho_ten, pb.ten_phong ");
+        sql.append(" ORDER BY nv.ho_ten");
 
         try (PreparedStatement stmt = cn.prepareStatement(sql.toString())) {
             for (int i = 0; i < params.size(); i++) {
@@ -1319,6 +1322,7 @@ public class KNCSDL {
                 }
             }
         }
+
         return baoCao;
     }
 

@@ -274,7 +274,7 @@
                         <a href="attendance.jsp"><i class="fa-solid fa-calendar-check"></i><span>Chấm công</span></a>
                     </li>
                     <li>
-                        <a href="report.jsp"><i class="fa-solid fa-chart-bar"></i><span>Báo cáo</span></a>
+                        <a href="./svBaocao"><i class="fa-solid fa-chart-bar"></i><span>Báo cáo</span></a>
                     </li>
                     <!-- <li>
                         <a href="notification.jsp" class="active"><i class="fa-solid fa-bell"></i><span>Thông
