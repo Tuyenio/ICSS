@@ -4,6 +4,7 @@
  */
 package controller;
 
+import jakarta.servlet.http.HttpSession;
 import java.sql.*;
 import java.util.*;
 import java.util.logging.Level;
@@ -1218,16 +1219,56 @@ public class KNCSDL {
 
     // ============ PHƯƠNG THỨC CHO BÁO CÁO TỔNG HỢP ============
     // Lấy thống kê tổng quan công việc theo trạng thái
-    public Map<String, Integer> getThongKeCongViecTheoTrangThai() throws SQLException {
+    public Map<String, Integer> getThongKeCongViecTheoTrangThai(HttpSession session) throws SQLException {
         Map<String, Integer> thongKe = new HashMap<>();
-        String sql = "SELECT trang_thai, COUNT(*) as so_luong FROM cong_viec GROUP BY trang_thai";
 
-        try (PreparedStatement stmt = cn.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
+        String vaiTro = (String) session.getAttribute("vaiTro");
+        int truongPhongId = -1;
+        Integer phongBanId = null;
 
-            while (rs.next()) {
-                thongKe.put(rs.getString("trang_thai"), rs.getInt("so_luong"));
+        if ("Quản lý".equalsIgnoreCase(vaiTro)) {
+            // Lấy ID người dùng từ session
+            Object uidObj = session.getAttribute("userId");
+            if (uidObj instanceof Integer) {
+                truongPhongId = (Integer) uidObj;
+            } else if (uidObj instanceof String) {
+                truongPhongId = Integer.parseInt((String) uidObj);
+            }
+
+            // Truy vấn phòng ban mà người này là trưởng phòng
+            String sqlPhong = "SELECT id FROM phong_ban WHERE truong_phong_id = ?";
+            try (PreparedStatement stmt = cn.prepareStatement(sqlPhong)) {
+                stmt.setInt(1, truongPhongId);
+                try (ResultSet rs = stmt.executeQuery()) {
+                    if (rs.next()) {
+                        phongBanId = rs.getInt("id");
+                    }
+                }
             }
         }
+
+        // Câu SQL chính
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT trang_thai, COUNT(*) as so_luong FROM cong_viec");
+
+        if (phongBanId != null) {
+            sql.append(" WHERE phong_ban_id = ?");
+        }
+
+        sql.append(" GROUP BY trang_thai");
+
+        try (PreparedStatement stmt = cn.prepareStatement(sql.toString())) {
+            if (phongBanId != null) {
+                stmt.setInt(1, phongBanId);
+            }
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    thongKe.put(rs.getString("trang_thai"), rs.getInt("so_luong"));
+                }
+            }
+        }
+
         return thongKe;
     }
 
@@ -1348,23 +1389,60 @@ public class KNCSDL {
     }
 
     // Lấy dữ liệu cho chart bar về tiến độ phòng ban
-    public Map<String, Object> getDataForBarChart() throws SQLException {
+    public Map<String, Object> getDataForBarChart(HttpSession session) throws SQLException {
         Map<String, Object> data = new HashMap<>();
         List<String> labels = new ArrayList<>();
         List<Double> values = new ArrayList<>();
 
-        String sql = "SELECT pb.ten_phong, AVG(COALESCE(td.phan_tram, 0)) as tien_do_trung_binh "
-                + "FROM phong_ban pb "
-                + "LEFT JOIN cong_viec cv ON pb.id = cv.phong_ban_id "
-                + "LEFT JOIN cong_viec_tien_do td ON cv.id = td.cong_viec_id "
-                + "GROUP BY pb.id, pb.ten_phong "
-                + "ORDER BY pb.ten_phong";
+        String vaiTro = (String) session.getAttribute("vaiTro");
+        Integer userId = null;
+        try {
+            userId = Integer.parseInt(session.getAttribute("userId").toString());
+        } catch (Exception e) {
+            // fallback nếu userId không đúng định dạng
+            userId = null;
+        }
 
-        try (PreparedStatement stmt = cn.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
+        String sql;
+        if ("Quản lý".equalsIgnoreCase(vaiTro) && userId != null) {
+            // Trưởng phòng: thống kê theo nhân viên trong phòng do mình quản lý
+            sql = """
+            SELECT nv.ho_ten, AVG(COALESCE(td.phan_tram, 0)) as tien_do_trung_binh
+            FROM phong_ban pb
+            JOIN nhanvien nv ON pb.id = nv.phong_ban_id
+            LEFT JOIN cong_viec cv ON nv.id = cv.nguoi_nhan_id
+            LEFT JOIN cong_viec_tien_do td ON cv.id = td.cong_viec_id
+            WHERE pb.truong_phong_id = ?
+            GROUP BY nv.id, nv.ho_ten
+            ORDER BY nv.ho_ten
+            """;
 
-            while (rs.next()) {
-                labels.add(rs.getString("ten_phong"));
-                values.add(Math.round(rs.getDouble("tien_do_trung_binh") * 100) / 100.0);
+            try (PreparedStatement stmt = cn.prepareStatement(sql)) {
+                stmt.setInt(1, userId);
+                try (ResultSet rs = stmt.executeQuery()) {
+                    while (rs.next()) {
+                        labels.add(rs.getString("ho_ten"));
+                        values.add(Math.round(rs.getDouble("tien_do_trung_binh") * 100) / 100.0);
+                    }
+                }
+            }
+
+        } else {
+            // Admin hoặc vai trò khác: thống kê theo phòng ban
+            sql = """
+            SELECT pb.ten_phong, AVG(COALESCE(td.phan_tram, 0)) as tien_do_trung_binh
+            FROM phong_ban pb
+            LEFT JOIN cong_viec cv ON pb.id = cv.phong_ban_id
+            LEFT JOIN cong_viec_tien_do td ON cv.id = td.cong_viec_id
+            GROUP BY pb.id, pb.ten_phong
+            ORDER BY pb.ten_phong
+            """;
+
+            try (PreparedStatement stmt = cn.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    labels.add(rs.getString("ten_phong"));
+                    values.add(Math.round(rs.getDouble("tien_do_trung_binh") * 100) / 100.0);
+                }
             }
         }
 
@@ -2340,13 +2418,37 @@ public class KNCSDL {
 
     // ============ PHƯƠNG THỨC BỔ SUNG CHO DASHBOARD ============
     // Lấy thống kê tổng quan hệ thống
-    public Map<String, Object> getThongKeTongQuan() throws SQLException {
+    public Map<String, Object> getThongKeTongQuan(HttpSession session) throws SQLException {
         Map<String, Object> thongKe = new HashMap<>();
-        // Thống kê nhân viên theo trạng thái
-        String sql1 = "SELECT trang_thai_lam_viec, COUNT(*) as so_luong FROM nhanvien GROUP BY trang_thai_lam_viec";
-        int totalNV = 0;
-        int dangLam = 0, tamNghi = 0, nghiViec = 0;
-        try (PreparedStatement stmt = cn.prepareStatement(sql1); ResultSet rs = stmt.executeQuery()) {
+
+        String vaiTro = (String) session.getAttribute("vaiTro");
+        String idStr = (String) session.getAttribute("userId");
+        Integer userId = Integer.parseInt(idStr);
+
+        Integer phongBanId = null;
+
+        // Nếu là quản lý thì tìm phòng ban mà họ làm trưởng phòng
+        if ("Quản lý".equalsIgnoreCase(vaiTro) && userId != null) {
+            String sqlPhongBan = "SELECT id FROM phong_ban WHERE truong_phong_id = ?";
+            try (PreparedStatement stmt = cn.prepareStatement(sqlPhongBan)) {
+                stmt.setInt(1, userId);
+                try (ResultSet rs = stmt.executeQuery()) {
+                    if (rs.next()) {
+                        phongBanId = rs.getInt("id");
+                    }
+                }
+            }
+        }
+
+        // 1. Thống kê trạng thái nhân viên
+        StringBuilder sql1 = new StringBuilder("SELECT trang_thai_lam_viec, COUNT(*) as so_luong FROM nhanvien");
+        if (phongBanId != null) {
+            sql1.append(" WHERE phong_ban_id = ").append(phongBanId);
+        }
+        sql1.append(" GROUP BY trang_thai_lam_viec");
+
+        int totalNV = 0, dangLam = 0, tamNghi = 0, nghiViec = 0;
+        try (PreparedStatement stmt = cn.prepareStatement(sql1.toString()); ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
                 String st = rs.getString("trang_thai_lam_viec");
                 int count = rs.getInt("so_luong");
@@ -2365,33 +2467,53 @@ public class KNCSDL {
         thongKe.put("nv_tam_nghi", tamNghi);
         thongKe.put("nv_nghi_viec", nghiViec);
 
-        // Tổng số phòng ban
-        String sql2 = "SELECT COUNT(*) as tong FROM phong_ban";
-        try (PreparedStatement stmt = cn.prepareStatement(sql2); ResultSet rs = stmt.executeQuery()) {
-            if (rs.next()) {
-                thongKe.put("tong_phong_ban", rs.getInt("tong"));
+        // 2. Tổng số phòng ban (chỉ Admin mới lấy toàn bộ)
+        if ("Admin".equalsIgnoreCase(vaiTro)) {
+            String sql2 = "SELECT COUNT(*) as tong FROM phong_ban";
+            try (PreparedStatement stmt = cn.prepareStatement(sql2); ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    thongKe.put("tong_phong_ban", rs.getInt("tong"));
+                }
             }
+        } else {
+            thongKe.put("tong_phong_ban", 1);  // Chỉ 1 phòng ban quản lý phụ trách
         }
 
-        // Tổng số công việc
+        // 3. Tổng số công việc
         String sql3 = "SELECT COUNT(*) as tong FROM cong_viec";
-        try (PreparedStatement stmt = cn.prepareStatement(sql3); ResultSet rs = stmt.executeQuery()) {
-            if (rs.next()) {
-                thongKe.put("tong_cong_viec", rs.getInt("tong"));
+        if (phongBanId != null) {
+            sql3 += " WHERE nguoi_nhan_id IN (SELECT id FROM nhanvien WHERE phong_ban_id = ?)";
+        }
+        try (PreparedStatement stmt = cn.prepareStatement(sql3)) {
+            if (phongBanId != null) {
+                stmt.setInt(1, phongBanId);
+            }
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    thongKe.put("tong_cong_viec", rs.getInt("tong"));
+                }
             }
         }
 
-        // Tỷ lệ công việc hoàn thành
-        String sql4 = "SELECT "
-                + "COUNT(*) as tong_cv, "
+        // 4. Tỷ lệ công việc hoàn thành
+        String sql4 = "SELECT COUNT(*) as tong_cv, "
                 + "SUM(CASE WHEN trang_thai = 'Đã hoàn thành' THEN 1 ELSE 0 END) as hoan_thanh "
                 + "FROM cong_viec";
-        try (PreparedStatement stmt = cn.prepareStatement(sql4); ResultSet rs = stmt.executeQuery()) {
-            if (rs.next()) {
-                int tong = rs.getInt("tong_cv");
-                int hoanThanh = rs.getInt("hoan_thanh");
-                double tyLe = tong > 0 ? (hoanThanh * 100.0 / tong) : 0;
-                thongKe.put("ty_le_hoan_thanh", Math.round(tyLe * 10) / 10.0);
+        if (phongBanId != null) {
+            sql4 += " WHERE nguoi_nhan_id IN (SELECT id FROM nhanvien WHERE phong_ban_id = ?)";
+        }
+
+        try (PreparedStatement stmt = cn.prepareStatement(sql4)) {
+            if (phongBanId != null) {
+                stmt.setInt(1, phongBanId);
+            }
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    int tong = rs.getInt("tong_cv");
+                    int hoanThanh = rs.getInt("hoan_thanh");
+                    double tyLe = tong > 0 ? (hoanThanh * 100.0 / tong) : 0;
+                    thongKe.put("ty_le_hoan_thanh", Math.round(tyLe * 10) / 10.0);
+                }
             }
         }
 

@@ -417,7 +417,9 @@
                             <% if (!tongHopKPI.isEmpty()) { %>
                             <p class="mb-0 mt-2">
                                 <strong>Điểm KPI TB:</strong> 
-                                <span class="text-primary"><%= tongHopKPI.getOrDefault("diem_kpi_trung_binh", 0.0) %>/10</span>
+                                <span class="text-primary">
+                                    <%= String.format("%.2f", tongHopKPI.getOrDefault("diem_kpi_trung_binh", 0.0)) %>/10
+                                </span>
                             </p>
                             <% } %>
                         </div>
@@ -532,10 +534,10 @@
                     </div>
                     <div class="col-md-7">
                         <div class="row g-2 small">
-                            <div class="col-6"><div class="p-2 rounded-3 d-flex align-items-center gap-2 bg-light border"><span class="d-inline-block rounded-circle" style="width:10px;height:10px;background:#198754;"></span><span>HT: <b><span id="cvHT"></span></b><br><small class="text-muted" id="pctHT"></small></span></div></div>
-                            <div class="col-6"><div class="p-2 rounded-3 d-flex align-items-center gap-2 bg-light border"><span class="d-inline-block rounded-circle" style="width:10px;height:10px;background:#0d6efd;"></span><span>TH: <b><span id="cvTH"></span></b><br><small class="text-muted" id="pctTH"></small></span></div></div>
-                            <div class="col-6"><div class="p-2 rounded-3 d-flex align-items-center gap-2 bg-light border"><span class="d-inline-block rounded-circle" style="width:10px;height:10px;background:#dc3545;"></span><span>Trễ: <b><span id="cvTre"></span></b><br><small class="text-muted" id="pctTre"></small></span></div></div>
-                            <div class="col-6"><div class="p-2 rounded-3 d-flex align-items-center gap-2 bg-light border"><span class="d-inline-block rounded-circle" style="width:10px;height:10px;background:#6c757d;"></span><span>CBĐ: <b><span id="cvCBD"></span></b><br><small class="text-muted" id="pctCBD"></small></span></div></div>
+                            <div class="col-6"><div class="p-2 rounded-3 d-flex align-items-center gap-2 bg-light border"><span class="d-inline-block rounded-circle" style="width:10px;height:10px;background:#198754;"></span><span>Đã hoàn thành: <b><span id="cvHT"></span></b><br><small class="text-muted" id="pctHT"></small></span></div></div>
+                            <div class="col-6"><div class="p-2 rounded-3 d-flex align-items-center gap-2 bg-light border"><span class="d-inline-block rounded-circle" style="width:10px;height:10px;background:#0d6efd;"></span><span>Đang thực hiện: <b><span id="cvTH"></span></b><br><small class="text-muted" id="pctTH"></small></span></div></div>
+                            <div class="col-6"><div class="p-2 rounded-3 d-flex align-items-center gap-2 bg-light border"><span class="d-inline-block rounded-circle" style="width:10px;height:10px;background:#dc3545;"></span><span>Trễ hạn: <b><span id="cvTre"></span></b><br><small class="text-muted" id="pctTre"></small></span></div></div>
+                            <div class="col-6"><div class="p-2 rounded-3 d-flex align-items-center gap-2 bg-light border"><span class="d-inline-block rounded-circle" style="width:10px;height:10px;background:#6c757d;"></span><span>Chưa bắt đầu: <b><span id="cvCBD"></span></b><br><small class="text-muted" id="pctCBD"></small></span></div></div>
                         </div>
                         <div class="mt-3 small text-muted">Tổng: <b><span id="cvTotal"></span></b> công việc</div>
                     </div>

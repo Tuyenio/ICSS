@@ -14,6 +14,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 /**
  *
@@ -29,6 +30,7 @@ public class apiChartData extends HttpServlet {
         PrintWriter out = response.getWriter();
         
         String chartType = request.getParameter("type");
+        HttpSession session = request.getSession();
         
         try {
             KNCSDL kn = new KNCSDL();
@@ -40,7 +42,7 @@ public class apiChartData extends HttpServlet {
                 
             } else if ("bar".equals(chartType)) {
                 // Dữ liệu cho bar chart - tiến độ phòng ban
-                Map<String, Object> data = kn.getDataForBarChart();
+                Map<String, Object> data = kn.getDataForBarChart(session);
                 out.print(convertToJson(data));
                 
             } else if ("table".equals(chartType)) {

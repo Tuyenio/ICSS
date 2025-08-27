@@ -4,6 +4,7 @@
  */
 package controller;
 
+import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.SQLException;
@@ -21,7 +22,7 @@ public class dsBaoCao {
     public static void layDuLieuBaoCao(
             jakarta.servlet.http.HttpServletRequest request, 
             jakarta.servlet.http.HttpServletResponse response) {
-        
+        HttpSession session = request.getSession();
         try {
             // Lấy tham số từ request
             String thangParam = request.getParameter("thang");
@@ -38,7 +39,7 @@ public class dsBaoCao {
             // Lấy dữ liệu báo cáo
             List<Map<String, Object>> baoCaoNhanVien = apiBaoCao.getBaoCaoNhanVien(thangParam, namParam, phongBanParam);
             Map<String, Object> pieChartData = apiBaoCao.getDataForPieChart();
-            Map<String, Object> barChartData = apiBaoCao.getDataForBarChart();
+            Map<String, Object> barChartData = apiBaoCao.getDataForBarChart(session);
             
             // Lấy danh sách phòng ban cho filter
             List<Map<String, Object>> danhSachPhongBan = new ArrayList<>();

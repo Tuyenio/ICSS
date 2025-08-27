@@ -263,31 +263,31 @@
                         <% if (thongTinLuong != null && !thongTinLuong.isEmpty()) { %>
                         <div class="salary-item">
                             <span>Lương cơ bản:</span>
-                            <span><fmt:formatNumber value="<%=thongTinLuong.get("luong_co_ban")%>" type="number" pattern="#,###"/>₫</span>
+                            <span><fmt:formatNumber value="<%=thongTinLuong.get(\"luong_co_ban\")%>" type="number" pattern="#,###"/>₫</span>
                         </div>
                         <div class="salary-item">
                             <span>Phụ cấp:</span>
-                            <span><fmt:formatNumber value="<%=thongTinLuong.get("phu_cap")%>" type="number" pattern="#,###"/>₫</span>
+                            <span><fmt:formatNumber value="<%=thongTinLuong.get(\"phu_cap\")%>" type="number" pattern="#,###"/>₫</span>
                         </div>
                         <div class="salary-item">
                             <span>Thưởng:</span>
-                            <span><fmt:formatNumber value="<%=thongTinLuong.get("thuong")%>" type="number" pattern="#,###"/>₫</span>
+                            <span><fmt:formatNumber value="<%=thongTinLuong.get(\"thuong\")%>" type="number" pattern="#,###"/>₫</span>
                         </div>
                         <div class="salary-item">
                             <span>Phạt:</span>
-                            <span>-<fmt:formatNumber value="<%=thongTinLuong.get("phat")%>" type="number" pattern="#,###"/>₫</span>
+                            <span>-<fmt:formatNumber value="<%=thongTinLuong.get(\"phat\")%>" type="number" pattern="#,###"/>₫</span>
                         </div>
                         <div class="salary-item">
                             <span>Bảo hiểm:</span>
-                            <span>-<fmt:formatNumber value="<%=thongTinLuong.get("bao_hiem")%>" type="number" pattern="#,###"/>₫</span>
+                            <span>-<fmt:formatNumber value="<%=thongTinLuong.get(\"bao_hiem\")%>" type="number" pattern="#,###"/>₫</span>
                         </div>
                         <div class="salary-item">
                             <span>Thuế:</span>
-                            <span>-<fmt:formatNumber value="<%=thongTinLuong.get("thue")%>" type="number" pattern="#,###"/>₫</span>
+                            <span>-<fmt:formatNumber value="<%=thongTinLuong.get(\"thue\")%>" type="number" pattern="#,###"/>₫</span>
                         </div>
                         <div class="salary-item">
                             <span>Thực lĩnh:</span>
-                            <span><fmt:formatNumber value="<%=thongTinLuong.get("luong_thuc_te")%>" type="number" pattern="#,###"/>₫</span>
+                            <span><fmt:formatNumber value="<%=thongTinLuong.get(\"luong_thuc_te\")%>" type="number" pattern="#,###"/>₫</span>
                         </div>
                         <% 
                             String trangThaiLuong = (String) thongTinLuong.get("trang_thai");
@@ -371,11 +371,11 @@
                                     <% for (Map<String, Object> luong : lichSuLuong) { %>
                                     <tr>
                                         <td><%=luong.get("thang")%>/<%=luong.get("nam")%></td>
-                                        <td><fmt:formatNumber value="<%=luong.get("luong_co_ban")%>" type="number" pattern="#,###"/>₫</td>
-                                        <td><fmt:formatNumber value="<%=luong.get("phu_cap")%>" type="number" pattern="#,###"/>₫</td>
-                                        <td><fmt:formatNumber value="<%=luong.get("thuong")%>" type="number" pattern="#,###"/>₫</td>
-                                        <td><fmt:formatNumber value="<%=luong.get("phat")%>" type="number" pattern="#,###"/>₫</td>
-                                        <td><strong><fmt:formatNumber value="<%=luong.get("luong_thuc_te")%>" type="number" pattern="#,###"/>₫</strong></td>
+                                        <td><fmt:formatNumber value="<%=luong.get(\"luong_co_ban\")%>" type="number" pattern="#,###"/>₫</td>
+                                        <td><fmt:formatNumber value="<%=luong.get(\"phu_cap\")%>" type="number" pattern="#,###"/>₫</td>
+                                        <td><fmt:formatNumber value="<%=luong.get(\"thuong\")%>" type="number" pattern="#,###"/>₫</td>
+                                        <td><fmt:formatNumber value="<%=luong.get(\"phat\")%>" type="number" pattern="#,###"/>₫</td>
+                                        <td><strong><fmt:formatNumber value="<%=luong.get(\"luong_thuc_te\")%>" type="number" pattern="#,###"/>₫</strong></td>
                                         <td>
                                             <% 
                                                 String trangThai = (String) luong.get("trang_thai");
@@ -474,10 +474,10 @@
                                     <tr>
                                         <td><%=item.get("thang")%>/<%=item.get("nam")%></td>
                                         <td><%=String.format("%.1f", item.get("tong_gio_lam"))%>h</td>
-                                        <td><fmt:formatNumber value="<%=item.get("luong_co_ban")%>" type="number" pattern="#,###"/>₫</td>
-                                        <td><fmt:formatNumber value="<%=item.get("thuong")%>" type="number" pattern="#,###"/>₫</td>
-                                        <td><fmt:formatNumber value="<%=item.get("phat")%>" type="number" pattern="#,###"/>₫</td>
-                                        <td><strong><fmt:formatNumber value="<%=item.get("luong_thuc_te")%>" type="number" pattern="#,###"/>₫</strong></td>
+                                        <td><fmt:formatNumber value="<%=item.get(\"luong_co_ban\")%>" type="number" pattern="#,###"/>₫</td>
+                                        <td><fmt:formatNumber value="<%=item.get(\"thuong\")%>" type="number" pattern="#,###"/>₫</td>
+                                        <td><fmt:formatNumber value="<%=item.get(\"phat\")%>" type="number" pattern="#,###"/>₫</td>
+                                        <td><strong><fmt:formatNumber value="<%=item.get(\"luong_thuc_te\")%>" type="number" pattern="#,###"/>₫</strong></td>
                                         <td>
                                             <% 
                                                 Double kpiScore = (Double) item.get("diem_kpi");

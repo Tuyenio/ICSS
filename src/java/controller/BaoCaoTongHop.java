@@ -13,6 +13,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 /**
  *
@@ -26,7 +27,7 @@ public class BaoCaoTongHop extends HttpServlet {
         
         try {
             KNCSDL kn = new KNCSDL();
-            
+            HttpSession session = request.getSession();
             // Lấy tham số lọc từ request
             String thang = request.getParameter("thang");
             String nam = request.getParameter("nam");
@@ -42,7 +43,7 @@ public class BaoCaoTongHop extends HttpServlet {
             // Lấy dữ liệu báo cáo
             List<Map<String, Object>> baoCaoNhanVien = kn.getBaoCaoTongHopNhanVien(thang, nam, phongBan);
             List<Map<String, Object>> thongKePhongBan = kn.getThongKeTienDoTheoPhongBan();
-            Map<String, Integer> thongKeTrangThai = kn.getThongKeCongViecTheoTrangThai();
+            Map<String, Integer> thongKeTrangThai = kn.getThongKeCongViecTheoTrangThai(session);
             
             // Lấy danh sách phòng ban cho filter
             List<Map<String, Object>> danhSachPhongBan = kn.getAllPhongBan();

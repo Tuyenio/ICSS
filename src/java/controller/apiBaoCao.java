@@ -4,6 +4,7 @@
  */
 package controller;
 
+import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.SQLException;
@@ -27,10 +28,10 @@ public class apiBaoCao {
         }
     }
     
-    public static Map<String, Object> getDataForBarChart() {
+    public static Map<String, Object> getDataForBarChart(HttpSession session) {
         try {
             KNCSDL kn = new KNCSDL();
-            return kn.getDataForBarChart();
+            return kn.getDataForBarChart(session); // ✔
         } catch (Exception e) {
             e.printStackTrace();
             return new HashMap<>();

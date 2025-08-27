@@ -19,9 +19,9 @@
     KNCSDL kn = null;
     try {
         kn = new KNCSDL();
-        thongKeTongQuan = kn.getThongKeTongQuan(); // {tong_nhan_vien, tong_phong_ban, tong_cong_viec, ty_le_hoan_thanh}
-    thongKeTrangThai = kn.getThongKeCongViecTheoTrangThai(); // Map trạng thái
-    barTienDoPhongBan = kn.getDataForBarChart();
+        thongKeTongQuan = kn.getThongKeTongQuan(sess); // {tong_nhan_vien, tong_phong_ban, tong_cong_viec, ty_le_hoan_thanh}
+    thongKeTrangThai = kn.getThongKeCongViecTheoTrangThai(sess); // Map trạng thái
+    barTienDoPhongBan = kn.getDataForBarChart(sess);
     // Thống kê chấm công tháng hiện tại (dùng lại getThongKeChamCong)
     Calendar cal = Calendar.getInstance();
     int thangNow = cal.get(Calendar.MONTH) + 1;
@@ -411,25 +411,25 @@
                                         <div class="col-6">
                                             <div class="p-2 rounded-3 d-flex align-items-center gap-2 shadow-sm" style="background:#f1f8f4;">
                                                 <span class="d-inline-block rounded-circle" style="width:10px;height:10px;background:#198754;"></span>
-                                                <span>HT: <b><%= daHoanThanh %></b><br><small class="text-muted"><%= pctHoanThanhInt %>%</small></span>
+                                                <span>Đã hoàn thành: <b><%= daHoanThanh %></b><br><small class="text-muted"><%= pctHoanThanhInt %>%</small></span>
                                             </div>
                                         </div>
                                         <div class="col-6">
                                             <div class="p-2 rounded-3 d-flex align-items-center gap-2 shadow-sm" style="background:#fff9e6;">
                                                 <span class="d-inline-block rounded-circle" style="width:10px;height:10px;background:#ffc107;"></span>
-                                                <span>TH: <b><%= dangThucHien %></b><br><small class="text-muted"><%= pctDangTHInt %>%</small></span>
+                                                <span>Đang thực hiện: <b><%= dangThucHien %></b><br><small class="text-muted"><%= pctDangTHInt %>%</small></span>
                                             </div>
                                         </div>
                                         <div class="col-6">
                                             <div class="p-2 rounded-3 d-flex align-items-center gap-2 shadow-sm" style="background:#fdecec;">
                                                 <span class="d-inline-block rounded-circle" style="width:10px;height:10px;background:#dc3545;"></span>
-                                                <span>Trễ: <b><%= treHan %></b><br><small class="text-muted"><%= pctTreHanInt %>%</small></span>
+                                                <span>Trễ hạn: <b><%= treHan %></b><br><small class="text-muted"><%= pctTreHanInt %>%</small></span>
                                             </div>
                                         </div>
                                         <div class="col-6">
                                             <div class="p-2 rounded-3 d-flex align-items-center gap-2 shadow-sm" style="background:#f2f3f5;">
                                                 <span class="d-inline-block rounded-circle" style="width:10px;height:10px;background:#6c757d;"></span>
-                                                <span>CBĐ: <b><%= chuaBatDau %></b><br><small class="text-muted"><%= pctChuaBDInt %>%</small></span>
+                                                <span>Chưa bắt đầu: <b><%= chuaBatDau %></b><br><small class="text-muted"><%= pctChuaBDInt %>%</small></span>
                                             </div>
                                         </div>
                                     </div>

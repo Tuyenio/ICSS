@@ -65,7 +65,7 @@ public class UserDashboard extends HttpServlet {
             // 8. Lấy thống kê tổng quan công ty (nếu là admin/manager)
             Map<String, Object> thongKeTongQuan = new HashMap<>();
             if ("Admin".equals(vaiTro) || "Quản lý".equals(vaiTro)) {
-                thongKeTongQuan = kn.getThongKeTongQuan();
+                thongKeTongQuan = kn.getThongKeTongQuan(session);
             }
             
             // 9. Lấy thống kê phòng ban của nhân viên

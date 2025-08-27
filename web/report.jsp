@@ -2,7 +2,9 @@
 <%@ page import="java.util.*" %>
 <%@ page import="controller.apiBaoCao" %>
 <%@ page import="controller.KNCSDL" %>
+<%@ page import="jakarta.servlet.http.HttpSession" %>
 <%
+    HttpSession ssis = request.getSession();
     // Lấy tham số từ request
     String thangParam = request.getParameter("thang");
     String namParam = request.getParameter("nam");
@@ -18,7 +20,7 @@
     // Lấy dữ liệu báo cáo
     List<Map<String, Object>> baoCaoNhanVien = apiBaoCao.getBaoCaoNhanVien(thangParam, namParam, phongBanParam);
     Map<String, Object> pieChartData = apiBaoCao.getDataForPieChart();
-    Map<String, Object> barChartData = apiBaoCao.getDataForBarChart();
+    Map<String, Object> barChartData = apiBaoCao.getDataForBarChart(ssis);
     
     // Lấy danh sách phòng ban cho filter
     List<Map<String, Object>> danhSachPhongBan = new ArrayList<>();
