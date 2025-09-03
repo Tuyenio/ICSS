@@ -34,6 +34,7 @@ public class dsnhanvien extends HttpServlet {
                 nv.put("ngay_vao_lam", rs.getString("ngay_vao_lam"));
                 nv.put("trang_thai_lam_viec", rs.getString("trang_thai_lam_viec"));
                 nv.put("vai_tro", rs.getString("vai_tro"));
+                nv.put("avatar_url", rs.getString("avatar_url"));
                 danhSach.add(nv);
             }
             rs.close();
@@ -65,7 +66,7 @@ public class dsnhanvien extends HttpServlet {
         String chucVu = request.getParameter("chuc_vu");
         String trangThai = request.getParameter("trang_thai_lam_viec");
         String vaiTro = request.getParameter("vai_tro");
-        //String avatar = request.getParameter("avatar_url");
+        String avatar = request.getParameter("avatar_url");
 
         int sophongban = Integer.parseInt(phongban);
         boolean success = false;
@@ -76,7 +77,7 @@ public class dsnhanvien extends HttpServlet {
             if (id != null && !id.isEmpty()) {
                 // Cập nhật nhân viên
                 success = kn.capNhatNhanVien(Integer.parseInt(id), hoTen, email, matKhau, sdt, gioiTinh,
-                        ngaySinh, ngayVaoLam, tenPhongBan, chucVu, trangThai, vaiTro, "null");
+                        ngaySinh, ngayVaoLam, tenPhongBan, chucVu, trangThai, vaiTro, avatar);
             } else {
                 // ❗ Nếu bạn muốn thêm mới thì cần viết thêm hàm `themNhanVien(...)` trong KNCSDL
                 response.setStatus(400);

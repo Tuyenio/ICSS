@@ -5,6 +5,7 @@
 
     <head>
         <meta charset="UTF-8">
+        <link rel="icon" type="image/png" href="Img/logoics.png">
         <title>QLNS - Hồ sơ cá nhân</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
         <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
@@ -182,7 +183,7 @@
     Map<String,Object> hs = (Map<String,Object>) request.getAttribute("hs");
     String error = (String) request.getAttribute("error");
 
-    String avatarUrl = (hs != null && hs.get("avatarUrl") != null) ? hs.get("avatarUrl").toString() : "https://ui-avatars.com/api/?name=User";
+    String avatarUrl = (hs != null && hs.get("avatar_url") != null) ? hs.get("avatar_url").toString() : "https://ui-avatars.com/api/?name=User";
     String hoTen = (hs != null && hs.get("ho_ten") != null) ? hs.get("ho_ten").toString() : "Chưa cập nhật";
     String email = (hs != null && hs.get("email") != null) ? hs.get("email").toString() : "";
     String soDienThoai = (hs != null && hs.get("so_dien_thoai") != null) ? hs.get("so_dien_thoai").toString() : "";
@@ -228,7 +229,7 @@
                 <div class="row mt-2">
                     <!-- Avatar + tên + email -->
                     <div class="col-md-3 text-center">
-                        <img src="<%= avatarUrl %>" class="rounded-circle mb-2" width="100" id="profileAvatar" alt="Avatar">
+                        <img src="<%= avatarUrl %>" class="rounded-circle mb-2" width="220" id="profileAvatar" alt="Avatar">
                         <div class="fw-bold fs-5" id="profileName"><%= hoTen %></div>
                         <div class="text-muted small" id="profileEmail"><%= email %></div>
                     </div>

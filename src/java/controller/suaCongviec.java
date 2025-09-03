@@ -1,10 +1,11 @@
 package controller;
 
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
+import java.sql.SQLException;
+import java.util.*;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.*;
 import jakarta.servlet.annotation.MultipartConfig;
+import jakarta.servlet.http.*;
 
 @MultipartConfig
 public class suaCongviec extends HttpServlet {
@@ -26,27 +27,27 @@ public class suaCongviec extends HttpServlet {
         String tenNguoiNhan = getValue(request, "ten_nguoi_nhan");
         String tenPhong = getValue(request, "ten_phong_ban");
         String trangThai = getValue(request, "trang_thai");
+        String taiieu = getValue(request, "tai_lieu_cv");
 
         try {
+
             KNCSDL db = new KNCSDL();
             int giaoId = Integer.parseInt(tenNguoiGiao);
             int nhanId = Integer.parseInt(tenNguoiNhan);
             int nhomId = Integer.parseInt(tenPhong);
-
-            if (giaoId == -1 || nhanId == -1 || nhomId == -1) {
-                out.print("{\"success\": false, \"message\": \"Không tìm thấy ID cho người giao, người nhận hoặc nhóm.\"}");
-                return;
-            }
 
             if (id == null || id.trim().isEmpty()) {
                 out.print("{\"success\": false, \"message\": \"Thiếu ID để cập nhật.\"}");
                 return;
             }
 
-            db.updateTask(Integer.parseInt(id), ten, moTa, han, uuTien, giaoId, nhanId, nhomId, trangThai);
+            db.updateTask(Integer.parseInt(id), ten, moTa, han, uuTien,
+                    giaoId, nhanId, nhomId, trangThai, taiieu);
+
             String tieuDeTB = "Cập nhật công việc";
-            String noiDungTB = "Công việc: "+ ten + " vừa được cập nhật mới";
+            String noiDungTB = "Công việc: " + ten + " vừa được cập nhật mới";
             db.insertThongBao(nhanId, tieuDeTB, noiDungTB, "Cập nhật");
+
             out.print("{\"success\": true}");
         } catch (Exception e) {
             e.printStackTrace();

@@ -1,21 +1,12 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
- */
 package controller;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import java.io.*;
+import java.sql.SQLException;
+import java.util.*;
+import jakarta.servlet.*;
 import jakarta.servlet.annotation.MultipartConfig;
+import jakarta.servlet.http.*;
 
-/**
- *
- * @author Admin
- */
 @MultipartConfig
 public class luuCongviec extends HttpServlet {
 
@@ -24,7 +15,6 @@ public class luuCongviec extends HttpServlet {
             throws ServletException, IOException {
         request.setCharacterEncoding("UTF-8");
         response.setContentType("application/json;charset=UTF-8");
-
         PrintWriter out = response.getWriter();
 
         String id = getValue(request, "task_id");
@@ -34,34 +24,30 @@ public class luuCongviec extends HttpServlet {
         String uuTien = getValue(request, "muc_do_uu_tien");
         String tenNguoiGiao = getValue(request, "ten_nguoi_giao");
         String tenNguoiNhan = getValue(request, "ten_nguoi_nhan");
-        String tenNhom = getValue(request, "ten_nhom");
+        String tenPhong = getValue(request, "ten_phong_ban");
         String trangThai = getValue(request, "trang_thai");
+        String taiieu = getValue(request, "tai_lieu_cv");
 
         try {
             KNCSDL db = new KNCSDL();
 
-            // Chuyển tên thành ID
             int giaoId = Integer.parseInt(tenNguoiGiao);
             int nhanId = Integer.parseInt(tenNguoiNhan);
-            int nhomId = Integer.parseInt(tenNhom);
-            System.err.println(giaoId + " và1" + nhanId + "va2" + nhomId + "va--" + id);
-            if (giaoId == -1 || nhanId == -1 || nhomId == -1) {
+            int phongId = Integer.parseInt(tenPhong);
+
+            if (giaoId == -1 || nhanId == -1 || phongId == -1) {
                 out.print("{\"success\": false, \"message\": \"Không tìm thấy ID cho người giao, người nhận hoặc nhóm.\"}");
                 return;
             }
 
             if (id != null && !id.trim().isEmpty()) {
                 db.updateTask(Integer.parseInt(id), ten, moTa, han, uuTien,
-                        giaoId, nhanId, nhomId, trangThai);
-                String tieuDeTB = "Cập nhật công việc";
-                String noiDungTB = "Công việc: "+ ten + " vừa được cập nhật mới";
-                db.insertThongBao(nhanId, tieuDeTB, noiDungTB, "Cập nhật");
+                        giaoId, nhanId, phongId, trangThai, taiieu);
+                db.insertThongBao(nhanId, "Cập nhật công việc", "Công việc: " + ten + " vừa được cập nhật.", "Cập nhật");
             } else {
                 db.insertTask(ten, moTa, han, uuTien,
-                        giaoId, nhanId, nhomId, trangThai);
-                String tieuDeTB = "Công việc mới";
-                String noiDungTB = "Bạn được giao công việc: "+ ten + ". Hạn: " + han + ".";
-                db.insertThongBao(nhanId, tieuDeTB, noiDungTB, "Công việc mới");
+                        giaoId, nhanId, phongId, trangThai, taiieu);
+                db.insertThongBao(nhanId, "Công việc mới", "Bạn được giao công việc: " + ten + ". Hạn: " + han, "Công việc mới");
             }
 
             out.print("{\"success\": true}");
@@ -71,16 +57,11 @@ public class luuCongviec extends HttpServlet {
         }
     }
 
-    @Override
-    public String getServletInfo() {
-        return "Short description";
-    }// </editor-fold>
-
     private String getValue(HttpServletRequest request, String fieldName) throws IOException, ServletException {
-        if (request.getPart(fieldName) != null) {
-            return new String(request.getPart(fieldName).getInputStream().readAllBytes(), "UTF-8");
+        Part part = request.getPart(fieldName);
+        if (part != null) {
+            return new String(part.getInputStream().readAllBytes(), "UTF-8");
         }
         return null;
     }
-
 }

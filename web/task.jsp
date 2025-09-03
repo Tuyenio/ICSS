@@ -6,6 +6,7 @@
 
     <head>
         <meta charset="UTF-8">
+        <link rel="icon" type="image/png" href="Img/logoics.png">
         <title>Quản lý Công việc</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
         <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
@@ -418,7 +419,8 @@
                                  data-ten_nguoi_giao="<%= task.get("nguoi_giao_id") %>"
                                  data-ten_nguoi_nhan="<%= task.get("nguoi_nhan_id") %>"
                                  data-ten_phong_ban="<%= task.get("phong_ban_id") %>"
-                                 data-trang-thai="<%= task.get("trang_thai") %>">
+                                 data-trang-thai="<%= task.get("trang_thai") %>"
+                                 data-tai_lieu_cv="<%= task.get("tai_lieu_cv") %>">
                                 <div class="task-title"><%= task.get("ten_cong_viec") %></div>
                                 <div class="task-meta">Người giao: <b><%= task.get("nguoi_giao_id") %></b> <br>Người nhận: <b><%= task.get("nguoi_nhan_id") %></b></div>
                                 <span class="task-priority badge <%= priorityBadge.getOrDefault(task.get("muc_do_uu_tien"), "bg-secondary") %>">
@@ -504,9 +506,8 @@
                                         </select>
                                     </div>
                                     <div class="mb-3">
-                                        <label class="form-label">File đính kèm</label>
-                                        <input type="file" class="form-control" name="file_dinh_kem"
-                                               accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                                        <label class="form-label">Tài liệu công việc</label>
+                                        <input type="text" class="form-control" name="tai_lieu_cv">
                                     </div>
                                 </div>
                                 <div class="modal-footer">
@@ -591,8 +592,8 @@
                                                     </select>
                                                 </div>
                                                 <div class="mb-2">
-                                                    <label for="taskAttachment" class="form-label"><b>File đính kèm:</b></label>
-                                                    <input type="file" class="form-control" id="taskAttachment" name="file_dinh_kem">
+                                                    <label for="taskAttachment" class="form-label"><b>Tài liệu công việc:</b></label>
+                                                    <input type="text" class="form-control" name="tai_lieu_cv">
                                                 </div>
                                                 <div class="modal-footer">
                                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
@@ -702,7 +703,6 @@
             </div>
         </div>
         //
-
         <script>
             // Hàm chọn option theo text
             function selectOptionByText(selectEl, targetText) {
@@ -757,6 +757,7 @@
                     const nguoiNhan = button.getAttribute("data-ten_nguoi_nhan") || "";
                     const phongban = button.getAttribute("data-ten_phong_ban") || "";
                     const trangthai = button.getAttribute("data-trang-thai") || "";
+                    const tailieu = button.getAttribute("data-tai_lieu_cv") || "";
                     // Gán dữ liệu
                     modal.querySelector('[name="task_id"]').value = id;
                     modal.querySelector('[name="ten_cong_viec"]').value = tenCV;
@@ -767,6 +768,7 @@
                     selectOptionByText(modal.querySelector('[name="ten_nguoi_nhan"]'), nguoiNhan);
                     selectOptionByText(modal.querySelector('[name="ten_phong_ban"]'), phongban);
                     selectOptionByText(modal.querySelector('[name="trang_thai"]'), trangthai);
+                    modal.querySelector('[name="tai_lieu_cv"]').value = tailieu;
                     // Mở lại tab đầu tiên khi show modal
                     const tabTrigger = modal.querySelector('#tab-task-info');
                     if (tabTrigger)

@@ -15,6 +15,7 @@
 
     <head>
         <meta charset="UTF-8">
+        <link rel="icon" type="image/png" href="Img/logoics.png">
         <title>Thông báo</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
         <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
@@ -229,7 +230,7 @@
     </head>
     <body>
         <nav class="sidebar p-0">
-            <div class="sidebar-title text-center py-4 border-bottom border-secondary" style="cursor:pointer;" onclick="location.href = 'user_dashboard.jsp'">
+            <div class="sidebar-title text-center py-4 border-bottom border-secondary" style="cursor:pointer;" onclick="location.href = './userDashboard'">
                 <i class="fa-solid fa-user me-2"></i>ICS
             </div>
             <ul class="sidebar-nav mt-3">

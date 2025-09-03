@@ -9,6 +9,7 @@
 
     <head>
         <meta charset="UTF-8">
+        <link rel="icon" type="image/png" href="Img/logoics.png">
         <title>Quản lý Nhân sự</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
         <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
@@ -296,8 +297,7 @@
                                     %>
                                     <tr>
                                         <td><%= nv.get("id") %></td>
-                                        <td><img src="https://i.pravatar.cc/40?img=1" class="rounded-circle"
-                                                 width="36"></td>
+                                        <td><img src="<%= nv.get("avatar_url") %>" class="rounded-circle" width="36"></td>
                                         <td><a href="#" class="emp-detail-link fw-semibold text-primary" data-email="<%= nv.get("email") %>"> <%= nv.get("ho_ten") %></a></td>
                                         <td><%= nv.get("email") %></td>
                                         <td><%= nv.get("so_dien_thoai") %></td>
@@ -687,7 +687,7 @@
                     // Hiển thị modal
                     $('#modalEmployee').modal('show');
                 }
-                
+
                 if (CURRENT_USER_CHUCVU.toLowerCase().includes('trưởng phòng')) {
                     $('#empRole').prop('disabled', true); // Không cho chỉnh vai trò nếu người đăng nhập là Trưởng phòng
                 } else {

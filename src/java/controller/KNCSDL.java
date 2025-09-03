@@ -22,6 +22,7 @@ public class KNCSDL {
     public KNCSDL() throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
         this.cn = DriverManager.getConnection(path, "root", "");
+        //this.cn = DriverManager.getConnection(path, "icssapp", "StrongPass!123");
     }
 
     public ResultSet laydl(String email) throws SQLException {
@@ -51,7 +52,7 @@ public class KNCSDL {
         StringBuilder sql = new StringBuilder();
         sql.append("SELECT nv.id, nv.ho_ten, nv.email, nv.mat_khau, nv.so_dien_thoai, ")
                 .append("nv.gioi_tinh, nv.ngay_sinh, nv.phong_ban_id, pb.ten_phong AS ten_phong_ban, ")
-                .append("nv.chuc_vu, nv.ngay_vao_lam, nv.trang_thai_lam_viec, nv.vai_tro ")
+                .append("nv.chuc_vu, nv.ngay_vao_lam, nv.trang_thai_lam_viec, nv.vai_tro, nv.avatar_url ")
                 .append("FROM nhanvien nv ")
                 .append("LEFT JOIN phong_ban pb ON nv.phong_ban_id = pb.id ");
 
@@ -75,7 +76,7 @@ public class KNCSDL {
 
         String sql = "SELECT nv.id, nv.ho_ten, nv.email, nv.mat_khau, nv.so_dien_thoai, "
                 + "nv.gioi_tinh, nv.ngay_sinh, nv.phong_ban_id, pb.ten_phong AS ten_phong_ban, "
-                + "nv.chuc_vu, nv.ngay_vao_lam, nv.trang_thai_lam_viec, nv.vai_tro, nv.ngay_tao "
+                + "nv.chuc_vu, nv.ngay_vao_lam, nv.trang_thai_lam_viec, nv.vai_tro, nv.ngay_tao, nv.avatar_url "
                 + "FROM nhanvien nv "
                 + "LEFT JOIN phong_ban pb ON nv.phong_ban_id = pb.id "
                 + "WHERE nv.email = ?";
@@ -396,6 +397,7 @@ public class KNCSDL {
                     task.put("phong_ban_id", rs.getString("ten_phong"));
                     task.put("muc_do_uu_tien", rs.getString("muc_do_uu_tien"));
                     task.put("trang_thai", rs.getString("trang_thai"));
+                    task.put("tai_lieu_cv", rs.getString("tai_lieu_cv"));
                     task.put("han_hoan_thanh", rs.getDate("han_hoan_thanh"));
                     tasks.add(task);
                 }
@@ -434,6 +436,7 @@ public class KNCSDL {
                     task.put("phong_ban_id", rs.getString("ten_phong"));
                     task.put("muc_do_uu_tien", rs.getString("muc_do_uu_tien"));
                     task.put("trang_thai", rs.getString("trang_thai"));
+                    task.put("tai_lieu_cv", rs.getString("tai_lieu_cv"));
                     task.put("han_hoan_thanh", rs.getDate("han_hoan_thanh"));
                     tasks.add(task);
                 }
@@ -487,10 +490,10 @@ public class KNCSDL {
     }
 
     public void insertTask(String ten, String moTa, String han, String uuTien,
-            int tenNguoiGiao, int tenNguoiNhan, int tenPhong, String trangThai) throws SQLException {
+            int tenNguoiGiao, int tenNguoiNhan, int tenPhong, String trangThai, String tailieu) throws SQLException {
 
-        String sql = "INSERT INTO cong_viec (ten_cong_viec, mo_ta, han_hoan_thanh, muc_do_uu_tien, nguoi_giao_id, nguoi_nhan_id, phong_ban_id, trang_thai) "
-                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO cong_viec (ten_cong_viec, mo_ta, han_hoan_thanh, muc_do_uu_tien, nguoi_giao_id, nguoi_nhan_id, phong_ban_id, trang_thai, tai_lieu_cv) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (PreparedStatement stmt = cn.prepareStatement(sql)) {
             stmt.setString(1, ten);
@@ -501,15 +504,16 @@ public class KNCSDL {
             stmt.setInt(6, tenNguoiNhan);
             stmt.setInt(7, tenPhong);
             stmt.setString(8, trangThai);
+            stmt.setString(9, tailieu);
             stmt.executeUpdate();
         }
     }
 
     public void updateTask(int id, String ten, String moTa, String han, String uuTien,
-            int tenNguoiGiao, int tenNguoiNhan, int tenPhong, String trangThai) throws SQLException {
+            int tenNguoiGiao, int tenNguoiNhan, int tenPhong, String trangThai, String tailieu) throws SQLException {
 
         String sql = "UPDATE cong_viec SET ten_cong_viec=?, mo_ta=?, han_hoan_thanh=?, muc_do_uu_tien=?, "
-                + "nguoi_giao_id=?, nguoi_nhan_id=?, phong_ban_id=?, trang_thai=? WHERE id=?";
+                + "nguoi_giao_id=?, nguoi_nhan_id=?, phong_ban_id=?, trang_thai=?, tai_lieu_cv=? WHERE id=?";
 
         try (PreparedStatement stmt = cn.prepareStatement(sql)) {
             stmt.setString(1, ten);
@@ -520,7 +524,8 @@ public class KNCSDL {
             stmt.setInt(6, tenNguoiNhan);
             stmt.setInt(7, tenPhong);
             stmt.setString(8, trangThai);
-            stmt.setInt(9, id);
+            stmt.setString(9, tailieu);
+            stmt.setInt(10, id);
             stmt.executeUpdate();
         }
     }

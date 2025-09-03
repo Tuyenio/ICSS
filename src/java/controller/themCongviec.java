@@ -25,6 +25,7 @@ public class themCongviec extends HttpServlet {
         String tenNguoiNhan = getValue(request, "ten_nguoi_nhan");
         String tenPhong = getValue(request, "ten_phong_ban");
         String trangThai = "Chưa bắt đầu";
+        String tailieu = getValue(request, "tai_lieu_cv");
 
         try {
             KNCSDL db = new KNCSDL();
@@ -37,7 +38,7 @@ public class themCongviec extends HttpServlet {
                 return;
             }
 
-            db.insertTask(ten, moTa, han, uuTien, giaoId, nhanId, phongId, trangThai);
+            db.insertTask(ten, moTa, han, uuTien, giaoId, nhanId, phongId, trangThai, tailieu);
             String tieuDeTB = "Công việc mới";
             String noiDungTB = "Bạn được giao công việc: "+ ten + ". Hạn: " + han + ".";
             db.insertThongBao(nhanId, tieuDeTB, noiDungTB, "Công việc mới");

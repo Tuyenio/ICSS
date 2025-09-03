@@ -63,6 +63,7 @@ public class apiHoso extends HttpServlet {
                 java.sql.Date ngayVaoLam = rs.getDate("ngay_vao_lam");
                 String trangThaiLV = rs.getString("trang_thai_lam_viec");
                 String vaiTro = rs.getString("vai_tro");
+                String avatar = rs.getString("avatar_url");
                 String ngayTao = null;
                 try {
                     ngayTao = rs.getString("ngay_tao"); // nếu có cột này
@@ -103,6 +104,7 @@ public class apiHoso extends HttpServlet {
                 hs.put("ngay_vao_lam", startStr);
                 hs.put("trang_thai_lam_viec", trangThaiLV);
                 hs.put("vai_tro", vaiTroFromDb);
+                hs.put("avatar_url", avatar);
                 hs.put("ngay_tao", (ngayTao != null ? ngayTao : ""));
 
                 hs.put("statusBadgeClass", statusBadgeClass);
