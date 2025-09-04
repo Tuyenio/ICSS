@@ -30,6 +30,7 @@ public class chitietNV extends HttpServlet {
             if (rs != null && rs.next()) {
                 String json = "{"
                         + "\"id\":" + rs.getInt("id") + ","
+                        + "\"avatar_url\":\"" + escapeJson(rs.getString("avatar_url")) + "\","
                         + "\"ho_ten\":\"" + escapeJson(rs.getString("ho_ten")) + "\","
                         + "\"email\":\"" + escapeJson(rs.getString("email")) + "\","
                         + "\"so_dien_thoai\":\"" + escapeJson(rs.getString("so_dien_thoai")) + "\","

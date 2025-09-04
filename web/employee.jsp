@@ -293,10 +293,11 @@
                                 <tbody id="employeeTableBody">
                                     <%
                                     if (danhSach != null && !danhSach.isEmpty()) {
+                                        int stt = 1;
                                         for (Map<String, Object> nv : danhSach) {
                                     %>
                                     <tr>
-                                        <td><%= nv.get("id") %></td>
+                                        <td><%= stt++ %></td>
                                         <td><img src="<%= nv.get("avatar_url") %>" class="rounded-circle" width="36"></td>
                                         <td><a href="#" class="emp-detail-link fw-semibold text-primary" data-email="<%= nv.get("email") %>"> <%= nv.get("ho_ten") %></a></td>
                                         <td><%= nv.get("email") %></td>
@@ -462,8 +463,7 @@
                                         <div class="tab-pane fade show active" id="tabInfo" role="tabpanel">
                                             <div class="row">
                                                 <div class="col-md-3 text-center">
-                                                    <img src="https://i.pravatar.cc/100?img=1"
-                                                         class="rounded-circle mb-2" width="80">
+                                                    <img id="avatarPreview" src="" class="rounded-circle mb-2" width="100">
                                                     <div class="fw-bold emp-name">Nguyễn Văn A</div>
                                                     <div class="text-muted small emp-email">nguyenvana@email.com</div>
                                                 </div>
@@ -617,6 +617,12 @@
                         $('#modalEmpDetail .emp-dept').text(data.ten_phong_ban);
                         $('#modalEmpDetail .emp-position').text(data.chuc_vu);
                         $('#modalEmpDetail .emp-start').text(data.ngay_vao_lam);
+                        
+                        const avatarUrl = data.avatar_url && data.avatar_url.trim() !== ''
+                            ? data.avatar_url
+                            : 'https://ui-avatars.com/api/?name=' + encodeURIComponent(data.ho_ten || 'User');
+
+                        $('#modalEmpDetail #avatarPreview').attr('src', avatarUrl);
 
                         // Xử lý badge màu trạng thái
                         const statusClass = getBadgeClass(data.trang_thai_lam_viec);

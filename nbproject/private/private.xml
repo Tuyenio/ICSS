@@ -3,15 +3,13 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/D:/ICSS/Back/ICSS/web/user_task.jsp</file>
-            <file>file:/D:/ICSS/Back/ICSS/src/java/controller/dsCongviecNV.java</file>
-            <file>file:/D:/ICSS/Back/ICSS/src/java/controller/themCongviec.java</file>
-            <file>file:/D:/ICSS/Back/ICSS/web/DB/qlns.sql</file>
+            <file>file:/D:/ICSS/Back/ICSS/web/report.jsp</file>
             <file>file:/D:/ICSS/Back/ICSS/web/task.jsp</file>
-            <file>file:/D:/ICSS/Back/ICSS/src/java/controller/suaCongviec.java</file>
-            <file>file:/D:/ICSS/Back/ICSS/web/login.jsp</file>
+            <file>file:/D:/ICSS/Back/ICSS/src/java/controller/apiBaoCao.java</file>
+            <file>file:/D:/ICSS/Back/ICSS/src/java/controller/dsCongviec.java</file>
+            <file>file:/D:/ICSS/Back/ICSS/web/index.jsp</file>
+            <file>file:/D:/ICSS/Back/ICSS/web/employee.jsp</file>
             <file>file:/D:/ICSS/Back/ICSS/src/java/controller/KNCSDL.java</file>
-            <file>file:/D:/ICSS/Back/ICSS/src/java/controller/luuCongviec.java</file>
         </group>
     </open-files>
 </project-private>

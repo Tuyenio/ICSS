@@ -17,11 +17,13 @@
                 String hoten = user.get("ho_ten");
                 String vaiTro = user.get("vai_tro");
                 String chucVu = user.get("chuc_vu");
+                String avatar = user.get("avatar_url");
                 session.setAttribute("userId", id);
                 session.setAttribute("userEmail", email);
                 session.setAttribute("userName", hoten);
                 session.setAttribute("vaiTro", vaiTro);
                 session.setAttribute("chucVu", chucVu);
+                session.setAttribute("avatar", avatar);
 
                 if ("Admin".equalsIgnoreCase(vaiTro) || "Quản lý".equalsIgnoreCase(vaiTro)) {
                     response.sendRedirect("index.jsp");

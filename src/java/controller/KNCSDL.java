@@ -6,6 +6,8 @@ package controller;
 
 import jakarta.servlet.http.HttpSession;
 import java.sql.*;
+import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -718,11 +720,29 @@ public class KNCSDL {
                 trangThai = "Đang thực hiện";
             }
 
-            // 4) Cập nhật
+            // Sau khi cập nhật trạng thái, cập nhật thời gian tương ứng nếu cần
             if (!trangThai.equalsIgnoreCase(trangThaiHienTai)) {
                 ps2.setString(1, trangThai);
                 ps2.setInt(2, congViecId);
                 ps2.executeUpdate();
+
+                if ("Đang thực hiện".equalsIgnoreCase(trangThai) && "Chưa bắt đầu".equalsIgnoreCase(trangThaiHienTai)) {
+                    try (PreparedStatement psUpdateStart = cn.prepareStatement(
+                            "UPDATE cong_viec SET ngay_bat_dau = CURRENT_DATE WHERE id = ? AND ngay_bat_dau IS NULL"
+                    )) {
+                        psUpdateStart.setInt(1, congViecId);
+                        psUpdateStart.executeUpdate();
+                    }
+                }
+
+                if ("Đã hoàn thành".equalsIgnoreCase(trangThai)) {
+                    try (PreparedStatement psUpdateDone = cn.prepareStatement(
+                            "UPDATE cong_viec SET ngay_hoan_thanh = CURRENT_DATE WHERE id = ? AND ngay_hoan_thanh IS NULL"
+                    )) {
+                        psUpdateDone.setInt(1, congViecId);
+                        psUpdateDone.executeUpdate();
+                    }
+                }
             }
         }
     }
@@ -967,6 +987,7 @@ public class KNCSDL {
                     userInfo.put("email", email);
                     userInfo.put("chuc_vu", rs.getString("chuc_vu"));
                     userInfo.put("vai_tro", rs.getString("vai_tro"));
+                    userInfo.put("avatar_url", rs.getString("avatar_url"));
                     // Thêm thông tin khác nếu cần
                     return userInfo;
                 }
@@ -1308,38 +1329,48 @@ public class KNCSDL {
         return thongKe;
     }
 
-    // Lấy báo cáo tổng hợp nhân viên với KPI
     public List<Map<String, Object>> getBaoCaoTongHopNhanVien(String thang, String nam, String phongBan) throws SQLException {
         List<Map<String, Object>> baoCao = new ArrayList<>();
         StringBuilder sql = new StringBuilder();
+
         sql.append("SELECT nv.id, nv.ho_ten, pb.ten_phong, ");
-        sql.append("COUNT(cv.id) as so_task, ");
-        sql.append("SUM(CASE WHEN cv.trang_thai = 'Đã hoàn thành' THEN 1 ELSE 0 END) as da_hoan_thanh, ");
-        sql.append("SUM(CASE WHEN cv.trang_thai = 'Đang thực hiện' THEN 1 ELSE 0 END) as dang_thuc_hien, ");
-        sql.append("SUM(CASE WHEN cv.trang_thai = 'Trễ hạn' THEN 1 ELSE 0 END) as tre_han, ");
-        sql.append("AVG(kpi.diem_kpi) as diem_kpi_trung_binh ");
+        sql.append("COUNT(cv.id) AS so_task, ");
+        sql.append("SUM(CASE WHEN cv.ngay_hoan_thanh IS NOT NULL AND cv.ngay_hoan_thanh <= ? THEN 1 ELSE 0 END) AS da_hoan_thanh, ");
+        sql.append("SUM(CASE WHEN cv.ngay_bat_dau <= ? AND cv.ngay_hoan_thanh IS NULL AND (cv.han_hoan_thanh IS NULL OR cv.han_hoan_thanh >= ?) THEN 1 ELSE 0 END) AS dang_thuc_hien, ");
+        sql.append("SUM(CASE WHEN cv.han_hoan_thanh < ? AND cv.ngay_hoan_thanh IS NULL THEN 1 ELSE 0 END) AS tre_han, ");
+        sql.append("SUM(CASE WHEN cv.ngay_bat_dau > ? THEN 1 ELSE 0 END) AS chua_bat_dau ");
         sql.append("FROM nhanvien nv ");
         sql.append("LEFT JOIN phong_ban pb ON nv.phong_ban_id = pb.id ");
         sql.append("LEFT JOIN cong_viec cv ON nv.id = cv.nguoi_nhan_id ");
-        sql.append("LEFT JOIN luu_kpi kpi ON nv.id = kpi.nhan_vien_id ");
 
         List<Object> params = new ArrayList<>();
         List<String> whereConditions = new ArrayList<>();
 
-        // Lọc theo tháng và năm (cho KPI)
-        if (thang != null && !thang.isEmpty() && nam != null && !nam.isEmpty()) {
-            whereConditions.add("(kpi.thang = ? AND kpi.nam = ?)");
-            params.add(Integer.parseInt(thang));
-            params.add(Integer.parseInt(nam));
+        // Xác định ngày đầu và cuối tháng
+        int thangInt = Integer.parseInt(thang);
+        int namInt = Integer.parseInt(nam);
+        YearMonth ym = YearMonth.of(namInt, thangInt);
+        LocalDate ngayDauThang = ym.atDay(1);
+        LocalDate ngayCuoiThang = ym.atEndOfMonth();
+        java.sql.Date sqlNgayDauThang = java.sql.Date.valueOf(ngayDauThang);
+        java.sql.Date sqlNgayCuoiThang = java.sql.Date.valueOf(ngayCuoiThang);
+
+        // Thêm ngày cuối tháng 5 lần cho biểu thức CASE
+        for (int i = 0; i < 5; i++) {
+            params.add(sqlNgayCuoiThang);
         }
 
-        // Lọc theo tên phòng ban
+        // Thêm điều kiện lọc theo tháng/năm của công việc
+        whereConditions.add("(cv.ngay_bat_dau <= ? AND (cv.ngay_hoan_thanh IS NULL OR cv.ngay_hoan_thanh >= ?))");
+        params.add(sqlNgayCuoiThang); // cv.ngay_bat_dau <= ?
+        params.add(sqlNgayCuoiThang);  // cv.ngay_hoan_thanh >= ?
+
+        // Lọc phòng ban nếu có
         if (phongBan != null && !phongBan.trim().isEmpty()) {
             whereConditions.add("pb.ten_phong = ?");
             params.add(phongBan.trim());
         }
 
-        // Ghép điều kiện WHERE
         if (!whereConditions.isEmpty()) {
             sql.append(" WHERE ");
             sql.append(String.join(" AND ", whereConditions));
@@ -1355,16 +1386,16 @@ public class KNCSDL {
 
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
-                    Map<String, Object> nhanVien = new HashMap<>();
-                    nhanVien.put("id", rs.getInt("id"));
-                    nhanVien.put("ho_ten", rs.getString("ho_ten"));
-                    nhanVien.put("ten_phong", rs.getString("ten_phong"));
-                    nhanVien.put("so_task", rs.getInt("so_task"));
-                    nhanVien.put("da_hoan_thanh", rs.getInt("da_hoan_thanh"));
-                    nhanVien.put("dang_thuc_hien", rs.getInt("dang_thuc_hien"));
-                    nhanVien.put("tre_han", rs.getInt("tre_han"));
-                    nhanVien.put("diem_kpi", rs.getDouble("diem_kpi_trung_binh"));
-                    baoCao.add(nhanVien);
+                    Map<String, Object> row = new HashMap<>();
+                    row.put("id", rs.getInt("id"));
+                    row.put("ho_ten", rs.getString("ho_ten"));
+                    row.put("ten_phong", rs.getString("ten_phong"));
+                    row.put("so_task", rs.getInt("so_task"));
+                    row.put("da_hoan_thanh", rs.getInt("da_hoan_thanh"));
+                    row.put("dang_thuc_hien", rs.getInt("dang_thuc_hien"));
+                    row.put("tre_han", rs.getInt("tre_han"));
+                    row.put("chua_bat_dau", rs.getInt("chua_bat_dau"));
+                    baoCao.add(row);
                 }
             }
         }

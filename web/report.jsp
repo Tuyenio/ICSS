@@ -296,7 +296,6 @@
                                         <th style="width: 12%">Đã hoàn thành</th>
                                         <th style="width: 12%">Đang thực hiện</th>
                                         <th style="width: 10%">Trễ hạn</th>
-                                        <th style="width: 10%">KPI</th>
                                     </tr>
                                 </thead>
                                 <tbody id="reportTableBody">
@@ -339,26 +338,6 @@
                                         </td>
                                         <td class="text-center">
                                             <span class="badge bg-danger"><%= treHan %></span>
-                                        </td>
-                                        <td class="text-center">
-                                            <%
-                                            Object kpi = nv.get("diem_kpi");
-                                            if (kpi != null && !kpi.toString().equals("null")) {
-                                                double kpiValue = Double.parseDouble(kpi.toString());
-                                                String kpiClass = "bg-secondary";
-                                                if (kpiValue >= 9.0) kpiClass = "bg-success";
-                                                else if (kpiValue >= 7.0) kpiClass = "bg-primary";
-                                                else if (kpiValue >= 5.0) kpiClass = "bg-warning";
-                                                else if (kpiValue > 0) kpiClass = "bg-danger";
-                                            %>
-                                            <span class="badge <%= kpiClass %>"><%= String.format("%.1f", kpiValue) %></span>
-                                            <%
-                                            } else {
-                                            %>
-                                            <span class="badge bg-secondary">N/A</span>
-                                            <%
-                                            }
-                                            %>
                                         </td>
                                     </tr>
                                     <%
