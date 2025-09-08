@@ -316,8 +316,8 @@
                                         <td class="text-center"><%= stt++ %></td>
                                         <td>
                                             <div class="d-flex align-items-center">
-                                                <img src="https://i.pravatar.cc/32?img=<%= stt %>" 
-                                                     class="rounded-circle me-2" width="32" height="32">
+                                                <img src="<%= nv.get("avatar_url") %>"
+                                                     class="rounded-circle me-2" width="36">
                                                 <strong><%= nv.get("ho_ten") != null ? nv.get("ho_ten") : "N/A" %></strong>
                                             </div>
                                         </td>
@@ -362,33 +362,32 @@
                         <!-- Modal xuất báo cáo với tab -->
                         <div class="modal fade" id="modalExportReport" tabindex="-1">
                             <div class="modal-dialog">
-                                <form class="modal-content">
+                                <form class="modal-content" id="formExportReport" action="./exportReport" method="post">
                                     <div class="modal-header">
-                                        <h5 class="modal-title"><i class="fa-solid fa-file-export"></i> Xuất báo cáo
-                                        </h5>
+                                        <h5 class="modal-title"><i class="fa-solid fa-file-export"></i> Xuất báo cáo</h5>
                                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                     </div>
+
                                     <div class="modal-body">
+                                        <!-- Tabs -->
                                         <ul class="nav nav-tabs mb-3" id="reportExportTab" role="tablist">
                                             <li class="nav-item" role="presentation">
-                                                <button class="nav-link active" id="tab-export-summary"
-                                                        data-bs-toggle="tab" data-bs-target="#tabExportSummary"
-                                                        type="button" role="tab">Tổng hợp</button>
+                                                <button class="nav-link active" id="tab-export-summary" data-bs-toggle="tab"
+                                                        data-bs-target="#tabExportSummary" type="button" role="tab">Tổng hợp</button>
                                             </li>
                                             <li class="nav-item" role="presentation">
                                                 <button class="nav-link" id="tab-export-kpi" data-bs-toggle="tab"
-                                                        data-bs-target="#tabExportKPI" type="button"
-                                                        role="tab">KPI</button>
+                                                        data-bs-target="#tabExportKPI" type="button" role="tab">KPI</button>
                                             </li>
                                             <li class="nav-item" role="presentation">
                                                 <button class="nav-link" id="tab-export-task" data-bs-toggle="tab"
-                                                        data-bs-target="#tabExportTask" type="button" role="tab">Công
-                                                    việc</button>
+                                                        data-bs-target="#tabExportTask" type="button" role="tab">Công việc</button>
                                             </li>
                                         </ul>
+
                                         <div class="tab-content" id="reportExportTabContent">
-                                            <div class="tab-pane fade show active" id="tabExportSummary"
-                                                 role="tabpanel">
+                                            <!-- SUMMARY -->
+                                            <div class="tab-pane fade show active" id="tabExportSummary" role="tabpanel">
                                                 <div class="mb-3">
                                                     <label class="form-label">Chọn định dạng</label>
                                                     <select class="form-select" name="exportType">
@@ -398,30 +397,28 @@
                                                 </div>
                                                 <div class="mb-3">
                                                     <label class="form-label">Khoảng thời gian</label>
-                                                    <input type="date" class="form-control mb-2" name="fromDate"
-                                                           placeholder="Từ ngày">
-                                                    <input type="date" class="form-control" name="toDate"
-                                                           placeholder="Đến ngày">
+                                                    <input type="date" class="form-control mb-2" name="fromDate" placeholder="Từ ngày">
+                                                    <input type="date" class="form-control" name="toDate" placeholder="Đến ngày">
                                                 </div>
                                             </div>
+
+                                            <!-- KPI -->
                                             <div class="tab-pane fade" id="tabExportKPI" role="tabpanel">
                                                 <div class="mb-3">
                                                     <label class="form-label">Chọn nhân viên</label>
                                                     <select class="form-select" name="employeeKPI">
                                                         <option value="">Tất cả nhân viên</option>
                                                         <%
-                                                        try {
-                                                            KNCSDL kn2 = new KNCSDL();
-                                                            java.sql.ResultSet rsNV = kn2.layNhanVien();
-                                                            while (rsNV.next()) {
+                                                          try {
+                                                              KNCSDL kn2 = new KNCSDL();
+                                                              java.sql.ResultSet rsNV = kn2.layNhanVien();
+                                                              while (rsNV.next()) {
                                                         %>
                                                         <option value="<%= rsNV.getInt("id") %>"><%= rsNV.getString("ho_ten") %></option>
                                                         <%
-                                                            }
-                                                            rsNV.close();
-                                                        } catch (Exception e) {
-                                                            e.printStackTrace();
-                                                        }
+                                                              }
+                                                              rsNV.close();
+                                                          } catch (Exception e) { e.printStackTrace(); }
                                                         %>
                                                     </select>
                                                 </div>
@@ -430,17 +427,19 @@
                                                     <input type="month" class="form-control" name="monthKPI">
                                                 </div>
                                             </div>
+
+                                            <!-- TASK -->
                                             <div class="tab-pane fade" id="tabExportTask" role="tabpanel">
                                                 <div class="mb-3">
                                                     <label class="form-label">Chọn phòng ban</label>
                                                     <select class="form-select" name="departmentTask">
                                                         <option value="">Tất cả phòng ban</option>
                                                         <%
-                                                        for (Map<String, Object> pb : danhSachPhongBan) {
+                                                          for (Map<String, Object> pb : danhSachPhongBan) {
                                                         %>
                                                         <option value="<%= pb.get("ten_phong") %>"><%= pb.get("ten_phong") %></option>
                                                         <%
-                                                        }
+                                                          }
                                                         %>
                                                     </select>
                                                 </div>
@@ -454,12 +453,14 @@
                                                 </div>
                                             </div>
                                         </div>
+
+                                        <!-- Quan trọng: reportType để servlet biết tab nào -->
+                                        <input type="hidden" name="reportType" id="reportTypeHidden">
                                     </div>
+
                                     <div class="modal-footer">
-                                        <button type="submit" class="btn btn-primary rounded-pill">Xuất
-                                            file</button>
-                                        <button type="button" class="btn btn-secondary rounded-pill"
-                                                data-bs-dismiss="modal">Huỷ</button>
+                                        <button type="submit" class="btn btn-primary rounded-pill">Xuất file</button>
+                                        <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Huỷ</button>
                                     </div>
                                 </form>
                             </div>
@@ -468,6 +469,48 @@
                 </div>
             </div>
         </div>
+
+        <script>
+            // Gắn reportType theo tab đang active & kiểm tra đơn giản
+            (function () {
+                var form = document.getElementById('formExportReport');
+                form.addEventListener('submit', function (e) {
+                    var activePane = document.querySelector('#reportExportTabContent .tab-pane.active');
+                    var reportType = 'summary';
+                    if (activePane && activePane.id === 'tabExportKPI')
+                        reportType = 'kpi';
+                    if (activePane && activePane.id === 'tabExportTask')
+                        reportType = 'task';
+                    document.getElementById('reportTypeHidden').value = reportType;
+
+                    // Validate tối thiểu (ví dụ cho Summary)
+                    if (reportType === 'summary') {
+                        var fromDate = form.querySelector('input[name="fromDate"]').value;
+                        var toDate = form.querySelector('input[name="toDate"]').value;
+                        if (!fromDate || !toDate) {
+                            e.preventDefault();
+                            showToast('error', 'Vui lòng chọn đầy đủ khoảng thời gian.');
+                            return;
+                        }
+                    }
+                    // KPI có thể kiểm tra monthKPI nếu bạn muốn bắt buộc
+                    // Task không bắt buộc (đã có mặc định)
+                    // Không dùng AJAX để trình duyệt nhận stream file tải về
+                });
+            })();
+
+            // Hàm showToast bạn đang dùng (giả sử đã có)
+            function showToast(type, message) {
+                var map = {success: '#toastSuccess', error: '#toastError', info: '#toastInfo', warning: '#toastWarning'};
+                var id = map[type] || '#toastInfo';
+                if (!$(id).length) {
+                    var html = '<div id="' + id.substring(1) + '" class="toast align-items-center border-0 position-fixed bottom-0 end-0 m-3" role="alert" aria-live="assertive" aria-atomic="true"><div class="d-flex"><div class="toast-body"></div><button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast"></button></div></div>';
+                    $('body').append(html);
+                }
+                $(id).find('.toast-body').text(message);
+                new bootstrap.Toast($(id)[0], {delay: 2500, autohide: true}).show();
+            }
+        </script>
         <script>
             // Dữ liệu từ backend
             <%
@@ -581,12 +624,6 @@
             function refreshData() {
                 window.location.reload();
             }
-
-            // Xuất báo cáo
-            $('form.modal-content').submit(function (e) {
-                e.preventDefault();
-                alert('Chức năng xuất báo cáo đang được phát triển!');
-            });
 
             // Enhanced filter table với cập nhật số lượng
             $('#keywordFilter').on('input', function () {

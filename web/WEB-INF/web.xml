@@ -143,6 +143,10 @@
         <servlet-name>svBaocao</servlet-name>
         <servlet-class>controller.svBaocao</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>ExportReportServlet</servlet-name>
+        <servlet-class>controller.ExportReportServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>dsnhanvien</servlet-name>
         <url-pattern>/dsnhanvien</url-pattern>
@@ -282,6 +286,10 @@
     <servlet-mapping>
         <servlet-name>svBaocao</servlet-name>
         <url-pattern>/svBaocao</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ExportReportServlet</servlet-name>
+        <url-pattern>/exportReport</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>

@@ -301,7 +301,7 @@
                                             %>
                                                 <tr>
                                                     <td><%= stt++ %></td>
-                                                    <td><img src="https://i.pravatar.cc/40?img=<%= item.get("nhan_vien_id") %>" class="rounded-circle" width="36"></td>
+                                                    <td><img src="<%= item.get("avatar_url") %>" class="rounded-circle" width="36"></td>
                                                     <td>
                                                         <span class="fw-semibold text-primary attendance-emp-detail"
                                                             style="cursor:pointer;" data-bs-toggle="modal"

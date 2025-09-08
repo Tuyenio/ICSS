@@ -777,60 +777,90 @@
             });
         </script>
         <script>
-            document.getElementById("btnInsertTask").addEventListener("click", function () {
-                const form = document.getElementById("taskForm");
-                const formData = new FormData(form); // tự động lấy tất cả input theo name, bao gồm file
+            $('#taskForm').on('submit', function (e) {
+                e.preventDefault(); // Ngăn form submit mặc định
 
-                fetch("./themCongviec", {
-                    method: "POST",
-                    body: formData
-                })
-                        .then(res => res.json())
-                        .then(data => {
-                            if (data.success) {
-                                alert("Đã lưu thành công!");
-                                location.reload();
-                            } else {
-                                alert("Lỗi khi lưu: " + data.message);
-                            }
-                        })
-                        .catch(err => {
-                            console.error("Lỗi kết nối:", err);
-                            alert("Đã xảy ra lỗi!");
-                        });
+                const taskId = $('#taskId').val(); // nếu có ID thì là sửa, không thì là thêm
+                const formData = new FormData(this); // lấy dữ liệu form bao gồm cả file
+                const url = taskId ? './capNhatCongviec' : './themCongviec';
+
+                $.ajax({
+                    url: url,
+                    type: 'POST',
+                    data: formData,
+                    processData: false, // cần để gửi FormData
+                    contentType: false, // cần để gửi FormData
+                    success: function (response) {
+                        if (response.success) {
+                            $('#modalTask').modal('hide');
+                            showToast('success', taskId ? 'Cập nhật thành công' : 'Thêm mới thành công');
+                            location.reload();
+                        } else {
+                            showToast('error', response.message || (taskId ? 'Cập nhật thất bại' : 'Thêm mới thất bại'));
+                        }
+                    },
+                    error: function () {
+                        showToast('error', taskId ? 'Cập nhật thất bại' : 'Thêm mới thất bại');
+                    }
+                });
             });
+
         </script>
         <script>
-            document.getElementById("btnSaveTask").addEventListener("click", function () {
-                const form = document.getElementById("formTaskDetail");
-                const formData = new FormData(form); // tự động lấy tất cả input theo name, bao gồm file
+            // ====== LƯU CÔNG VIỆC (SỬA) ======
+            $('#btnSaveTask').on('click', function (e) {
+                e.preventDefault();
 
-                fetch("./suaCongviec", {
-                    method: "POST",
-                    body: formData
-                })
-                        .then(res => res.json())
-                        .then(data => {
-                            if (data.success) {
-                                alert("Đã lưu thành công!");
-                                location.reload();
-                            } else {
-                                alert("Lỗi khi lưu: " + data.message);
+                var $btn = $(this);
+                var form = document.getElementById('formTaskDetail');
+                var formData = new FormData(form);
+
+                $.ajax({
+                    url: './suaCongviec',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    dataType: 'json',
+                    beforeSend: function () {
+                        $btn.prop('disabled', true).data('orig-text', $btn.html()).html('Đang lưu...');
+                    },
+                    success: function (response) {
+                        var data = response;
+                        if (typeof response === 'string') {
+                            try {
+                                data = JSON.parse(response);
+                            } catch (e) {
                             }
-                        })
-                        .catch(err => {
-                            console.error("Lỗi kết nối:", err);
-                            alert("Đã xảy ra lỗi!");
-                        });
-            });
-        </script>
-        <script>
-            $('#btnFilter').on('click', function () {
-                const keyword = $('input[name="keyword"]').val();
-                const phongBan = $('select[name="ten_phong_ban"]').val();
-                const trangThai = $('select[name="trangThai"]').val();
+                        }
 
-                console.log("key" + keyword + "phong" + phongBan + "trangthai" + trangThai);
+                        if (data && data.success) {
+                            $('#modalTaskDetail').modal && $('#modalTaskDetail').modal('hide');
+                            showToast('success', 'Đã lưu thành công!');
+                            location.reload();
+                        } else {
+                            var msg = (data && data.message) ? data.message : 'Lỗi khi lưu công việc';
+                            showToast('error', msg);
+                        }
+                    },
+                    error: function () {
+                        showToast('error', 'Đã xảy ra lỗi kết nối máy chủ');
+                    },
+                    complete: function () {
+                        $btn.prop('disabled', false).html($btn.data('orig-text') || 'Lưu');
+                    }
+                });
+            });
+
+            // ====== LỌC CÔNG VIỆC ======
+            $('#btnFilter').on('click', function (e) {
+                e.preventDefault();
+
+                var $btn = $(this);
+                var keyword = $('input[name="keyword"]').val() || '';
+                var phongBan = $('select[name="ten_phong_ban"]').val() || '';
+                var trangThai = $('select[name="trangThai"]').val() || '';
+
                 $.ajax({
                     url: './locCongviec',
                     type: 'POST',
@@ -839,14 +869,56 @@
                         phong_ban: phongBan,
                         trang_thai: trangThai
                     },
+                    dataType: 'html',
+                    beforeSend: function () {
+                        $btn.prop('disabled', true).data('orig-text', $btn.html()).html('Đang lọc...');
+                    },
                     success: function (html) {
-                        $('.kanban-board').html(html); // Thay thế toàn bộ bảng Kanban
+                        if (html && $.trim(html).length > 0) {
+                            $('.kanban-board').html(html);
+                            showToast('success', 'Đã áp dụng bộ lọc.');
+                        } else {
+                            $('.kanban-board').html('<div class="text-center text-muted p-3">Không có dữ liệu phù hợp</div>');
+                            showToast('info', 'Không tìm thấy kết quả phù hợp.');
+                        }
                     },
                     error: function () {
-                        $('.kanban-board').html("<div class='text-danger text-center'>Lỗi khi lọc công việc</div>");
+                        $('.kanban-board').html('<div class="text-danger text-center p-3">Lỗi khi lọc công việc</div>');
+                        showToast('error', 'Lỗi khi lọc công việc.');
+                    },
+                    complete: function () {
+                        $btn.prop('disabled', false).html($btn.data('orig-text') || 'Lọc');
                     }
                 });
             });
+
+            // ====== HÀM TOAST DÙNG CHUNG ======
+            function showToast(type, message) {
+                var map = {
+                    success: '#toastSuccess',
+                    error: '#toastError',
+                    info: '#toastInfo',
+                    warning: '#toastWarning'
+                };
+                var toastId = map[type] || '#toastInfo';
+
+                if ($(toastId).length === 0) {
+                    var toastHtml =
+                            '<div id="' + toastId.substring(1) + '" class="toast align-items-center border-0 position-fixed bottom-0 end-0 m-3" role="alert" aria-live="assertive" aria-atomic="true">' +
+                            '<div class="d-flex">' +
+                            '<div class="toast-body"></div>' +
+                            '<button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>' +
+                            '</div>' +
+                            '</div>';
+                    $('body').append(toastHtml);
+                }
+
+                $(toastId).find('.toast-body').text(message);
+                var bsToast = new bootstrap.Toast($(toastId)[0], {delay: 2500, autohide: true});
+                bsToast.show();
+            }
+        </script>
+        <script>
             // Danh sách các bước quy trình (demo, nên dùng AJAX thực tế)
             var processSteps = [
                 {
@@ -859,34 +931,38 @@
                 }
             ];
 
-            function calcProgressPercent() {
-                if (!processSteps || processSteps.length === 0)
+            function calcProgressPercent(list) {
+                var steps = list || processSteps;
+                if (!steps || steps.length === 0)
                     return 0;
-                var done = processSteps.filter(s => s.status === "Đã hoàn thành").length;
-                return Math.round((done / processSteps.length) * 100);
+                var done = steps.filter(function (s) {
+                    return s.status === "Đã hoàn thành";
+                }).length;
+                return Math.round((done / steps.length) * 100);
             }
 
             // Hiển thị các bước quy trình với nút chỉnh sửa trạng thái (logic đẹp mắt, chỉ 1 nút)
             function renderProcessSteps() {
                 var percent = calcProgressPercent();
                 var barClass = percent === 100 ? "bg-success" : "bg-warning";
-                $('#taskProgressBar').css('width', percent + '%').removeClass('bg-warning bg-success').addClass(barClass).text(percent + '%');
+                $('#taskProgressBar')
+                        .css('width', percent + '%')
+                        .removeClass('bg-warning bg-success')
+                        .addClass(barClass)
+                        .text(percent + '%');
 
                 // 👇 Gửi phần trăm về server
-                var taskId = $('#taskId').val(); // đảm bảo có input ẩn chứa id công việc
+                var taskId = $('#taskId').val();
                 if (taskId) {
                     $.ajax({
-                        url: 'capnhatTiendo', // servlet xử lý
+                        url: 'capnhatTiendo',
                         method: 'POST',
-                        data: {
-                            cong_viec_id: taskId,
-                            phan_tram: percent
-                        },
-                        success: function (res) {
-                            console.log("Cập nhật tiến độ thành công");
+                        data: {cong_viec_id: taskId, phan_tram: percent},
+                        success: function () {
+                            showToast('success', 'Cập nhật tiến độ thành công');
                         },
                         error: function () {
-                            console.error("Lỗi khi cập nhật tiến độ");
+                            showToast('error', 'Lỗi khi cập nhật tiến độ');
                         }
                     });
                 }
@@ -905,17 +981,12 @@
                         else if (step.status === "Trễ hạn")
                             badgeClass = "bg-danger";
 
-                        // Nút chỉnh sửa
                         var editBtn =
                                 '<button class="btn btn-sm btn-outline-secondary me-1" onclick="showEditStepModal(' + idx + ')">' +
-                                '<i class="fa-solid fa-pen"></i> Chỉnh sửa' +
-                                '</button>';
-
-                        // Nút xóa
+                                '<i class="fa-solid fa-pen"></i> Chỉnh sửa</button>';
                         var deleteBtn =
                                 '<button class="btn btn-sm btn-danger ms-1" onclick="removeProcessStep(' + idx + ')">' +
-                                '<i class="fa-solid fa-trash"></i>' +
-                                '</button>';
+                                '<i class="fa-solid fa-trash"></i></button>';
 
                         var html = '<li class="list-group-item d-flex justify-content-between align-items-center">' +
                                 '<div>' +
@@ -926,32 +997,25 @@
                                 '</div>' +
                                 '<div>' + editBtn + deleteBtn + '</div>' +
                                 '</li>';
-
                         list.append(html);
                     });
                 }
             }
 
             function renderTaskReviews(data) {
-                const list = document.getElementById("taskReviewList");
+                var list = document.getElementById("taskReviewList");
                 list.innerHTML = "";
-
                 data.forEach(function (item) {
-                    const li = document.createElement("li");
-
-                    // Tạo HTML bằng nối chuỗi không dùng template literal
+                    var li = document.createElement("li");
                     var html = "<b>Người đánh giá:</b> " + item.ten_nguoi_danh_gia + "<br>" +
                             "<b>Nhận xét:</b> " + item.nhan_xet + "<br>" +
                             "<i class='text-muted'>" + item.thoi_gian + "</i>";
-
                     li.innerHTML = html;
                     li.classList.add("mb-2", "border", "p-2", "rounded");
-
                     list.appendChild(li);
                 });
             }
 
-            // Modal chỉnh sửa trạng thái bước quy trình
             function showEditStepModal(idx) {
                 var step = processSteps[idx];
                 var modalHtml =
@@ -981,14 +1045,10 @@
                         '</select>' +
                         '</div>' +
                         '<div class="mb-2 row">' +
-                        '<div class="col">' +
-                        '<label class="form-label">Ngày bắt đầu</label>' +
-                        '<input type="date" class="form-control" name="stepStart" value="' + (step.start || '') + '">' +
-                        '</div>' +
-                        '<div class="col">' +
-                        '<label class="form-label">Ngày kết thúc</label>' +
-                        '<input type="date" class="form-control" name="stepEnd" value="' + (step.end || '') + '">' +
-                        '</div>' +
+                        '<div class="col"><label class="form-label">Ngày bắt đầu</label>' +
+                        '<input type="date" class="form-control" name="stepStart" value="' + (step.start || '') + '"></div>' +
+                        '<div class="col"><label class="form-label">Ngày kết thúc</label>' +
+                        '<input type="date" class="form-control" name="stepEnd" value="' + (step.end || '') + '"></div>' +
                         '</div>' +
                         '</div>' +
                         '<div class="modal-footer">' +
@@ -998,14 +1058,11 @@
                         '</form>' +
                         '</div>' +
                         '</div>';
-                // Xóa modal cũ nếu có
                 $('#modalEditStepStatus').remove();
-                // Thêm modal vào body
                 $('body').append(modalHtml);
-                // Hiển thị modal
                 var modal = new bootstrap.Modal(document.getElementById('modalEditStepStatus'));
                 modal.show();
-                // Xử lý submit cập nhật
+
                 $('#formEditStepStatus').on('submit', function (e) {
                     e.preventDefault();
                     processSteps[idx] = {
@@ -1019,12 +1076,10 @@
                     renderProcessSteps();
                     modal.hide();
                     $('#modalEditStepStatus').remove();
-                    // TODO: AJAX cập nhật trạng thái bước quy trình cho công việc
-                    const taskId = document.getElementById("taskId").value;
+                    var taskId = document.getElementById("taskId").value;
                     $.ajax({
                         url: './apiTaskSteps',
-                        method: 'POST', // hoặc 'PUT' tùy backend bạn thiết kế
-                        contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+                        method: 'POST',
                         data: {
                             step_id: processSteps[idx].id,
                             name: processSteps[idx].name,
@@ -1034,68 +1089,58 @@
                             end: processSteps[idx].end
                         },
                         success: function () {
-                            alert("Cập nhật thành công");
+                            showToast('success', 'Cập nhật bước thành công');
                         },
                         error: function () {
-                            alert("Cập nhật thất bại");
+                            showToast('error', 'Cập nhật bước thất bại');
                         }
                     });
                 });
-                // Khi đóng modal thì xóa khỏi DOM
                 $('#modalEditStepStatus').on('hidden.bs.modal', function () {
                     $('#modalEditStepStatus').remove();
                 });
             }
 
             window.removeProcessStep = function (idx) {
-                const step = processSteps[idx];
+                var step = processSteps[idx];
                 if (!step || !step.id) {
-                    alert("Không thể xác định bước cần xóa.");
+                    showToast('error', 'Không thể xác định bước cần xóa.');
                     return;
                 }
-
                 if (confirm("Bạn có chắc chắn muốn xóa bước này không?")) {
-                    // Gửi yêu cầu xóa bằng POST
                     $.ajax({
                         url: './xoaQuytrinh',
                         method: 'POST',
-                        contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
-                        data: {
-                            action: 'delete',
-                            step_id: step.id
-                        },
+                        data: {action: 'delete', step_id: step.id},
                         success: function () {
-                            // Xóa khỏi mảng và cập nhật UI
                             processSteps.splice(idx, 1);
                             renderProcessSteps();
-                            alert("Đã xóa bước thành công.");
+                            showToast('success', 'Đã xóa bước thành công.');
                         },
                         error: function () {
-                            alert("Xóa thất bại. Vui lòng thử lại.");
+                            showToast('error', 'Xóa thất bại. Vui lòng thử lại.');
                         }
                     });
                 }
             };
+
             $('#btnAddProcessStep').on('click', function () {
                 $('#formAddProcessStep')[0].reset();
                 $('#modalAddProcessStep').modal('show');
             });
             $('#formAddProcessStep').on('submit', function (e) {
                 e.preventDefault();
-
-                const taskId = document.getElementById("taskId").value;
-                const step = {
+                var taskId = document.getElementById("taskId").value;
+                var step = {
                     name: $(this).find('[name="stepName"]').val(),
                     desc: $(this).find('[name="stepDesc"]').val(),
                     status: $(this).find('[name="stepStatus"]').val(),
                     start: $(this).find('[name="stepStart"]').val(),
                     end: $(this).find('[name="stepEnd"]').val()
                 };
-
                 $.ajax({
                     url: './xoaQuytrinh',
                     method: 'POST',
-                    contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
                     data: {
                         action: 'add',
                         task_id: taskId,
@@ -1110,22 +1155,22 @@
                         processSteps.push(step);
                         renderProcessSteps();
                         $('#modalAddProcessStep').modal('hide');
+                        showToast('success', 'Thêm bước thành công');
                     },
                     error: function () {
-                        alert("Thêm bước thất bại.");
+                        showToast('error', 'Thêm bước thất bại');
                     }
                 });
             });
+
             $('#modalTaskDetail').on('show.bs.modal', function () {
                 renderProcessSteps();
             });
 
             document.addEventListener("DOMContentLoaded", function () {
-                const tabProgress = document.getElementById("tab-task-progress");
-
+                var tabProgress = document.getElementById("tab-task-progress");
                 tabProgress.addEventListener("shown.bs.tab", function () {
-                    const taskId = document.getElementById("taskId").value;
-
+                    var taskId = document.getElementById("taskId").value;
                     $.ajax({
                         url: './apiTaskSteps?task_id=' + taskId,
                         method: 'GET',
@@ -1134,16 +1179,15 @@
                             renderProcessSteps();
                         },
                         error: function () {
-                            alert("Không thể tải quy trình.");
+                            showToast('error', 'Không thể tải quy trình.');
                         }
                     });
                 });
 
-                const tabReview = document.getElementById("tab-task-review");
+                var tabReview = document.getElementById("tab-task-review");
                 if (tabReview) {
                     tabReview.addEventListener("shown.bs.tab", function () {
-                        const taskId = document.getElementById("taskId").value;
-
+                        var taskId = document.getElementById("taskId").value;
                         $.ajax({
                             url: './apiDanhgiaCV?taskId=' + taskId,
                             method: 'GET',
@@ -1151,7 +1195,7 @@
                                 renderTaskReviews(data);
                             },
                             error: function () {
-                                alert("Không thể tải đánh giá.");
+                                showToast('error', 'Không thể tải đánh giá.');
                             }
                         });
                     });
@@ -1165,14 +1209,12 @@
                 var comment = document.getElementById("reviewComment").value.trim();
 
                 if (!reviewerId || !comment) {
-                    alert("Vui lòng chọn người đánh giá và nhập nhận xét.");
+                    showToast('error', 'Vui lòng chọn người đánh giá và nhập nhận xét.');
                     return;
                 }
-
                 if (!confirm("Bạn có chắc chắn muốn thêm đánh giá này không?")) {
                     return;
                 }
-
                 var formData = new URLSearchParams();
                 formData.append("cong_viec_id", taskId);
                 formData.append("nguoi_danh_gia_id", reviewerId);
@@ -1180,9 +1222,7 @@
 
                 fetch("./apiDanhgiaCV", {
                     method: "POST",
-                    headers: {
-                        "Content-Type": "application/x-www-form-urlencoded"
-                    },
+                    headers: {"Content-Type": "application/x-www-form-urlencoded"},
                     body: formData.toString()
                 })
                         .then(function (res) {
@@ -1190,20 +1230,17 @@
                         })
                         .then(function (data) {
                             if (data.success) {
-                                alert("Thêm đánh giá thành công!");
+                                showToast('success', 'Thêm đánh giá thành công!');
                                 document.getElementById("reviewComment").value = "";
-
-                                // Delay 300ms trước khi tải lại dữ liệu
                                 setTimeout(function () {
                                     loadTaskReviews(taskId);
                                 }, 300);
                             } else {
-                                alert("Thêm thất bại: " + (data.message || ""));
+                                showToast('error', 'Thêm thất bại: ' + (data.message || ''));
                             }
                         })
-                        .catch(function (err) {
-                            console.error("Lỗi:", err);
-                            alert("Đã xảy ra lỗi khi thêm đánh giá.");
+                        .catch(function () {
+                            showToast('error', 'Đã xảy ra lỗi khi thêm đánh giá.');
                         });
             });
 
@@ -1216,29 +1253,30 @@
                             renderTaskReviews(data);
                         })
                         .catch(function () {
-                            alert("Không thể tải lại danh sách đánh giá.");
+                            showToast('error', 'Không thể tải lại danh sách đánh giá.');
                         });
             }
 
             function updateAllTaskProgressBars() {
                 document.querySelectorAll('.task-progress-bar').forEach(function (bar) {
-                    const taskId = bar.getAttribute('data-task-id');
+                    var taskId = bar.getAttribute('data-task-id');
                     fetch('./apiTaskSteps?task_id=' + encodeURIComponent(taskId))
-                            .then(res => res.json())
-                            .then(processSteps => {
-                                const percent = calcProgressPercent(processSteps);
-                                let barClass = "bg-warning";
+                            .then(function (res) {
+                                return res.json();
+                            })
+                            .then(function (steps) {
+                                var percent = calcProgressPercent(steps);
+                                var barClass = "bg-warning";
                                 if (percent === 100)
                                     barClass = "bg-success";
                                 else if (percent === 0)
                                     barClass = "bg-secondary";
-
                                 bar.style.width = percent + "%";
                                 bar.textContent = percent + "%";
                                 bar.className = "progress-bar task-progress-bar " + barClass;
                             })
-                            .catch(err => {
-                                console.error("Lỗi khi tải bước quy trình:", err);
+                            .catch(function () {
+                                showToast('error', 'Lỗi khi tải bước quy trình');
                             });
                 });
             }

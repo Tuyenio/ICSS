@@ -205,7 +205,7 @@
                                         <td><strong><%= pb.get("ten_phong") %></strong></td>
                                         <td>
                                             <% if (pb.get("truong_phong_ten") != null) { %>
-                                            <img src="https://i.pravatar.cc/40?img=1" class="rounded-circle me-1" width="28">
+                                            <img src="<%= pb.get("truong_phong_avatar") %>" class="rounded-circle me-1" width="28">
                                             <span class="fw-semibold text-primary"><%= pb.get("truong_phong_ten") %></span>
                                             <span class="badge bg-info ms-1">Trưởng phòng</span>
                                             <% } else { %>

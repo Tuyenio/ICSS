@@ -171,7 +171,7 @@
                 <h5>Kết nối - Hiệu quả - Thành công</h5>
             </div>
             <div class="login-right">
-                <h3>Welcome ICS Company</h3>
+                <h3>Welcome ICS CRM</h3>
                 <p class="text-muted">Sign in to continue</p>
                 <% if (!errorMsg.isEmpty()) { %>
                 <div class="alert alert-danger py-2 mb-3" role="alert">

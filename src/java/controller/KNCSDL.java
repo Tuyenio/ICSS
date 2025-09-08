@@ -1012,12 +1012,13 @@ public class KNCSDL {
     public List<Map<String, Object>> getAllPhongBan() throws SQLException {
         List<Map<String, Object>> danhSach = new ArrayList<>();
         String sql = "SELECT pb.id, pb.ten_phong, pb.truong_phong_id, "
-                + "tp.ho_ten AS truong_phong_ten, pb.ngay_tao, "
-                + "COUNT(nv.id) AS so_nhan_vien "
+                + "tp.ho_ten AS truong_phong_ten, tp.avatar_url AS truong_phong_avatar, "
+                + "pb.ngay_tao, COUNT(nv.id) AS so_nhan_vien "
                 + "FROM phong_ban pb "
                 + "LEFT JOIN nhanvien tp ON pb.truong_phong_id = tp.id "
                 + "LEFT JOIN nhanvien nv ON pb.id = nv.phong_ban_id "
-                + "GROUP BY pb.id, pb.ten_phong, pb.truong_phong_id, tp.ho_ten, pb.ngay_tao "
+                + "GROUP BY pb.id, pb.ten_phong, pb.truong_phong_id, "
+                + "tp.ho_ten, tp.avatar_url, pb.ngay_tao "
                 + "ORDER BY pb.id";
 
         try (PreparedStatement stmt = cn.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
@@ -1028,6 +1029,7 @@ public class KNCSDL {
                 phongBan.put("ten_phong", rs.getString("ten_phong"));
                 phongBan.put("truong_phong_id", rs.getInt("truong_phong_id"));
                 phongBan.put("truong_phong_ten", rs.getString("truong_phong_ten"));
+                phongBan.put("truong_phong_avatar", rs.getString("truong_phong_avatar")); 
                 phongBan.put("ngay_tao", rs.getTimestamp("ngay_tao"));
                 phongBan.put("so_nhan_vien", rs.getInt("so_nhan_vien"));
                 danhSach.add(phongBan);
@@ -1333,7 +1335,7 @@ public class KNCSDL {
         List<Map<String, Object>> baoCao = new ArrayList<>();
         StringBuilder sql = new StringBuilder();
 
-        sql.append("SELECT nv.id, nv.ho_ten, pb.ten_phong, ");
+        sql.append("SELECT nv.id, nv.avatar_url, nv.ho_ten, pb.ten_phong, ");
         sql.append("COUNT(cv.id) AS so_task, ");
         sql.append("SUM(CASE WHEN cv.ngay_hoan_thanh IS NOT NULL AND cv.ngay_hoan_thanh <= ? THEN 1 ELSE 0 END) AS da_hoan_thanh, ");
         sql.append("SUM(CASE WHEN cv.ngay_bat_dau <= ? AND cv.ngay_hoan_thanh IS NULL AND (cv.han_hoan_thanh IS NULL OR cv.han_hoan_thanh >= ?) THEN 1 ELSE 0 END) AS dang_thuc_hien, ");
@@ -1388,6 +1390,7 @@ public class KNCSDL {
                 while (rs.next()) {
                     Map<String, Object> row = new HashMap<>();
                     row.put("id", rs.getInt("id"));
+                    row.put("avatar_url", rs.getString("avatar_url"));
                     row.put("ho_ten", rs.getString("ho_ten"));
                     row.put("ten_phong", rs.getString("ten_phong"));
                     row.put("so_task", rs.getInt("so_task"));
