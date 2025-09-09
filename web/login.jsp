@@ -161,10 +161,55 @@
             .remember-forgot label {
                 margin-left: 5px;
             }
+            .login-container {
+                position: relative;
+                width: 900px;
+                background-color: #fff;
+                border-radius: 20px;
+                overflow: hidden;
+                display: flex;
+                box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+                z-index: 1;
+            }
+
+            /* Dải sáng 7 màu chạy quanh form */
+            .login-container::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                border-radius: 20px;
+                padding: 2px;
+                background: linear-gradient(90deg, red, orange, yellow, green, blue, indigo, violet, red);
+                background-size: 400% 400%;
+                animation: moveBorder 6s linear infinite;
+                z-index: 2;
+                mask:
+                    linear-gradient(#fff 0 0) content-box,
+                    linear-gradient(#fff 0 0);
+                -webkit-mask:
+                    linear-gradient(#fff 0 0) content-box,
+                    linear-gradient(#fff 0 0);
+                mask-composite: exclude;
+                -webkit-mask-composite: destination-out;
+                pointer-events: none;
+                box-sizing: border-box;
+            }
+            @keyframes moveBorder {
+                0% {
+                    background-position: 0% 0%;
+                }
+                100% {
+                    background-position: 400% 0%;
+                }
+            }
+
         </style>
     </head>
     <body>
-        
+
         <div class="login-container">
             <div class="login-left">
                 <img src="Img/logoics.png" alt="Logo">

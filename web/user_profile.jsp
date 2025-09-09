@@ -156,8 +156,7 @@
     Map<String,Object> hs = (Map<String,Object>) request.getAttribute("hs");
     String error = (String) request.getAttribute("error");
 
-    String avatarUrl = (hs != null && hs.get("avatarUrl") != null) ? hs.get("avatarUrl").toString() : "https://ui-avatars.com/api/?name=User";
-    String hoTen = (hs != null && hs.get("ho_ten") != null) ? hs.get("ho_ten").toString() : "Chưa cập nhật";
+    String avatarUrl = (hs != null && hs.get("avatar_url") != null) ? hs.get("avatar_url").toString() : "https://ui-avatars.com/api/?name=User";    String hoTen = (hs != null && hs.get("ho_ten") != null) ? hs.get("ho_ten").toString() : "Chưa cập nhật";
     String email = (hs != null && hs.get("email") != null) ? hs.get("email").toString() : "";
     String soDienThoai = (hs != null && hs.get("so_dien_thoai") != null) ? hs.get("so_dien_thoai").toString() : "";
     String gioiTinh = (hs != null && hs.get("gioi_tinh") != null) ? hs.get("gioi_tinh").toString() : "";
@@ -206,7 +205,7 @@
                 <div class="row mt-2">
                     <!-- Avatar + tên + email -->
                     <div class="col-md-3 text-center">
-                        <img src="<%= avatarUrl %>" class="rounded-circle mb-2" width="100" id="profileAvatar" alt="Avatar">
+                        <img src="<%= avatarUrl %>" class="rounded-circle mb-2" width="220" id="profileAvatar" alt="Avatar">
                         <div class="fw-bold fs-5" id="profileName"><%= hoTen %></div>
                         <div class="text-muted small" id="profileEmail"><%= email %></div>
                     </div>

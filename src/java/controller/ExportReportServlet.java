@@ -6,17 +6,18 @@ import jakarta.servlet.http.*;
 import java.io.*;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDate;
-import java.time.YearMonth;
+import controller.apiBaoCao;
+import java.util.List;
+import java.util.Map;
 
-// Excel
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-// PDF (OpenPDF hoặc iText 2/5; dưới đây ví dụ OpenPDF)
 import com.lowagie.text.*;
 import com.lowagie.text.pdf.*;
+import java.time.YearMonth;
 
+@WebServlet(name = "ExportReportServlet", urlPatterns = {"/exportReport"})
 public class ExportReportServlet extends HttpServlet {
 
     @Override
@@ -25,72 +26,71 @@ public class ExportReportServlet extends HttpServlet {
 
         req.setCharacterEncoding("UTF-8");
 
-        String reportType = param(req, "reportType");   // summary | kpi | task
-        String exportType = param(req, "exportType");   // Excel | PDF (chỉ có ở tab summary theo form)
+        String reportType = param(req, "reportType");
+        String exportType = param(req, "exportType");
         if (reportType == null || reportType.isEmpty()) reportType = "summary";
         if (exportType == null || exportType.isEmpty()) exportType = "Excel";
 
-        // Đặt tên file
-        String baseName = "BaoCao";
-        if ("kpi".equals(reportType)) baseName = "BaoCao_KPI";
-        if ("task".equals(reportType)) baseName = "BaoCao_CongViec";
+        String baseName = "BaoCao";  // tên mặc định
 
-        if ("Excel".equalsIgnoreCase(exportType)) {
-            String fileName = baseName + ".xlsx";
-            prepareDownloadHeaders(resp, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+        // Lấy tháng, năm từ request
+        String thangNam = req.getParameter("thangNam"); // kiểu "2025-09"
+        String[] parts = thangNam.split("-");
+        int nambc = Integer.parseInt(parts[0]);
+        int thangbc = Integer.parseInt(parts[1]);
 
-            try (Workbook wb = new XSSFWorkbook(); OutputStream os = resp.getOutputStream()) {
-                if ("summary".equals(reportType)) {
-                    LocalDate from = parseDate(param(req, "fromDate"));
-                    LocalDate to   = parseDate(param(req, "toDate"));
-                    exportSummaryExcel(wb, from, to);
-                } else if ("kpi".equals(reportType)) {
-                    String empId = param(req, "employeeKPI"); // có thể rỗng = tất cả
-                    YearMonth ym = parseYearMonth(param(req, "monthKPI"));
-                    exportKPIExcel(wb, empId, ym);
-                } else { // task
-                    String dept   = param(req, "departmentTask");
-                    String status = param(req, "taskStatus");
-                    exportTaskExcel(wb, dept, status);
-                }
-                wb.write(os);
-                os.flush();
-            } catch (Exception ex) {
-                handleServerError(resp, ex);
-            }
-            return;
+        // Đổi số tháng -> chữ (nếu bạn muốn hiển thị bằng chữ)
+        String[] thangChu = {"", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"};
+
+        // Lấy tên phòng ban (nếu có chọn)
+        String phongBan = req.getParameter("phongBan"); // null hoặc "all" nếu tất cả
+
+        // Xác định tên file
+        if ("all".equalsIgnoreCase(phongBan) || phongBan == null || phongBan.isEmpty()) {
+            baseName = "BaoCao_Thang_" + thangChu[thangbc] + "-" + nambc;
+        } else {
+            baseName = "BaoCao_Phong_" + phongBan + "_Thang_" + thangChu[thangbc] + "-" + nambc;
         }
 
-        // PDF
-        String fileName = baseName + ".pdf";
-        prepareDownloadHeaders(resp, "application/pdf", fileName);
+        String fileName = baseName + ("Excel".equalsIgnoreCase(exportType) ? ".xlsx" : ".pdf");
+        prepareDownloadHeaders(resp,
+                "Excel".equalsIgnoreCase(exportType) ?
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" :
+                        "application/pdf",
+                fileName);
+
         try (OutputStream os = resp.getOutputStream()) {
-            Document doc = new Document(PageSize.A4);
-            PdfWriter.getInstance(doc, os);
-            doc.open();
-
-            if ("summary".equals(reportType)) {
-                LocalDate from = parseDate(param(req, "fromDate"));
-                LocalDate to   = parseDate(param(req, "toDate"));
-                exportSummaryPDF(doc, from, to);
-            } else if ("kpi".equals(reportType)) {
-                String empId = param(req, "employeeKPI");
-                YearMonth ym = parseYearMonth(param(req, "monthKPI"));
-                exportKPIPDF(doc, empId, ym);
+            if ("Excel".equalsIgnoreCase(exportType)) {
+                try (Workbook wb = new XSSFWorkbook()) {
+                    if ("summary".equals(reportType)) {
+                        String thang = param(req, "thangNam").split("-")[1];
+                        String nam = param(req, "thangNam").split("-")[0];
+                        String dept = param(req, "departmentTask");
+                        exportSummaryExcel(wb, thang, nam, dept);
+                    }
+                    wb.write(os);
+                    os.flush();
+                }
             } else {
-                String dept   = param(req, "departmentTask");
-                String status = param(req, "taskStatus");
-                exportTaskPDF(doc, dept, status);
-            }
+                Document doc = new Document(PageSize.A4);
+                PdfWriter.getInstance(doc, os);
+                doc.open();
 
-            doc.close();
-            os.flush();
+                if ("summary".equals(reportType)) {
+                    String thang = param(req, "thangNam").split("-")[1];
+                    String nam = param(req, "thangNam").split("-")[0];
+                    String dept = param(req, "departmentTask");
+                    exportSummaryPDF(doc, thang, nam, dept);
+                }
+
+                doc.close();
+                os.flush();
+            }
         } catch (Exception ex) {
             handleServerError(resp, ex);
         }
     }
 
-    // ====== Helpers ======
     private String param(HttpServletRequest req, String name) {
         String v = req.getParameter(name);
         return v != null ? v.trim() : null;
@@ -99,15 +99,9 @@ public class ExportReportServlet extends HttpServlet {
     private void prepareDownloadHeaders(HttpServletResponse resp, String contentType, String fileName) throws UnsupportedEncodingException {
         resp.setContentType(contentType + "; charset=UTF-8");
         String encoded = URLEncoder.encode(fileName, StandardCharsets.UTF_8.toString()).replace("+", "%20");
-        // header đôi cho trình duyệt khác nhau
         resp.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"; filename*=UTF-8''" + encoded);
-        // tránh cache nếu cần
         resp.setHeader("Pragma", "public");
         resp.setHeader("Cache-Control", "max-age=0");
-    }
-
-    private LocalDate parseDate(String s) {
-        try { return s != null && s.length() > 0 ? LocalDate.parse(s) : null; } catch (Exception e) { return null; }
     }
 
     private YearMonth parseYearMonth(String s) {
@@ -115,7 +109,6 @@ public class ExportReportServlet extends HttpServlet {
     }
 
     private void handleServerError(HttpServletResponse resp, Exception ex) throws IOException {
-        // Nếu muốn, có thể log server, còn client nhận thông điệp file lỗi
         resp.reset();
         resp.setContentType("text/plain; charset=UTF-8");
         resp.setStatus(500);
@@ -124,125 +117,66 @@ public class ExportReportServlet extends HttpServlet {
         pw.flush();
     }
 
-    // ====== Excel exports (Apache POI) ======
-    private void exportSummaryExcel(Workbook wb, LocalDate from, LocalDate to) {
-        Sheet sh = wb.createSheet("TongHop");
+    private void exportSummaryExcel(Workbook wb, String thang, String nam, String phongBan) throws Exception {
+        Sheet sh = wb.createSheet("BaoCaoTongHop");
         int r = 0;
-        var header = sh.createRow(r++);
-        header.createCell(0).setCellValue("Chỉ tiêu");
-        header.createCell(1).setCellValue("Giá trị");
-        header.createCell(2).setCellValue("Từ ngày");
-        header.createCell(3).setCellValue("Đến ngày");
 
-        // TODO: truy vấn DB theo from/to, ví dụ demo:
-        var row = sh.createRow(r++);
-        row.createCell(0).setCellValue("Số công việc hoàn thành");
-        row.createCell(1).setCellValue(42);
-        row.createCell(2).setCellValue(from != null ? from.toString() : "");
-        row.createCell(3).setCellValue(to != null ? to.toString() : "");
+        org.apache.poi.ss.usermodel.Row header = sh.createRow(r++);
+        String[] cols = {"STT", "Nhân viên", "Phòng ban", "Số task", "Đã hoàn thành", "Đang thực hiện", "Trễ hạn", "Tỷ lệ hoàn thành"};
+        for (int i = 0; i < cols.length; i++) header.createCell(i).setCellValue(cols[i]);
 
-        autosizeColumns(sh, 4);
-    }
+        List<Map<String, Object>> list = apiBaoCao.getBaoCaoNhanVien(thang, nam, phongBan);
+        int stt = 1;
+        for (Map<String, Object> nv : list) {
+            org.apache.poi.ss.usermodel.Row row = sh.createRow(r++);
+            int soTask = (int) nv.getOrDefault("so_task", 0);
+            int daHoanThanh = (int) nv.getOrDefault("da_hoan_thanh", 0);
+            int dangThucHien = (int) nv.getOrDefault("dang_thuc_hien", 0);
+            int treHan = (int) nv.getOrDefault("tre_han", 0);
+            String tyLe = soTask > 0 ? String.format("%.1f%%", (daHoanThanh * 100.0 / soTask)) : "0%";
 
-    private void exportKPIExcel(Workbook wb, String empId, YearMonth ym) {
-        Sheet sh = wb.createSheet("KPI");
-        int r = 0;
-        var header = sh.createRow(r++);
-        header.createCell(0).setCellValue("Nhân viên");
-        header.createCell(1).setCellValue("Tháng");
-        header.createCell(2).setCellValue("Điểm KPI");
-
-        // TODO: truy vấn DB theo empId, ym
-        var row = sh.createRow(r++);
-        row.createCell(0).setCellValue(empId != null && empId.length() > 0 ? empId : "Tất cả");
-        row.createCell(1).setCellValue(ym != null ? ym.toString() : "");
-        row.createCell(2).setCellValue(8.75);
-
-        autosizeColumns(sh, 3);
-    }
-
-    private void exportTaskExcel(Workbook wb, String dept, String status) {
-        Sheet sh = wb.createSheet("CongViec");
-        int r = 0;
-        var header = sh.createRow(r++);
-        header.createCell(0).setCellValue("Phòng ban");
-        header.createCell(1).setCellValue("Trạng thái");
-        header.createCell(2).setCellValue("Tên công việc");
-        header.createCell(3).setCellValue("Người phụ trách");
-        header.createCell(4).setCellValue("Hạn hoàn thành");
-
-        // TODO: truy vấn DB theo dept, status
-        var row = sh.createRow(r++);
-        row.createCell(0).setCellValue(dept != null ? dept : "Tất cả");
-        row.createCell(1).setCellValue(status != null ? status : "");
-        row.createCell(2).setCellValue("Thiết kế UI");
-        row.createCell(3).setCellValue("Nguyễn Văn A");
-        row.createCell(4).setCellValue("2025-09-20");
-
-        autosizeColumns(sh, 5);
-    }
-
-    private void autosizeColumns(Sheet sh, int count) {
-        for (int i = 0; i < count; i++) {
-            sh.autoSizeColumn(i);
+            row.createCell(0).setCellValue(stt++);
+            row.createCell(1).setCellValue((String) nv.get("ho_ten"));
+            row.createCell(2).setCellValue((String) nv.get("ten_phong"));
+            row.createCell(3).setCellValue(soTask);
+            row.createCell(4).setCellValue(daHoanThanh);
+            row.createCell(5).setCellValue(dangThucHien);
+            row.createCell(6).setCellValue(treHan);
+            row.createCell(7).setCellValue(tyLe);
         }
+
+        for (int i = 0; i < 8; i++) sh.autoSizeColumn(i);
     }
 
-    // ====== PDF exports (OpenPDF) ======
-    private void exportSummaryPDF(Document doc, LocalDate from, LocalDate to) throws Exception {
+    private void exportSummaryPDF(Document doc, String thang, String nam, String phongBan) throws Exception {
         doc.add(new Paragraph("BÁO CÁO TỔNG HỢP"));
-        doc.add(new Paragraph("Khoảng thời gian: " +
-                (from != null ? from.toString() : "") + " - " +
-                (to != null ? to.toString() : "")));
+        doc.add(new Paragraph("Tháng: " + thang + "/" + nam));
+        doc.add(new Paragraph("Phòng ban: " + (phongBan != null && !phongBan.isEmpty() ? phongBan : "Tất cả")));
         doc.add(Chunk.NEWLINE);
 
-        PdfPTable tbl = new PdfPTable(2);
+        PdfPTable tbl = new PdfPTable(8);
         tbl.setWidthPercentage(100);
-        tbl.addCell("Chỉ tiêu");
-        tbl.addCell("Giá trị");
+        String[] cols = {"STT", "Nhân viên", "Phòng ban", "Số task", "Đã hoàn thành", "Đang thực hiện", "Trễ hạn", "Tỷ lệ hoàn thành"};
+        for (String c : cols) tbl.addCell(c);
 
-        // TODO: dữ liệu thật từ DB
-        tbl.addCell("Số công việc hoàn thành");
-        tbl.addCell("42");
+        List<Map<String, Object>> list = apiBaoCao.getBaoCaoNhanVien(thang, nam, phongBan);
+        int stt = 1;
+        for (Map<String, Object> nv : list) {
+            int soTask = (int) nv.getOrDefault("so_task", 0);
+            int daHoanThanh = (int) nv.getOrDefault("da_hoan_thanh", 0);
+            int dangThucHien = (int) nv.getOrDefault("dang_thuc_hien", 0);
+            int treHan = (int) nv.getOrDefault("tre_han", 0);
+            String tyLe = soTask > 0 ? String.format("%.1f%%", (daHoanThanh * 100.0 / soTask)) : "0%";
 
-        doc.add(tbl);
-    }
-
-    private void exportKPIPDF(Document doc, String empId, YearMonth ym) throws Exception {
-        doc.add(new Paragraph("BÁO CÁO KPI"));
-        doc.add(new Paragraph("Nhân viên: " + (empId != null && empId.length() > 0 ? empId : "Tất cả")));
-        doc.add(new Paragraph("Tháng: " + (ym != null ? ym.toString() : "")));
-        doc.add(Chunk.NEWLINE);
-
-        PdfPTable tbl = new PdfPTable(2);
-        tbl.setWidthPercentage(100);
-        tbl.addCell("Hạng mục");
-        tbl.addCell("Giá trị");
-
-        tbl.addCell("Điểm KPI trung bình");
-        tbl.addCell("8.75");
-
-        doc.add(tbl);
-    }
-
-    private void exportTaskPDF(Document doc, String dept, String status) throws Exception {
-        doc.add(new Paragraph("BÁO CÁO CÔNG VIỆC"));
-        doc.add(new Paragraph("Phòng ban: " + (dept != null ? dept : "Tất cả")));
-        doc.add(new Paragraph("Trạng thái: " + (status != null ? status : "")));
-        doc.add(Chunk.NEWLINE);
-
-        PdfPTable tbl = new PdfPTable(4);
-        tbl.setWidthPercentage(100);
-        tbl.addCell("Tên công việc");
-        tbl.addCell("Người phụ trách");
-        tbl.addCell("Trạng thái");
-        tbl.addCell("Hạn");
-
-        // TODO: dữ liệu thật từ DB
-        tbl.addCell("Thiết kế UI");
-        tbl.addCell("Nguyễn Văn A");
-        tbl.addCell(status != null ? status : "");
-        tbl.addCell("2025-09-20");
+            tbl.addCell(String.valueOf(stt++));
+            tbl.addCell((String) nv.get("ho_ten"));
+            tbl.addCell((String) nv.get("ten_phong"));
+            tbl.addCell(String.valueOf(soTask));
+            tbl.addCell(String.valueOf(daHoanThanh));
+            tbl.addCell(String.valueOf(dangThucHien));
+            tbl.addCell(String.valueOf(treHan));
+            tbl.addCell(tyLe);
+        }
 
         doc.add(tbl);
     }

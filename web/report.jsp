@@ -396,9 +396,21 @@
                                                     </select>
                                                 </div>
                                                 <div class="mb-3">
-                                                    <label class="form-label">Khoảng thời gian</label>
-                                                    <input type="date" class="form-control mb-2" name="fromDate" placeholder="Từ ngày">
-                                                    <input type="date" class="form-control" name="toDate" placeholder="Đến ngày">
+                                                    <label class="form-label">Chọn phòng ban</label>
+                                                    <select class="form-select" name="departmentTask">
+                                                        <option value="">Tất cả phòng ban</option>
+                                                        <%
+                                                          for (Map<String, Object> pb : danhSachPhongBan) {
+                                                        %>
+                                                        <option value="<%= pb.get("ten_phong") %>"><%= pb.get("ten_phong") %></option>
+                                                        <%
+                                                          }
+                                                        %>
+                                                    </select>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label for="month" class="form-label">Tháng làm việc</label>
+                                                    <input type="month" class="form-control" id="month" name="thangNam" required>
                                                 </div>
                                             </div>
 
@@ -427,34 +439,7 @@
                                                     <input type="month" class="form-control" name="monthKPI">
                                                 </div>
                                             </div>
-
-                                            <!-- TASK -->
-                                            <div class="tab-pane fade" id="tabExportTask" role="tabpanel">
-                                                <div class="mb-3">
-                                                    <label class="form-label">Chọn phòng ban</label>
-                                                    <select class="form-select" name="departmentTask">
-                                                        <option value="">Tất cả phòng ban</option>
-                                                        <%
-                                                          for (Map<String, Object> pb : danhSachPhongBan) {
-                                                        %>
-                                                        <option value="<%= pb.get("ten_phong") %>"><%= pb.get("ten_phong") %></option>
-                                                        <%
-                                                          }
-                                                        %>
-                                                    </select>
-                                                </div>
-                                                <div class="mb-3">
-                                                    <label class="form-label">Trạng thái công việc</label>
-                                                    <select class="form-select" name="taskStatus">
-                                                        <option value="DangThucHien">Đang thực hiện</option>
-                                                        <option value="DaHoanThanh">Đã hoàn thành</option>
-                                                        <option value="TreHan">Trễ hạn</option>
-                                                    </select>
-                                                </div>
-                                            </div>
                                         </div>
-
-                                        <!-- Quan trọng: reportType để servlet biết tab nào -->
                                         <input type="hidden" name="reportType" id="reportTypeHidden">
                                     </div>
 

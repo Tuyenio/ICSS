@@ -13,11 +13,12 @@
             <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                 <%
                     String userName = (String) session.getAttribute("userName");
+                    String useAvatar = (String) session.getAttribute("avatar");
                     if (userName == null || userName.isEmpty()) {
                         userName = "Người dùng"; // fallback nếu chưa đăng nhập
                     }
                 %>
-                <img src="https://ui-avatars.com/api/?name=Admin" alt="avatar" class="avatar">
+                <img src="<%= useAvatar %>" alt="avatar" class="avatar">
                 <span class="fw-semibold ms-2"><%= userName %></span>
             </a>
             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
