@@ -230,10 +230,16 @@
                         <div class="main-box">
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <h3 class="mb-0"><i class="fa-solid fa-calendar-check me-2"></i>Chấm công & Lương</h3>
-                                <button class="btn btn-outline-success rounded-pill px-3" data-bs-toggle="modal"
-                                    data-bs-target="#modalExportPayroll">
-                                    <i class="fa-solid fa-file-export"></i> Xuất phiếu lương
-                                </button>
+                                <div>
+                                    <button class="btn btn-outline-primary rounded-pill px-3 me-2" data-bs-toggle="modal"
+                                        data-bs-target="#modalAddAttendance">
+                                        <i class="fa-solid fa-plus"></i> Thêm chấm công
+                                    </button>
+                                    <button class="btn btn-outline-success rounded-pill px-3" data-bs-toggle="modal"
+                                        data-bs-target="#modalExportPayroll">
+                                        <i class="fa-solid fa-file-export"></i> Xuất phiếu lương
+                                    </button>
+                                </div>
                             </div>
                             <form method="post" action="dsChamCong">
                                 <div class="row mb-3 filter-row g-2">
@@ -340,6 +346,13 @@
                                                             data-bs-toggle="modal" data-bs-target="#modalDetailAttendance"
                                                             data-id="<%= item.get("nhan_vien_id") %>"><i
                                                                 class="fa-solid fa-eye"></i></button>
+                                                        <button class="btn btn-sm btn-warning rounded-circle"
+                                                            data-bs-toggle="modal" data-bs-target="#modalEditAttendance"
+                                                            data-id="<%= item.get("nhan_vien_id") %>"><i
+                                                                class="fa-solid fa-pen"></i></button>
+                                                        <button class="btn btn-sm btn-danger rounded-circle"
+                                                            onclick="deleteAttendance('<%= item.get("nhan_vien_id") %>');"><i
+                                                                class="fa-solid fa-trash"></i></button>
                                                     </td>
                                                 </tr>
                                             <% } %>
@@ -421,27 +434,99 @@
                                 </div>
                             </div>
                         </div>
+                        <!-- Modal thêm chấm công -->
+                        <div class="modal fade" id="modalAddAttendance" tabindex="-1">
+                            <div class="modal-dialog">
+                                <form class="modal-content" action="addAttendance" method="post">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title"><i class="fa-solid fa-plus"></i> Thêm chấm công</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="mb-3">
+                                            <label class="form-label">Chọn nhân viên</label>
+                                            <select class="form-select" name="employeeId" required>
+                                                <% for (Map<String, Object> nv : danhSachChamCong) { %>
+                                                <option value="<%= nv.get("nhan_vien_id") %>"><%= nv.get("ho_ten") %></option>
+                                                <% } %>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Ngày chấm công</label>
+                                            <input type="date" class="form-control" name="attendanceDate" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Giờ check-in</label>
+                                            <input type="time" class="form-control" name="checkInTime">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Giờ check-out</label>
+                                            <input type="time" class="form-control" name="checkOutTime">
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="submit" class="btn btn-primary rounded-pill">Lưu</button>
+                                        <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Huỷ</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
                         <!-- Modal xuất phiếu lương -->
                         <div class="modal fade" id="modalExportPayroll" tabindex="-1">
                             <div class="modal-dialog">
-                                <form class="modal-content">
+                                <form class="modal-content" action="exportPayroll" method="post">
                                     <div class="modal-header">
-                                        <h5 class="modal-title"><i class="fa-solid fa-file-export"></i> Xuất phiếu lương
-                                        </h5>
+                                        <h5 class="modal-title"><i class="fa-solid fa-file-export"></i> Xuất phiếu lương</h5>
                                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                     </div>
                                     <div class="modal-body">
                                         <div class="mb-3">
                                             <label class="form-label">Chọn tháng</label>
-                                            <select class="form-select" name="month">
-                                                <!-- AJAX load tháng/năm -->
+                                            <input type="month" class="form-control" name="month" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Chọn nhân viên</label>
+                                            <select class="form-select" name="employeeId">
+                                                <option value="all">Tất cả nhân viên</option>
+                                                <% for (Map<String, Object> nv : danhSachChamCong) { %>
+                                                <option value="<%= nv.get("nhan_vien_id") %>"><%= nv.get("ho_ten") %></option>
+                                                <% } %>
                                             </select>
                                         </div>
                                     </div>
                                     <div class="modal-footer">
                                         <button type="submit" class="btn btn-primary rounded-pill">Xuất file</button>
-                                        <button type="button" class="btn btn-secondary rounded-pill"
-                                            data-bs-dismiss="modal">Huỷ</button>
+                                        <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Huỷ</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                        <!-- Modal sửa chấm công -->
+                        <div class="modal fade" id="modalEditAttendance" tabindex="-1">
+                            <div class="modal-dialog">
+                                <form class="modal-content" action="editAttendance" method="post">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title"><i class="fa-solid fa-pen"></i> Sửa chấm công</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <input type="hidden" name="attendanceId" id="editAttendanceId">
+                                        <div class="mb-3">
+                                            <label class="form-label">Ngày chấm công</label>
+                                            <input type="date" class="form-control" name="attendanceDate" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Giờ check-in</label>
+                                            <input type="time" class="form-control" name="checkInTime">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Giờ check-out</label>
+                                            <input type="time" class="form-control" name="checkOutTime">
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="submit" class="btn btn-primary rounded-pill">Lưu</button>
+                                        <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Huỷ</button>
                                     </div>
                                 </form>
                             </div>
@@ -449,6 +534,58 @@
                     </div>
             </div>
         </div>
+        <script>
+            // Hàm xóa chấm công
+            function deleteAttendance(attendanceId) {
+                Swal.fire({
+                    title: 'Bạn có chắc chắn muốn xóa?',
+                    text: 'Hành động này không thể hoàn tác!',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Xóa',
+                    cancelButtonText: 'Hủy'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        fetch(`dsChamCong?id=${attendanceId}`, {
+                            method: 'DELETE'
+                        })
+                        .then(response => {
+                            if (response.ok) {
+                                Swal.fire('Đã xóa!', 'Chấm công đã được xóa.', 'success').then(() => {
+                                    location.reload();
+                                });
+                            } else {
+                                Swal.fire('Lỗi!', 'Không thể xóa chấm công.', 'error');
+                            }
+                        })
+                        .catch(error => {
+                            Swal.fire('Lỗi!', 'Đã xảy ra lỗi khi xóa.', 'error');
+                        });
+                    }
+                });
+            }
+
+            // Hiển thị dữ liệu trong modal sửa chấm công
+            $(document).on('show.bs.modal', '#modalEditAttendance', function (event) {
+                const button = $(event.relatedTarget); // Nút kích hoạt modal
+                const attendanceId = button.data('id');
+                const row = button.closest('tr');
+
+                // Lấy dữ liệu từ hàng tương ứng
+                const date = row.find('td:nth-child(6)').text().trim();
+                const checkIn = row.find('td:nth-child(7)').text().trim();
+                const checkOut = row.find('td:nth-child(8)').text().trim();
+
+                // Đặt dữ liệu vào modal
+                $(this).find('#editAttendanceId').val(attendanceId);
+                $(this).find('input[name="attendanceDate"]').val(date);
+                $(this).find('input[name="checkInTime"]').val(checkIn !== '-' ? checkIn : '');
+                $(this).find('input[name="checkOutTime"]').val(checkOut !== '-' ? checkOut : '');
+            });
+        </script>
     </body>
 
     </html>
+
