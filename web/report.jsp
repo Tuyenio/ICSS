@@ -369,78 +369,26 @@
                                     </div>
 
                                     <div class="modal-body">
-                                        <!-- Tabs -->
-                                        <ul class="nav nav-tabs mb-3" id="reportExportTab" role="tablist">
-                                            <li class="nav-item" role="presentation">
-                                                <button class="nav-link active" id="tab-export-summary" data-bs-toggle="tab"
-                                                        data-bs-target="#tabExportSummary" type="button" role="tab">Tổng hợp</button>
-                                            </li>
-                                            <li class="nav-item" role="presentation">
-                                                <button class="nav-link" id="tab-export-kpi" data-bs-toggle="tab"
-                                                        data-bs-target="#tabExportKPI" type="button" role="tab">KPI</button>
-                                            </li>
-                                            <li class="nav-item" role="presentation">
-                                                <button class="nav-link" id="tab-export-task" data-bs-toggle="tab"
-                                                        data-bs-target="#tabExportTask" type="button" role="tab">Công việc</button>
-                                            </li>
-                                        </ul>
-
-                                        <div class="tab-content" id="reportExportTabContent">
-                                            <!-- SUMMARY -->
-                                            <div class="tab-pane fade show active" id="tabExportSummary" role="tabpanel">
-                                                <div class="mb-3">
-                                                    <label class="form-label">Chọn định dạng</label>
-                                                    <select class="form-select" name="exportType">
-                                                        <option value="Excel">Excel (.xlsx)</option>
-                                                        <option value="PDF">PDF (.pdf)</option>
-                                                    </select>
-                                                </div>
-                                                <div class="mb-3">
-                                                    <label class="form-label">Chọn phòng ban</label>
-                                                    <select class="form-select" name="departmentTask">
-                                                        <option value="">Tất cả phòng ban</option>
-                                                        <%
-                                                          for (Map<String, Object> pb : danhSachPhongBan) {
-                                                        %>
-                                                        <option value="<%= pb.get("ten_phong") %>"><%= pb.get("ten_phong") %></option>
-                                                        <%
-                                                          }
-                                                        %>
-                                                    </select>
-                                                </div>
-                                                <div class="mb-3">
-                                                    <label for="month" class="form-label">Tháng làm việc</label>
-                                                    <input type="month" class="form-control" id="month" name="thangNam" required>
-                                                </div>
-                                            </div>
-
-                                            <!-- KPI -->
-                                            <div class="tab-pane fade" id="tabExportKPI" role="tabpanel">
-                                                <div class="mb-3">
-                                                    <label class="form-label">Chọn nhân viên</label>
-                                                    <select class="form-select" name="employeeKPI">
-                                                        <option value="">Tất cả nhân viên</option>
-                                                        <%
-                                                          try {
-                                                              KNCSDL kn2 = new KNCSDL();
-                                                              java.sql.ResultSet rsNV = kn2.layNhanVien();
-                                                              while (rsNV.next()) {
-                                                        %>
-                                                        <option value="<%= rsNV.getInt("id") %>"><%= rsNV.getString("ho_ten") %></option>
-                                                        <%
-                                                              }
-                                                              rsNV.close();
-                                                          } catch (Exception e) { e.printStackTrace(); }
-                                                        %>
-                                                    </select>
-                                                </div>
-                                                <div class="mb-3">
-                                                    <label class="form-label">Tháng/Năm</label>
-                                                    <input type="month" class="form-control" name="monthKPI">
-                                                </div>
-                                            </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Chọn định dạng</label>
+                                            <select class="form-select" name="exportType">
+                                                <option value="Excel">Excel (.xlsx)</option>
+                                                <option value="PDF">PDF (.pdf)</option>
+                                            </select>
                                         </div>
-                                        <input type="hidden" name="reportType" id="reportTypeHidden">
+                                        <div class="mb-3">
+                                            <label class="form-label">Chọn phòng ban</label>
+                                            <select class="form-select" name="departmentTask">
+                                                <option value="">Tất cả phòng ban</option>
+                                                <% for (Map<String, Object> pb : danhSachPhongBan) { %>
+                                                <option value="<%= pb.get("ten_phong") %>"><%= pb.get("ten_phong") %></option>
+                                                <% } %>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="month" class="form-label">Tháng làm việc</label>
+                                            <input type="month" class="form-control" id="month" name="thangNam" required>
+                                        </div>
                                     </div>
 
                                     <div class="modal-footer">
