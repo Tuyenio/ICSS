@@ -25,7 +25,7 @@ public class dsChamCong extends HttpServlet {
         response.setCharacterEncoding("UTF-8");
 
         try {
-            KNCSDL kn = new KNCSDL();
+            KNCSDL2 kn = new KNCSDL2();
 
             // Lấy tham số lọc từ request
             String thang = request.getParameter("thang");

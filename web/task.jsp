@@ -495,10 +495,20 @@
                                     </div>
                                     <div class="mb-3">
                                         <label class="form-label">Người nhận</label>
-                                        <select class="form-select" name="ten_nguoi_nhan" id="nguoiNhanSelect">
-                                            <!-- AJAX load nhân viên -->
-                                        </select>
+                                        <div class="input-group mb-2">
+                                            <select class="form-select" id="nguoiNhanSelect2">
+                                                <!-- Dữ liệu nhân viên load bằng AJAX -->
+                                            </select>
+                                            <button type="button" class="btn btn-outline-primary" id="btnThemNguoiNhan2">
+                                                <i class="fa-solid fa-user-plus"></i> Thêm
+                                            </button>
+                                        </div>
+                                        <div id="danhSachNguoiNhan2" class="d-flex flex-wrap gap-2">
+                                            <!-- Tag tên người nhận sẽ hiển thị ở đây -->
+                                        </div>
+                                        <input type="hidden" name="ten_nguoi_nhan" id="nguoiNhanHidden2">
                                     </div>
+
                                     <div class="mb-3">
                                         <label class="form-label">Phòng ban</label>
                                         <select class="form-select" name="ten_phong_ban" id="phongSelect">
@@ -574,10 +584,23 @@
                                                     <label class="form-label"><b>Người giao:</b></label>
                                                     <select class="form-select" name="ten_nguoi_giao"></select>
                                                 </div>
-                                                <div class="mb-2">
-                                                    <label class="form-label"><b>Người nhận:</b></label>
-                                                    <select class="form-select" name="ten_nguoi_nhan"></select>
+                                                <div class="mb-3">
+                                                    <label class="form-label">Người nhận</label>
+                                                    <div class="input-group mb-2">
+                                                        <select class="form-select" id="nguoiNhanSelect">
+                                                            <!-- Dữ liệu nhân viên load bằng AJAX -->
+                                                        </select>
+                                                        <button type="button" class="btn btn-outline-primary" id="btnThemNguoiNhan">
+                                                            <i class="fa-solid fa-user-plus"></i> Thêm
+                                                        </button>
+                                                    </div>
+                                                    <div id="danhSachNguoiNhan" class="d-flex flex-wrap gap-2">
+                                                        <!-- Tag tên người nhận sẽ hiển thị ở đây -->
+                                                    </div>
                                                 </div>
+                                                <input type="hidden" name="ten_nguoi_nhan" id="nguoiNhanHidden">
+                                                <!-- Input ẩn để lưu danh sách -->
+                                                <input type="hidden" name="ten_nguoi_nhan" id="nguoiNhanHidden">
                                                 <div class="mb-2">
                                                     <label class="form-label"><b>Phòng ban:</b></label>
                                                     <select class="form-select" name="ten_phong_ban"></select>
@@ -704,6 +727,111 @@
         </div>
         //
         <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                var buttonsThemNguoiNhan = document.querySelectorAll("#btnThemNguoiNhan2");
+                buttonsThemNguoiNhan.forEach(function (btnThem) {
+                    btnThem.addEventListener("click", function () {
+                        var container = btnThem.closest(".mb-3"); // nhóm đang thao tác
+                        var selectNguoiNhan = container.querySelector("select");
+                        var danhSachDiv = container.querySelector("#danhSachNguoiNhan2");
+                        var hiddenInput = container.parentElement.querySelector("#nguoiNhanHidden2");
+
+                        if (!selectNguoiNhan || !danhSachDiv || !hiddenInput)
+                            return;
+
+                        var selectedOption = selectNguoiNhan.options[selectNguoiNhan.selectedIndex];
+                        if (!selectedOption || !selectedOption.value)
+                            return;
+
+                        var ten = selectedOption.text.trim();
+                        var existing = danhSachDiv.querySelectorAll("span");
+                        for (var i = 0; i < existing.length; i++) {
+                            if (existing[i].dataset.ten === ten) {
+                                showToast('info', 'Người này đã được thêm.');
+                                return;
+                            }
+                        }
+
+                        var tag = document.createElement("span");
+                        tag.className = "badge bg-primary d-flex align-items-center me-2";
+                        tag.style.padding = "0.5em 0.75em";
+                        tag.dataset.ten = ten;
+                        tag.innerHTML = ten +
+                                '<button type="button" class="btn btn-sm btn-close ms-2" aria-label="Xoá"></button>';
+                        tag.querySelector(".btn-close").addEventListener("click", function () {
+                            tag.remove();
+                            capNhatHiddenInput(danhSachDiv, hiddenInput);
+                        });
+                        danhSachDiv.appendChild(tag);
+
+                        capNhatHiddenInput(danhSachDiv, hiddenInput);
+                    });
+                });
+
+                function capNhatHiddenInput(danhSachDiv, hiddenInput) {
+                    var values = [];
+                    var badges = danhSachDiv.querySelectorAll("span");
+                    for (var i = 0; i < badges.length; i++) {
+                        values.push(badges[i].dataset.ten);
+                    }
+                    hiddenInput.value = values.join(",");
+                }
+            });
+        </script>
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                var buttonsThemNguoiNhan = document.querySelectorAll("#btnThemNguoiNhan");
+                buttonsThemNguoiNhan.forEach(function (btnThem) {
+                    btnThem.addEventListener("click", function () {
+                        var container = btnThem.closest(".mb-3"); // nhóm đang thao tác
+                        var selectNguoiNhan = container.querySelector("select");
+                        var danhSachDiv = container.querySelector("#danhSachNguoiNhan");
+                        var hiddenInput = container.parentElement.querySelector("#nguoiNhanHidden");
+
+                        if (!selectNguoiNhan || !danhSachDiv || !hiddenInput)
+                            return;
+
+                        var selectedOption = selectNguoiNhan.options[selectNguoiNhan.selectedIndex];
+                        if (!selectedOption || !selectedOption.value)
+                            return;
+
+                        var ten = selectedOption.text.trim();
+                        var existing = danhSachDiv.querySelectorAll("span");
+                        for (var i = 0; i < existing.length; i++) {
+                            if (existing[i].dataset.ten === ten) {
+                                showToast('info', 'Người này đã được thêm.');
+                                return;
+                            }
+                        }
+
+                        var tag = document.createElement("span");
+                        tag.className = "badge bg-primary d-flex align-items-center me-2";
+                        tag.style.padding = "0.5em 0.75em";
+                        tag.dataset.ten = ten;
+                        tag.innerHTML = ten +
+                                '<button type="button" class="btn btn-sm btn-close ms-2" aria-label="Xoá"></button>';
+                        tag.querySelector(".btn-close").addEventListener("click", function () {
+                            tag.remove();
+                            capNhatHiddenInput(danhSachDiv, hiddenInput);
+                        });
+                        danhSachDiv.appendChild(tag);
+
+                        capNhatHiddenInput(danhSachDiv, hiddenInput);
+                    });
+                });
+
+                function capNhatHiddenInput(danhSachDiv, hiddenInput) {
+                    var values = [];
+                    var badges = danhSachDiv.querySelectorAll("span");
+                    for (var i = 0; i < badges.length; i++) {
+                        values.push(badges[i].dataset.ten);
+                    }
+                    hiddenInput.value = values.join(",");
+                }
+            });
+        </script>
+
+        <script>
             // Hàm chọn option theo text
             function selectOptionByText(selectEl, targetText) {
                 if (!selectEl || !targetText)
@@ -734,12 +862,24 @@
                 fetch('./apiNhanvien')
                         .then(res => res.text())
                         .then(html => {
-                            document.querySelector('#modalTaskDetail select[name="ten_nguoi_giao"]').innerHTML = html;
-                            document.querySelector('#modalTaskDetail select[name="ten_nguoi_nhan"]').innerHTML = html;
-                            document.querySelector('#modalTaskDetail select[name="ten_nguoi_danh_gia"]').innerHTML = html;
-                            document.querySelector('#taskForm select[name="ten_nguoi_giao"]').innerHTML = html;
-                            document.querySelector('#taskForm select[name="ten_nguoi_nhan"]').innerHTML = html;
+                            document.querySelectorAll('#nguoiNhanSelect').forEach(el => el.innerHTML = html);
+                            // (hoặc document.getElementById("nguoiNhanSelect").innerHTML = html;)
                         });
+                fetch('./apiNhanvien')
+                        .then(res => res.text())
+                        .then(html => {
+                            document.querySelectorAll('#nguoiNhanSelect2').forEach(el => el.innerHTML = html);
+                            // (hoặc document.getElementById("nguoiNhanSelect").innerHTML = html;)
+                        });
+//                fetch('./apiNhanvien')
+//                        .then(res => res.text())
+//                        .then(html => {
+//                            document.querySelector('#modalTaskDetail select[name="ten_nguoi_giao"]').innerHTML = html;
+//                            document.querySelector('#modalTaskDetail select[name="ten_nguoi_nhan"]').innerHTML = html;
+//                            document.querySelector('#modalTaskDetail select[name="ten_nguoi_danh_gia"]').innerHTML = html;
+//                            document.querySelector('#taskForm select[name="ten_nguoi_giao"]').innerHTML = html;
+//                            document.querySelector('#taskForm select[name="ten_nguoi_nhan"]').innerHTML = html;
+//                        });
             });
             document.addEventListener("DOMContentLoaded", function () {
                 const modal = document.getElementById("modalTaskDetail");
