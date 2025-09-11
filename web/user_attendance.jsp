@@ -213,17 +213,20 @@
                 border-radius: 12px;
                 padding: 20px;
                 margin-bottom: 15px;
+                text-align: center;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             }
 
             .stat-card h5 {
                 margin: 0;
-                font-size: 2rem;
+                font-size: 1.8rem;
                 font-weight: bold;
             }
 
             .stat-card p {
                 margin: 5px 0 0 0;
                 opacity: 0.9;
+                font-size: 1rem;
             }
 
             @media (max-width: 768px) {
@@ -241,7 +244,7 @@
                 }
 
                 .table-responsive {
-                    font-size: 0.95rem;
+                    font-size: 0.9rem;
                 }
             }
 
@@ -255,6 +258,8 @@
                 border-radius: 8px;
                 font-weight: 500;
                 transition: all 0.3s ease;
+                font-size: 1rem;
+                padding: 10px 20px;
             }
 
             .btn:hover {
@@ -311,6 +316,51 @@
                 
                 .badge {
                     font-size: 0.75rem;
+                    padding: 4px 8px;
+                }
+
+                .stat-card {
+                    padding: 15px;
+                    margin-bottom: 10px;
+                }
+
+                .stat-card h5 {
+                    font-size: 1.5rem;
+                }
+
+                .stat-card p {
+                    font-size: 0.9rem;
+                }
+
+                .main-content {
+                    padding: 20px 10px;
+                }
+
+                .table-responsive {
+                    font-size: 0.9rem;
+                }
+            }
+
+            @media (max-width: 576px) {
+                .stat-card {
+                    padding: 10px;
+                }
+
+                .stat-card h5 {
+                    font-size: 1.2rem;
+                }
+
+                .stat-card p {
+                    font-size: 0.8rem;
+                }
+
+                .btn {
+                    font-size: 0.8rem;
+                    padding: 6px 12px;
+                }
+
+                .badge {
+                    font-size: 0.7rem;
                     padding: 4px 8px;
                 }
             }
