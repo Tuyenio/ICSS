@@ -71,11 +71,17 @@ public class apiDanhgiaCV extends HttpServlet {
             boolean result = db.insertDanhGia(congViecId, nguoiDanhGiaId, nhanXet);
 
             if (result) {
-                out.print("{\"success\":true}");
-                int nhanId = db.getNguoiNhanIdByCongViecId(congViecId);
+                db = new KNCSDL();
                 String tieuDeTB = "Đánh giá công việc mới";
-                String noiDungTB = "Bạn vừa có thêm đánh giá cho công việc";
-                db.insertThongBao(nhanId, tieuDeTB, noiDungTB, "Đánh giá");
+                String noiDungTB = "Bạn vừa có thêm đánh giá cho công việc.";
+
+                // Gửi cho tất cả người nhận của công việc
+                List<Integer> danhSachNguoiNhan = db.getDanhSachNguoiNhanId(congViecId);
+                for (int nhanId : danhSachNguoiNhan) {
+                    db.insertThongBao(nhanId, tieuDeTB, noiDungTB, "Đánh giá");
+                }
+
+                out.print("{\"success\":true}");
             } else {
                 out.print("{\"success\":false,\"message\":\"Không thể thêm đánh giá.\"}");
             }

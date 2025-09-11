@@ -9,7 +9,6 @@ import jakarta.servlet.http.*;
 
 @MultipartConfig
 public class suaCongviec extends HttpServlet {
-
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -24,29 +23,39 @@ public class suaCongviec extends HttpServlet {
         String han = getValue(request, "han_hoan_thanh");
         String uuTien = getValue(request, "muc_do_uu_tien");
         String tenNguoiGiao = getValue(request, "ten_nguoi_giao");
-        String tenNguoiNhan = getValue(request, "ten_nguoi_nhan");
+        String dsTenNguoiNhan = getValue(request, "ten_nguoi_nhan"); // danh sách tên, phân cách dấu ,
         String tenPhong = getValue(request, "ten_phong_ban");
         String trangThai = getValue(request, "trang_thai");
-        String taiieu = getValue(request, "tai_lieu_cv");
+        String tailieu = getValue(request, "tai_lieu_cv");
+        
+        System.out.println("ten "+dsTenNguoiNhan);
 
         try {
-
             KNCSDL db = new KNCSDL();
             int giaoId = Integer.parseInt(tenNguoiGiao);
-            int nhanId = Integer.parseInt(tenNguoiNhan);
-            int nhomId = Integer.parseInt(tenPhong);
+            int phongId = Integer.parseInt(tenPhong);
+            int taskId = Integer.parseInt(id);
 
             if (id == null || id.trim().isEmpty()) {
                 out.print("{\"success\": false, \"message\": \"Thiếu ID để cập nhật.\"}");
                 return;
             }
 
-            db.updateTask(Integer.parseInt(id), ten, moTa, han, uuTien,
-                    giaoId, nhanId, nhomId, trangThai, taiieu);
+            // Cập nhật công việc chính (bỏ nguoi_nhan_id vì đã có bảng phụ)
+            db.updateTask(taskId, ten, moTa, han, uuTien, giaoId, phongId, trangThai, tailieu);
 
-            String tieuDeTB = "Cập nhật công việc";
-            String noiDungTB = "Công việc: " + ten + " vừa được cập nhật mới";
-            db.insertThongBao(nhanId, tieuDeTB, noiDungTB, "Cập nhật");
+            // Xử lý danh sách người nhận mới
+            List<Integer> danhSachIdNhan = db.layIdTuDanhSachTen(dsTenNguoiNhan);  // tên → list id
+
+            // Xóa người nhận cũ, thêm mới vào bảng phụ
+            db.capNhatDanhSachNguoiNhan(taskId, danhSachIdNhan);
+
+            // Gửi thông báo
+            for (int nhanId : danhSachIdNhan) {
+                String tieuDeTB = "Cập nhật công việc";
+                String noiDungTB = "Công việc: " + ten + " vừa được cập nhật mới";
+                db.insertThongBao(nhanId, tieuDeTB, noiDungTB, "Cập nhật");
+            }
 
             out.print("{\"success\": true}");
         } catch (Exception e) {
@@ -62,3 +71,4 @@ public class suaCongviec extends HttpServlet {
         return null;
     }
 }
+

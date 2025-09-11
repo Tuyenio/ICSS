@@ -417,12 +417,12 @@
                                  data-han="<%= task.get("han_hoan_thanh") %>"
                                  data-uu-tien="<%= task.get("muc_do_uu_tien") %>"
                                  data-ten_nguoi_giao="<%= task.get("nguoi_giao_id") %>"
-                                 data-ten_nguoi_nhan="<%= task.get("nguoi_nhan_id") %>"
+                                 data-ten_nguoi_nhan="<%= task.get("nguoi_nhan_ten") %>"
                                  data-ten_phong_ban="<%= task.get("phong_ban_id") %>"
                                  data-trang-thai="<%= task.get("trang_thai") %>"
                                  data-tai_lieu_cv="<%= task.get("tai_lieu_cv") %>">
                                 <div class="task-title"><%= task.get("ten_cong_viec") %></div>
-                                <div class="task-meta">Người giao: <b><%= task.get("nguoi_giao_id") %></b> <br>Người nhận: <b><%= task.get("nguoi_nhan_id") %></b></div>
+                                <div class="task-meta">Người giao: <b><%= task.get("nguoi_giao_id") %></b> <br>Người nhận: <b><%= task.get("nguoi_nhan_ten") %></b></div>
                                 <span class="task-priority badge <%= priorityBadge.getOrDefault(task.get("muc_do_uu_tien"), "bg-secondary") %>">
                                     <%= task.get("muc_do_uu_tien") %>
                                 </span>
@@ -725,7 +725,7 @@
                 </div>
             </div>
         </div>
-        //
+
         <script>
             document.addEventListener("DOMContentLoaded", function () {
                 var buttonsThemNguoiNhan = document.querySelectorAll("#btnThemNguoiNhan2");
@@ -778,6 +778,7 @@
                 }
             });
         </script>
+
         <script>
             document.addEventListener("DOMContentLoaded", function () {
                 var buttonsThemNguoiNhan = document.querySelectorAll("#btnThemNguoiNhan");
@@ -871,15 +872,15 @@
                             document.querySelectorAll('#nguoiNhanSelect2').forEach(el => el.innerHTML = html);
                             // (hoặc document.getElementById("nguoiNhanSelect").innerHTML = html;)
                         });
-//                fetch('./apiNhanvien')
-//                        .then(res => res.text())
-//                        .then(html => {
-//                            document.querySelector('#modalTaskDetail select[name="ten_nguoi_giao"]').innerHTML = html;
-//                            document.querySelector('#modalTaskDetail select[name="ten_nguoi_nhan"]').innerHTML = html;
-//                            document.querySelector('#modalTaskDetail select[name="ten_nguoi_danh_gia"]').innerHTML = html;
-//                            document.querySelector('#taskForm select[name="ten_nguoi_giao"]').innerHTML = html;
-//                            document.querySelector('#taskForm select[name="ten_nguoi_nhan"]').innerHTML = html;
-//                        });
+                fetch('./apiNhanvien')
+                        .then(res => res.text())
+                        .then(html => {
+                            document.querySelector('#modalTaskDetail select[name="ten_nguoi_giao"]').innerHTML = html;
+                            //document.querySelector('#modalTaskDetail select[name="ten_nguoi_nhan"]').innerHTML = html;
+                            document.querySelector('#modalTaskDetail select[name="ten_nguoi_danh_gia"]').innerHTML = html;
+                            document.querySelector('#taskForm select[name="ten_nguoi_giao"]').innerHTML = html;
+                            //document.querySelector('#taskForm select[name="ten_nguoi_nhan"]').innerHTML = html;
+                        });
             });
             document.addEventListener("DOMContentLoaded", function () {
                 const modal = document.getElementById("modalTaskDetail");
@@ -887,6 +888,7 @@
                     const button = event.relatedTarget;
                     if (!button)
                         return;
+
                     // Lấy dữ liệu từ nút
                     const id = button.getAttribute("data-id") || "";
                     const tenCV = button.getAttribute("data-ten") || "";
@@ -894,21 +896,69 @@
                     const hanHT = button.getAttribute("data-han") || "";
                     const uuTien = button.getAttribute("data-uu-tien") || "";
                     const nguoiGiao = button.getAttribute("data-ten_nguoi_giao") || "";
-                    const nguoiNhan = button.getAttribute("data-ten_nguoi_nhan") || "";
+                    const nguoiNhan = button.getAttribute("data-ten_nguoi_nhan") || ""; // nhiều tên, ngăn cách dấu phẩy
                     const phongban = button.getAttribute("data-ten_phong_ban") || "";
                     const trangthai = button.getAttribute("data-trang-thai") || "";
                     const tailieu = button.getAttribute("data-tai_lieu_cv") || "";
-                    // Gán dữ liệu
+
+                    // Gán dữ liệu cơ bản
                     modal.querySelector('[name="task_id"]').value = id;
                     modal.querySelector('[name="ten_cong_viec"]').value = tenCV;
                     modal.querySelector('[name="mo_ta"]').value = moTa;
                     modal.querySelector('[name="han_hoan_thanh"]').value = hanHT;
                     selectOptionByText(modal.querySelector('[name="muc_do_uu_tien"]'), uuTien);
                     selectOptionByText(modal.querySelector('[name="ten_nguoi_giao"]'), nguoiGiao);
-                    selectOptionByText(modal.querySelector('[name="ten_nguoi_nhan"]'), nguoiNhan);
+                    // ❌ bỏ dòng selectOptionByText cho người nhận
                     selectOptionByText(modal.querySelector('[name="ten_phong_ban"]'), phongban);
                     selectOptionByText(modal.querySelector('[name="trang_thai"]'), trangthai);
                     modal.querySelector('[name="tai_lieu_cv"]').value = tailieu;
+
+                    // --- Xử lý nhiều người nhận ---
+                    const danhSachDiv = modal.querySelector("#danhSachNguoiNhan");
+                    const hiddenInput = modal.querySelector("#nguoiNhanHidden");
+                    danhSachDiv.innerHTML = "";
+                    hiddenInput.value = "";
+
+                    const tenArray = nguoiNhan.split(",").map(x => x.trim()).filter(Boolean);
+                    function capNhatHiddenInput() {
+                        const tags = danhSachDiv.querySelectorAll("span[data-ten]");
+                        const values = [];
+                        tags.forEach(tag => values.push(tag.getAttribute("data-ten")));
+                        hiddenInput.value = values.join(",");
+                    }
+
+                    tenArray.forEach(function (ten) {
+                        const tag = document.createElement("span");
+                        tag.className = "badge bg-primary d-flex align-items-center me-2";
+                        tag.style.padding = "0.5em 0.75em";
+                        tag.setAttribute("data-ten", ten);
+
+                        // Tạo phần text
+                        const tenNode = document.createElement("span");
+                        tenNode.textContent = ten;
+
+                        // Tạo nút xoá
+                        const closeBtn = document.createElement("button");
+                        closeBtn.type = "button";
+                        closeBtn.className = "btn btn-sm btn-close ms-2";
+                        closeBtn.setAttribute("aria-label", "Xoá");
+
+                        // Sự kiện xoá
+                        closeBtn.addEventListener("click", function () {
+                            tag.remove();
+                            capNhatHiddenInput();
+                        });
+
+                        // Gắn phần text và nút xoá vào thẻ
+                        tag.appendChild(tenNode);
+                        tag.appendChild(closeBtn);
+
+                        // Thêm tag vào danh sách
+                        danhSachDiv.appendChild(tag);
+                    });
+
+                    capNhatHiddenInput();
+
                     // Mở lại tab đầu tiên khi show modal
                     const tabTrigger = modal.querySelector('#tab-task-info');
                     if (tabTrigger)

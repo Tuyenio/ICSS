@@ -494,11 +494,11 @@
                                         </div>
                                         <div class="mb-2">
                                             <label class="form-label"><b>Người giao:</b></label>
-                                            <select class="form-select" name="ten_nguoi_giao"></select>
+                                            <input type="text" class="form-control" name="ten_nguoi_giao">
                                         </div>
                                         <div class="mb-2">
                                             <label class="form-label"><b>Người nhận:</b></label>
-                                            <select class="form-select" name="ten_nguoi_nhan"></select>
+                                            <input type="text" class="form-control" name="ten_nguoi_nhan">
                                         </div>
                                         <div class="mb-2">
                                             <label class="form-label"><b>Phòng ban:</b></label>
@@ -591,8 +591,8 @@
                 fetch('./apiNhanvien')
                         .then(res => res.text())
                         .then(html => {
-                            document.querySelector('#modalTaskDetail select[name="ten_nguoi_giao"]').innerHTML = html;
-                            document.querySelector('#modalTaskDetail select[name="ten_nguoi_nhan"]').innerHTML = html;
+                            //document.querySelector('#modalTaskDetail select[name="ten_nguoi_giao"]').innerHTML = html;
+                            //document.querySelector('#modalTaskDetail select[name="ten_nguoi_nhan"]').innerHTML = html;
                         });
             });
             document.addEventListener("DOMContentLoaded", function () {
@@ -618,8 +618,9 @@
                     modal.querySelector('[name="mo_ta"]').value = moTa;
                     modal.querySelector('[name="han_hoan_thanh"]').value = hanHT;
                     selectOptionByText(modal.querySelector('[name="muc_do_uu_tien"]'), uuTien);
-                    selectOptionByText(modal.querySelector('[name="ten_nguoi_giao"]'), nguoiGiao);
-                    selectOptionByText(modal.querySelector('[name="ten_nguoi_nhan"]'), nguoiNhan);
+                    //selectOptionByText(modal.querySelector('[name="ten_nguoi_giao"]'), nguoiGiao);
+                    modal.querySelector('[name="ten_nguoi_giao"]').value = nguoiGiao;
+                    modal.querySelector('[name="ten_nguoi_nhan"]').value = nguoiNhan;
                     selectOptionByText(modal.querySelector('[name="ten_phong_ban"]'), phongban);
                     selectOptionByText(modal.querySelector('[name="trang_thai"]'), trangthai);
                     modal.querySelector('[name="tai_lieu_cv"]').value = tailieu;

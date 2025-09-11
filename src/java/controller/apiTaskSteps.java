@@ -12,6 +12,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.List;
 
 /**
  *
@@ -100,13 +101,18 @@ public class apiTaskSteps extends HttpServlet {
             if (success) {
                 db = new KNCSDL();
                 int congviecId = db.getCongViecIdByBuocId(stepId);
-                int nhanId = db.getNguoiNhanIdByCongViecId(congviecId);
                 String tencv = db.getTenCongViecById(congviecId);
+                List<Integer> danhSachNguoiNhan = db.getDanhSachNguoiNhanId(congviecId);
+
                 String tieuDeTB = "Cập nhật quy trình";
-                String noiDungTB = "Công việc: "+ tencv + " vừa được cập nhật quy trình mới";
-                db.insertThongBao(nhanId, tieuDeTB, noiDungTB, "Cập nhật");
+                String noiDungTB = "Công việc: " + tencv + " vừa được cập nhật quy trình mới";
+
+                for (int nhanId : danhSachNguoiNhan) {
+                    db.insertThongBao(nhanId, tieuDeTB, noiDungTB, "Cập nhật");
+                }
+
                 response.setStatus(HttpServletResponse.SC_OK);
-                
+
             } else {
                 response.setStatus(HttpServletResponse.SC_NOT_FOUND);
                 out.print("Không tìm thấy bước để cập nhật.");
@@ -117,7 +123,6 @@ public class apiTaskSteps extends HttpServlet {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             out.print("Lỗi máy chủ: " + e.getMessage());
         }
-        
     }
 
     // Escape chuỗi JSON thủ công

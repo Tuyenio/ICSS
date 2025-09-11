@@ -11,6 +11,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -23,8 +24,6 @@ public class xoaQuytrinh extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String action = request.getParameter("action");
 
-        
-
         if ("delete".equals(action)) {
             String stepIdStr = request.getParameter("step_id");
             try {
@@ -32,13 +31,15 @@ public class xoaQuytrinh extends HttpServlet {
                 int stepId = Integer.parseInt(stepIdStr);
                 int congViecId = db.getCongViecIdByBuocId(stepId);
                 String tencv = db.getTenCongViecById(congViecId);
-                int nhanId = db.getNguoiNhanIdByCongViecId(congViecId);
+                List<Integer> danhSachIdNhan = db.getDanhSachNguoiNhanId(congViecId);
                 String tieuDeTB = "Xóa bỏ quy trình";
                 String noiDungTB = "Công việc: " + tencv + " vừa xóa bỏ một quy trình";
                 boolean deleted = db.deleteStepById(stepId);
                 if (deleted) {
                     db = new KNCSDL();
-                    db.insertThongBao(nhanId, tieuDeTB, noiDungTB, "Xóa bỏ");
+                    for (int nhanId : danhSachIdNhan) {
+                        db.insertThongBao(nhanId, tieuDeTB, noiDungTB, "Cập nhật");
+                    }
                     response.setStatus(HttpServletResponse.SC_OK);
                 } else {
                     response.setStatus(HttpServletResponse.SC_NOT_FOUND); // Không tìm thấy để xóa
@@ -64,11 +65,13 @@ public class xoaQuytrinh extends HttpServlet {
                 int newId = db.insertStep(congViecId, tenBuoc, moTa, trangThai, ngayBatDau, ngayKetThuc);
                 if (newId > 0) {
                     db = new KNCSDL();
-                    int nhanId = db.getNguoiNhanIdByCongViecId(congViecId);
+                    List<Integer> danhSachIdNhan = db.getDanhSachNguoiNhanId(congViecId);
                     String tencv = db.getTenCongViecById(congViecId);
                     String tieuDeTB = "Thêm mới quy trình";
                     String noiDungTB = "Công việc: " + tencv + " vừa được thêm quy trình mới";
-                    db.insertThongBao(nhanId, tieuDeTB, noiDungTB, "Thêm mới");
+                    for (int nhanId : danhSachIdNhan) {
+                        db.insertThongBao(nhanId, tieuDeTB, noiDungTB, "Cập nhật");
+                    }
                     response.setStatus(HttpServletResponse.SC_OK);
                     db.close();
                 } else {
