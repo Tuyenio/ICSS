@@ -329,7 +329,8 @@
                 </div>
                 <div class="modal-body">
                     <video controls width="100%">
-                        <source src="path/to/guide-video.mp4" type="video/mp4">
+                        <source src="http://localhost:8080/ICSS/Img/123a.mp4
+" type="video/mp4">
                         Trình duyệt của bạn không hỗ trợ video.
                     </video>
                 </div>
