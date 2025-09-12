@@ -365,7 +365,7 @@ public class KNCSDL {
                 .append("cv.tai_lieu_cv, cv.han_hoan_thanh, ")
                 .append("ng1.ho_ten AS nguoi_giao_ten, ")
                 .append("GROUP_CONCAT(DISTINCT ng2.ho_ten ORDER BY ng2.ho_ten SEPARATOR ', ') AS nguoi_nhan_ten, ")
-                .append("td.phan_tram, ")
+                .append("MAX(td.phan_tram) AS phan_tram, ")
                 .append("pb.ten_phong AS ten_phong ")
                 .append("FROM cong_viec cv ")
                 .append("LEFT JOIN nhanvien ng1 ON cv.nguoi_giao_id = ng1.id ")
@@ -415,7 +415,7 @@ public class KNCSDL {
         String sql = "SELECT cv.*, "
                 + "ng1.ho_ten AS nguoi_giao_ten, "
                 + "pb.ten_phong AS ten_phong, "
-                + "td.phan_tram, "
+                + "MAX(td.phan_tram) AS phan_tram, "
                 + "GROUP_CONCAT(DISTINCT ng_all.ho_ten SEPARATOR ', ') AS nguoi_nhan_ten "
                 + "FROM cong_viec cv "
                 + "LEFT JOIN nhanvien ng1 ON cv.nguoi_giao_id = ng1.id "
@@ -1677,7 +1677,7 @@ public class KNCSDL {
 
     // ============ PHƯƠNG THỨC CHO CHẤM CÔNG & LƯƠNG ============
     // Lấy danh sách chấm công với thông tin chi tiết
-    public List<Map<String, Object>> getDanhSachChamCong(String thang, String nam, String phongBan, String keyword) throws SQLException {
+    public List<Map<String, Object>> getDanhSachChamCong(String thang, String nam, String phongBan, String keyword, String employeeId) throws SQLException {
         List<Map<String, Object>> danhSach = new ArrayList<>();
         StringBuilder sql = new StringBuilder();
         sql.append("SELECT cc.id, cc.nhan_vien_id, cc.ngay, cc.check_in, cc.check_out, ");
@@ -1712,10 +1712,17 @@ public class KNCSDL {
             params.add(phongBan);
         }
 
+        // keyword dùng cho tìm kiếm giao diện
         if (keyword != null && !keyword.trim().isEmpty()) {
             sql.append("AND (nv.ho_ten LIKE ? OR nv.email LIKE ?) ");
             params.add("%" + keyword + "%");
             params.add("%" + keyword + "%");
+        }
+
+        // ID dùng cho xuất file
+        if (employeeId != null && !employeeId.equals("all")) {
+            sql.append("AND nv.id = ? ");
+            params.add(Integer.parseInt(employeeId));
         }
 
         sql.append("ORDER BY cc.ngay DESC, nv.ho_ten ASC");
@@ -1744,13 +1751,14 @@ public class KNCSDL {
                     // Tính lương ngày
                     double luongCoBan = rs.getDouble("luong_co_ban");
                     double soGioLam = rs.getDouble("so_gio_lam");
-                    double luongNgay = (luongCoBan / 22) * (soGioLam / 8); // 22 ngày làm việc/tháng, 8 giờ/ngày
+                    double luongNgay = (luongCoBan / 22) * (soGioLam / 8);
                     record.put("luong_ngay", luongNgay);
 
                     danhSach.add(record);
                 }
             }
         }
+
         return danhSach;
     }
 

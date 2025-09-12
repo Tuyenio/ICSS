@@ -147,6 +147,10 @@
         <servlet-name>ExportReportServlet</servlet-name>
         <servlet-class>controller.ExportReportServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>ExportAttendanceServlet</servlet-name>
+        <servlet-class>controller.ExportAttendanceServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>dsnhanvien</servlet-name>
         <url-pattern>/dsnhanvien</url-pattern>
@@ -290,6 +294,10 @@
     <servlet-mapping>
         <servlet-name>ExportReportServlet</servlet-name>
         <url-pattern>/exportReport</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ExportAttendanceServlet</servlet-name>
+        <url-pattern>/exportAttendance</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>

@@ -70,7 +70,7 @@ public class dsChamCong extends HttpServlet {
             }
 
             // Lấy dữ liệu chấm công
-            List<Map<String, Object>> danhSachChamCong = kn.getDanhSachChamCong(thang, nam, tenphong, keyword);
+            List<Map<String, Object>> danhSachChamCong = kn.getDanhSachChamCong(thang, nam, tenphong, keyword, null);
 
             // Lấy danh sách phòng ban cho filter
             List<Map<String, Object>> danhSachPhongBan = kn.getAllPhongBan();

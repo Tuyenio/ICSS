@@ -237,7 +237,7 @@
                                 </button>
                                 <button class="btn btn-outline-success rounded-pill px-3" data-bs-toggle="modal"
                                         data-bs-target="#modalExportPayroll">
-                                    <i class="fa-solid fa-file-export"></i> Xuất phiếu lương
+                                    <i class="fa-solid fa-file-export"></i> Xuất phiếu chấm công
                                 </button>
                             </div>
                         </div>
@@ -461,21 +461,30 @@
                         </div>
                     </div>
                     <!-- Modal xuất phiếu lương -->
+                    <!-- Modal xuất phiếu chấm công -->
                     <div class="modal fade" id="modalExportPayroll" tabindex="-1">
                         <div class="modal-dialog">
-                            <form class="modal-content" action="exportPayroll" method="post">
+                            <form class="modal-content" action="./exportAttendance" method="post">
+                                <input type="hidden" name="reportType" value="attendance">
                                 <div class="modal-header">
-                                    <h5 class="modal-title"><i class="fa-solid fa-file-export"></i> Xuất phiếu lương</h5>
+                                    <h5 class="modal-title"><i class="fa-solid fa-file-export"></i> Xuất phiếu chấm công</h5>
                                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                 </div>
                                 <div class="modal-body">
                                     <div class="mb-3">
-                                        <label class="form-label">Chọn tháng</label>
-                                        <input type="month" class="form-control" name="month" required>
+                                        <label class="form-label">Định dạng xuất</label>
+                                        <select class="form-select" name="exportType" required>
+                                            <option value="Excel">Excel (.xlsx)</option>
+                                            <option value="PDF">PDF (.pdf)</option>
+                                        </select>
                                     </div>
                                     <div class="mb-3">
-                                        <label class="form-label">Chọn nhân viên</label>
-                                        <select class="form-select" name="employeeId">
+                                        <label class="form-label">Tháng - Năm</label>
+                                        <input type="month" class="form-control" name="thangNam" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Nhân viên</label>
+                                        <select class="form-select" name="employeeId" required>
                                             <option value="all">Tất cả nhân viên</option>
                                             <% for (Map<String, Object> nv : danhSachChamCong) { %>
                                             <option value="<%= nv.get("nhan_vien_id") %>"><%= nv.get("ho_ten") %></option>
