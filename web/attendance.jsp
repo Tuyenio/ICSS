@@ -446,11 +446,11 @@
                                     </div>
                                     <div class="mb-3">
                                         <label class="form-label">Giờ check-in</label>
-                                        <input type="time" class="form-control" name="checkInTime">
+                                        <input type="time" class="form-control" name="checkInTime" step="60">
                                     </div>
                                     <div class="mb-3">
                                         <label class="form-label">Giờ check-out</label>
-                                        <input type="time" class="form-control" name="checkOutTime">
+                                        <input type="time" class="form-control" name="checkOutTime" step="60">
                                     </div>
                                 </div>
                                 <div class="modal-footer">
@@ -565,9 +565,11 @@
                 var checkOut = row.find('td:nth-child(8)').text().trim();   // Check-out
 
                 // Gán vào modal
+                const formatTime = time => time !== '-' ? time.substring(0, 5) : '';
+
                 $(this).find('#editAttendanceId').val(attendanceId);
-                $(this).find('input[name="checkInTime"]').val(checkIn !== '-' ? checkIn : '');
-                $(this).find('input[name="checkOutTime"]').val(checkOut !== '-' ? checkOut : '');
+                $(this).find('input[name="checkInTime"]').val(formatTime(checkIn));
+                $(this).find('input[name="checkOutTime"]').val(formatTime(checkOut));
             });
 
         </script>
