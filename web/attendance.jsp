@@ -425,7 +425,8 @@
                     <!-- Modal thêm chấm công -->
                     <div class="modal fade" id="modalAddAttendance" tabindex="-1">
                         <div class="modal-dialog">
-                            <form class="modal-content" action="addAttendance" method="post">
+                            <form class="modal-content" action="./dsChamCong" method="post">
+                                <input type="hidden" name="action" value="add">
                                 <div class="modal-header">
                                     <h5 class="modal-title"><i class="fa-solid fa-plus"></i> Thêm chấm công</h5>
                                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>

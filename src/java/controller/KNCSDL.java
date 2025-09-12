@@ -1690,8 +1690,8 @@ public class KNCSDL {
         sql.append("END as so_gio_lam, ");
         sql.append("CASE ");
         sql.append("  WHEN cc.check_in IS NULL THEN 'Vắng' ");
-        sql.append("  WHEN cc.check_in > '08:30:00' THEN 'Đi trễ' ");
-        sql.append("  WHEN TIMESTAMPDIFF(HOUR, cc.check_in, cc.check_out) >= 8 THEN 'Đủ công' ");
+        sql.append("  WHEN cc.check_in > '08:45:00' THEN 'Đi trễ' ");
+        sql.append("  WHEN TIMESTAMPDIFF(HOUR, cc.check_in, cc.check_out) >= 7.5 THEN 'Đủ công' ");
         sql.append("  ELSE 'Thiếu giờ' ");
         sql.append("END as trang_thai ");
         sql.append("FROM cham_cong cc ");
@@ -3014,6 +3014,30 @@ public class KNCSDL {
             stmt.setString(1, checkIn);
             stmt.setString(2, checkOut);
             stmt.setInt(3, id);  // Chỉ có 3 tham số, index cuối là 3
+            return stmt.executeUpdate() > 0;
+        }
+    }
+
+    public boolean themChamCong(int nhanVienId, String ngay, String checkIn, String checkOut) throws SQLException {
+        // Kiểm tra xem đã tồn tại bản ghi
+        String checkSql = "SELECT COUNT(*) FROM cham_cong WHERE nhan_vien_id = ? AND ngay = ?";
+        try (PreparedStatement checkStmt = cn.prepareStatement(checkSql)) {
+            checkStmt.setInt(1, nhanVienId);
+            checkStmt.setString(2, ngay);
+            ResultSet rs = checkStmt.executeQuery();
+            if (rs.next() && rs.getInt(1) > 0) {
+                return false; // đã tồn tại
+            }
+        }
+
+        // Chỉ thêm 5 cột: nhan_vien_id, ngay, check_in, check_out
+        String sql = "INSERT INTO cham_cong (nhan_vien_id, ngay, check_in, check_out) VALUES (?, ?, ?, ?)";
+
+        try (PreparedStatement stmt = cn.prepareStatement(sql)) {
+            stmt.setInt(1, nhanVienId);
+            stmt.setString(2, ngay);
+            stmt.setString(3, checkIn);
+            stmt.setString(4, checkOut);
             return stmt.executeUpdate() > 0;
         }
     }

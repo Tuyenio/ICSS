@@ -26,6 +26,11 @@ public class dsChamCong extends HttpServlet {
 
         String action = request.getParameter("action");
 
+        if ("add".equals(action)) {
+            handleAddAttendance(request, response);
+            return;
+        }
+
         if ("edit".equals(action)) {
             // Gọi xử lý sửa giờ chấm công
             handleEditAttendance(request, response);
@@ -140,6 +145,30 @@ public class dsChamCong extends HttpServlet {
         } catch (Exception e) {
             e.printStackTrace();
             resp.getWriter().println("<h3 style='color:red'>❌ Lỗi khi cập nhật: " + e.getMessage() + "</h3>");
+        }
+    }
+
+    private void handleAddAttendance(HttpServletRequest req, HttpServletResponse resp)
+            throws IOException {
+        try {
+            int nhanVienId = Integer.parseInt(req.getParameter("employeeId"));
+            String ngay = req.getParameter("attendanceDate");
+            String checkIn = req.getParameter("checkInTime");
+            String checkOut = req.getParameter("checkOutTime");
+
+            KNCSDL kn = new KNCSDL();
+
+            boolean success = kn.themChamCong(nhanVienId, ngay, checkIn, checkOut);
+
+            if (success) {
+                resp.sendRedirect("dsChamCong"); // load lại danh sách
+            } else {
+                resp.getWriter().println("<h3 style='color:red'>❌ Không thể thêm chấm công (đã tồn tại?)</h3>");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            resp.getWriter().println("<h3 style='color:red'>❌ Lỗi thêm chấm công: " + e.getMessage() + "</h3>");
         }
     }
 
