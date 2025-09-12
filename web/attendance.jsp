@@ -22,8 +22,8 @@
     if (phongBanDaChon == null) phongBanDaChon = "";
     if (keywordDaChon == null) keywordDaChon = "";
 %>
-    <!DOCTYPE html>
-    <html lang="vi">
+<!DOCTYPE html>
+<html lang="vi">
 
     <head>
         <meta charset="UTF-8">
@@ -197,7 +197,7 @@
             <!-- Sidebar -->
             <nav class="sidebar p-0">
                 <div class="sidebar-title text-center py-4 border-bottom border-secondary" style="cursor:pointer;"
-                    onclick="location.href='index.jsp'">
+                     onclick="location.href = 'index.jsp'">
                     <i class="fa-solid fa-people-group me-2"></i>ICS
                 </div>
                 <ul class="sidebar-nav mt-3">
@@ -226,312 +226,297 @@
             <div class="flex-grow-1">
                 <!-- Header -->
                 <%@ include file="header.jsp" %>
-                    <div class="main-content">
-                        <div class="main-box">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h3 class="mb-0"><i class="fa-solid fa-calendar-check me-2"></i>Chấm công & Lương</h3>
-                                <div>
-                                    <button class="btn btn-outline-primary rounded-pill px-3 me-2" data-bs-toggle="modal"
+                <div class="main-content">
+                    <div class="main-box">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h3 class="mb-0"><i class="fa-solid fa-calendar-check me-2"></i>Chấm công & Lương</h3>
+                            <div>
+                                <button class="btn btn-outline-primary rounded-pill px-3 me-2" data-bs-toggle="modal"
                                         data-bs-target="#modalAddAttendance">
-                                        <i class="fa-solid fa-plus"></i> Thêm chấm công
-                                    </button>
-                                    <button class="btn btn-outline-success rounded-pill px-3" data-bs-toggle="modal"
+                                    <i class="fa-solid fa-plus"></i> Thêm chấm công
+                                </button>
+                                <button class="btn btn-outline-success rounded-pill px-3" data-bs-toggle="modal"
                                         data-bs-target="#modalExportPayroll">
-                                        <i class="fa-solid fa-file-export"></i> Xuất phiếu lương
-                                    </button>
-                                </div>
-                            </div>
-                            <form method="post" action="dsChamCong">
-                                <div class="row mb-3 filter-row g-2">
-                                    <div class="col-md-3">
-                                        <input type="text" name="keyword" class="form-control" 
-                                               placeholder="Tìm kiếm theo tên, email..." 
-                                               value="<%= keywordDaChon %>">
-                                    </div>
-                                    <div class="col-md-3">
-                                        <select name="phong_ban" class="form-select">
-                                            <option value="">Tất cả phòng ban</option>
-                                            <% for (Map<String, Object> pb : danhSachPhongBan) { %>
-                                                <option value="<%= pb.get("id") %>" 
-                                                    <%= String.valueOf(pb.get("id")).equals(phongBanDaChon) ? "selected" : "" %>>
-                                                    <%= pb.get("ten_phong") %>
-                                                </option>
-                                            <% } %>
-                                        </select>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <% 
-                                        String currentMonth = "";
-                                        if (thangHienTai != null && !thangHienTai.isEmpty() && 
-                                            namHienTai != null && !namHienTai.isEmpty()) {
-                                            currentMonth = namHienTai + "-" + String.format("%02d", Integer.parseInt(thangHienTai));
-                                        } else {
-                                            Calendar cal = Calendar.getInstance();
-                                            currentMonth = cal.get(Calendar.YEAR) + "-" + String.format("%02d", cal.get(Calendar.MONTH) + 1);
-                                        }
-                                        %>
-                                        <input type="month" name="month_filter" class="form-control" 
-                                               value="<%= currentMonth %>" 
-                                               onchange="this.form.submit()">
-                                    </div>
-                                    <div class="col-md-3">
-                                        <button type="submit" class="btn btn-outline-secondary w-100 rounded-pill">
-                                            <i class="fa-solid fa-filter"></i> Lọc
-                                        </button>
-                                    </div>
-                                </div>
-                            </form>
-                            <div class="table-responsive">
-                                <table class="table table-bordered align-middle table-hover">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>#</th>
-                                            <th>Avatar</th>
-                                            <th>Họ tên</th>
-                                            <th>Phòng ban</th>
-                                            <th>Ngày vào</th>
-                                            <th>Ngày</th>
-                                            <th>Check-in</th>
-                                            <th>Check-out</th>
-                                            <th>Số giờ</th>
-                                            <th>Trạng thái</th>
-                                            <th>Lương ngày</th>
-                                            <th>Hành động</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <% if (danhSachChamCong != null && !danhSachChamCong.isEmpty()) { %>
-                                            <% 
-                                            int stt = 1;
-                                            for (Map<String, Object> item : danhSachChamCong) { 
-                                            %>
-                                                <tr>
-                                                    <td><%= stt++ %></td>
-                                                    <td><img src="<%= item.get("avatar_url") %>" class="rounded-circle" width="36"></td>
-                                                    <td>
-                                                        <span class="fw-semibold text-primary attendance-emp-detail"
-                                                            style="cursor:pointer;" data-bs-toggle="modal"
-                                                            data-bs-target="#modalDetailAttendance"
-                                                            data-id="<%= item.get("nhan_vien_id") %>"><%= item.get("ho_ten") %></span>
-                                                    </td>
-                                                    <td><%= item.get("ten_phong") %></td>
-                                                    <td><%= item.get("ngay_vao_lam") %></td>
-                                                    <td><%= item.get("ngay") %></td>
-                                                    <td><%= item.get("check_in") != null ? item.get("check_in") : "-" %></td>
-                                                    <td><%= item.get("check_out") != null ? item.get("check_out") : "-" %></td>
-                                                    <td><%= item.get("so_gio_lam") != null ? String.format("%.1f", item.get("so_gio_lam")) : "0" %></td>
-                                                    <td>
-                                                        <% 
-                                                        String trangThai = (String) item.get("trang_thai");
-                                                        String badgeClass = "bg-secondary";
-                                                        if ("Đi trễ".equals(trangThai)) badgeClass = "bg-warning text-dark";
-                                                        else if ("Vắng".equals(trangThai)) badgeClass = "bg-danger";
-                                                        else if ("Đủ công".equals(trangThai)) badgeClass = "bg-success";
-                                                        %>
-                                                        <span class="badge <%= badgeClass %> badge-status"><%= trangThai %></span>
-                                                    </td>
-                                                    <td>
-                                                        <% 
-                                                        Object luongNgay = item.get("luong_ngay");
-                                                        if (luongNgay != null) {
-                                                            double luong = ((Number) luongNgay).doubleValue();
-                                                        %>
-                                                            <%= String.format("%,.0fđ", luong) %>
-                                                        <% } else { %>
-                                                            0đ
-                                                        <% } %>
-                                                    </td>
-                                                    <td>
-                                                        <button class="btn btn-sm btn-info rounded-circle"
-                                                            data-bs-toggle="modal" data-bs-target="#modalDetailAttendance"
-                                                            data-id="<%= item.get("nhan_vien_id") %>"><i
-                                                                class="fa-solid fa-eye"></i></button>
-                                                        <button class="btn btn-sm btn-warning rounded-circle"
-                                                            data-bs-toggle="modal" data-bs-target="#modalEditAttendance"
-                                                            data-id="<%= item.get("nhan_vien_id") %>"><i
-                                                                class="fa-solid fa-pen"></i></button>
-                                                        <button class="btn btn-sm btn-danger rounded-circle"
-                                                            onclick="deleteAttendance('<%= item.get("nhan_vien_id") %>');"><i
-                                                                class="fa-solid fa-trash"></i></button>
-                                                    </td>
-                                                </tr>
-                                            <% } %>
-                                        <% } else { %>
-                                            <tr>
-                                                <td colspan="12" class="text-center py-4">
-                                                    <i class="fa-solid fa-inbox text-muted fs-1"></i>
-                                                    <p class="text-muted mt-2">Không có dữ liệu chấm công</p>
-                                                </td>
-                                            </tr>
-                                        <% } %>
-                                    </tbody>
-                                </table>
+                                    <i class="fa-solid fa-file-export"></i> Xuất phiếu lương
+                                </button>
                             </div>
                         </div>
-                        <!-- Modal chi tiết chấm công với tab -->
-                        <div class="modal fade" id="modalDetailAttendance" tabindex="-1">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title"><i class="fa-solid fa-calendar-day"></i> Chi tiết chấm
-                                            công</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                    </div>
-                                    <div class="modal-body">
-                                        <ul class="nav nav-tabs mb-3" id="attendanceDetailTab" role="tablist">
-                                            <li class="nav-item" role="presentation">
-                                                <button class="nav-link active" id="tab-att-info" data-bs-toggle="tab"
+                        <form method="post" action="dsChamCong">
+                            <div class="row mb-3 filter-row g-2">
+                                <div class="col-md-3">
+                                    <input type="text" name="keyword" class="form-control" 
+                                           placeholder="Tìm kiếm theo tên, email..." 
+                                           value="<%= keywordDaChon %>">
+                                </div>
+                                <div class="col-md-3">
+                                    <select name="phong_ban" class="form-select">
+                                        <option value="">Tất cả phòng ban</option>
+                                        <% for (Map<String, Object> pb : danhSachPhongBan) { %>
+                                        <option value="<%= pb.get("id") %>" 
+                                                <%= String.valueOf(pb.get("id")).equals(phongBanDaChon) ? "selected" : "" %>>
+                                            <%= pb.get("ten_phong") %>
+                                        </option>
+                                        <% } %>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <% 
+                                    String currentMonth = "";
+                                    if (thangHienTai != null && !thangHienTai.isEmpty() && 
+                                        namHienTai != null && !namHienTai.isEmpty()) {
+                                        currentMonth = namHienTai + "-" + String.format("%02d", Integer.parseInt(thangHienTai));
+                                    } else {
+                                        Calendar cal = Calendar.getInstance();
+                                        currentMonth = cal.get(Calendar.YEAR) + "-" + String.format("%02d", cal.get(Calendar.MONTH) + 1);
+                                    }
+                                    %>
+                                    <input type="month" name="month_filter" class="form-control" 
+                                           value="<%= currentMonth %>" 
+                                           onchange="this.form.submit()">
+                                </div>
+                                <div class="col-md-3">
+                                    <button type="submit" class="btn btn-outline-secondary w-100 rounded-pill">
+                                        <i class="fa-solid fa-filter"></i> Lọc
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                        <div class="table-responsive">
+                            <table class="table table-bordered align-middle table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Avatar</th>
+                                        <th>Họ tên</th>
+                                        <th>Phòng ban</th>
+                                        <th>Ngày vào</th>
+                                        <th>Ngày</th>
+                                        <th>Check-in</th>
+                                        <th>Check-out</th>
+                                        <th>Số giờ</th>
+                                        <th>Trạng thái</th>
+                                        <th>Hành động</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% if (danhSachChamCong != null && !danhSachChamCong.isEmpty()) { %>
+                                    <% 
+                                    int stt = 1;
+                                    for (Map<String, Object> item : danhSachChamCong) { 
+                                    %>
+                                    <tr>
+                                        <td><%= stt++ %></td>
+                                        <td><img src="<%= item.get("avatar_url") %>" class="rounded-circle" width="36"></td>
+                                        <td>
+                                            <span class="fw-semibold text-primary attendance-emp-detail"
+                                                  style="cursor:pointer;" data-bs-toggle="modal"
+                                                  data-bs-target="#modalDetailAttendance"
+                                                  data-id="<%= item.get("nhan_vien_id") %>"><%= item.get("ho_ten") %></span>
+                                        </td>
+                                        <td><%= item.get("ten_phong") %></td>
+                                        <td><%= item.get("ngay_vao_lam") %></td>
+                                        <td><%= item.get("ngay") %></td>
+                                        <td><%= item.get("check_in") != null ? item.get("check_in") : "-" %></td>
+                                        <td><%= item.get("check_out") != null ? item.get("check_out") : "-" %></td>
+                                        <td><%= item.get("so_gio_lam") != null ? String.format("%.1f", item.get("so_gio_lam")) : "0" %></td>
+                                        <td>
+                                            <% 
+                                            String trangThai = (String) item.get("trang_thai");
+                                            String badgeClass = "bg-secondary";
+                                            if ("Đi trễ".equals(trangThai)) badgeClass = "bg-warning text-dark";
+                                            else if ("Vắng".equals(trangThai)) badgeClass = "bg-danger";
+                                            else if ("Đủ công".equals(trangThai)) badgeClass = "bg-success";
+                                            %>
+                                            <span class="badge <%= badgeClass %> badge-status"><%= trangThai %></span>
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-sm btn-info rounded-circle"
+                                                    data-bs-toggle="modal" data-bs-target="#modalDetailAttendance"
+                                                    data-id="<%= item.get("nhan_vien_id") %>"><i
+                                                    class="fa-solid fa-eye"></i></button>
+                                            <button class="btn btn-sm btn-warning rounded-circle"
+                                                    data-bs-toggle="modal" data-bs-target="#modalEditAttendance"
+                                                    data-id="<%= item.get("id") %>"><i
+                                                    class="fa-solid fa-pen"></i></button>
+                                            <button class="btn btn-sm btn-danger rounded-circle"
+                                                    onclick="deleteAttendance('<%= item.get("id") %>');"><i
+                                                    class="fa-solid fa-trash"></i></button>
+                                        </td>
+                                    </tr>
+                                    <% } %>
+                                    <% } else { %>
+                                    <tr>
+                                        <td colspan="12" class="text-center py-4">
+                                            <i class="fa-solid fa-inbox text-muted fs-1"></i>
+                                            <p class="text-muted mt-2">Không có dữ liệu chấm công</p>
+                                        </td>
+                                    </tr>
+                                    <% } %>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <!-- Modal chi tiết chấm công với tab -->
+                    <div class="modal fade" id="modalDetailAttendance" tabindex="-1">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title"><i class="fa-solid fa-calendar-day"></i> Chi tiết chấm
+                                        công</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <ul class="nav nav-tabs mb-3" id="attendanceDetailTab" role="tablist">
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link active" id="tab-att-info" data-bs-toggle="tab"
                                                     data-bs-target="#tabAttInfo" type="button" role="tab">Thông
-                                                    tin</button>
-                                            </li>
-                                            <li class="nav-item" role="presentation">
-                                                <button class="nav-link" id="tab-att-history" data-bs-toggle="tab"
+                                                tin</button>
+                                        </li>
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link" id="tab-att-history" data-bs-toggle="tab"
                                                     data-bs-target="#tabAttHistory" type="button" role="tab">Lịch sử
-                                                    chấm công</button>
-                                            </li>
-                                            <li class="nav-item" role="presentation">
-                                                <button class="nav-link" id="tab-att-kpi" data-bs-toggle="tab"
+                                                chấm công</button>
+                                        </li>
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link" id="tab-att-kpi" data-bs-toggle="tab"
                                                     data-bs-target="#tabAttKPI" type="button" role="tab">Lương &
-                                                    KPI</button>
-                                            </li>
-                                        </ul>
-                                        <div class="tab-content" id="attendanceDetailTabContent">
-                                            <div class="tab-pane fade show active" id="tabAttInfo" role="tabpanel">
-                                                <div class="row">
-                                                    <div class="col-md-3 text-center">
-                                                        <img src="https://i.pravatar.cc/100?img=1"
-                                                            class="rounded-circle mb-2" width="80">
-                                                        <div class="fw-bold">Nguyễn Văn A</div>
-                                                        <div class="text-muted small">Kỹ thuật</div>
-                                                    </div>
-                                                    <div class="col-md-9">
-                                                        <b>Ngày:</b> 10/06/2024<br>
-                                                        <b>Check-in:</b> 08:00<br>
-                                                        <b>Check-out:</b> 17:00<br>
-                                                        <b>Số giờ:</b> 8<br>
-                                                        <b>Trạng thái:</b> <span class="badge bg-success">Đủ
-                                                            công</span><br>
-                                                        <b>Lương ngày:</b> 350,000đ
-                                                    </div>
+                                                KPI</button>
+                                        </li>
+                                    </ul>
+                                    <div class="tab-content" id="attendanceDetailTabContent">
+                                        <div class="tab-pane fade show active" id="tabAttInfo" role="tabpanel">
+                                            <div class="row">
+                                                <div class="col-md-3 text-center">
+                                                    <img src="https://i.pravatar.cc/100?img=1"
+                                                         class="rounded-circle mb-2" width="80">
+                                                    <div class="fw-bold">Nguyễn Văn A</div>
+                                                    <div class="text-muted small">Kỹ thuật</div>
+                                                </div>
+                                                <div class="col-md-9">
+                                                    <b>Ngày:</b> 10/06/2024<br>
+                                                    <b>Check-in:</b> 08:00<br>
+                                                    <b>Check-out:</b> 17:00<br>
+                                                    <b>Số giờ:</b> 8<br>
+                                                    <b>Trạng thái:</b> <span class="badge bg-success">Đủ
+                                                        công</span><br>
+                                                    <b>Lương ngày:</b> 350,000đ
                                                 </div>
                                             </div>
-                                            <div class="tab-pane fade" id="tabAttHistory" role="tabpanel">
-                                                <ul id="attendanceHistoryList">
-                                                    <li>09/06/2024: Đủ công</li>
-                                                    <li>10/06/2024: Đi trễ</li>
-                                                    <!-- AJAX load từ bảng cham_cong -->
-                                                </ul>
-                                            </div>
-                                            <div class="tab-pane fade" id="tabAttKPI" role="tabpanel">
-                                                <ul id="attendanceSalaryKPI">
-                                                    <li>Lương tháng 6: 7,800,000đ</li>
-                                                    <li>KPI: 8.5</li>
-                                                    <!-- AJAX load từ bảng luong và luu_kpi -->
-                                                </ul>
-                                            </div>
+                                        </div>
+                                        <div class="tab-pane fade" id="tabAttHistory" role="tabpanel">
+                                            <ul id="attendanceHistoryList">
+                                                <li>09/06/2024: Đủ công</li>
+                                                <li>10/06/2024: Đi trễ</li>
+                                                <!-- AJAX load từ bảng cham_cong -->
+                                            </ul>
+                                        </div>
+                                        <div class="tab-pane fade" id="tabAttKPI" role="tabpanel">
+                                            <ul id="attendanceSalaryKPI">
+                                                <li>Lương tháng 6: 7,800,000đ</li>
+                                                <li>KPI: 8.5</li>
+                                                <!-- AJAX load từ bảng luong và luu_kpi -->
+                                            </ul>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-                        <!-- Modal thêm chấm công -->
-                        <div class="modal fade" id="modalAddAttendance" tabindex="-1">
-                            <div class="modal-dialog">
-                                <form class="modal-content" action="addAttendance" method="post">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title"><i class="fa-solid fa-plus"></i> Thêm chấm công</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                    </div>
-                                    <div class="modal-body">
-                                        <div class="mb-3">
-                                            <label class="form-label">Chọn nhân viên</label>
-                                            <select class="form-select" name="employeeId" required>
-                                                <% for (Map<String, Object> nv : danhSachChamCong) { %>
-                                                <option value="<%= nv.get("nhan_vien_id") %>"><%= nv.get("ho_ten") %></option>
-                                                <% } %>
-                                            </select>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label class="form-label">Ngày chấm công</label>
-                                            <input type="date" class="form-control" name="attendanceDate" required>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label class="form-label">Giờ check-in</label>
-                                            <input type="time" class="form-control" name="checkInTime">
-                                        </div>
-                                        <div class="mb-3">
-                                            <label class="form-label">Giờ check-out</label>
-                                            <input type="time" class="form-control" name="checkOutTime">
-                                        </div>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="submit" class="btn btn-primary rounded-pill">Lưu</button>
-                                        <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Huỷ</button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                        <!-- Modal xuất phiếu lương -->
-                        <div class="modal fade" id="modalExportPayroll" tabindex="-1">
-                            <div class="modal-dialog">
-                                <form class="modal-content" action="exportPayroll" method="post">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title"><i class="fa-solid fa-file-export"></i> Xuất phiếu lương</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                    </div>
-                                    <div class="modal-body">
-                                        <div class="mb-3">
-                                            <label class="form-label">Chọn tháng</label>
-                                            <input type="month" class="form-control" name="month" required>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label class="form-label">Chọn nhân viên</label>
-                                            <select class="form-select" name="employeeId">
-                                                <option value="all">Tất cả nhân viên</option>
-                                                <% for (Map<String, Object> nv : danhSachChamCong) { %>
-                                                <option value="<%= nv.get("nhan_vien_id") %>"><%= nv.get("ho_ten") %></option>
-                                                <% } %>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="submit" class="btn btn-primary rounded-pill">Xuất file</button>
-                                        <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Huỷ</button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                        <!-- Modal sửa chấm công -->
-                        <div class="modal fade" id="modalEditAttendance" tabindex="-1">
-                            <div class="modal-dialog">
-                                <form class="modal-content" action="editAttendance" method="post">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title"><i class="fa-solid fa-pen"></i> Sửa chấm công</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                    </div>
-                                    <div class="modal-body">
-                                        <input type="hidden" name="attendanceId" id="editAttendanceId">
-                                        <div class="mb-3">
-                                            <label class="form-label">Ngày chấm công</label>
-                                            <input type="date" class="form-control" name="attendanceDate" required>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label class="form-label">Giờ check-in</label>
-                                            <input type="time" class="form-control" name="checkInTime">
-                                        </div>
-                                        <div class="mb-3">
-                                            <label class="form-label">Giờ check-out</label>
-                                            <input type="time" class="form-control" name="checkOutTime">
-                                        </div>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="submit" class="btn btn-primary rounded-pill">Lưu</button>
-                                        <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Huỷ</button>
-                                    </div>
-                                </form>
                             </div>
                         </div>
                     </div>
+                    <!-- Modal thêm chấm công -->
+                    <div class="modal fade" id="modalAddAttendance" tabindex="-1">
+                        <div class="modal-dialog">
+                            <form class="modal-content" action="addAttendance" method="post">
+                                <div class="modal-header">
+                                    <h5 class="modal-title"><i class="fa-solid fa-plus"></i> Thêm chấm công</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="mb-3">
+                                        <label class="form-label">Chọn nhân viên</label>
+                                        <select class="form-select" name="employeeId" required>
+                                            <% for (Map<String, Object> nv : danhSachChamCong) { %>
+                                            <option value="<%= nv.get("nhan_vien_id") %>"><%= nv.get("ho_ten") %></option>
+                                            <% } %>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Ngày chấm công</label>
+                                        <input type="date" class="form-control" name="attendanceDate" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Giờ check-in</label>
+                                        <input type="time" class="form-control" name="checkInTime">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Giờ check-out</label>
+                                        <input type="time" class="form-control" name="checkOutTime">
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="submit" class="btn btn-primary rounded-pill">Lưu</button>
+                                    <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Huỷ</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    <!-- Modal xuất phiếu lương -->
+                    <div class="modal fade" id="modalExportPayroll" tabindex="-1">
+                        <div class="modal-dialog">
+                            <form class="modal-content" action="exportPayroll" method="post">
+                                <div class="modal-header">
+                                    <h5 class="modal-title"><i class="fa-solid fa-file-export"></i> Xuất phiếu lương</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="mb-3">
+                                        <label class="form-label">Chọn tháng</label>
+                                        <input type="month" class="form-control" name="month" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Chọn nhân viên</label>
+                                        <select class="form-select" name="employeeId">
+                                            <option value="all">Tất cả nhân viên</option>
+                                            <% for (Map<String, Object> nv : danhSachChamCong) { %>
+                                            <option value="<%= nv.get("nhan_vien_id") %>"><%= nv.get("ho_ten") %></option>
+                                            <% } %>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="submit" class="btn btn-primary rounded-pill">Xuất file</button>
+                                    <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Huỷ</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    <!-- Modal sửa chấm công -->
+                    <div class="modal fade" id="modalEditAttendance" tabindex="-1">
+                        <div class="modal-dialog">
+                            <form class="modal-content" action="./dsChamCong" method="post">
+                                <div class="modal-header">
+                                    <h5 class="modal-title"><i class="fa-solid fa-pen"></i> Sửa chấm công</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <input type="hidden" name="action" value="edit">
+                                    <input type="hidden" name="attendanceId" id="editAttendanceId">
+                                    <div class="mb-3">
+                                        <label class="form-label">Giờ check-in</label>
+                                        <input type="time" class="form-control" name="checkInTime" step="60">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Giờ check-out</label>
+                                        <input type="time" class="form-control" name="checkOutTime" step="60">
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="submit" class="btn btn-primary rounded-pill">Lưu</button>
+                                    <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Huỷ</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         <script>
@@ -546,46 +531,47 @@
                     cancelButtonColor: '#d33',
                     confirmButtonText: 'Xóa',
                     cancelButtonText: 'Hủy'
-                }).then((result) => {
+                }).then(function (result) {
                     if (result.isConfirmed) {
-                        fetch(`dsChamCong?id=${attendanceId}`, {
+                        fetch("dsChamCong?id=" + attendanceId, {
                             method: 'DELETE'
                         })
-                        .then(response => {
-                            if (response.ok) {
-                                Swal.fire('Đã xóa!', 'Chấm công đã được xóa.', 'success').then(() => {
-                                    location.reload();
+                                .then(function (response) {
+                                    if (response.ok) {
+                                        Swal.fire('Đã xóa!', 'Chấm công đã được xóa.', 'success').then(function () {
+                                            location.reload();
+                                        });
+                                    } else {
+                                        Swal.fire('Lỗi!', 'Không thể xóa chấm công.', 'error');
+                                    }
+                                })
+                                .catch(function (error) {
+                                    Swal.fire('Lỗi!', 'Đã xảy ra lỗi khi xóa.', 'error');
                                 });
-                            } else {
-                                Swal.fire('Lỗi!', 'Không thể xóa chấm công.', 'error');
-                            }
-                        })
-                        .catch(error => {
-                            Swal.fire('Lỗi!', 'Đã xảy ra lỗi khi xóa.', 'error');
-                        });
                     }
                 });
             }
 
             // Hiển thị dữ liệu trong modal sửa chấm công
             $(document).on('show.bs.modal', '#modalEditAttendance', function (event) {
-                const button = $(event.relatedTarget); // Nút kích hoạt modal
-                const attendanceId = button.data('id');
-                const row = button.closest('tr');
+                var button = $(event.relatedTarget);
+                var attendanceId = button.data('id');
+                var row = button.closest('tr');
 
-                // Lấy dữ liệu từ hàng tương ứng
-                const date = row.find('td:nth-child(6)').text().trim();
-                const checkIn = row.find('td:nth-child(7)').text().trim();
-                const checkOut = row.find('td:nth-child(8)').text().trim();
+                // Lấy dữ liệu từ bảng
+                var date = row.find('td:nth-child(6)').text().trim();       // Ngày
+                var checkIn = row.find('td:nth-child(7)').text().trim();    // Check-in
+                var checkOut = row.find('td:nth-child(8)').text().trim();   // Check-out
 
-                // Đặt dữ liệu vào modal
+                // Gán vào modal
                 $(this).find('#editAttendanceId').val(attendanceId);
-                $(this).find('input[name="attendanceDate"]').val(date);
                 $(this).find('input[name="checkInTime"]').val(checkIn !== '-' ? checkIn : '');
                 $(this).find('input[name="checkOutTime"]').val(checkOut !== '-' ? checkOut : '');
             });
+
         </script>
+
     </body>
 
-    </html>
+</html>
 

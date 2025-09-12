@@ -43,18 +43,18 @@ public class capnhatChamCong extends HttpServlet {
             }
             
             // Cập nhật chấm công  
-            boolean success = kn.capNhatChamCong(
-                Integer.parseInt(nhanVienId), 
-                ngayCham, 
-                gioVao, 
-                gioRa
-            );
+//            boolean success = kn.capNhatChamCong(
+//                Integer.parseInt(nhanVienId), 
+//                ngayCham, 
+//                gioVao, 
+//                gioRa
+//            );
             
-            if (success) {
-                response.getWriter().println("<script>alert('✅ Cập nhật chấm công thành công!'); window.location.href='dsChamCong';</script>");
-            } else {
-                response.getWriter().println("<script>alert('❌ Cập nhật chấm công thất bại!'); history.back();</script>");
-            }
+//            if (success) {
+//                response.getWriter().println("<script>alert('✅ Cập nhật chấm công thành công!'); window.location.href='dsChamCong';</script>");
+//            } else {
+//                response.getWriter().println("<script>alert('❌ Cập nhật chấm công thất bại!'); history.back();</script>");
+//            }
             
         } catch (ClassNotFoundException | SQLException | NumberFormatException ex) {
             Logger.getLogger(capnhatChamCong.class.getName()).log(Level.SEVERE, null, ex);

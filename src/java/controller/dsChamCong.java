@@ -24,8 +24,16 @@ public class dsChamCong extends HttpServlet {
         request.setCharacterEncoding("UTF-8");
         response.setCharacterEncoding("UTF-8");
 
+        String action = request.getParameter("action");
+
+        if ("edit".equals(action)) {
+            // Gọi xử lý sửa giờ chấm công
+            handleEditAttendance(request, response);
+            return;
+        }
+
         try {
-            KNCSDL2 kn = new KNCSDL2();
+            KNCSDL kn = new KNCSDL();
 
             // Lấy tham số lọc từ request
             String thang = request.getParameter("thang");
@@ -81,4 +89,58 @@ public class dsChamCong extends HttpServlet {
             response.getWriter().println("<h3 style='color:red'>❌ Lỗi: " + ex.getMessage() + "</h3>");
         }
     }
+
+    @Override
+    protected void doDelete(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+        String idStr = req.getParameter("id");
+        if (idStr == null || idStr.isEmpty()) {
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            return;
+        }
+
+        int id;
+        try {
+            id = Integer.parseInt(idStr);
+        } catch (NumberFormatException e) {
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            return;
+        }
+
+        try {
+            KNCSDL db = new KNCSDL();
+            boolean success = db.xoaChamCongTheoId(id); // bạn cần viết hàm này trong DAO
+
+            if (success) {
+                resp.setStatus(HttpServletResponse.SC_OK);
+            } else {
+                resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    private void handleEditAttendance(HttpServletRequest req, HttpServletResponse resp)
+            throws IOException {
+        try {
+            int id = Integer.parseInt(req.getParameter("attendanceId"));
+            String checkIn = req.getParameter("checkInTime");
+            String checkOut = req.getParameter("checkOutTime");
+
+            KNCSDL kn = new KNCSDL();
+            boolean updated = kn.capNhatChamCong(id, checkIn, checkOut);
+
+            if (updated) {
+                resp.sendRedirect("dsChamCong");
+            } else {
+                resp.getWriter().println("<h3 style='color:red'>❌ Không thể cập nhật chấm công</h3>");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            resp.getWriter().println("<h3 style='color:red'>❌ Lỗi khi cập nhật: " + e.getMessage() + "</h3>");
+        }
+    }
+
 }

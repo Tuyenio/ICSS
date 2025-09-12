@@ -1820,49 +1820,6 @@ public class KNCSDL {
         return luongInfo;
     }
 
-    // Thêm/cập nhật chấm công
-    public boolean capNhatChamCong(int nhanVienId, String ngay, String checkIn, String checkOut) throws SQLException {
-        String checkSql = "SELECT COUNT(*) FROM cham_cong WHERE nhan_vien_id = ? AND ngay = ?";
-        boolean exists = false;
-
-        try (PreparedStatement checkStmt = cn.prepareStatement(checkSql)) {
-            checkStmt.setInt(1, nhanVienId);
-            checkStmt.setDate(2, java.sql.Date.valueOf(ngay));
-
-            try (ResultSet rs = checkStmt.executeQuery()) {
-                if (rs.next() && rs.getInt(1) > 0) {
-                    exists = true;
-                }
-            }
-        }
-
-        String sql;
-        if (exists) {
-            sql = "UPDATE cham_cong SET check_in = ?, check_out = ? WHERE nhan_vien_id = ? AND ngay = ?";
-        } else {
-            sql = "INSERT INTO cham_cong (check_in, check_out, nhan_vien_id, ngay) VALUES (?, ?, ?, ?)";
-        }
-
-        try (PreparedStatement stmt = cn.prepareStatement(sql)) {
-            if (checkIn != null && !checkIn.isEmpty()) {
-                stmt.setTime(1, java.sql.Time.valueOf(checkIn + ":00"));
-            } else {
-                stmt.setNull(1, Types.TIME);
-            }
-
-            if (checkOut != null && !checkOut.isEmpty()) {
-                stmt.setTime(2, java.sql.Time.valueOf(checkOut + ":00"));
-            } else {
-                stmt.setNull(2, Types.TIME);
-            }
-
-            stmt.setInt(3, nhanVienId);
-            stmt.setDate(4, java.sql.Date.valueOf(ngay));
-
-            return stmt.executeUpdate() > 0;
-        }
-    }
-
     // Tính toán và cập nhật lương tháng
     public boolean tinhToanLuongThang(int nhanVienId, int thang, int nam) throws SQLException {
         // Lấy thông tin nhân viên
@@ -2767,8 +2724,11 @@ public class KNCSDL {
         thongKe.put("Đã hoàn thành", 0);
         thongKe.put("Trễ hạn", 0);
 
-        String sql = "SELECT trang_thai, COUNT(*) as so_luong "
-                + "FROM cong_viec WHERE nguoi_nhan_id = ? GROUP BY trang_thai";
+        String sql = "SELECT cv.trang_thai, COUNT(*) as so_luong "
+                + "FROM cong_viec_nguoi_nhan cn "
+                + "JOIN cong_viec cv ON cn.cong_viec_id = cv.id "
+                + "WHERE cn.nhan_vien_id = ? "
+                + "GROUP BY cv.trang_thai";
 
         try (PreparedStatement stmt = cn.prepareStatement(sql)) {
             stmt.setInt(1, nhanVienId);
@@ -2787,10 +2747,11 @@ public class KNCSDL {
         List<Map<String, Object>> danhSach = new ArrayList<>();
 
         String sql = "SELECT cv.id, cv.ten_cong_viec, cv.han_hoan_thanh, cv.muc_do_uu_tien, "
-                + "nv.ho_ten as nguoi_giao_ten "
-                + "FROM cong_viec cv "
+                + "nv.ho_ten AS nguoi_giao_ten "
+                + "FROM cong_viec_nguoi_nhan cn "
+                + "JOIN cong_viec cv ON cn.cong_viec_id = cv.id "
                 + "LEFT JOIN nhanvien nv ON cv.nguoi_giao_id = nv.id "
-                + "WHERE cv.nguoi_nhan_id = ? "
+                + "WHERE cn.nhan_vien_id = ? "
                 + "AND cv.trang_thai NOT IN ('Đã hoàn thành', 'Trễ hạn') "
                 + "AND cv.han_hoan_thanh BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL ? DAY) "
                 + "ORDER BY cv.han_hoan_thanh ASC";
@@ -3037,6 +2998,24 @@ public class KNCSDL {
             }
         }
         return -1;
+    }
+
+    public boolean xoaChamCongTheoId(int id) throws SQLException {
+        String sql = "DELETE FROM cham_cong WHERE id = ?";
+        try (PreparedStatement stmt = cn.prepareStatement(sql)) {
+            stmt.setInt(1, id);
+            return stmt.executeUpdate() > 0;
+        }
+    }
+
+    public boolean capNhatChamCong(int id, String checkIn, String checkOut) throws SQLException {
+        String sql = "UPDATE cham_cong SET check_in = ?, check_out = ? WHERE id = ?";
+        try (PreparedStatement stmt = cn.prepareStatement(sql)) {
+            stmt.setString(1, checkIn);
+            stmt.setString(2, checkOut);
+            stmt.setInt(3, id);  // Chỉ có 3 tham số, index cuối là 3
+            return stmt.executeUpdate() > 0;
+        }
     }
 
     public void close() throws SQLException {
