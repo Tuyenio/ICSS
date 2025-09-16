@@ -151,6 +151,14 @@
         <servlet-name>ExportAttendanceServlet</servlet-name>
         <servlet-class>controller.ExportAttendanceServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>UploadServlet</servlet-name>
+        <servlet-class>controller.UploadServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>DownloadSelectedServlet</servlet-name>
+        <servlet-class>controller.DownloadSelectedServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>dsnhanvien</servlet-name>
         <url-pattern>/dsnhanvien</url-pattern>
@@ -298,6 +306,14 @@
     <servlet-mapping>
         <servlet-name>ExportAttendanceServlet</servlet-name>
         <url-pattern>/exportAttendance</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>UploadServlet</servlet-name>
+        <url-pattern>/upload</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>DownloadSelectedServlet</servlet-name>
+        <url-pattern>/downloadSelected</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>
