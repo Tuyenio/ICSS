@@ -1,14 +1,17 @@
 package controller;
 
 import java.io.*;
+import java.nio.file.*;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.stream.Collectors;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.http.*;
 
 @MultipartConfig
 public class suaCongviec extends HttpServlet {
+
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -27,8 +30,7 @@ public class suaCongviec extends HttpServlet {
         String tenPhong = getValue(request, "ten_phong_ban");
         String trangThai = getValue(request, "trang_thai");
         String tailieu = getValue(request, "tai_lieu_cv");
-        
-        System.out.println("ten "+dsTenNguoiNhan);
+        String file = getValue(request, "files");// Đường dẫn file cũ (đã có trong DB)
 
         try {
             KNCSDL db = new KNCSDL();
@@ -40,17 +42,58 @@ public class suaCongviec extends HttpServlet {
                 out.print("{\"success\": false, \"message\": \"Thiếu ID để cập nhật.\"}");
                 return;
             }
+            
+            String fileCu = db.getFileCongViec(taskId);
+            if (fileCu == null) fileCu = "";
 
-            // Cập nhật công việc chính (bỏ nguoi_nhan_id vì đã có bảng phụ)
-            db.updateTask(taskId, ten, moTa, han, uuTien, giaoId, phongId, trangThai, tailieu);
+            // === 1. Lưu file đính kèm ===
+            String uploadPath = System.getenv("ICSS_UPLOAD_DIR");
+            if (uploadPath == null || uploadPath.trim().isEmpty()) {
+                uploadPath = "D:/uploads"; // fallback khi local
+            }
 
-            // Xử lý danh sách người nhận mới
+            File uploadDir = new File(uploadPath);
+            if (!uploadDir.exists()) {
+                uploadDir.mkdirs();
+            }
+
+            List<String> filePaths = new ArrayList<>();
+            for (Part part : request.getParts()) {
+                if ("files".equals(part.getName()) && part.getSize() > 0) {
+                    String fileName = Paths.get(part.getSubmittedFileName()).getFileName().toString();
+                    String fullPath = uploadPath + File.separator + fileName;
+
+                    try (InputStream fileContent = part.getInputStream(); FileOutputStream fos = new FileOutputStream(fullPath)) {
+                        byte[] buffer = new byte[1024];
+                        int bytesRead;
+                        while ((bytesRead = fileContent.read(buffer)) != -1) {
+                            fos.write(buffer, 0, bytesRead);
+                        }
+                    }
+
+                    filePaths.add(fullPath.replace("\\", "/")); // Lưu path dùng dấu / để đồng nhất
+                }
+            }
+
+            // === 2. Nối file cũ và file mới ===
+            String fileFinal = fileCu;
+            if (!filePaths.isEmpty()) {
+                String moi = String.join(";", filePaths);
+                if (!fileFinal.isEmpty()) {
+                    fileFinal += ";" + moi;
+                } else {
+                    fileFinal = moi;
+                }
+            }
+
+            // --- BƯỚC 2: CẬP NHẬT TASK ---
+            db.updateTask(taskId, ten, moTa, han, uuTien, giaoId, phongId, trangThai, tailieu, fileFinal);
+
+            // --- BƯỚC 3: XỬ LÝ NGƯỜI NHẬN ---
             List<Integer> danhSachIdNhan = db.layIdTuDanhSachTen(dsTenNguoiNhan);  // tên → list id
-
-            // Xóa người nhận cũ, thêm mới vào bảng phụ
             db.capNhatDanhSachNguoiNhan(taskId, danhSachIdNhan);
 
-            // Gửi thông báo
+            // --- BƯỚC 4: GỬI THÔNG BÁO ---
             for (int nhanId : danhSachIdNhan) {
                 String tieuDeTB = "Cập nhật công việc";
                 String noiDungTB = "Công việc: " + ten + " vừa được cập nhật mới";
@@ -71,4 +114,3 @@ public class suaCongviec extends HttpServlet {
         return null;
     }
 }
-

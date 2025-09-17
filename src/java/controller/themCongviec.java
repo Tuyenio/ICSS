@@ -1,13 +1,11 @@
 package controller;
 
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.*;
 import jakarta.servlet.annotation.MultipartConfig;
+import jakarta.servlet.http.*;
 
 @MultipartConfig
 public class themCongviec extends HttpServlet {
@@ -24,11 +22,11 @@ public class themCongviec extends HttpServlet {
         String moTa = getValue(request, "mo_ta");
         String han = getValue(request, "han_hoan_thanh");
         String uuTien = getValue(request, "muc_do_uu_tien");
-        String tenNguoiGiao = getValue(request, "ten_nguoi_giao"); // đây là id
-        String dsNguoiNhan = getValue(request, "ten_nguoi_nhan");  // danh sách tên: "Nguyễn Văn A,Trần Thị B"
+        String tenNguoiGiao = getValue(request, "ten_nguoi_giao"); 
+        String dsNguoiNhan = getValue(request, "ten_nguoi_nhan");  
         String tenPhong = getValue(request, "ten_phong_ban");
         String trangThai = "Chưa bắt đầu";
-        String tailieu = getValue(request, "tai_lieu_cv");
+        String tailieu = getValue(request, "tai_lieu_cv"); // link driver
 
         try {
             KNCSDL db = new KNCSDL();
@@ -40,14 +38,46 @@ public class themCongviec extends HttpServlet {
                 return;
             }
 
-            // === 1. Thêm công việc mới ===
-            int taskId = db.insertTask(ten, moTa, han, uuTien, giaoId, phongId, trangThai, tailieu);
+            // === 1. Lưu file đính kèm ===
+            String uploadPath = System.getenv("ICSS_UPLOAD_DIR");
+            if (uploadPath == null || uploadPath.trim().isEmpty()) {
+                uploadPath = "D:/uploads"; // fallback khi local
+            }
+
+            File uploadDir = new File(uploadPath);
+            if (!uploadDir.exists()) uploadDir.mkdirs();
+
+            List<String> filePaths = new ArrayList<>();
+            for (Part part : request.getParts()) {
+                if ("files".equals(part.getName()) && part.getSize() > 0) {
+                    String fileName = part.getSubmittedFileName();
+                    String fullPath = uploadPath + File.separator + fileName;
+
+                    try (InputStream fileContent = part.getInputStream();
+                         FileOutputStream fos = new FileOutputStream(fullPath)) {
+                        byte[] buffer = new byte[1024];
+                        int bytesRead;
+                        while ((bytesRead = fileContent.read(buffer)) != -1) {
+                            fos.write(buffer, 0, bytesRead);
+                        }
+                    }
+
+                    // Lưu đường dẫn tuyệt đối
+                    filePaths.add(fullPath);
+                }
+            }
+
+            // Ghép nhiều file bằng dấu ;
+            String fileDinhKem = String.join(";", filePaths);
+
+            // === 2. Thêm công việc mới (DB phải có thêm cột file_dinh_kem) ===
+            int taskId = db.insertTask(ten, moTa, han, uuTien, giaoId, phongId, trangThai, tailieu, fileDinhKem);
             if (taskId <= 0) {
                 out.print("{\"success\": false, \"message\": \"Không thể thêm công việc.\"}");
                 return;
             }
 
-            // === 2. Xử lý danh sách người nhận (theo tên) ===
+            // === 3. Thêm người nhận + thông báo ===
             if (dsNguoiNhan != null && !dsNguoiNhan.trim().isEmpty()) {
                 for (String tenNhan : dsNguoiNhan.split(",")) {
                     tenNhan = tenNhan.trim();
@@ -71,8 +101,9 @@ public class themCongviec extends HttpServlet {
     }
 
     private String getValue(HttpServletRequest request, String fieldName) throws IOException, ServletException {
-        if (request.getPart(fieldName) != null) {
-            return new String(request.getPart(fieldName).getInputStream().readAllBytes(), "UTF-8");
+        Part part = request.getPart(fieldName);
+        if (part != null && part.getSize() > 0) {
+            return new String(part.getInputStream().readAllBytes(), "UTF-8");
         }
         return null;
     }

@@ -420,7 +420,8 @@
                                  data-ten_nguoi_nhan="<%= task.get("nguoi_nhan_ten") %>"
                                  data-ten_phong_ban="<%= task.get("phong_ban_id") %>"
                                  data-trang-thai="<%= task.get("trang_thai") %>"
-                                 data-tai_lieu_cv="<%= task.get("tai_lieu_cv") %>">
+                                 data-tai_lieu_cv="<%= task.get("tai_lieu_cv") %>"
+                                 data-file_tai_lieu="<%= task.get("file_tai_lieu") %>">
                                 <div class="task-title"><%= task.get("ten_cong_viec") %></div>
                                 <div class="task-meta">Người giao: <b><%= task.get("nguoi_giao_id") %></b> <br>Người nhận: <b><%= task.get("nguoi_nhan_ten") %></b></div>
                                 <span class="task-priority badge <%= priorityBadge.getOrDefault(task.get("muc_do_uu_tien"), "bg-secondary") %>">
@@ -468,19 +469,19 @@
                                 <div class="modal-body">
                                     <input type="hidden" name="id">
                                     <div class="mb-3">
-                                        <label class="form-label">Tên công việc</label>
+                                        <label class="form-label"><b>Tên công việc</b></label>
                                         <input type="text" class="form-control" name="ten_cong_viec" required>
                                     </div>
                                     <div class="mb-3">
-                                        <label class="form-label">Mô tả</label>
+                                        <label class="form-label"><b>Mô tả</b></label>
                                         <textarea class="form-control" name="mo_ta" id="taskMoTa"></textarea>
                                     </div>
                                     <div class="mb-3">
-                                        <label class="form-label">Hạn hoàn thành</label>
+                                        <label class="form-label"><b>Hạn hoàn thành</b></label>
                                         <input type="date" class="form-control" name="han_hoan_thanh">
                                     </div>
                                     <div class="mb-3">
-                                        <label class="form-label">Mức độ ưu tiên</label>
+                                        <label class="form-label"><b>Mức độ ưu tiên</b></label>
                                         <select class="form-select" name="muc_do_uu_tien">
                                             <option value="Thấp" selected>Thấp</option>
                                             <option value="Trung bình">Trung bình</option>
@@ -488,13 +489,13 @@
                                         </select>
                                     </div>
                                     <div class="mb-3">
-                                        <label class="form-label">Người giao</label>
+                                        <label class="form-label"><b>Người giao</b></label>
                                         <select class="form-select" name="ten_nguoi_giao" id="nguoiGiaoSelect">
                                             <!-- AJAX load nhân viên -->
                                         </select>
                                     </div>
                                     <div class="mb-3">
-                                        <label class="form-label">Người nhận</label>
+                                        <label class="form-label"><b>Người nhận</b></label>
                                         <div class="input-group mb-2">
                                             <select class="form-select" id="nguoiNhanSelect2">
                                                 <!-- Dữ liệu nhân viên load bằng AJAX -->
@@ -510,14 +511,20 @@
                                     </div>
 
                                     <div class="mb-3">
-                                        <label class="form-label">Phòng ban</label>
+                                        <label class="form-label"><b>Phòng ban</b></label>
                                         <select class="form-select" name="ten_phong_ban" id="phongSelect">
                                             <!-- Sẽ được load từ API -->
                                         </select>
                                     </div>
                                     <div class="mb-3">
-                                        <label class="form-label">Tài liệu công việc</label>
+                                        <label class="form-label"><b>Tài liệu công việc (Link Driver)</b></label>
                                         <input type="text" class="form-control" name="tai_lieu_cv">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label"><b>File công việc</b></label>
+                                        <input class="form-control" type="file" name="files" id="taskFiles" multiple>
+                                        <div id="taskFileList" class="form-text text-muted small mt-1">
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="modal-footer">
@@ -561,19 +568,19 @@
                                             <form id="formTaskDetail" enctype="multipart/form-data">
                                                 <input type="hidden" name="task_id" id="taskId">
                                                 <div class="mb-2">
-                                                    <label class="form-label"><b>Tên công việc:</b></label>
+                                                    <label class="form-label"><b>Tên công việc</b></label>
                                                     <input type="text" class="form-control" name="ten_cong_viec">
                                                 </div>
                                                 <div class="mb-2">
-                                                    <label class="form-label"><b>Mô tả:</b></label>
+                                                    <label class="form-label"><b>Mô tả</b></label>
                                                     <textarea class="form-control" rows="3" name="mo_ta"></textarea>
                                                 </div>
                                                 <div class="mb-2">
-                                                    <label class="form-label"><b>Hạn hoàn thành:</b></label>
+                                                    <label class="form-label"><b>Hạn hoàn thành</b></label>
                                                     <input type="date" class="form-control" name="han_hoan_thanh">
                                                 </div>
                                                 <div class="mb-2">
-                                                    <label class="form-label"><b>Mức độ ưu tiên:</b></label>
+                                                    <label class="form-label"><b>Mức độ ưu tiên</b></label>
                                                     <select class="form-select" name="muc_do_uu_tien">
                                                         <option>Cao</option>
                                                         <option>Trung bình</option>
@@ -581,11 +588,11 @@
                                                     </select>
                                                 </div>
                                                 <div class="mb-2">
-                                                    <label class="form-label"><b>Người giao:</b></label>
+                                                    <label class="form-label"><b>Người giao</b></label>
                                                     <select class="form-select" name="ten_nguoi_giao"></select>
                                                 </div>
                                                 <div class="mb-3">
-                                                    <label class="form-label">Người nhận</label>
+                                                    <label class="form-label"><b>Người nhận</b></label>
                                                     <div class="input-group mb-2">
                                                         <select class="form-select" id="nguoiNhanSelect">
                                                             <!-- Dữ liệu nhân viên load bằng AJAX -->
@@ -615,8 +622,14 @@
                                                     </select>
                                                 </div>
                                                 <div class="mb-2">
-                                                    <label for="taskAttachment" class="form-label"><b>Tài liệu công việc:</b></label>
+                                                    <label for="taskAttachment" class="form-label"><b>Tài liệu công việc (Link Driver)</b></label>
                                                     <input type="text" class="form-control" name="tai_lieu_cv">
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label"><b>File công việc</b></label>
+                                                    <input class="form-control" type="file" name="files" id="taskFiles2" multiple>
+                                                    <div id="taskFileList2" class="form-text text-muted small mt-1">
+                                                    </div>
                                                 </div>
                                                 <div class="modal-footer">
                                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
@@ -726,6 +739,25 @@
             </div>
         </div>
 
+        <script>
+            // Hiển thị danh sách file ngay khi chọn
+            document.getElementById('taskFiles').addEventListener('change', function () {
+                let files = this.files;
+                let list = "";
+                for (let i = 0; i < files.length; i++) {
+                    list += "📄 " + files[i].name + "<br>";
+                }
+                document.getElementById('taskFileList').innerHTML = list || "Chưa có file nào được chọn";
+            });
+            document.getElementById('taskFiles2').addEventListener('change', function () {
+                let files = this.files;
+                let list = "";
+                for (let i = 0; i < files.length; i++) {
+                    list += "📄 " + files[i].name + "<br>";
+                }
+                document.getElementById('taskFileList2').innerHTML = list || "Chưa có file nào được chọn";
+            });
+        </script>
         <script>
             document.addEventListener("DOMContentLoaded", function () {
                 var buttonsThemNguoiNhan = document.querySelectorAll("#btnThemNguoiNhan2");
@@ -913,6 +945,72 @@
                     selectOptionByText(modal.querySelector('[name="trang_thai"]'), trangthai);
                     modal.querySelector('[name="tai_lieu_cv"]').value = tailieu;
 
+                    let fileTaiLieu = button.getAttribute("data-file_tai_lieu") || "";
+                    if (fileTaiLieu.toLowerCase() === "null") {
+                        fileTaiLieu = "";
+                    }
+
+                    const fileListDiv = modal.querySelector("#taskFileList2");
+                    if (!fileTaiLieu && taskFiles2.files.length === 0) {
+                        fileListDiv.innerHTML = "Chưa có file nào được đính kèm";
+                    }
+
+                    if (fileTaiLieu) {
+                        const files = fileTaiLieu.split(";").map(x => x.trim()).filter(Boolean);
+
+                        files.forEach(path => {
+                            const tenFile = path.substring(path.lastIndexOf("/") + 1).split("\\").pop();
+
+                            const fileItem = document.createElement("div");
+                            fileItem.className = "d-flex align-items-center mb-1";
+
+                            const link = document.createElement("a");
+                            link.href = "downloadFile?file=" + encodeURIComponent(tenFile);
+                            link.className = "flex-grow-1 text-decoration-none";
+                            link.innerHTML = "📄 " + tenFile + " <i class='fa-solid fa-download'></i>";
+
+                            const delBtn = document.createElement("button");
+                            delBtn.className = "btn btn-sm btn-outline-danger ms-2";
+                            delBtn.innerHTML = "<i class='fa-solid fa-times'></i>";
+
+                            // 👉 KHÔNG cần confirm, gửi luôn full path
+                            delBtn.addEventListener("click", function () {
+                                fetch("deleteFile", {
+                                    method: "POST",
+                                    headers: {
+                                        "Content-Type": "application/x-www-form-urlencoded"
+                                    },
+                                    body: "file=" + encodeURIComponent(path) + "&taskId=" + encodeURIComponent(taskId)
+                                })
+                                        .then(res => res.json())
+                                        .then(data => {
+                                            if (data.success) {
+                                                fileItem.remove();
+
+                                                if (fileListDiv.children.length === 0) {
+                                                    fileListDiv.innerHTML = "Chưa có file nào được đính kèm";
+                                                }
+
+                                                showToast('success', '🗑️ File đã được xoá');
+                                            } else {
+                                                showToast('error', "❌ Lỗi xoá file: " + (data.message || "Không rõ nguyên nhân"));
+                                            }
+                                        })
+                                        .catch(err => {
+                                            console.error(err);
+                                            showToast('error', '❌ Lỗi kết nối server.');
+                                        });
+                            });
+
+                            fileItem.appendChild(link);
+                            fileItem.appendChild(delBtn);
+                            fileListDiv.appendChild(fileItem);
+                        });
+                    } else {
+                        fileListDiv.innerHTML = "Chưa có file nào được đính kèm";
+                    }
+
+
                     // --- Xử lý nhiều người nhận ---
                     const danhSachDiv = modal.querySelector("#danhSachNguoiNhan");
                     const hiddenInput = modal.querySelector("#nguoiNhanHidden");
@@ -994,52 +1092,32 @@
                     }
                 });
             });
-
         </script>
         <script>
             // ====== LƯU CÔNG VIỆC (SỬA) ======
-            $('#btnSaveTask').on('click', function (e) {
-                e.preventDefault();
+            document.getElementById('btnSaveTask').addEventListener('click', function () {
+                const form = document.getElementById('formTaskDetail');
+                const formData = new FormData(form); // tự động lấy tất cả input, bao gồm cả file
 
-                var $btn = $(this);
-                var form = document.getElementById('formTaskDetail');
-                var formData = new FormData(form);
-
-                $.ajax({
-                    url: './suaCongviec',
-                    type: 'POST',
-                    data: formData,
-                    processData: false,
-                    contentType: false,
-                    dataType: 'json',
-                    beforeSend: function () {
-                        $btn.prop('disabled', true).data('orig-text', $btn.html()).html('Đang lưu...');
-                    },
-                    success: function (response) {
-                        var data = response;
-                        if (typeof response === 'string') {
-                            try {
-                                data = JSON.parse(response);
-                            } catch (e) {
+                fetch('./suaCongviec', {
+                    method: 'POST',
+                    body: formData
+                })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.success) {
+                                showToast('success', '✅ Cập nhật công việc thành công!');
+                                // Ẩn modal và làm mới danh sách (tuỳ theo bạn xử lý)
+                                bootstrap.Modal.getInstance(document.getElementById('modalTaskDetail')).hide();
+                                location.reload();
+                            } else {
+                                showToast('error', data.message || '❌ Lỗi khi cập nhật');
                             }
-                        }
-
-                        if (data && data.success) {
-                            $('#modalTaskDetail').modal && $('#modalTaskDetail').modal('hide');
-                            showToast('success', 'Đã lưu thành công!');
-                            location.reload();
-                        } else {
-                            var msg = (data && data.message) ? data.message : 'Lỗi khi lưu công việc';
-                            showToast('error', msg);
-                        }
-                    },
-                    error: function () {
-                        showToast('error', 'Đã xảy ra lỗi kết nối máy chủ');
-                    },
-                    complete: function () {
-                        $btn.prop('disabled', false).html($btn.data('orig-text') || 'Lưu');
-                    }
-                });
+                        })
+                        .catch(err => {
+                            console.error(err);
+                            showToast('error', '❌ Lỗi kết nối server');
+                        });
             });
 
             // ====== LỌC CÔNG VIỆC ======
@@ -1474,5 +1552,7 @@
                 updateAllTaskProgressBars();
             });
         </script>
+
+
     </body>
 </html>

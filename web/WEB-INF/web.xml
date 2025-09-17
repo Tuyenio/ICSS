@@ -28,10 +28,6 @@
         <servlet-class>controller.apiNhanvien</servlet-class>
     </servlet>
     <servlet>
-        <servlet-name>luuCongviec</servlet-name>
-        <servlet-class>controller.luuCongviec</servlet-class>
-    </servlet>
-    <servlet>
         <servlet-name>themCongviec</servlet-name>
         <servlet-class>controller.themCongviec</servlet-class>
     </servlet>
@@ -156,8 +152,12 @@
         <servlet-class>controller.UploadServlet</servlet-class>
     </servlet>
     <servlet>
-        <servlet-name>DownloadSelectedServlet</servlet-name>
-        <servlet-class>controller.DownloadSelectedServlet</servlet-class>
+        <servlet-name>DownloadFileServlet</servlet-name>
+        <servlet-class>controller.DownloadFileServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>DeleteFileServlet</servlet-name>
+        <servlet-class>controller.DeleteFileServlet</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>dsnhanvien</servlet-name>
@@ -182,10 +182,6 @@
     <servlet-mapping>
         <servlet-name>apiNhanvien</servlet-name>
         <url-pattern>/apiNhanvien</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>luuCongviec</servlet-name>
-        <url-pattern>/luuCongviec</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>themCongviec</servlet-name>
@@ -312,8 +308,12 @@
         <url-pattern>/upload</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
-        <servlet-name>DownloadSelectedServlet</servlet-name>
-        <url-pattern>/downloadSelected</url-pattern>
+        <servlet-name>DownloadFileServlet</servlet-name>
+        <url-pattern>/downloadFile</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>DeleteFileServlet</servlet-name>
+        <url-pattern>/deleteFile</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>
