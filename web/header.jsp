@@ -1,6 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<div class="header d-flex align-items-center justify-content-between px-4 py-2">
-    <div>
+<div class="header d-flex align-items-center justify-content-between px-4 py-2 bg-white border-bottom shadow-sm" style="min-height:64px;position:sticky;top:0;z-index:20;margin-left:240px;">
+    <div class="d-flex align-items-center gap-3">
         <span class="fs-5 fw-bold" id="pageTitle"></span>
     </div>
     <div class="d-flex align-items-center gap-3">
@@ -18,7 +18,7 @@
                         userName = "Ban quản lý"; // fallback nếu chưa đăng nhập
                     }
                 %>
-                <img src="<%= useAvatar %>" alt="avatar" class="avatar">
+                <img src="<%= useAvatar %>" alt="avatar" class="avatar" style="width:38px;height:38px;border-radius:50%;object-fit:cover;">
                 <span class="fw-semibold ms-2"><%= userName %></span>
             </a>
             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="adminDropdown">
@@ -95,4 +95,3 @@
         // setInterval(fetchUnreadCount, 60000);
     })();
 </script>
-
