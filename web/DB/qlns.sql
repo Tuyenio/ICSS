@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Máy chủ: 127.0.0.1
--- Thời gian đã tạo: Th9 11, 2025 lúc 11:09 AM
+-- Thời gian đã tạo: Th9 17, 2025 lúc 11:06 AM
 -- Phiên bản máy phục vụ: 10.4.32-MariaDB
 -- Phiên bản PHP: 8.0.30
 
@@ -78,7 +78,8 @@ INSERT INTO `cham_cong` (`id`, `nhan_vien_id`, `ngay`, `check_in`, `check_out`) 
 (430, 9, '2025-09-10', '08:22:35', '12:24:03'),
 (431, 15, '2025-09-10', '08:34:53', NULL),
 (432, 1, '2025-09-10', '08:46:44', NULL),
-(433, 2, '2025-09-10', '08:48:19', NULL);
+(433, 2, '2025-09-10', '08:48:19', NULL),
+(434, 1, '2025-09-15', '11:17:39', '11:17:43');
 
 -- --------------------------------------------------------
 
@@ -88,6 +89,7 @@ INSERT INTO `cham_cong` (`id`, `nhan_vien_id`, `ngay`, `check_in`, `check_out`) 
 
 CREATE TABLE `cong_viec` (
   `id` int(11) NOT NULL,
+  `du_an_id` int(11) DEFAULT NULL,
   `ten_cong_viec` varchar(255) NOT NULL,
   `mo_ta` text DEFAULT NULL,
   `han_hoan_thanh` date DEFAULT NULL,
@@ -97,6 +99,7 @@ CREATE TABLE `cong_viec` (
   `phong_ban_id` int(11) DEFAULT NULL,
   `trang_thai` enum('Chưa bắt đầu','Đang thực hiện','Đã hoàn thành','Trễ hạn') DEFAULT 'Chưa bắt đầu',
   `tai_lieu_cv` varchar(255) DEFAULT NULL,
+  `file_tai_lieu` varchar(255) DEFAULT NULL,
   `ngay_tao` timestamp NOT NULL DEFAULT current_timestamp(),
   `ngay_bat_dau` date DEFAULT NULL,
   `ngay_hoan_thanh` date DEFAULT NULL
@@ -106,28 +109,27 @@ CREATE TABLE `cong_viec` (
 -- Đang đổ dữ liệu cho bảng `cong_viec`
 --
 
-INSERT INTO `cong_viec` (`id`, `ten_cong_viec`, `mo_ta`, `han_hoan_thanh`, `muc_do_uu_tien`, `nguoi_giao_id`, `nguoi_nhan_id`, `phong_ban_id`, `trang_thai`, `tai_lieu_cv`, `ngay_tao`, `ngay_bat_dau`, `ngay_hoan_thanh`) VALUES
-(51, 'Lên đề xuất dự án TKV', 'Dũng hỗ trợ', '2025-09-11', 'Cao', 11, 6, 7, 'Chưa bắt đầu', '', '2025-09-08 04:35:56', NULL, NULL),
-(52, 'Gửi lại bảng lương T8.2025', '', '2025-09-09', 'Trung bình', 12, 7, 1, 'Đã hoàn thành', '', '2025-09-08 07:07:01', '2025-09-09', '2025-09-09'),
-(53, 'Kế hoạch đăng bài', 'Lên kế hoạch đăng bài và đăng bài cho tuần này. Liên quan đến vấn tiết kiệm chi phí khi sử dụng Dashboard, bài toán CFO.', '2025-09-09', 'Trung bình', 11, 15, 7, 'Trễ hạn', '', '2025-09-08 08:14:00', NULL, NULL),
-(57, 'Kế hoạch đăng bài', 'Lên kế hoạch đăng bài và đăng bài về ANM. Đưa ra các \"nổi đau\" khách hàng khi bị tấn công mang và ICS giải quyết các vấn đề này ntn? Xây dựng các infographic về ANM', '2025-09-09', 'Trung bình', 11, 13, 7, 'Trễ hạn', '', '2025-09-08 08:29:50', NULL, NULL),
-(58, 'Kế hoạch đăng bài', 'Lê kế hoạch đăng bài và đăng bài về OCI. Chú ý tới vấn đề tiết kiệm chi phí, khách hàng hướng đến là CTO', '2025-09-09', 'Trung bình', 11, 9, 7, 'Trễ hạn', '', '2025-09-08 08:31:12', NULL, NULL),
-(61, 'Thiết kế Template ', '- Thư ngỏ\r\n- Giấy giới thiệu \r\n- Thư trả lời \r\n- Powerpoint template \r\n... các template cần cho công ty ', '2025-09-12', 'Trung bình', 4, 13, 7, 'Chưa bắt đầu', '', '2025-09-10 06:52:18', NULL, NULL),
-(62, 'chính sách giá sản phẩm', '', '2025-12-09', 'Trung bình', 10, 11, 7, 'Chưa bắt đầu', '', '2025-09-10 07:02:34', NULL, NULL),
-(63, 'chính sách lương thưởng cho nhân viên ', '', '2025-12-09', 'Trung bình', 10, 11, 7, 'Chưa bắt đầu', '', '2025-09-10 07:03:33', NULL, NULL),
-(64, 'hoàn thiện danh sách 500 doanh nghiệp', 'Đưa ra kịch bản gọi điện cho các bạn tts liên hệ', '2025-12-09', 'Cao', 10, 11, 7, 'Chưa bắt đầu', '', '2025-09-10 07:04:55', NULL, NULL),
-(65, 'lên kế hoạch triển khai KPI cho từng đơn vị', '', '2025-12-09', 'Cao', 10, 11, 7, 'Chưa bắt đầu', '', '2025-09-10 07:07:38', NULL, NULL),
-(66, 'đăng bài truyền thông', '7 bài, video ~3p /1 tuần trong đó 20/80 20-sp, 80- xu thế/Dẫn bài trang Web', '2025-12-09', 'Trung bình', 10, 11, 7, 'Chưa bắt đầu', '', '2025-09-10 07:08:27', NULL, NULL),
-(67, 'lên kế hoạch sự kiện ( trong và ngoài nước )', 'Lên kế hoạch sự kiện trong và ngoài nước ( từ giờ cho đến cuối năm, năm sau,…)', '2025-12-09', 'Trung bình', 10, 11, 7, 'Chưa bắt đầu', '', '2025-09-10 07:11:04', NULL, NULL),
-(68, 'làm việc trực tiếp với các đối tác đã kí', 'Làm việc tiếp vs các đối tác đã/ chuẩn bị kí MoU, cụ thể các công việc ( Dương hỗ trợ)', '2025-12-09', 'Trung bình', 10, 11, 7, 'Chưa bắt đầu', '', '2025-09-10 07:11:53', NULL, NULL),
-(69, 'đánh giá các đối thủ cạnh tranh an ninh mạng', '- Trao đổi vs Oracle, tổ chức các buổi  onl webinar (Dương, Linh hỗ trợ)\r\n', '2025-12-09', 'Trung bình', 10, 11, 7, 'Chưa bắt đầu', '', '2025-09-10 07:13:02', NULL, NULL),
-(70, 'triển khai chương trình đào tạo về an toàn thông tin', 'Triển khai trực tiếp , AI triển khai onl để thuận lợi cho ng học \r\n( Linh tham gia cùng đội KT, A Âu mời các đối tác triển khai khác), p.tich Mobile App theo thông tư 50 ', '2025-12-09', 'Trung bình', 10, 6, 6, 'Chưa bắt đầu', '', '2025-09-10 07:14:34', NULL, NULL),
-(71, 'chỉnh sửa lại web công ty', '', '2025-12-09', 'Cao', 10, 8, 6, 'Chưa bắt đầu', '', '2025-09-10 07:15:36', NULL, NULL),
-(72, 'đề xuất bộ phận tiếp nhận thông tin khách hàng cho việc bán hàng OCI', '(đội KT cần ngồi lại về OCI live, công cụ ANBM,…). Đồng thời, giao lại cho anh Trung để bán hàng', '2025-12-09', 'Trung bình', 10, 6, 6, 'Chưa bắt đầu', '', '2025-09-10 07:17:05', NULL, NULL),
-(73, 'lắp đặt server', 'AI SOC-Allen cho đội sang lắp đặt, anh Hanh bố trí bạn bên đội KT để học hỏi', '2025-12-09', 'Trung bình', 10, 6, 6, 'Chưa bắt đầu', '', '2025-09-10 07:18:55', NULL, NULL),
-(75, 'lên phương án kinh doanh CLOUD cùng G Group', '', '2025-09-19', 'Trung bình', 10, 11, 7, 'Chưa bắt đầu', '', '2025-09-11 02:32:10', NULL, NULL),
-(76, 'hoàn chỉnh hướng dẫn sử dụng ICS CIM ( trình bày bằng video hoặc pp ) ', '', '2025-09-15', 'Cao', 10, 1, 6, 'Đang thực hiện', '', '2025-09-11 02:36:12', '2025-09-11', NULL),
-(78, '11', '1', '2025-09-27', 'Thấp', 7, NULL, 6, 'Đang thực hiện', '111', '2025-09-11 07:58:35', '2025-09-11', NULL);
+INSERT INTO `cong_viec` (`id`, `du_an_id`, `ten_cong_viec`, `mo_ta`, `han_hoan_thanh`, `muc_do_uu_tien`, `nguoi_giao_id`, `nguoi_nhan_id`, `phong_ban_id`, `trang_thai`, `tai_lieu_cv`, `file_tai_lieu`, `ngay_tao`, `ngay_bat_dau`, `ngay_hoan_thanh`) VALUES
+(52, NULL, 'Gửi lại bảng lương T8.2025', '', '2025-09-09', 'Trung bình', 12, 7, 1, 'Đã hoàn thành', '', NULL, '2025-09-08 07:07:01', '2025-09-09', '2025-09-09'),
+(53, NULL, 'Kế hoạch đăng bài', 'Lên kế hoạch đăng bài và đăng bài cho tuần này. Liên quan đến vấn tiết kiệm chi phí khi sử dụng Dashboard, bài toán CFO.', '2025-09-09', 'Trung bình', 11, 15, 7, 'Đã hoàn thành', '', NULL, '2025-09-08 08:14:00', NULL, NULL),
+(57, NULL, 'Kế hoạch đăng bài', 'Lên kế hoạch đăng bài và đăng bài về ANM. Đưa ra các ', '2025-09-09', 'Trung bình', 11, 13, 7, 'Đã hoàn thành', '', NULL, '2025-09-08 08:29:50', NULL, NULL),
+(58, NULL, 'Kế hoạch đăng bài', 'Lê kế hoạch đăng bài và đăng bài về OCI. Chú ý tới vấn đề tiết kiệm chi phí, khách hàng hướng đến là CTO', '2025-09-09', 'Trung bình', 11, 9, 7, 'Đã hoàn thành', '', NULL, '2025-09-08 08:31:12', NULL, NULL),
+(61, NULL, 'Thiết kế Template ', '- Thư ngỏ\r\n- Giấy giới thiệu \r\n- Thư trả lời \r\n- Powerpoint template \r\n... các template cần cho công ty ', '2025-09-12', 'Trung bình', 4, 13, 7, 'Trễ hạn', '', NULL, '2025-09-10 06:52:18', NULL, NULL),
+(62, NULL, 'chính sách giá sản phẩm', '', '2025-12-09', 'Trung bình', 10, 11, 7, 'Chưa bắt đầu', '', NULL, '2025-09-10 07:02:34', NULL, NULL),
+(63, NULL, 'chính sách lương thưởng cho nhân viên ', '', '2025-12-09', 'Trung bình', 10, 11, 7, 'Chưa bắt đầu', '', NULL, '2025-09-10 07:03:33', NULL, NULL),
+(64, NULL, 'hoàn thiện danh sách 500 doanh nghiệp', 'Đưa ra kịch bản gọi điện cho các bạn tts liên hệ', '2025-12-09', 'Cao', 10, 11, 7, 'Chưa bắt đầu', '', NULL, '2025-09-10 07:04:55', NULL, NULL),
+(65, NULL, 'lên kế hoạch triển khai KPI cho từng đơn vị', '', '2025-12-09', 'Cao', 10, 11, 7, 'Đã hoàn thành', '', NULL, '2025-09-10 07:07:38', NULL, NULL),
+(66, NULL, 'đăng bài truyền thông', '7 bài, video ~3p /1 tuần trong đó 20/80 20-sp, 80- xu thế/Dẫn bài trang Web', '2025-12-09', 'Trung bình', 10, 11, 7, 'Chưa bắt đầu', '', NULL, '2025-09-10 07:08:27', NULL, NULL),
+(67, NULL, 'lên kế hoạch sự kiện ( trong và ngoài nước )', 'Lên kế hoạch sự kiện trong và ngoài nước ( từ giờ cho đến cuối năm, năm sau,…)', '2025-12-09', 'Trung bình', 10, 11, 7, 'Chưa bắt đầu', '', NULL, '2025-09-10 07:11:04', NULL, NULL),
+(68, NULL, 'làm việc trực tiếp với các đối tác đã kí', 'Làm việc tiếp vs các đối tác đã/ chuẩn bị kí MoU, cụ thể các công việc ( Dương hỗ trợ)', '2025-12-09', 'Trung bình', 10, 11, 7, 'Chưa bắt đầu', '', NULL, '2025-09-10 07:11:53', NULL, NULL),
+(69, NULL, 'đánh giá các đối thủ cạnh tranh an ninh mạng', '- Trao đổi vs Oracle, tổ chức các buổi  onl webinar (Dương, Linh hỗ trợ)\r\n', '2025-12-09', 'Trung bình', 10, 11, 7, 'Chưa bắt đầu', '', NULL, '2025-09-10 07:13:02', NULL, NULL),
+(70, NULL, 'triển khai chương trình đào tạo về an toàn thông tin', 'Triển khai trực tiếp , AI triển khai onl để thuận lợi cho ng học \r\n( Linh tham gia cùng đội KT, A Âu mời các đối tác triển khai khác), p.tich Mobile App theo thông tư 50 ', '2025-12-09', 'Trung bình', 18, 6, 6, 'Chưa bắt đầu', 'Đã lập phương án cho 1 số đối tác. ', NULL, '2025-09-10 07:14:34', NULL, NULL),
+(71, NULL, 'chỉnh sửa lại web công ty', '', '2025-12-09', 'Cao', 10, 8, 6, 'Chưa bắt đầu', '', NULL, '2025-09-10 07:15:36', NULL, NULL),
+(72, NULL, 'đề xuất bộ phận tiếp nhận thông tin khách hàng cho việc bán hàng OCI', '(đội KT cần ngồi lại về OCI live, công cụ ANBM,…). Đồng thời, giao lại cho anh Trung để bán hàng', '2025-12-09', 'Trung bình', 6, 8, 6, 'Chưa bắt đầu', '', NULL, '2025-09-10 07:17:05', NULL, NULL),
+(73, NULL, 'lắp đặt server', 'AI SOC-Allen cho đội sang lắp đặt, anh Hanh bố trí bạn bên đội KT để học hỏi', '2025-12-09', 'Trung bình', 6, 5, 6, 'Đã hoàn thành', '', NULL, '2025-09-10 07:18:55', NULL, NULL),
+(75, NULL, 'lên phương án kinh doanh CLOUD cùng G Group', '', '2025-09-19', 'Trung bình', 10, 11, 7, 'Đang thực hiện', '', NULL, '2025-09-11 02:32:10', '2025-09-12', NULL),
+(76, NULL, 'hoàn chỉnh hướng dẫn sử dụng ICS CIM ( trình bày bằng video hoặc pp ) ', '', '2025-09-15', 'Cao', 10, 1, 6, 'Trễ hạn', '', NULL, '2025-09-11 02:36:12', '2025-09-11', NULL),
+(85, NULL, '1', '1', '2025-09-21', 'Thấp', 1, NULL, 6, 'Chưa bắt đầu', '1', '', '2025-09-17 07:33:04', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -142,16 +144,6 @@ CREATE TABLE `cong_viec_danh_gia` (
   `nhan_xet` text DEFAULT NULL,
   `thoi_gian` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Đang đổ dữ liệu cho bảng `cong_viec_danh_gia`
---
-
-INSERT INTO `cong_viec_danh_gia` (`id`, `cong_viec_id`, `nguoi_danh_gia_id`, `nhan_xet`, `thoi_gian`) VALUES
-(7, 78, 1, '1', '2025-09-11 08:32:16'),
-(8, 78, 2, '131213', '2025-09-11 08:32:30'),
-(9, 78, 1, '11mm', '2025-09-11 08:33:55'),
-(10, 78, 1, '31231', '2025-09-11 08:35:25');
 
 -- --------------------------------------------------------
 
@@ -184,9 +176,27 @@ CREATE TABLE `cong_viec_nguoi_nhan` (
 --
 
 INSERT INTO `cong_viec_nguoi_nhan` (`id`, `cong_viec_id`, `nhan_vien_id`) VALUES
-(1, 76, 1),
-(3, 78, 1),
-(4, 78, 2);
+(2, 73, 5),
+(4, 70, 6),
+(5, 52, 7),
+(6, 71, 8),
+(7, 72, 8),
+(8, 58, 9),
+(9, 62, 11),
+(10, 63, 11),
+(11, 64, 11),
+(12, 65, 11),
+(13, 66, 11),
+(14, 67, 11),
+(15, 68, 11),
+(16, 69, 11),
+(17, 75, 11),
+(18, 57, 13),
+(19, 61, 13),
+(20, 53, 15),
+(32, 76, 1),
+(33, 76, 2),
+(66, 85, 1);
 
 -- --------------------------------------------------------
 
@@ -215,8 +225,33 @@ INSERT INTO `cong_viec_quy_trinh` (`id`, `cong_viec_id`, `ten_buoc`, `mo_ta`, `t
 (124, 52, 'Bước 3', 'Gửi lại file cuối cùng cho Ms.Yến', 'Đã hoàn thành', '2025-09-09', '2025-09-09', '2025-09-08 09:08:31'),
 (128, 76, 'bước 1', 'Thắng và Tuyền hoàn thiện sớm', 'Đang thực hiện', '2025-09-11', '2025-09-15', '2025-09-11 02:37:36'),
 (129, 76, 'bước 2', 'báo cáo lại kết quả cho Mrs. Yến', 'Chưa bắt đầu', '2025-09-11', '2025-09-15', '2025-09-11 02:38:57'),
-(134, 78, 'abc', '1', 'Đã hoàn thành', '2025-08-21', '2025-09-19', '2025-09-11 08:10:17'),
-(136, 78, 'Thuthu11', '1', 'Chưa bắt đầu', '2025-08-21', '2025-09-19', '2025-09-11 08:24:50');
+(132, 62, 'bước 1', 'tham khảo giá một số công ty', 'Chưa bắt đầu', '2025-09-11', '2025-09-15', '2025-09-11 07:50:28'),
+(133, 62, 'bước 2', 'lập bảng chính sách giá cụ thể', 'Chưa bắt đầu', '2025-09-11', '2025-09-15', '2025-09-11 07:51:24'),
+(134, 63, 'bước 1', 'làm bảng lương chi tiết', 'Chưa bắt đầu', '2025-09-11', '2025-09-15', '2025-09-11 07:52:49'),
+(135, 63, 'bước 2', 'báo cáo lại Mrs. Yến', 'Chưa bắt đầu', '2025-09-11', '2025-09-15', '2025-09-11 07:53:15'),
+(136, 64, 'bước 1', 'đưa ra kịch bản triển khai', 'Chưa bắt đầu', '2025-09-11', '2025-09-15', '2025-09-11 07:54:09'),
+(137, 64, 'bước 2', 'giao cho các bạn TTS liên hệ', 'Chưa bắt đầu', '2025-09-11', '2025-09-15', '2025-09-11 07:54:45'),
+(138, 65, 'bước 1', 'Xác định mục tiêu tổng thể của doanh nghiệp', 'Chưa bắt đầu', '2025-09-11', '2025-09-15', '2025-09-11 07:57:12'),
+(139, 65, 'bước 2', 'Xây dựng KPI cụ thể cho từng đơn vị', 'Chưa bắt đầu', '2025-09-11', '2025-09-15', '2025-09-11 07:57:34'),
+(140, 66, 'bước 1', 'Xác định mục tiêu, đối tượng truyền thông', 'Chưa bắt đầu', '2025-09-11', '2025-09-15', '2025-09-11 07:59:35'),
+(141, 66, 'bước 2', 'Phân công và sản xuất nội dung', 'Chưa bắt đầu', '2025-09-11', '2025-09-15', '2025-09-11 08:00:06'),
+(142, 67, 'bước 1', 'Xây dựng kịch bản & chương trình chi tiết', 'Chưa bắt đầu', '2025-09-11', '2025-09-15', '2025-09-11 08:01:15'),
+(143, 67, 'bước 2', 'Truyền thông & quảng bá', 'Chưa bắt đầu', '2025-09-11', '2025-09-15', '2025-09-11 08:01:38'),
+(144, 68, 'bước 1', 'Rà soát & nắm rõ thỏa thuận đã ký', 'Chưa bắt đầu', '2025-09-11', '2025-09-15', '2025-09-11 08:02:55'),
+(145, 68, 'bước 2', 'Đánh giá & báo cáo định kỳ', 'Chưa bắt đầu', '2025-09-11', '2025-09-15', '2025-09-11 08:03:37'),
+(146, 69, 'bước 1', 'Xác định, lựa chọn mục tiêu đánh giá', 'Chưa bắt đầu', '2025-09-11', '2025-09-15', '2025-09-11 08:05:06'),
+(147, 69, 'bước 2', 'Phân tích SWOT từng đối thủ', 'Chưa bắt đầu', '2025-09-11', '2025-09-15', '2025-09-11 08:05:25'),
+(148, 70, 'bước 1', 'Xây dựng nội dung chi tiết & phương pháp đào tạo', 'Chưa bắt đầu', '2025-09-11', '2025-09-15', '2025-09-11 08:06:46'),
+(149, 70, 'bước 2', 'Chuẩn bị nhân sự & nguồn lực', 'Chưa bắt đầu', '2025-09-11', '2025-09-15', '2025-09-11 08:07:06'),
+(150, 71, 'bước 1', 'xem và chỉnh sửa', 'Chưa bắt đầu', '2025-09-11', '2025-09-15', '2025-09-11 08:09:34'),
+(151, 71, 'bước 2', 'báo cáo lại Mrs. Yến', 'Chưa bắt đầu', '2025-09-11', '2025-09-15', '2025-09-11 08:10:01'),
+(152, 72, 'bước 1', 'đội kĩ thuật ngồi bàn về  OCI live, công cụ ANBM...', 'Chưa bắt đầu', '2025-09-11', '2025-09-15', '2025-09-11 08:11:17'),
+(153, 72, 'bước 2', 'bàn giao lại cho Mr. trung', 'Chưa bắt đầu', '2025-09-11', '2025-09-15', '2025-09-11 08:11:48'),
+(154, 73, 'bước 1', 'Mr Hanh sắp xếp nhân sự tiếp đón, học hỏi', 'Chưa bắt đầu', '2025-09-11', '2025-09-15', '2025-09-11 08:13:10'),
+(155, 73, 'bước 2', 'Mr. Dũng tiếp nhận server', 'Chưa bắt đầu', '2025-09-11', '2025-09-15', '2025-09-11 08:13:53'),
+(156, 75, 'Hẹn lịch sang thăm và làm việc với GG', '', 'Đang thực hiện', '2025-09-12', '2025-09-15', '2025-09-12 01:57:16'),
+(157, 75, 'Sang thăm và làm việc', 'Xác định được hướng hợp tác', 'Chưa bắt đầu', '2025-09-15', '2025-09-26', '2025-09-12 01:58:05'),
+(158, 75, 'Triển khai ký NDA và MOU', '', 'Chưa bắt đầu', '2025-09-22', '2025-09-19', '2025-09-12 01:58:38');
 
 -- --------------------------------------------------------
 
@@ -236,24 +271,47 @@ CREATE TABLE `cong_viec_tien_do` (
 --
 
 INSERT INTO `cong_viec_tien_do` (`id`, `cong_viec_id`, `phan_tram`, `thoi_gian_cap_nhat`) VALUES
-(29, 51, 0, '2025-09-11 07:21:08'),
-(30, 52, 100, '2025-09-11 02:40:02'),
-(33, 53, 0, '2025-09-11 02:47:19'),
-(34, 57, 0, '2025-09-10 06:50:53'),
+(30, 52, 0, '2025-09-17 08:48:14'),
+(33, 53, 0, '2025-09-11 10:34:13'),
+(34, 57, 0, '2025-09-12 02:32:38'),
 (35, 58, 0, '2025-09-11 07:18:44'),
-(38, 61, 0, '2025-09-11 07:22:03'),
-(39, 62, 0, '2025-09-11 02:47:27'),
-(40, 69, 0, '2025-09-11 02:50:27'),
-(41, 73, 0, '2025-09-11 07:22:42'),
-(42, 70, 0, '2025-09-10 07:44:23'),
-(43, 71, 0, '2025-09-10 07:44:35'),
-(45, 63, 0, '2025-09-11 02:47:50'),
-(46, 75, 0, '2025-09-11 07:25:01'),
-(47, 76, 0, '2025-09-11 07:57:42'),
-(48, 64, 0, '2025-09-11 02:48:31'),
-(49, 65, 0, '2025-09-11 02:48:45'),
-(50, 72, 0, '2025-09-11 07:18:37'),
-(52, 78, 50, '2025-09-11 08:53:56');
+(38, 61, 0, '2025-09-12 02:37:53'),
+(39, 62, 0, '2025-09-17 08:38:37'),
+(40, 69, 0, '2025-09-11 08:26:54'),
+(41, 73, 0, '2025-09-12 03:00:09'),
+(42, 70, 0, '2025-09-12 06:43:44'),
+(43, 71, 0, '2025-09-17 08:54:40'),
+(45, 63, 0, '2025-09-17 08:48:11'),
+(46, 75, 0, '2025-09-17 08:18:18'),
+(47, 76, 0, '2025-09-15 04:16:55'),
+(48, 64, 0, '2025-09-11 08:27:18'),
+(49, 65, 0, '2025-09-11 08:27:12'),
+(50, 72, 0, '2025-09-17 08:41:57'),
+(52, 66, 0, '2025-09-12 06:43:37'),
+(53, 67, 0, '2025-09-11 08:27:03'),
+(54, 68, 0, '2025-09-12 06:43:40');
+
+-- --------------------------------------------------------
+
+--
+-- Cấu trúc bảng cho bảng `du_an`
+--
+
+CREATE TABLE `du_an` (
+  `id` int(11) NOT NULL,
+  `ten_du_an` varchar(255) NOT NULL,
+  `mo_ta` text DEFAULT NULL,
+  `ngay_bat_dau` date DEFAULT NULL,
+  `ngay_ket_thuc` date DEFAULT NULL,
+  `ngay_tao` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Đang đổ dữ liệu cho bảng `du_an`
+--
+
+INSERT INTO `du_an` (`id`, `ten_du_an`, `mo_ta`, `ngay_bat_dau`, `ngay_ket_thuc`, `ngay_tao`) VALUES
+(1, 'Công việc riêng', 'Công việc riêng', '2025-09-17', '2035-10-31', '2025-09-17 09:03:49');
 
 -- --------------------------------------------------------
 
@@ -430,6 +488,28 @@ INSERT INTO `phong_ban` (`id`, `ten_phong`, `truong_phong_id`, `ngay_tao`) VALUE
 -- --------------------------------------------------------
 
 --
+-- Cấu trúc bảng cho bảng `tep_dinh_kem`
+--
+
+CREATE TABLE `tep_dinh_kem` (
+  `id` int(11) NOT NULL,
+  `ten_file` varchar(255) DEFAULT NULL,
+  `duong_dan` varchar(500) DEFAULT NULL,
+  `ngay_tai_len` datetime DEFAULT current_timestamp(),
+  `nguoi_tai_len` varchar(100) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Đang đổ dữ liệu cho bảng `tep_dinh_kem`
+--
+
+INSERT INTO `tep_dinh_kem` (`id`, `ten_file`, `duong_dan`, `ngay_tai_len`, `nguoi_tai_len`) VALUES
+(20, 'Phạm Minh Thắng_Báo cáo HNM.docx', 'Phạm Minh Thắng_Báo cáo HNM.docx', '2025-09-17 11:23:23', 'anonymous'),
+(21, 'z6099009923178_034b5ec3171d659dccc5ce20a01842a1.jpg', 'z6099009923178_034b5ec3171d659dccc5ce20a01842a1.jpg', '2025-09-17 11:23:23', 'anonymous');
+
+-- --------------------------------------------------------
+
+--
 -- Cấu trúc bảng cho bảng `thong_bao`
 --
 
@@ -524,7 +604,7 @@ INSERT INTO `thong_bao` (`id`, `tieu_de`, `noi_dung`, `nguoi_nhan_id`, `loai_tho
 (99, 'Cập nhật quy trình', 'Công việc: agsfhsad vừa được cập nhật quy trình mới', 7, 'Cập nhật', 1, '2025-09-09 06:40:51', '2025-09-09 04:08:10'),
 (100, 'Công việc mới', 'Bạn được giao công việc: Thiết kế Template . Hạn: 2025-09-12.', 11, 'Công việc mới', 0, '2025-09-10 06:52:18', '2025-09-10 06:52:18'),
 (101, 'Cập nhật công việc', 'Công việc: Thiết kế Template  vừa được cập nhật mới', 12, 'Cập nhật', 0, '2025-09-10 06:52:46', '2025-09-10 06:52:46'),
-(102, 'Cập nhật công việc', 'Công việc: Thiết kế Template  vừa được cập nhật mới', 13, 'Cập nhật', 0, '2025-09-10 06:53:08', '2025-09-10 06:53:08'),
+(102, 'Cập nhật công việc', 'Công việc: Thiết kế Template  vừa được cập nhật mới', 13, 'Cập nhật', 1, '2025-09-12 02:32:09', '2025-09-10 06:53:08'),
 (103, 'Công việc mới', 'Bạn được giao công việc: chính sách giá sản phẩm. Hạn: 2025-12-09.', 11, 'Công việc mới', 0, '2025-09-10 07:02:34', '2025-09-10 07:02:34'),
 (104, 'Công việc mới', 'Bạn được giao công việc: chính sách lương thưởng cho nhân viên . Hạn: 2025-12-09.', 11, 'Công việc mới', 0, '2025-09-10 07:03:34', '2025-09-10 07:03:34'),
 (105, 'Công việc mới', 'Bạn được giao công việc: hoàn thiện danh sách 500 doanh nghiệp. Hạn: 2025-12-09.', 11, 'Công việc mới', 0, '2025-09-10 07:04:55', '2025-09-10 07:04:55'),
@@ -558,21 +638,91 @@ INSERT INTO `thong_bao` (`id`, `tieu_de`, `noi_dung`, `nguoi_nhan_id`, `loai_tho
 (133, 'Thêm mới quy trình', 'Công việc: 1 vừa được thêm quy trình mới', 18, 'Thêm mới', 0, '2025-09-11 07:24:24', '2025-09-11 07:24:24'),
 (134, 'Thêm mới quy trình', 'Công việc: lên phương án kinh doanh CLOUD cùng G Group vừa được thêm quy trình mới', 11, 'Thêm mới', 0, '2025-09-11 07:24:51', '2025-09-11 07:24:51'),
 (135, 'Xóa bỏ quy trình', 'Công việc: lên phương án kinh doanh CLOUD cùng G Group vừa xóa bỏ một quy trình', 11, 'Xóa bỏ', 0, '2025-09-11 07:25:01', '2025-09-11 07:25:01'),
-(136, 'Cập nhật công việc', 'Công việc: hoàn chỉnh hướng dẫn sử dụng ICS CIM ( trình bày bằng video hoặc pp )  vừa được cập nhật mới', 1, 'Cập nhật', 0, '2025-09-11 07:57:40', '2025-09-11 07:57:40'),
-(137, 'Cập nhật công việc', 'Công việc: 11 vừa được cập nhật mới', 1, 'Cập nhật', 0, '2025-09-11 08:15:07', '2025-09-11 08:15:07'),
-(138, 'Xóa bỏ quy trình', 'Công việc: 11 vừa xóa bỏ một quy trình', 1, 'Cập nhật', 0, '2025-09-11 08:24:44', '2025-09-11 08:24:44'),
-(139, 'Thêm mới quy trình', 'Công việc: 11 vừa được thêm quy trình mới', 1, 'Cập nhật', 0, '2025-09-11 08:24:50', '2025-09-11 08:24:50'),
-(140, 'Cập nhật quy trình', 'Công việc: 11 vừa được cập nhật quy trình mới', 1, 'Cập nhật', 0, '2025-09-11 08:31:02', '2025-09-11 08:31:02'),
-(141, 'Cập nhật quy trình', 'Công việc: 11 vừa được cập nhật quy trình mới', 1, 'Cập nhật', 0, '2025-09-11 08:32:05', '2025-09-11 08:32:05'),
-(142, 'Đánh giá công việc mới', 'Bạn vừa có thêm đánh giá cho công việc.', 1, 'Đánh giá', 0, '2025-09-11 08:33:55', '2025-09-11 08:33:55'),
-(143, 'Cập nhật công việc', 'Công việc: 11 vừa được cập nhật mới', 1, 'Cập nhật', 0, '2025-09-11 08:35:17', '2025-09-11 08:35:17'),
-(144, 'Cập nhật công việc', 'Công việc: 11 vừa được cập nhật mới', 2, 'Cập nhật', 0, '2025-09-11 08:35:17', '2025-09-11 08:35:17'),
-(145, 'Đánh giá công việc mới', 'Bạn vừa có thêm đánh giá cho công việc.', 1, 'Đánh giá', 0, '2025-09-11 08:35:25', '2025-09-11 08:35:25'),
-(146, 'Đánh giá công việc mới', 'Bạn vừa có thêm đánh giá cho công việc.', 2, 'Đánh giá', 0, '2025-09-11 08:35:25', '2025-09-11 08:35:25'),
-(147, 'Cập nhật quy trình', 'Công việc: 11 vừa được cập nhật quy trình mới', 1, 'Cập nhật', 0, '2025-09-11 08:53:33', '2025-09-11 08:53:33'),
-(148, 'Cập nhật quy trình', 'Công việc: 11 vừa được cập nhật quy trình mới', 2, 'Cập nhật', 0, '2025-09-11 08:53:33', '2025-09-11 08:53:33'),
-(149, 'Cập nhật quy trình', 'Công việc: 11 vừa được cập nhật quy trình mới', 1, 'Cập nhật', 0, '2025-09-11 08:53:43', '2025-09-11 08:53:43'),
-(150, 'Cập nhật quy trình', 'Công việc: 11 vừa được cập nhật quy trình mới', 2, 'Cập nhật', 0, '2025-09-11 08:53:43', '2025-09-11 08:53:43');
+(136, 'Thêm mới quy trình', 'Công việc: chính sách giá sản phẩm vừa được thêm quy trình mới', 11, 'Thêm mới', 0, '2025-09-11 07:50:29', '2025-09-11 07:50:29'),
+(137, 'Thêm mới quy trình', 'Công việc: chính sách giá sản phẩm vừa được thêm quy trình mới', 11, 'Thêm mới', 0, '2025-09-11 07:51:24', '2025-09-11 07:51:24'),
+(138, 'Thêm mới quy trình', 'Công việc: chính sách lương thưởng cho nhân viên  vừa được thêm quy trình mới', 11, 'Thêm mới', 0, '2025-09-11 07:52:49', '2025-09-11 07:52:49'),
+(139, 'Thêm mới quy trình', 'Công việc: chính sách lương thưởng cho nhân viên  vừa được thêm quy trình mới', 11, 'Thêm mới', 0, '2025-09-11 07:53:15', '2025-09-11 07:53:15'),
+(140, 'Thêm mới quy trình', 'Công việc: hoàn thiện danh sách 500 doanh nghiệp vừa được thêm quy trình mới', 11, 'Thêm mới', 0, '2025-09-11 07:54:09', '2025-09-11 07:54:09'),
+(141, 'Thêm mới quy trình', 'Công việc: hoàn thiện danh sách 500 doanh nghiệp vừa được thêm quy trình mới', 11, 'Thêm mới', 0, '2025-09-11 07:54:45', '2025-09-11 07:54:45'),
+(142, 'Thêm mới quy trình', 'Công việc: lên kế hoạch triển khai KPI cho từng đơn vị vừa được thêm quy trình mới', 11, 'Thêm mới', 0, '2025-09-11 07:57:12', '2025-09-11 07:57:12'),
+(143, 'Thêm mới quy trình', 'Công việc: lên kế hoạch triển khai KPI cho từng đơn vị vừa được thêm quy trình mới', 11, 'Thêm mới', 0, '2025-09-11 07:57:34', '2025-09-11 07:57:34'),
+(144, 'Thêm mới quy trình', 'Công việc: đăng bài truyền thông vừa được thêm quy trình mới', 11, 'Thêm mới', 0, '2025-09-11 07:59:35', '2025-09-11 07:59:35'),
+(145, 'Thêm mới quy trình', 'Công việc: đăng bài truyền thông vừa được thêm quy trình mới', 11, 'Thêm mới', 0, '2025-09-11 08:00:06', '2025-09-11 08:00:06'),
+(146, 'Thêm mới quy trình', 'Công việc: lên kế hoạch sự kiện ( trong và ngoài nước ) vừa được thêm quy trình mới', 11, 'Thêm mới', 0, '2025-09-11 08:01:15', '2025-09-11 08:01:15'),
+(147, 'Thêm mới quy trình', 'Công việc: lên kế hoạch sự kiện ( trong và ngoài nước ) vừa được thêm quy trình mới', 11, 'Thêm mới', 0, '2025-09-11 08:01:38', '2025-09-11 08:01:38'),
+(148, 'Thêm mới quy trình', 'Công việc: làm việc trực tiếp với các đối tác đã kí vừa được thêm quy trình mới', 11, 'Thêm mới', 0, '2025-09-11 08:02:55', '2025-09-11 08:02:55'),
+(149, 'Thêm mới quy trình', 'Công việc: làm việc trực tiếp với các đối tác đã kí vừa được thêm quy trình mới', 11, 'Thêm mới', 0, '2025-09-11 08:03:37', '2025-09-11 08:03:37'),
+(150, 'Thêm mới quy trình', 'Công việc: đánh giá các đối thủ cạnh tranh an ninh mạng vừa được thêm quy trình mới', 11, 'Thêm mới', 0, '2025-09-11 08:05:06', '2025-09-11 08:05:06'),
+(151, 'Thêm mới quy trình', 'Công việc: đánh giá các đối thủ cạnh tranh an ninh mạng vừa được thêm quy trình mới', 11, 'Thêm mới', 0, '2025-09-11 08:05:25', '2025-09-11 08:05:25'),
+(152, 'Thêm mới quy trình', 'Công việc: triển khai chương trình đào tạo về an toàn thông tin vừa được thêm quy trình mới', 6, 'Thêm mới', 0, '2025-09-11 08:06:46', '2025-09-11 08:06:46'),
+(153, 'Thêm mới quy trình', 'Công việc: triển khai chương trình đào tạo về an toàn thông tin vừa được thêm quy trình mới', 6, 'Thêm mới', 0, '2025-09-11 08:07:06', '2025-09-11 08:07:06'),
+(154, 'Thêm mới quy trình', 'Công việc: chỉnh sửa lại web công ty vừa được thêm quy trình mới', 8, 'Thêm mới', 0, '2025-09-11 08:09:34', '2025-09-11 08:09:34'),
+(155, 'Thêm mới quy trình', 'Công việc: chỉnh sửa lại web công ty vừa được thêm quy trình mới', 8, 'Thêm mới', 0, '2025-09-11 08:10:01', '2025-09-11 08:10:01'),
+(156, 'Thêm mới quy trình', 'Công việc: đề xuất bộ phận tiếp nhận thông tin khách hàng cho việc bán hàng OCI vừa được thêm quy trình mới', 6, 'Thêm mới', 0, '2025-09-11 08:11:17', '2025-09-11 08:11:17'),
+(157, 'Thêm mới quy trình', 'Công việc: đề xuất bộ phận tiếp nhận thông tin khách hàng cho việc bán hàng OCI vừa được thêm quy trình mới', 6, 'Thêm mới', 0, '2025-09-11 08:11:49', '2025-09-11 08:11:49'),
+(158, 'Thêm mới quy trình', 'Công việc: lắp đặt server vừa được thêm quy trình mới', 6, 'Thêm mới', 0, '2025-09-11 08:13:10', '2025-09-11 08:13:10'),
+(159, 'Thêm mới quy trình', 'Công việc: lắp đặt server vừa được thêm quy trình mới', 6, 'Thêm mới', 0, '2025-09-11 08:13:53', '2025-09-11 08:13:53'),
+(160, 'Cập nhật công việc', 'Công việc: Kế hoạch đăng bài vừa được cập nhật mới', 15, 'Cập nhật', 0, '2025-09-11 10:34:21', '2025-09-11 10:34:21'),
+(161, 'Cập nhật công việc', 'Công việc: Kế hoạch đăng bài vừa được cập nhật mới', 13, 'Cập nhật', 1, '2025-09-12 02:32:12', '2025-09-11 10:34:28'),
+(162, 'Cập nhật công việc', 'Công việc: Kế hoạch đăng bài vừa được cập nhật mới', 9, 'Cập nhật', 0, '2025-09-11 10:34:34', '2025-09-11 10:34:34'),
+(163, 'Cập nhật công việc', 'Công việc: Lên đề xuất dự án TKV vừa được cập nhật mới', 6, 'Cập nhật', 0, '2025-09-11 10:34:49', '2025-09-11 10:34:49'),
+(164, 'Cập nhật công việc', 'Công việc: chính sách lương thưởng cho nhân viên  vừa được cập nhật mới', 11, 'Cập nhật', 0, '2025-09-12 01:54:22', '2025-09-12 01:54:22'),
+(165, 'Cập nhật công việc', 'Công việc: hoàn thiện danh sách 500 doanh nghiệp vừa được cập nhật mới', 11, 'Cập nhật', 0, '2025-09-12 01:54:33', '2025-09-12 01:54:33'),
+(166, 'Cập nhật công việc', 'Công việc: lên kế hoạch triển khai KPI cho từng đơn vị vừa được cập nhật mới', 11, 'Cập nhật', 0, '2025-09-12 01:54:43', '2025-09-12 01:54:43'),
+(167, 'Cập nhật công việc', 'Công việc: hoàn thiện danh sách 500 doanh nghiệp vừa được cập nhật mới', 11, 'Cập nhật', 0, '2025-09-12 01:55:04', '2025-09-12 01:55:04'),
+(168, 'Cập nhật công việc', 'Công việc: đăng bài truyền thông vừa được cập nhật mới', 11, 'Cập nhật', 0, '2025-09-12 01:55:18', '2025-09-12 01:55:18'),
+(169, 'Thêm mới quy trình', 'Công việc: lên phương án kinh doanh CLOUD cùng G Group vừa được thêm quy trình mới', 11, 'Thêm mới', 0, '2025-09-12 01:57:17', '2025-09-12 01:57:17'),
+(170, 'Thêm mới quy trình', 'Công việc: lên phương án kinh doanh CLOUD cùng G Group vừa được thêm quy trình mới', 11, 'Thêm mới', 0, '2025-09-12 01:58:05', '2025-09-12 01:58:05'),
+(171, 'Thêm mới quy trình', 'Công việc: lên phương án kinh doanh CLOUD cùng G Group vừa được thêm quy trình mới', 11, 'Thêm mới', 0, '2025-09-12 01:58:38', '2025-09-12 01:58:38'),
+(172, 'Cập nhật công việc', 'Công việc: triển khai chương trình đào tạo về an toàn thông tin vừa được cập nhật mới', 6, 'Cập nhật', 0, '2025-09-12 02:15:51', '2025-09-12 02:15:51'),
+(173, 'Cập nhật công việc', 'Công việc: đề xuất bộ phận tiếp nhận thông tin khách hàng cho việc bán hàng OCI vừa được cập nhật mới', 6, 'Cập nhật', 0, '2025-09-12 02:16:44', '2025-09-12 02:16:44'),
+(174, 'Cập nhật công việc', 'Công việc: triển khai chương trình đào tạo về an toàn thông tin vừa được cập nhật mới', 6, 'Cập nhật', 0, '2025-09-12 02:16:59', '2025-09-12 02:16:59'),
+(175, 'Cập nhật công việc', 'Công việc: triển khai chương trình đào tạo về an toàn thông tin vừa được cập nhật mới', 6, 'Cập nhật', 0, '2025-09-12 02:17:14', '2025-09-12 02:17:14'),
+(176, 'Cập nhật công việc', 'Công việc: lắp đặt server vừa được cập nhật mới', 5, 'Cập nhật', 0, '2025-09-12 02:17:38', '2025-09-12 02:17:38'),
+(177, 'Cập nhật công việc', 'Công việc: đề xuất bộ phận tiếp nhận thông tin khách hàng cho việc bán hàng OCI vừa được cập nhật mới', 8, 'Cập nhật', 0, '2025-09-12 02:17:56', '2025-09-12 02:17:56'),
+(178, 'Cập nhật công việc', 'Công việc: Lên đề xuất dự án TKV vừa được cập nhật mới', 6, 'Cập nhật', 0, '2025-09-12 02:19:58', '2025-09-12 02:19:58'),
+(179, 'Cập nhật công việc', 'Công việc: triển khai chương trình đào tạo về an toàn thông tin vừa được cập nhật mới', 6, 'Cập nhật', 0, '2025-09-12 02:20:26', '2025-09-12 02:20:26'),
+(180, 'Cập nhật công việc', 'Công việc: triển khai chương trình đào tạo về an toàn thông tin vừa được cập nhật mới', 6, 'Cập nhật', 0, '2025-09-12 02:20:39', '2025-09-12 02:20:39'),
+(181, 'Cập nhật công việc', 'Công việc: Lên đề xuất dự án TKV vừa được cập nhật mới', 6, 'Cập nhật', 0, '2025-09-12 02:22:27', '2025-09-12 02:22:27'),
+(182, 'Thêm mới quy trình', 'Công việc: Lên đề xuất dự án TKV vừa được thêm quy trình mới', 6, 'Thêm mới', 0, '2025-09-12 02:26:29', '2025-09-12 02:26:29'),
+(183, 'Thêm mới quy trình', 'Công việc: Lên đề xuất dự án TKV vừa được thêm quy trình mới', 6, 'Thêm mới', 0, '2025-09-12 02:28:19', '2025-09-12 02:28:19'),
+(184, 'Cập nhật quy trình', 'Công việc: lên phương án kinh doanh CLOUD cùng G Group vừa được cập nhật quy trình mới', 11, 'Cập nhật', 0, '2025-09-12 02:52:42', '2025-09-12 02:52:42'),
+(185, 'Cập nhật quy trình', 'Công việc: lên phương án kinh doanh CLOUD cùng G Group vừa được cập nhật quy trình mới', 11, 'Cập nhật', 0, '2025-09-12 02:52:48', '2025-09-12 02:52:48'),
+(186, 'Cập nhật công việc', 'Công việc: hoàn chỉnh hướng dẫn sử dụng ICS CIM ( trình bày bằng video hoặc pp )  vừa được cập nhật mới', 1, 'Cập nhật', 0, '2025-09-12 06:55:40', '2025-09-12 06:55:40'),
+(187, 'Cập nhật công việc', 'Công việc: hoàn chỉnh hướng dẫn sử dụng ICS CIM ( trình bày bằng video hoặc pp )  vừa được cập nhật mới', 2, 'Cập nhật', 0, '2025-09-12 06:55:40', '2025-09-12 06:55:40'),
+(188, 'Công việc mới', 'Bạn được giao công việc: 11. Hạn: 2025-09-16.', 14, 'Công việc mới', 0, '2025-09-16 07:31:58', '2025-09-16 07:31:58'),
+(189, 'Công việc mới', 'Bạn được giao công việc: 11. Hạn: 2025-09-16.', 12, 'Công việc mới', 0, '2025-09-16 07:31:58', '2025-09-16 07:31:58'),
+(190, 'Công việc mới', 'Bạn được giao công việc: 11. Hạn: 2025-09-16.', 5, 'Công việc mới', 0, '2025-09-16 07:31:58', '2025-09-16 07:31:58'),
+(191, 'Công việc mới', 'Bạn được giao công việc: 11. Hạn: 2025-09-16.', 16, 'Công việc mới', 0, '2025-09-16 07:31:58', '2025-09-16 07:31:58'),
+(192, 'Cập nhật công việc', 'Công việc: 11 vừa được cập nhật mới', 14, 'Cập nhật', 0, '2025-09-16 07:32:14', '2025-09-16 07:32:14'),
+(193, 'Cập nhật công việc', 'Công việc: 11 vừa được cập nhật mới', 16, 'Cập nhật', 0, '2025-09-16 07:32:14', '2025-09-16 07:32:14'),
+(194, 'Cập nhật công việc', 'Công việc: 11 vừa được cập nhật mới', 5, 'Cập nhật', 0, '2025-09-16 07:32:14', '2025-09-16 07:32:14'),
+(195, 'Cập nhật công việc', 'Công việc: 11 vừa được cập nhật mới', 12, 'Cập nhật', 0, '2025-09-16 07:32:14', '2025-09-16 07:32:14'),
+(196, 'Cập nhật công việc', 'Công việc: 11 vừa được cập nhật mới', 2, 'Cập nhật', 0, '2025-09-16 07:32:14', '2025-09-16 07:32:14'),
+(197, 'Cập nhật công việc', 'Công việc: 11 vừa được cập nhật mới', 14, 'Cập nhật', 0, '2025-09-16 07:32:21', '2025-09-16 07:32:21'),
+(198, 'Cập nhật công việc', 'Công việc: 11 vừa được cập nhật mới', 2, 'Cập nhật', 0, '2025-09-16 07:32:21', '2025-09-16 07:32:21'),
+(199, 'Cập nhật công việc', 'Công việc: 11 vừa được cập nhật mới', 16, 'Cập nhật', 0, '2025-09-16 07:32:21', '2025-09-16 07:32:21'),
+(200, 'Cập nhật công việc', 'Công việc: 11 vừa được cập nhật mới', 5, 'Cập nhật', 0, '2025-09-16 07:32:21', '2025-09-16 07:32:21'),
+(201, 'Cập nhật công việc', 'Công việc: 11 vừa được cập nhật mới', 12, 'Cập nhật', 0, '2025-09-16 07:32:21', '2025-09-16 07:32:21'),
+(202, 'Cập nhật công việc', 'Công việc: 11 vừa được cập nhật mới', 14, 'Cập nhật', 0, '2025-09-16 07:32:47', '2025-09-16 07:32:47'),
+(203, 'Cập nhật công việc', 'Công việc: 11 vừa được cập nhật mới', 2, 'Cập nhật', 0, '2025-09-16 07:32:47', '2025-09-16 07:32:47'),
+(204, 'Cập nhật công việc', 'Công việc: 11 vừa được cập nhật mới', 16, 'Cập nhật', 0, '2025-09-16 07:32:47', '2025-09-16 07:32:47'),
+(205, 'Công việc mới', 'Bạn được giao công việc: 11. Hạn: 2025-09-20.', 1, 'Công việc mới', 0, '2025-09-16 08:20:51', '2025-09-16 08:20:51'),
+(206, 'Công việc mới', 'Bạn được giao công việc: 11. Hạn: 2025-09-20.', 15, 'Công việc mới', 0, '2025-09-16 08:20:51', '2025-09-16 08:20:51'),
+(207, 'Công việc mới', 'Bạn được giao công việc: 11. Hạn: 2025-09-20.', 10, 'Công việc mới', 0, '2025-09-16 08:20:51', '2025-09-16 08:20:51'),
+(208, 'Công việc mới', 'Bạn được giao công việc: 11. Hạn: 2025-09-20.', 16, 'Công việc mới', 0, '2025-09-16 08:20:51', '2025-09-16 08:20:51'),
+(209, 'Công việc mới', 'Bạn được giao công việc: 22. Hạn: 2025-09-21.', 15, 'Công việc mới', 0, '2025-09-16 08:21:15', '2025-09-16 08:21:15'),
+(210, 'Công việc mới', 'Bạn được giao công việc: 1. Hạn: 2025-09-19.', 2, 'Công việc mới', 0, '2025-09-17 03:10:53', '2025-09-17 03:10:53'),
+(211, 'Công việc mới', 'Bạn được giao công việc: 1. Hạn: 2025-09-21.', 2, 'Công việc mới', 0, '2025-09-17 03:17:47', '2025-09-17 03:17:47'),
+(212, 'Công việc mới', 'Bạn được giao công việc: 1. Hạn: 2025-09-21.', 1, 'Công việc mới', 0, '2025-09-17 03:49:22', '2025-09-17 03:49:22'),
+(213, 'Cập nhật công việc', 'Công việc: 1 vừa được cập nhật mới', 1, 'Cập nhật', 0, '2025-09-17 05:02:59', '2025-09-17 05:02:59'),
+(214, 'Cập nhật công việc', 'Công việc: 1 vừa được cập nhật mới', 3, 'Cập nhật', 0, '2025-09-17 05:03:47', '2025-09-17 05:03:47'),
+(215, 'Công việc mới', 'Bạn được giao công việc: 1. Hạn: 2025-09-21.', 1, 'Công việc mới', 0, '2025-09-17 07:33:04', '2025-09-17 07:33:04'),
+(216, 'Cập nhật công việc', 'Công việc: 1 vừa được cập nhật mới', 1, 'Cập nhật', 0, '2025-09-17 07:34:29', '2025-09-17 07:34:29'),
+(217, 'Cập nhật công việc', 'Công việc: 1 vừa được cập nhật mới', 1, 'Cập nhật', 0, '2025-09-17 07:34:38', '2025-09-17 07:34:38'),
+(218, 'Cập nhật công việc', 'Công việc: 1 vừa được cập nhật mới', 1, 'Cập nhật', 0, '2025-09-17 08:03:09', '2025-09-17 08:03:09'),
+(219, 'Cập nhật công việc', 'Công việc: 1 vừa được cập nhật mới', 1, 'Cập nhật', 0, '2025-09-17 08:11:14', '2025-09-17 08:11:14'),
+(220, 'Cập nhật công việc', 'Công việc: 1 vừa được cập nhật mới', 1, 'Cập nhật', 0, '2025-09-17 08:18:24', '2025-09-17 08:18:24');
 
 --
 -- Chỉ mục cho các bảng đã đổ
@@ -598,7 +748,8 @@ ALTER TABLE `cong_viec`
   ADD PRIMARY KEY (`id`),
   ADD KEY `nguoi_giao_id` (`nguoi_giao_id`),
   ADD KEY `nguoi_nhan_id` (`nguoi_nhan_id`),
-  ADD KEY `phong_ban_id` (`phong_ban_id`);
+  ADD KEY `phong_ban_id` (`phong_ban_id`),
+  ADD KEY `fk_cong_viec_du_an` (`du_an_id`);
 
 --
 -- Chỉ mục cho bảng `cong_viec_danh_gia`
@@ -622,7 +773,7 @@ ALTER TABLE `cong_viec_lich_su`
 ALTER TABLE `cong_viec_nguoi_nhan`
   ADD PRIMARY KEY (`id`),
   ADD KEY `cong_viec_id` (`cong_viec_id`),
-  ADD KEY `nguoi_nhan_id` (`nhan_vien_id`);
+  ADD KEY `nhan_vien_id` (`nhan_vien_id`);
 
 --
 -- Chỉ mục cho bảng `cong_viec_quy_trinh`
@@ -637,6 +788,12 @@ ALTER TABLE `cong_viec_quy_trinh`
 ALTER TABLE `cong_viec_tien_do`
   ADD PRIMARY KEY (`id`),
   ADD KEY `cong_viec_id` (`cong_viec_id`);
+
+--
+-- Chỉ mục cho bảng `du_an`
+--
+ALTER TABLE `du_an`
+  ADD PRIMARY KEY (`id`);
 
 --
 -- Chỉ mục cho bảng `file_dinh_kem`
@@ -696,6 +853,12 @@ ALTER TABLE `phong_ban`
   ADD KEY `fk_truong_phong` (`truong_phong_id`);
 
 --
+-- Chỉ mục cho bảng `tep_dinh_kem`
+--
+ALTER TABLE `tep_dinh_kem`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Chỉ mục cho bảng `thong_bao`
 --
 ALTER TABLE `thong_bao`
@@ -716,19 +879,19 @@ ALTER TABLE `cau_hinh_he_thong`
 -- AUTO_INCREMENT cho bảng `cham_cong`
 --
 ALTER TABLE `cham_cong`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=434;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=435;
 
 --
 -- AUTO_INCREMENT cho bảng `cong_viec`
 --
 ALTER TABLE `cong_viec`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=79;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=86;
 
 --
 -- AUTO_INCREMENT cho bảng `cong_viec_danh_gia`
 --
 ALTER TABLE `cong_viec_danh_gia`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT cho bảng `cong_viec_lich_su`
@@ -740,19 +903,25 @@ ALTER TABLE `cong_viec_lich_su`
 -- AUTO_INCREMENT cho bảng `cong_viec_nguoi_nhan`
 --
 ALTER TABLE `cong_viec_nguoi_nhan`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=67;
 
 --
 -- AUTO_INCREMENT cho bảng `cong_viec_quy_trinh`
 --
 ALTER TABLE `cong_viec_quy_trinh`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=137;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=161;
 
 --
 -- AUTO_INCREMENT cho bảng `cong_viec_tien_do`
 --
 ALTER TABLE `cong_viec_tien_do`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT cho bảng `du_an`
+--
+ALTER TABLE `du_an`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT cho bảng `file_dinh_kem`
@@ -800,13 +969,19 @@ ALTER TABLE `phan_quyen_chuc_nang`
 -- AUTO_INCREMENT cho bảng `phong_ban`
 --
 ALTER TABLE `phong_ban`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+
+--
+-- AUTO_INCREMENT cho bảng `tep_dinh_kem`
+--
+ALTER TABLE `tep_dinh_kem`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
 
 --
 -- AUTO_INCREMENT cho bảng `thong_bao`
 --
 ALTER TABLE `thong_bao`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=151;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=221;
 
 --
 -- Các ràng buộc cho các bảng đã đổ
@@ -824,7 +999,8 @@ ALTER TABLE `cham_cong`
 ALTER TABLE `cong_viec`
   ADD CONSTRAINT `cong_viec_ibfk_1` FOREIGN KEY (`nguoi_giao_id`) REFERENCES `nhanvien` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `cong_viec_ibfk_2` FOREIGN KEY (`nguoi_nhan_id`) REFERENCES `nhanvien` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `cong_viec_ibfk_3` FOREIGN KEY (`phong_ban_id`) REFERENCES `phong_ban` (`id`) ON DELETE SET NULL;
+  ADD CONSTRAINT `cong_viec_ibfk_3` FOREIGN KEY (`phong_ban_id`) REFERENCES `phong_ban` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_cong_viec_du_an` FOREIGN KEY (`du_an_id`) REFERENCES `du_an` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 --
 -- Các ràng buộc cho bảng `cong_viec_danh_gia`
@@ -857,7 +1033,8 @@ ALTER TABLE `cong_viec_quy_trinh`
 -- Các ràng buộc cho bảng `cong_viec_tien_do`
 --
 ALTER TABLE `cong_viec_tien_do`
-  ADD CONSTRAINT `cong_viec_tien_do_ibfk_1` FOREIGN KEY (`cong_viec_id`) REFERENCES `cong_viec` (`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `cong_viec_tien_do_ibfk_1` FOREIGN KEY (`cong_viec_id`) REFERENCES `cong_viec` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `cong_viec_tien_do_ibfk_2` FOREIGN KEY (`a`) REFERENCES `nhanvien` (`id`) ON DELETE CASCADE;
 
 --
 -- Các ràng buộc cho bảng `file_dinh_kem`
