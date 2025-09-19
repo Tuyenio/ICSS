@@ -264,7 +264,7 @@ CREATE TABLE `cong_viec_tien_do` (
   `cong_viec_id` int(11) DEFAULT NULL,
   `phan_tram` int(11) DEFAULT NULL,
   `thoi_gian_cap_nhat` timestamp NOT NULL DEFAULT current_timestamp()
-) ;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Đang đổ dữ liệu cho bảng `cong_viec_tien_do`
@@ -1009,7 +1009,9 @@ ALTER TABLE `cong_viec`
   ADD CONSTRAINT `cong_viec_ibfk_1` FOREIGN KEY (`nguoi_giao_id`) REFERENCES `nhanvien` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `cong_viec_ibfk_2` FOREIGN KEY (`nguoi_nhan_id`) REFERENCES `nhanvien` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `cong_viec_ibfk_3` FOREIGN KEY (`phong_ban_id`) REFERENCES `phong_ban` (`id`) ON DELETE SET NULL,
-  ADD CONSTRAINT `fk_cong_viec_du_an` FOREIGN KEY (`du_an_id`) REFERENCES `du_an` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+  ADD CONSTRAINT `fk_cong_viec_du_an` FOREIGN KEY (`du_an_id`) REFERENCES `du_an` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- Sửa ON DELETE SET NULL thành ON DELETE CASCADE cho fk_cong_viec_du_an để khi xóa dự án thì xóa luôn công việc
 
 --
 -- Các ràng buộc cho bảng `cong_viec_danh_gia`
@@ -1042,8 +1044,10 @@ ALTER TABLE `cong_viec_quy_trinh`
 -- Các ràng buộc cho bảng `cong_viec_tien_do`
 --
 ALTER TABLE `cong_viec_tien_do`
-  ADD CONSTRAINT `cong_viec_tien_do_ibfk_1` FOREIGN KEY (`cong_viec_id`) REFERENCES `cong_viec` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `cong_viec_tien_do_ibfk_2` FOREIGN KEY (`a`) REFERENCES `nhanvien` (`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `cong_viec_tien_do_ibfk_1` FOREIGN KEY (`cong_viec_id`) REFERENCES `cong_viec` (`id`) ON DELETE CASCADE;
+
+-- Xóa dòng: ADD CONSTRAINT `cong_viec_tien_do_ibfk_2` FOREIGN KEY (`a`) REFERENCES `nhanvien` (`id`) ON DELETE CASCADE;
+-- Vì trường `a` không tồn tại
 
 --
 -- Các ràng buộc cho bảng `file_dinh_kem`

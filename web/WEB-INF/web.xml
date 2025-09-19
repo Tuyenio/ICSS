@@ -167,6 +167,10 @@
         <servlet-name>dsCongviecDuan</servlet-name>
         <servlet-class>controller.dsCongviecDuan</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>xoaDuan</servlet-name>
+        <servlet-class>controller.xoaDuan</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>dsnhanvien</servlet-name>
         <url-pattern>/dsnhanvien</url-pattern>
@@ -330,6 +334,10 @@
     <servlet-mapping>
         <servlet-name>dsCongviecDuan</servlet-name>
         <url-pattern>/dsCongviecDuan</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>xoaDuan</servlet-name>
+        <url-pattern>/xoaDuan</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>

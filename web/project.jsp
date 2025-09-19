@@ -11,6 +11,7 @@
         <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
         <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <style>
             body {
                 background: #f4f6fa;
@@ -190,7 +191,7 @@
                                     <button class="btn btn-warning" onclick="editProject(<%= project.get("id") %>); event.stopPropagation();">
                                         <i class="fa-solid fa-pen"></i>
                                     </button>
-                                    <button class="btn btn-danger" onclick="deleteProject(<%= project.get("id") %>); event.stopPropagation();">
+                                    <button class="btn btn-danger delete-project-btn" data-id="<%= project.get("id") %>">
                                         <i class="fa-solid fa-trash"></i>
                                     </button>
                                 </div>
@@ -320,6 +321,34 @@
                 // Chuyển hướng sang servlet khác
                 window.location.href = "dsCongviecDuan?projectId=" + projectId;
             }
+
+            $(document).on('click', '.delete-project-btn', function () {
+                let id = $(this).data('id');
+                Swal.fire({
+                    title: 'Xác nhận xóa?',
+                    text: 'Bạn có chắc chắn muốn xóa dự án này?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Xóa',
+                    cancelButtonText: 'Hủy',
+                    confirmButtonColor: '#dc3545'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.post('./projectDelete', {id: id}, function (response) {
+                            if (response.success) {
+                                showToast('success', 'Đã xóa dự án thành công!');
+                                setTimeout(function () {
+                                    location.reload();
+                                }, 1500);
+                            } else {
+                                showToast('error', response.message || 'Xóa thất bại!');
+                            }
+                        }, 'json').fail(function () {
+                            showToast('error', 'Lỗi khi xóa dự án!');
+                        });
+                    }
+                });
+            });
         </script>
         <script>
             // Dữ liệu mẫu cho dự án (thay thế bằng dữ liệu thực từ backend)
@@ -381,14 +410,6 @@
                 setTimeout(() => {
                     editProject(currentProjectId);
                 }, 300);
-            }
-
-            function deleteProject(id) {
-                if (confirm("Bạn có chắc muốn xóa dự án này không?")) {
-                    // Gọi AJAX xóa dự án
-                    alert("Đã xóa dự án " + id + " (demo)");
-                    // Thực tế: reload trang hoặc remove element
-                }
             }
 
             function formatDate(dateString) {

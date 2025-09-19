@@ -3194,20 +3194,49 @@ public class KNCSDL {
         }
         return tasks;
     }
-    
+
     public String getTenDuanById(int projectId) throws SQLException {
-    String sql = "SELECT ten_du_an FROM du_an WHERE id = ?";
-    try (PreparedStatement stmt = cn.prepareStatement(sql)) {
-        stmt.setInt(1, projectId);
-        try (ResultSet rs = stmt.executeQuery()) {
-            if (rs.next()) {
-                return rs.getString("ten_du_an");
+        String sql = "SELECT ten_du_an FROM du_an WHERE id = ?";
+        try (PreparedStatement stmt = cn.prepareStatement(sql)) {
+            stmt.setInt(1, projectId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("ten_du_an");
+                }
             }
         }
+        return null;
     }
-    return null;
-}
 
+    // Lấy chi tiết dự án
+    public Map<String, Object> getProjectById(int id) throws SQLException {
+        String sql = "SELECT * FROM du_an WHERE id = ?";
+        try (PreparedStatement ps = cn.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Map<String, Object> project = new HashMap<>();
+                    project.put("id", rs.getInt("id"));
+                    project.put("ten_du_an", rs.getString("ten_du_an"));
+                    project.put("mo_ta", rs.getString("mo_ta"));
+                    project.put("ngay_bat_dau", rs.getDate("ngay_bat_dau"));
+                    project.put("ngay_ket_thuc", rs.getDate("ngay_ket_thuc"));
+                    project.put("ngay_tao", rs.getTimestamp("ngay_tao"));
+                    return project;
+                }
+            }
+        }
+        return null;
+    }
+
+    // Xóa dự án
+    public boolean deleteProject(int id) throws SQLException {
+        String sql = "DELETE FROM du_an WHERE id = ?";
+        try (PreparedStatement ps = cn.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            return ps.executeUpdate() > 0;
+        }
+    }
 
     public void close() throws SQLException {
         if (cn != null && !cn.isClosed()) {
