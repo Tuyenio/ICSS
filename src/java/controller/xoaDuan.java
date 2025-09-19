@@ -6,9 +6,11 @@ import java.io.*;
 import java.sql.Connection;
 
 public class xoaDuan extends HttpServlet {
+
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        response.setContentType("application/json;charset=UTF-8");
         String idRaw = request.getParameter("id");
 
         try {
@@ -18,7 +20,6 @@ public class xoaDuan extends HttpServlet {
 
             boolean success = kn.deleteProject(id);
 
-            response.setContentType("application/json;charset=UTF-8");
             try (PrintWriter out = response.getWriter()) {
                 if (success) {
                     out.print("{\"success\":true}");
@@ -28,7 +29,9 @@ public class xoaDuan extends HttpServlet {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            response.sendError(500, "Lỗi khi xóa dự án: " + e.getMessage());
+            try (PrintWriter out = response.getWriter()) {
+                out.print("{\"success\":false, \"message\":\"Lỗi khi xóa dự án: " + e.getMessage() + "\"}");
+            }
         }
     }
 }

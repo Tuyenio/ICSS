@@ -171,6 +171,30 @@
         <servlet-name>xoaDuan</servlet-name>
         <servlet-class>controller.xoaDuan</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>themDuan</servlet-name>
+        <servlet-class>controller.themDuan</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>chitietDuan</servlet-name>
+        <servlet-class>controller.chitietDuan</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>suaDuan</servlet-name>
+        <servlet-class>controller.suaDuan</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>dsLichtrinh</servlet-name>
+        <servlet-class>controller.dsLichtrinh</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>luuLichTrinh</servlet-name>
+        <servlet-class>controller.luuLichTrinh</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>xoaLichTrinh</servlet-name>
+        <servlet-class>controller.xoaLichTrinh</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>dsnhanvien</servlet-name>
         <url-pattern>/dsnhanvien</url-pattern>
@@ -338,6 +362,30 @@
     <servlet-mapping>
         <servlet-name>xoaDuan</servlet-name>
         <url-pattern>/xoaDuan</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>themDuan</servlet-name>
+        <url-pattern>/themDuan</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>chitietDuan</servlet-name>
+        <url-pattern>/chitietDuan</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>suaDuan</servlet-name>
+        <url-pattern>/suaDuan</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>dsLichtrinh</servlet-name>
+        <url-pattern>/dsLichtrinh</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>luuLichTrinh</servlet-name>
+        <url-pattern>/luuLichTrinh</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>xoaLichTrinh</servlet-name>
+        <url-pattern>/xoaLichTrinh</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>

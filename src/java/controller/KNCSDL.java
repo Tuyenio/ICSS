@@ -6,6 +6,7 @@ package controller;
 
 import jakarta.servlet.http.HttpSession;
 import java.sql.*;
+import java.sql.Date;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.*;
@@ -3232,6 +3233,82 @@ public class KNCSDL {
     // Xóa dự án
     public boolean deleteProject(int id) throws SQLException {
         String sql = "DELETE FROM du_an WHERE id = ?";
+        try (PreparedStatement ps = cn.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            return ps.executeUpdate() > 0;
+        }
+    }
+
+    public boolean insertDuAn(String tenDuAn, String moTa, Date ngayBatDau, Date ngayKetThuc) throws SQLException {
+        String sql = "INSERT INTO du_an (ten_du_an, mo_ta, ngay_bat_dau, ngay_ket_thuc) VALUES (?, ?, ?, ?)";
+        try (PreparedStatement ps = cn.prepareStatement(sql)) {
+            ps.setString(1, tenDuAn);
+            ps.setString(2, moTa);
+            ps.setDate(3, ngayBatDau != null ? new java.sql.Date(ngayBatDau.getTime()) : null);
+            ps.setDate(4, ngayKetThuc != null ? new java.sql.Date(ngayKetThuc.getTime()) : null);
+            return ps.executeUpdate() > 0;
+        }
+    }
+
+    public boolean updateProject(int id, String tenDuAn, String moTa,
+            java.sql.Date ngayBatDau, java.sql.Date ngayKetThuc) throws SQLException {
+        String sql = "UPDATE du_an SET ten_du_an=?, mo_ta=?, ngay_bat_dau=?, ngay_ket_thuc=? WHERE id=?";
+        try (PreparedStatement ps = cn.prepareStatement(sql)) {
+            ps.setString(1, tenDuAn);
+            ps.setString(2, moTa);
+            ps.setDate(3, ngayBatDau);
+            ps.setDate(4, ngayKetThuc);
+            ps.setInt(5, id);
+            int rows = ps.executeUpdate();
+            return rows > 0;
+        }
+    }
+
+    public List<Map<String, Object>> layTatCaLichTrinh() throws SQLException {
+        List<Map<String, Object>> dsLichTrinh = new ArrayList<>();
+        String sql = "SELECT * FROM lich_trinh";
+        try (PreparedStatement ps = cn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                Map<String, Object> lich = new HashMap<>();
+                lich.put("id", rs.getInt("id"));
+                lich.put("tieu_de", rs.getString("tieu_de"));
+                lich.put("ngay_bat_dau", rs.getDate("ngay_bat_dau"));
+                lich.put("ngay_ket_thuc", rs.getDate("ngay_ket_thuc"));
+                lich.put("mo_ta", rs.getString("mo_ta"));
+                dsLichTrinh.add(lich);
+            }
+        }
+        return dsLichTrinh;
+    }
+
+    // Thêm mới lịch trình
+    public boolean themLichTrinh(String tieuDe, Date ngayBatDau, Date ngayKetThuc, String moTa) throws SQLException {
+        String sql = "INSERT INTO lich_trinh (tieu_de, ngay_bat_dau, ngay_ket_thuc, mo_ta) VALUES (?,?,?,?)";
+        try (PreparedStatement ps = cn.prepareStatement(sql)) {
+            ps.setString(1, tieuDe);
+            ps.setDate(2, ngayBatDau);
+            ps.setDate(3, ngayKetThuc);
+            ps.setString(4, moTa);
+            return ps.executeUpdate() > 0;
+        }
+    }
+
+// Cập nhật lịch trình
+    public boolean capNhatLichTrinh(int id, String tieuDe, Date ngayBatDau, Date ngayKetThuc, String moTa) throws SQLException {
+        String sql = "UPDATE lich_trinh SET tieu_de=?, ngay_bat_dau=?, ngay_ket_thuc=?, mo_ta=? WHERE id=?";
+        try (PreparedStatement ps = cn.prepareStatement(sql)) {
+            ps.setString(1, tieuDe);
+            ps.setDate(2, ngayBatDau);
+            ps.setDate(3, ngayKetThuc);
+            ps.setString(4, moTa);
+            ps.setInt(5, id);
+            return ps.executeUpdate() > 0;
+        }
+    }
+
+// Xóa lịch trình
+    public boolean xoaLichTrinh(int id) throws SQLException {
+        String sql = "DELETE FROM lich_trinh WHERE id=?";
         try (PreparedStatement ps = cn.prepareStatement(sql)) {
             ps.setInt(1, id);
             return ps.executeUpdate() > 0;

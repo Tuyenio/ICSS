@@ -14,6 +14,7 @@
         <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <style>
             /* ==== GLOBAL ==== */
             body {
@@ -214,9 +215,11 @@
             // Ngày hiện tại từ server
             var todayDate = '<%= todayStr %>';
 
+            let calendar;  // biến toàn cục
+
             document.addEventListener('DOMContentLoaded', function () {
                 var calendarEl = document.getElementById('calendar');
-                var calendar = new FullCalendar.Calendar(calendarEl, {
+                calendar = new FullCalendar.Calendar(calendarEl, {
                     initialView: 'dayGridMonth',
                     locale: 'vi',
                     height: 650,
@@ -225,7 +228,7 @@
                         center: 'title',
                         right: 'dayGridMonth,timeGridWeek,timeGridDay'
                     },
-                    events: demoEvents,
+                    events: "dsLichtrinh",
                     eventClick: function (info) {
                         var event = info.event;
                         $("#eventForm")[0].reset();
@@ -254,39 +257,51 @@
                     $("#modalEvent").modal("show");
                 });
 
-                // Lưu lịch trình (demo, thực tế sẽ gọi AJAX)
+                // Lưu lịch trình
                 $("#eventForm").on("submit", function (e) {
                     e.preventDefault();
-                    var id = $(this).find("[name='id']").val();
-                    var title = $(this).find("[name='title']").val();
-                    var start = $(this).find("[name='start']").val();
-                    var end = $(this).find("[name='end']").val();
-                    var desc = $(this).find("[name='description']").val();
-                    if (id) {
-                        var event = calendar.getEventById(id);
-                        if (event) {
-                            event.setProp('title', title);
-                            event.setStart(start);
-                            event.setEnd(end);
-                            event.setExtendedProp('description', desc);
+                    let formData = $(this).serialize();
+                    $.post("luuLichTrinh", formData, function (res) {
+                        console.log("Kết quả server:", res);  // 👈 in ra console kiểm tra
+                        if (res.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Thành công',
+                                text: 'Đã lưu lịch trình!',
+                                timer: 1500,
+                                showConfirmButton: false
+                            }).then(() => {
+                                $("#modalEvent").modal("hide");
+                                calendar.refetchEvents();
+                            });
+                        } else {
+                            Swal.fire('Lỗi', res.message || 'Không thể lưu', 'error');
                         }
-                    } else {
-                        var newId = Date.now();
-                        calendar.addEvent({id: newId, title: title, start: start, end: end, description: desc});
-                    }
-                    $("#modalEvent").modal("hide");
+                    }, "json").fail(function (xhr) {
+                        console.error("AJAX lỗi:", xhr.responseText);  // 👈 xem lỗi
+                    });
                 });
 
                 // Xóa lịch trình
-                $('#btnDeleteEvent').off('click').on('click', function () {
-                    var id = $("#eventForm input[name='id']").val();
+                $('#btnDeleteEvent').on('click', function () {
+                    let id = $("#eventForm input[name='id']").val();
                     if (id) {
-                        if (confirm('Bạn có chắc chắn muốn xóa lịch trình này?')) {
-                            var event = calendar.getEventById(id);
-                            if (event)
-                                event.remove();
-                            $("#modalEvent").modal("hide");
-                        }
+                        $.post("xoaLichTrinh", {id: id}, function (res) {
+                            if (res.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Đã xóa!',
+                                    text: 'Lịch trình đã được xóa',
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                }).then(() => {
+                                    $("#modalEvent").modal("hide");   // đóng modal
+                                    calendar.refetchEvents();        // load lại dữ liệu
+                                });
+                            } else {
+                                Swal.fire('Lỗi', res.message || 'Không thể xóa', 'error');
+                            }
+                        }, "json");
                     }
                 });
             });

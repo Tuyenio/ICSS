@@ -322,6 +322,17 @@
                 window.location.href = "dsCongviecDuan?projectId=" + projectId;
             }
 
+            // Hàm hiển thị toast
+            function showToast(type, message) {
+                if (type === 'success') {
+                    $('#toastSuccess .toast-body').text(message);
+                    $('#toastSuccess').toast('show');
+                } else {
+                    $('#toastError .toast-body').text(message);
+                    $('#toastError').toast('show');
+                }
+            }
+
             $(document).on('click', '.delete-project-btn', function () {
                 let id = $(this).data('id');
                 Swal.fire({
@@ -334,21 +345,53 @@
                     confirmButtonColor: '#dc3545'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        $.post('./projectDelete', {id: id}, function (response) {
-                            if (response.success) {
-                                showToast('success', 'Đã xóa dự án thành công!');
-                                setTimeout(function () {
-                                    location.reload();
-                                }, 1500);
-                            } else {
-                                showToast('error', response.message || 'Xóa thất bại!');
+                        $.ajax({
+                            url: './xoaDuan',
+                            type: 'POST',
+                            data: {id: id},
+                            dataType: 'json',
+                            success: function (response) {
+                                console.log("Response:", response); // 👈 Debug
+                                if (response && response.success) {
+                                    showToast('success', 'Đã xóa dự án thành công!');
+                                    setTimeout(() => location.reload(), 500); // reload luôn trang hiện tại
+                                } else {
+                                    showToast('error', response.message || 'Xóa thất bại!');
+                                }
+                            },
+                            error: function (xhr, status, error) {
+                                console.error("Delete error:", xhr.responseText);
+                                showToast('error', 'Lỗi khi xóa dự án!');
                             }
-                        }, 'json').fail(function () {
-                            showToast('error', 'Lỗi khi xóa dự án!');
                         });
                     }
                 });
             });
+
+            $("#projectForm").on("submit", function (e) {
+                e.preventDefault();
+
+                let formData = $(this).serialize(); // lấy toàn bộ input trong form
+                let id = $("#projectForm input[name='id']").val();
+                let url = id ? "suaDuan" : "themDuan"; // nếu có id → sửa, ngược lại thêm
+
+                $.post(url, formData, function (response) {
+                    if (response.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Thành công',
+                            text: id ? 'Cập nhật dự án thành công!' : 'Thêm dự án thành công!'
+                        }).then(() => location.reload());
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Lỗi',
+                            text: response.message || (id ? 'Sửa thất bại!' : 'Thêm thất bại!')
+                        });
+                    }
+                }, 'json');
+            });
+
         </script>
         <script>
             // Dữ liệu mẫu cho dự án (thay thế bằng dữ liệu thực từ backend)
@@ -371,72 +414,40 @@
                 event.stopPropagation();
                 currentProjectId = projectId;
 
-                // Lấy thông tin dự án từ dữ liệu mẫu (thay thế bằng AJAX call thực tế)
-                const project = sampleProjects[projectId];
+                $.getJSON("chitietDuan", {id: projectId}, function (project) {
+                    if (project && !project.error) {
+                        $("#detailTenDuAn").text(project.ten_du_an);
+                        $("#detailMoTa").text(project.mo_ta || 'Chưa có mô tả');
+                        $("#detailNgayBatDau").text(formatDate(project.ngay_bat_dau));
+                        $("#detailNgayKetThuc").text(formatDate(project.ngay_ket_thuc));
+                        $("#detailNgayTao").text(formatDate(project.ngay_tao));
+                        $("#detailTongCongViec").text(project.tong_cong_viec || 0);
+                        $("#detailTongNguoi").text(project.tong_nguoi || 0);
 
-                if (project) {
-                    document.getElementById('detailTenDuAn').textContent = project.ten_du_an;
-                    document.getElementById('detailMoTa').textContent = project.mo_ta || 'Chưa có mô tả';
-                    document.getElementById('detailNgayBatDau').textContent = formatDate(project.ngay_bat_dau);
-                    document.getElementById('detailNgayKetThuc').textContent = formatDate(project.ngay_ket_thuc);
-                    document.getElementById('detailNgayTao').textContent = formatDate(project.ngay_tao);
-                    document.getElementById('detailTongCongViec').textContent = project.tong_cong_viec;
-                    document.getElementById('detailTongNguoi').textContent = project.tong_nguoi;
-                }
-
-                $("#modalProjectDetail").modal("show");
+                        $("#modalProjectDetail").modal("show");
+                    } else {
+                        showToast('error', project.error || "Không lấy được chi tiết dự án");
+                    }
+                });
             }
 
-            function editProject(id) {
-                currentProjectId = id;
-                // Load dữ liệu dự án lên modal để sửa
-                const project = sampleProjects[id];
+            function editProject(projectId) {
+                currentProjectId = projectId;
+                $.getJSON("chitietDuan", {id: projectId}, function (project) {
+                    if (project && !project.error) {
+                        $("#projectForm")[0].reset();
+                        $("#projectForm input[name='id']").val(project.id);
+                        $("#projectForm input[name='ten_du_an']").val(project.ten_du_an);
+                        $("#projectForm textarea[name='mo_ta']").val(project.mo_ta);
+                        $("#projectForm input[name='ngay_bat_dau']").val(project.ngay_bat_dau);
+                        $("#projectForm input[name='ngay_ket_thuc']").val(project.ngay_ket_thuc);
 
-                $("#projectForm")[0].reset();
-                $("#projectForm input[name='id']").val(id);
-
-                if (project) {
-                    $("#projectForm input[name='ten_du_an']").val(project.ten_du_an);
-                    $("#projectForm textarea[name='mo_ta']").val(project.mo_ta);
-                    $("#projectForm input[name='ngay_bat_dau']").val(project.ngay_bat_dau);
-                    $("#projectForm input[name='ngay_ket_thuc']").val(project.ngay_ket_thuc);
-                }
-
-                $("#modalProject").modal("show");
+                        $("#modalProject").modal("show");
+                    } else {
+                        showToast('error', project.error || "Không lấy được dữ liệu dự án");
+                    }
+                });
             }
-
-            function editProjectFromDetail() {
-                $("#modalProjectDetail").modal("hide");
-                setTimeout(() => {
-                    editProject(currentProjectId);
-                }, 300);
-            }
-
-            function formatDate(dateString) {
-                if (!dateString)
-                    return 'Chưa xác định';
-                const date = new Date(dateString);
-                return date.toLocaleDateString('vi-VN');
-            }
-
-            // Validation cho form dự án
-            $("#projectForm").on("submit", function (e) {
-                e.preventDefault();
-
-                const startDate = new Date($("#projectForm input[name='ngay_bat_dau']").val());
-                const endDate = new Date($("#projectForm input[name='ngay_ket_thuc']").val());
-
-                if (startDate && endDate && startDate > endDate) {
-                    alert("Ngày bắt đầu không thể sau ngày kết thúc!");
-                    return;
-                }
-
-                // Gửi AJAX thêm/sửa dự án
-                $("#modalProject").modal("hide");
-                alert("Đã lưu dự án thành công!");
-
-                // Thực tế: gửi dữ liệu đến server và reload trang
-            });
 
             // Set ngày tối thiểu là hôm nay cho các trường ngày
             document.addEventListener('DOMContentLoaded', function () {
