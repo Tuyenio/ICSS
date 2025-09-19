@@ -159,6 +159,14 @@
         <servlet-name>DeleteFileServlet</servlet-name>
         <servlet-class>controller.DeleteFileServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>dsDuan</servlet-name>
+        <servlet-class>controller.dsDuan</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>dsCongviecDuan</servlet-name>
+        <servlet-class>controller.dsCongviecDuan</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>dsnhanvien</servlet-name>
         <url-pattern>/dsnhanvien</url-pattern>
@@ -314,6 +322,14 @@
     <servlet-mapping>
         <servlet-name>DeleteFileServlet</servlet-name>
         <url-pattern>/deleteFile</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>dsDuan</servlet-name>
+        <url-pattern>/dsDuan</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>dsCongviecDuan</servlet-name>
+        <url-pattern>/dsCongviecDuan</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>

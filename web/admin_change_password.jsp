@@ -174,6 +174,9 @@
                     <a href="./dsnhanvien"><i class="fa-solid fa-users"></i><span>Nhân sự</span></a>
                 </li>
                 <li>
+                    <a href="project.jsp"><i class="fa-solid fa-diagram-project"></i><span>Dự án</span></a>
+                </li>
+                <li>
                     <a href="./dsCongviec"><i class="fa-solid fa-tasks"></i><span>Công việc</span></a>
                 </li>
                 <li>
@@ -181,6 +184,9 @@
                 </li>
                 <li>
                     <a href="./dsChamCong"><i class="fa-solid fa-calendar-check"></i><span>Chấm công</span></a>
+                </li>
+                <li>
+                    <a href="calendar.jsp"><i class="fa-solid fa-calendar-days"></i><span>Lịch trình</span></a>
                 </li>
                 <li>
                     <a href="./svBaocao"><i class="fa-solid fa-chart-bar"></i><span>Báo cáo</span></a>
@@ -209,7 +215,7 @@
                 <div id="msg" class="mt-3"></div>
             </div>
         </div>
-        
+
     </body>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>

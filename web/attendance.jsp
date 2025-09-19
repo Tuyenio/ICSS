@@ -38,153 +38,239 @@
             var PAGE_TITLE = '<i class="fa-solid fa-calendar-check me-2"></i>Chấm công & Lương';
         </script>
         <style>
+            /* ==== GLOBAL ==== */
             body {
-                background: #f4f6fa;
-            }
-
-            .sidebar {
-                min-height: 100vh;
-                background: linear-gradient(180deg, #23272f 0%, #343a40 100%);
-                color: #fff;
-                width: 240px;
-                transition: width 0.2s;
-                box-shadow: 2px 0 8px #0001;
-                z-index: 10;
-                position: fixed;
-                top: 0;
-                left: 0;
-                bottom: 0;
-            }
-
-            .sidebar .sidebar-title {
-                font-size: 1.7rem;
-                font-weight: bold;
-                letter-spacing: 1px;
-                color: #0dcaf0;
-                background: #23272f;
-            }
-
-            .sidebar-nav {
-                padding: 0;
-                margin: 0;
-                list-style: none;
-            }
-
-            .sidebar-nav li {
-                margin-bottom: 2px;
-            }
-
-            .sidebar-nav a {
-                color: #fff;
-                text-decoration: none;
-                display: flex;
-                align-items: center;
-                gap: 14px;
-                padding: 14px 28px;
-                border-radius: 8px;
-                font-size: 1.08rem;
-                font-weight: 500;
-                transition: background 0.15s, color 0.15s;
-            }
-
-            .sidebar-nav a.active,
-            .sidebar-nav a:hover {
-                background: #0dcaf0;
-                color: #23272f;
-            }
-
-            .sidebar-nav a .fa-solid {
-                width: 26px;
-                text-align: center;
-                font-size: 1.25rem;
-            }
-
-            @media (max-width: 992px) {
-                .sidebar {
-                    width: 60px;
-                }
-
-                .sidebar .sidebar-title {
-                    font-size: 1.1rem;
-                    padding: 12px 0;
-                }
-
-                .sidebar-nav a span {
-                    display: none;
-                }
-
-                .sidebar-nav a {
-                    justify-content: center;
-                    padding: 14px 0;
-                }
+                background: #f8fafc;
+                font-family: 'Segoe UI', Roboto, sans-serif;
+                color: #1e293b;
             }
 
             .header {
                 background: #fff;
-                border-bottom: 1px solid #dee2e6;
+                border-bottom: 1px solid #e2e8f0;
                 min-height: 64px;
-                box-shadow: 0 2px 8px #0001;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.05);
                 margin-left: 240px;
                 position: sticky;
                 top: 0;
                 z-index: 20;
             }
 
-            .avatar {
-                width: 38px;
-                height: 38px;
-                border-radius: 50%;
-                object-fit: cover;
-            }
-
             .main-content {
-                padding: 36px 36px 24px 36px;
+                padding: 32px;
                 min-height: 100vh;
                 margin-left: 240px;
+                animation: fadeIn 0.4s ease;
             }
 
             .main-box {
                 background: #fff;
-                border-radius: 14px;
-                box-shadow: 0 2px 12px #0001;
-                padding: 32px 24px;
+                border-radius: 16px;
+                box-shadow: 0 3px 14px rgba(0,0,0,0.08);
+                padding: 28px 22px;
+                animation: slideUp 0.5s ease;
             }
 
-            .table thead th {
-                vertical-align: middle;
-            }
-
-            .table-hover tbody tr:hover {
-                background: #eaf6ff;
-            }
-
+            /* ==== FILTER ROW ==== */
             .filter-row .form-select,
             .filter-row .form-control {
                 border-radius: 20px;
+                padding: 8px 14px;
+            }
+            .filter-row button {
+                transition: all 0.25s ease;
+            }
+            .filter-row button:hover {
+                transform: scale(1.05);
             }
 
-            .modal-content {
-                border-radius: 14px;
+            /* ==== TABLE ==== */
+            .table thead th {
+                vertical-align: middle;
+                font-weight: 600;
+                font-size: 1rem;
+            }
+            .table-hover tbody tr:hover {
+                background: #e0f2fe;
+            }
+            .table td, .table th {
+                padding: 12px 14px;
+                vertical-align: middle;
             }
 
-            .modal-header,
-            .modal-footer {
-                border-color: #e9ecef;
-            }
-
+            /* ==== BADGES ==== */
             .badge-status {
-                font-size: 0.95em;
+                font-size: 0.85rem;
+                border-radius: 8px;
+                padding: 4px 8px;
             }
 
+            /* ==== ACTION BUTTONS ==== */
+            td .btn {
+                border-radius: 50%;
+                width: 34px;
+                height: 34px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.25s ease;
+            }
+            td .btn i {
+                font-size: 0.9rem;
+            }
+
+            td .btn-info {
+                background: linear-gradient(90deg,#0dcaf0,#4f46e5);
+                border: none;
+                color: #fff;
+            }
+            td .btn-info:hover {
+                transform: scale(1.1);
+                box-shadow: 0 2px 8px rgba(79,70,229,0.4);
+            }
+            td .btn-warning {
+                background: linear-gradient(90deg,#facc15,#eab308);
+                border: none;
+                color: #fff;
+            }
+            td .btn-warning:hover {
+                transform: scale(1.1);
+                box-shadow: 0 2px 8px rgba(250,204,21,0.4);
+            }
+            td .btn-danger {
+                background: linear-gradient(90deg,#ef4444,#dc2626);
+                border: none;
+                color: #fff;
+            }
+            td .btn-danger:hover {
+                transform: scale(1.1);
+                box-shadow: 0 2px 8px rgba(220,38,38,0.4);
+            }
+
+            /* ==== MODALS ==== */
+            .modal-content {
+                border-radius: 16px;
+                box-shadow: 0 6px 22px rgba(0,0,0,0.2);
+                animation: fadeIn 0.4s ease;
+            }
+            .modal-header, .modal-footer {
+                border-color: #f1f5f9;
+            }
+            .btn-primary {
+                background: linear-gradient(90deg,#0dcaf0,#4f46e5);
+                border: none;
+            }
+            .btn-primary:hover {
+                background: linear-gradient(90deg,#4f46e5,#0dcaf0);
+            }
+
+            /* ==== EMPTY STATE ==== */
+            .table .text-center i {
+                font-size: 2.2rem;
+            }
+            .table .text-center p {
+                font-size: 1rem;
+                margin-top: 6px;
+            }
+
+            /* Container của các nút hành động */
+            td .action-buttons {
+                display: flex;
+                gap: 6px;
+                justify-content: center; /* căn giữa trong ô */
+                align-items: center;
+            }
+
+            /* Nút tròn đều */
+            td .action-buttons .btn {
+                border-radius: 50%;
+                width: 36px;   /* bằng nhau */
+                height: 36px;  /* bằng nhau */
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 0;
+            }
+
+            td .action-buttons .btn i {
+                font-size: 0.9rem; /* icon đều */
+            }
+
+            /* Nút hành động chính */
+            .btn-action {
+                border-radius: 50px;
+                font-weight: 500;
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                padding: 8px 18px;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+                transition: all 0.2s ease-in-out;
+            }
+
+            /* Hover: sáng màu + nổi khối */
+            .btn-action:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            }
+
+            /* Primary – Thêm mới */
+            .btn-action-primary {
+                background: linear-gradient(45deg, #0d6efd, #0dcaf0);
+                color: #fff;
+                border: none;
+            }
+            .btn-action-primary:hover {
+                background: linear-gradient(45deg, #0b5ed7, #0bb3e6);
+                color: #fff;
+            }
+
+            /* Success – Xuất file */
+            .btn-action-success {
+                background: linear-gradient(45deg, #198754, #20c997);
+                color: #fff;
+                border: none;
+            }
+            .btn-action-success:hover {
+                background: linear-gradient(45deg, #157347, #1ba87a);
+                color: #fff;
+            }
+            /* ==== ANIMATIONS ==== */
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(8px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+            @keyframes slideUp {
+                from {
+                    opacity: 0;
+                    transform: translateY(20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            /* ==== RESPONSIVE ==== */
+            @media (max-width: 992px) {
+                .main-content {
+                    margin-left: 60px;
+                    padding: 20px;
+                }
+            }
             @media (max-width: 768px) {
                 .main-box {
-                    padding: 10px 2px;
+                    padding: 16px;
                 }
-
                 .main-content {
-                    padding: 10px 2px;
+                    padding: 12px;
                 }
-
                 .table-responsive {
                     font-size: 0.95rem;
                 }
@@ -194,34 +280,7 @@
 
     <body>
         <div class="d-flex">
-            <!-- Sidebar -->
-            <nav class="sidebar p-0">
-                <div class="sidebar-title text-center py-4 border-bottom border-secondary" style="cursor:pointer;"
-                     onclick="location.href = 'index.jsp'">
-                    <i class="fa-solid fa-people-group me-2"></i>ICS
-                </div>
-                <ul class="sidebar-nav mt-3">
-                    <li>
-                        <a href="index.jsp"><i class="fa-solid fa-chart-line"></i><span>Dashboard</span></a>
-                    </li>
-                    <li>
-                        <a href="./dsnhanvien"><i class="fa-solid fa-users"></i><span>Nhân sự</span></a>
-                    </li>
-                    <li>
-                        <a href="./dsCongviec"><i class="fa-solid fa-tasks"></i><span>Công việc</span></a>
-                    </li>
-                    <li>
-                        <a href="./dsPhongban"><i class="fa-solid fa-building"></i><span>Phòng ban</span></a>
-                    </li>
-                    <li>
-                        <a href="./dsChamCong" class="active"><i class="fa-solid fa-calendar-check"></i><span>Chấm
-                                công</span></a>
-                    </li>
-                    <li>
-                        <a href="./svBaocao"><i class="fa-solid fa-chart-bar"></i><span>Báo cáo</span></a>
-                    </li>
-                </ul>
-            </nav>
+            <%@ include file="sidebar.jsp" %>
             <!-- Main -->
             <div class="flex-grow-1">
                 <!-- Header -->
@@ -231,11 +290,11 @@
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <h3 class="mb-0"><i class="fa-solid fa-calendar-check me-2"></i>Chấm công & Lương</h3>
                             <div>
-                                <button class="btn btn-outline-primary rounded-pill px-3 me-2" data-bs-toggle="modal"
+                                <button class="btn btn-action btn-action-primary me-2" data-bs-toggle="modal"
                                         data-bs-target="#modalAddAttendance">
                                     <i class="fa-solid fa-plus"></i> Thêm chấm công
                                 </button>
-                                <button class="btn btn-outline-success rounded-pill px-3" data-bs-toggle="modal"
+                                <button class="btn btn-action btn-action-success" data-bs-toggle="modal"
                                         data-bs-target="#modalExportPayroll">
                                     <i class="fa-solid fa-file-export"></i> Xuất phiếu chấm công
                                 </button>
@@ -330,17 +389,19 @@
                                             <span class="badge <%= badgeClass %> badge-status"><%= trangThai %></span>
                                         </td>
                                         <td>
-                                            <button class="btn btn-sm btn-info rounded-circle"
-                                                    data-bs-toggle="modal" data-bs-target="#modalDetailAttendance"
-                                                    data-id="<%= item.get("nhan_vien_id") %>"><i
-                                                    class="fa-solid fa-eye"></i></button>
-                                            <button class="btn btn-sm btn-warning rounded-circle"
-                                                    data-bs-toggle="modal" data-bs-target="#modalEditAttendance"
-                                                    data-id="<%= item.get("id") %>"><i
-                                                    class="fa-solid fa-pen"></i></button>
-                                            <button class="btn btn-sm btn-danger rounded-circle"
-                                                    onclick="deleteAttendance('<%= item.get("id") %>');"><i
-                                                    class="fa-solid fa-trash"></i></button>
+                                            <div class="action-buttons">
+                                                <button class="btn btn-sm btn-info rounded-circle"
+                                                        data-bs-toggle="modal" data-bs-target="#modalDetailAttendance"
+                                                        data-id="<%= item.get("nhan_vien_id") %>"><i
+                                                        class="fa-solid fa-eye"></i></button>
+                                                <button class="btn btn-sm btn-warning rounded-circle"
+                                                        data-bs-toggle="modal" data-bs-target="#modalEditAttendance"
+                                                        data-id="<%= item.get("id") %>"><i
+                                                        class="fa-solid fa-pen"></i></button>
+                                                <button class="btn btn-sm btn-danger rounded-circle"
+                                                        onclick="deleteAttendance('<%= item.get("id") %>');"><i
+                                                        class="fa-solid fa-trash"></i></button>
+                                            </div>
                                         </td>
                                     </tr>
                                     <% } %>

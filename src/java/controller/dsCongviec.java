@@ -30,7 +30,7 @@ public class dsCongviec extends HttpServlet {
             try {
                 HttpSession session = request.getSession();
                 String email = (String) session.getAttribute("userEmail");
-                List<Map<String, Object>> taskList = kn.getAllTasks(email);
+                List<Map<String, Object>> taskList = kn.getAllTasksByProject(email,1);
 
                 // 2. Cập nhật trạng thái từng công việc trước khi render
                 for (Map<String, Object> task : taskList) {

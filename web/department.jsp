@@ -19,119 +19,153 @@
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <style>
+            /* ==== GLOBAL ==== */
             body {
-                background: #f4f6fa;
+                background: #f8fafc;
+                font-family: 'Segoe UI', Roboto, sans-serif;
+                color: #1e293b;
             }
-            .sidebar {
-                min-height: 100vh;
-                background: linear-gradient(180deg, #23272f 0%, #343a40 100%);
-                color: #fff;
-                width: 240px;
-                transition: width 0.2s;
-                box-shadow: 2px 0 8px #0001;
-                z-index: 10;
-                position: fixed;
-                top: 0;
-                left: 0;
-                bottom: 0;
-            }
-            .sidebar .sidebar-title {
-                font-size: 1.7rem;
-                font-weight: bold;
-                letter-spacing: 1px;
-                color: #0dcaf0;
-                background: #23272f;
-            }
-            .sidebar-nav {
-                padding: 0;
-                margin: 0;
-                list-style: none;
-            }
-            .sidebar-nav li {
-                margin-bottom: 2px;
-            }
-            .sidebar-nav a {
-                color: #fff;
-                text-decoration: none;
-                display: flex;
-                align-items: center;
-                gap: 14px;
-                padding: 14px 28px;
-                border-radius: 8px;
-                font-size: 1.08rem;
-                font-weight: 500;
-                transition: background 0.15s, color 0.15s;
-            }
-            .sidebar-nav a.active, .sidebar-nav a:hover {
-                background: #0dcaf0;
-                color: #23272f;
-            }
-            .sidebar-nav a .fa-solid {
-                width: 26px;
-                text-align: center;
-                font-size: 1.25rem;
-            }
-            @media (max-width: 992px) {
-                .sidebar {
-                    width: 60px;
-                }
-                .sidebar .sidebar-title {
-                    font-size: 1.1rem;
-                    padding: 12px 0;
-                }
-                .sidebar-nav a span {
-                    display: none;
-                }
-                .sidebar-nav a {
-                    justify-content: center;
-                    padding: 14px 0;
-                }
-            }
+
             .header {
                 background: #fff;
-                border-bottom: 1px solid #dee2e6;
+                border-bottom: 1px solid #e2e8f0;
                 min-height: 64px;
-                box-shadow: 0 2px 8px #0001;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.05);
                 margin-left: 240px;
                 position: sticky;
                 top: 0;
                 z-index: 20;
             }
-            .avatar {
-                width: 38px;
-                height: 38px;
-                border-radius: 50%;
-                object-fit: cover;
-            }
+
             .main-content {
-                padding: 36px 36px 24px 36px;
+                padding: 32px;
                 min-height: 100vh;
                 margin-left: 240px;
+                animation: fadeIn 0.4s ease;
             }
+
             .main-box {
                 background: #fff;
-                border-radius: 14px;
-                box-shadow: 0 2px 12px #0001;
-                padding: 32px 24px;
+                border-radius: 16px;
+                box-shadow: 0 3px 14px rgba(0,0,0,0.08);
+                padding: 28px 22px;
+                animation: slideUp 0.5s ease;
             }
+
+            /* ==== TABLE ==== */
             .table thead th {
                 vertical-align: middle;
+                font-weight: 600;
+                font-size: 1rem;
             }
             .table-hover tbody tr:hover {
-                background: #eaf6ff;
+                background: #e0f2fe;
             }
+            .table td, .table th {
+                padding: 12px 14px;
+            }
+
+            /* ==== BADGES ==== */
+            .badge {
+                font-size: 0.85rem;
+                border-radius: 10px;
+                padding: 4px 8px;
+            }
+
+            /* ==== ACTION BUTTONS ==== */
+            td .btn {
+                border-radius: 50%;
+                width: 34px;
+                height: 34px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.25s ease;
+            }
+            td .btn i {
+                font-size: 0.9rem;
+            }
+
+            td .btn-warning {
+                background: linear-gradient(90deg,#facc15,#eab308);
+                border: none;
+                color: #fff;
+            }
+            td .btn-warning:hover {
+                transform: scale(1.1);
+                box-shadow: 0 2px 8px rgba(250, 204, 21, 0.4);
+            }
+            td .btn-danger {
+                background: linear-gradient(90deg,#ef4444,#dc2626);
+                border: none;
+                color: #fff;
+            }
+            td .btn-danger:hover {
+                transform: scale(1.1);
+                box-shadow: 0 2px 8px rgba(220, 38, 38, 0.4);
+            }
+            td .btn-info {
+                background: linear-gradient(90deg,#0dcaf0,#4f46e5);
+                border: none;
+                color: #fff;
+            }
+            td .btn-info:hover {
+                transform: scale(1.1);
+                box-shadow: 0 2px 8px rgba(79, 70, 229, 0.4);
+            }
+
+            /* ==== MODALS ==== */
             .modal-content {
-                border-radius: 14px;
+                border-radius: 16px;
+                box-shadow: 0 6px 22px rgba(0,0,0,0.2);
+                animation: fadeIn 0.4s ease;
             }
             .modal-header, .modal-footer {
-                border-color: #e9ecef;
+                border-color: #f1f5f9;
+            }
+            .btn-primary {
+                background: linear-gradient(90deg,#0dcaf0,#4f46e5);
+                border: none;
+            }
+            .btn-primary:hover {
+                background: linear-gradient(90deg,#4f46e5,#0dcaf0);
+            }
+
+            /* ==== ANIMATIONS ==== */
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(8px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+            @keyframes slideUp {
+                from {
+                    opacity: 0;
+                    transform: translateY(20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            /* ==== RESPONSIVE ==== */
+            @media (max-width: 992px) {
+                .main-content {
+                    margin-left: 60px;
+                    padding: 20px;
+                }
             }
             @media (max-width: 768px) {
                 .main-box {
-                    padding: 10px 2px;
+                    padding: 16px;
                 }
                 .main-content {
-                    padding: 10px 2px;
+                    padding: 12px;
                 }
                 .table-responsive {
                     font-size: 0.95rem;
@@ -144,32 +178,7 @@
     </head>
     <body>
         <div class="d-flex">
-            <!-- Sidebar -->
-            <nav class="sidebar p-0">
-                <div class="sidebar-title text-center py-4 border-bottom border-secondary" style="cursor:pointer;" onclick="location.href = 'index.jsp'">
-                    <i class="fa-solid fa-people-group me-2"></i>ICS
-                </div>
-                <ul class="sidebar-nav mt-3">
-                    <li>
-                        <a href="index.jsp"><i class="fa-solid fa-chart-line"></i><span>Dashboard</span></a>
-                    </li>
-                    <li>
-                        <a href="./dsnhanvien"><i class="fa-solid fa-users"></i><span>Nhân sự</span></a>
-                    </li>
-                    <li>
-                        <a href="./dsCongviec"><i class="fa-solid fa-tasks"></i><span>Công việc</span></a>
-                    </li>
-                    <li>
-                        <a href="./dsPhongban" class="active"><i class="fa-solid fa-building"></i><span>Phòng ban</span></a>
-                    </li>
-                    <li>
-                        <a href="./dsChamCong"><i class="fa-solid fa-calendar-check"></i><span>Chấm công</span></a>
-                    </li>
-                    <li>
-                        <a href="./svBaocao"><i class="fa-solid fa-chart-bar"></i><span>Báo cáo</span></a>
-                    </li>
-                </ul>
-            </nav>
+            <%@ include file="sidebar.jsp" %>
             <!-- Main -->
             <div class="flex-grow-1">
                 <!-- Header -->
@@ -387,157 +396,158 @@
         <script>
             // Load danh sách nhân viên cho select
             function loadNhanVien() {
-            $.get('./apiNhanvien', function (data) {
-            let options = '<option value="">-- Chọn nhân viên --</option>';
-            $(data).each(function (index, item) {
-            const value = $(item).attr('value')?.trim() || '';
-            const text = $(item).text()?.trim() || '';
-            if (value && text) {
-            options += '<option value="' + value + '">' + text + '</option>';
-            }
-            });
-            $('#deptLeader').html(options);
-            });
+                $.get('./apiNhanvien', function (data) {
+                    let options = '<option value="">-- Chọn nhân viên --</option>';
+                    $(data).each(function (index, item) {
+                        const value = $(item).attr('value')?.trim() || '';
+                        const text = $(item).text()?.trim() || '';
+                        if (value && text) {
+                            options += '<option value="' + value + '">' + text + '</option>';
+                        }
+                    });
+                    $('#deptLeader').html(options);
+                });
             }
 
             // Hiển thị modal thêm phòng ban
             function showAddModal() {
-            $('#deptId').val('');
-            $('#deptName').val('');
-            $('#deptLeader').val('');
-            $('.modal-title').html('<i class="fa-solid fa-building"></i> Thêm phòng ban mới');
-            loadNhanVien();
-            $('#modalDepartment').modal('show');
+                $('#deptId').val('');
+                $('#deptName').val('');
+                $('#deptLeader').val('');
+                $('.modal-title').html('<i class="fa-solid fa-building"></i> Thêm phòng ban mới');
+                loadNhanVien();
+                $('#modalDepartment').modal('show');
             }
 
             // Nút sửa phòng ban
-            $(document).on('click', '.edit-dept-btn', function() {
-            let id = $(this).data('id');
-            // Load dữ liệu phòng ban
-            $.get('./apiChiTietPhongban?id=' + id, function(data) {
-            $('#deptId').val(data.id);
-            $('#deptName').val(data.ten_phong);
-            loadNhanVien();
-            // Set trưởng phòng sau khi load xong danh sách
-            setTimeout(function() {
-            $('#deptLeader').val(data.truong_phong_id);
-            }, 500);
-            $('.modal-title').html('<i class="fa-solid fa-building"></i> Sửa thông tin phòng ban');
-            $('#modalDepartment').modal('show');
-            }).fail(function() {
-            showToast('error', 'Không thể tải thông tin phòng ban!');
-            });
+            $(document).on('click', '.edit-dept-btn', function () {
+                let id = $(this).data('id');
+                // Load dữ liệu phòng ban
+                $.get('./apiChiTietPhongban?id=' + id, function (data) {
+                    $('#deptId').val(data.id);
+                    $('#deptName').val(data.ten_phong);
+                    loadNhanVien();
+                    // Set trưởng phòng sau khi load xong danh sách
+                    setTimeout(function () {
+                        $('#deptLeader').val(data.truong_phong_id);
+                    }, 500);
+                    $('.modal-title').html('<i class="fa-solid fa-building"></i> Sửa thông tin phòng ban');
+                    $('#modalDepartment').modal('show');
+                }).fail(function () {
+                    showToast('error', 'Không thể tải thông tin phòng ban!');
+                });
             });
             // Nút xóa phòng ban
-            $(document).on('click', '.delete-dept-btn', function() {
-            let id = $(this).data('id');
-            Swal.fire({
-            title: 'Xác nhận xóa?',
+            $(document).on('click', '.delete-dept-btn', function () {
+                let id = $(this).data('id');
+                Swal.fire({
+                    title: 'Xác nhận xóa?',
                     text: 'Bạn có chắc chắn muốn xóa phòng ban này?',
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonText: 'Xóa',
                     cancelButtonText: 'Hủy',
                     confirmButtonColor: '#dc3545'
-            }).then((result) => {
-            if (result.isConfirmed) {
-            $.post('./xoaPhongban', { id: id }, function(response) {
-            if (response.status === 'success') {
-            showToast('success', response.message);
-            setTimeout(function() {
-            location.reload();
-            }, 1500);
-            } else {
-            showToast('error', response.message);
-            }
-            }, 'json').fail(function() {
-            showToast('error', 'Lỗi khi xóa phòng ban!');
-            });
-            }
-            });
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.post('./xoaPhongban', {id: id}, function (response) {
+                            if (response.status === 'success') {
+                                showToast('success', response.message);
+                                setTimeout(function () {
+                                    location.reload();
+                                }, 1500);
+                            } else {
+                                showToast('error', response.message);
+                            }
+                        }, 'json').fail(function () {
+                            showToast('error', 'Lỗi khi xóa phòng ban!');
+                        });
+                    }
+                });
             });
             // Submit form thêm/sửa phòng ban
-            $('#departmentForm').on('submit', function(e) {
-            e.preventDefault();
-            let formData = {
-            id: $('#deptId').val(),
+            $('#departmentForm').on('submit', function (e) {
+                e.preventDefault();
+                let formData = {
+                    id: $('#deptId').val(),
                     ten_phong: $('#deptName').val(),
                     truong_phong_id: $('#deptLeader').val()
-            };
-            let url = formData.id ? './suaPhongban' : './themPhongban';
-            $.post(url, formData, function(response) {
-            if (response.status === 'success') {
-            $('#modalDepartment').modal('hide');
-            showToast('success', response.message);
-            setTimeout(function() {
-            location.reload();
-            }, 1500);
-            } else {
-            showToast('error', response.message);
-            }
-            }, 'json').fail(function() {
-            showToast('error', 'Lỗi khi lưu dữ liệu!');
-            });
+                };
+                let url = formData.id ? './suaPhongban' : './themPhongban';
+                $.post(url, formData, function (response) {
+                    if (response.status === 'success') {
+                        $('#modalDepartment').modal('hide');
+                        showToast('success', response.message);
+                        setTimeout(function () {
+                            location.reload();
+                        }, 1500);
+                    } else {
+                        showToast('error', response.message);
+                    }
+                }, 'json').fail(function () {
+                    showToast('error', 'Lỗi khi lưu dữ liệu!');
+                });
             });
             // Hiển thị chi tiết phòng ban
-            $(document).on('click', '[data-bs-target="#modalDeptDetail"]', function() {
-            let id = $(this).data('id');
-            $.get('./apiChiTietPhongban?id=' + id, function(data) {
-            let infoHtml = '<b>Tên phòng ban:</b> ' + data.ten_phong + '<br>';
-            infoHtml += '<b>Trưởng phòng:</b> ' + (data.truong_phong_ten || 'Chưa có') + '<br>';
-            infoHtml += '<b>Tổng nhân viên:</b> ' + data.nhan_vien_list.length + '<br>';
-            infoHtml += '<b>Ngày tạo:</b> ' + formatDate(data.ngay_tao) + '<br><br>';
-            if (data.nhan_vien_list.length > 0) {
-            infoHtml += '<b>Danh sách nhân viên:</b><br>';
-            infoHtml += '<div class="row">';
-            data.nhan_vien_list.forEach(function(nv) {
-            infoHtml += '<div class="col-md-6 mb-2">';
-            infoHtml += '<div class="card card-body p-2">';
-            infoHtml += '<small><b>' + nv.ho_ten + '</b><br>';
-            infoHtml += nv.email + '<br>';
-            infoHtml += '<span class="badge bg-secondary">' + nv.chuc_vu + '</span> ';
-            infoHtml += '<span class="badge bg-info">' + nv.vai_tro + '</span>';
-            infoHtml += '</small></div></div>';
-            });
-            infoHtml += '</div>';
-            } else {
-            infoHtml += '<i class="text-muted">Chưa có nhân viên nào trong phòng ban này.</i>';
-            }
+            $(document).on('click', '[data-bs-target="#modalDeptDetail"]', function () {
+                let id = $(this).data('id');
+                $.get('./apiChiTietPhongban?id=' + id, function (data) {
+                    let infoHtml = '<b>Tên phòng ban:</b> ' + data.ten_phong + '<br>';
+                    infoHtml += '<b>Trưởng phòng:</b> ' + (data.truong_phong_ten || 'Chưa có') + '<br>';
+                    infoHtml += '<b>Tổng nhân viên:</b> ' + data.nhan_vien_list.length + '<br>';
+                    infoHtml += '<b>Ngày tạo:</b> ' + formatDate(data.ngay_tao) + '<br><br>';
+                    if (data.nhan_vien_list.length > 0) {
+                        infoHtml += '<b>Danh sách nhân viên:</b><br>';
+                        infoHtml += '<div class="row">';
+                        data.nhan_vien_list.forEach(function (nv) {
+                            infoHtml += '<div class="col-md-6 mb-2">';
+                            infoHtml += '<div class="card card-body p-2">';
+                            infoHtml += '<small><b>' + nv.ho_ten + '</b><br>';
+                            infoHtml += nv.email + '<br>';
+                            infoHtml += '<span class="badge bg-secondary">' + nv.chuc_vu + '</span> ';
+                            infoHtml += '<span class="badge bg-info">' + nv.vai_tro + '</span>';
+                            infoHtml += '</small></div></div>';
+                        });
+                        infoHtml += '</div>';
+                    } else {
+                        infoHtml += '<i class="text-muted">Chưa có nhân viên nào trong phòng ban này.</i>';
+                    }
 
-            $('#tabDeptInfo').html(infoHtml);
-            }).fail(function() {
-            $('#tabDeptInfo').html('<div class="alert alert-danger">Không thể tải thông tin phòng ban!</div>');
-            });
+                    $('#tabDeptInfo').html(infoHtml);
+                }).fail(function () {
+                    $('#tabDeptInfo').html('<div class="alert alert-danger">Không thể tải thông tin phòng ban!</div>');
+                });
             });
             // Hàm hiển thị toast
             function showToast(type, message) {
-            if (type === 'success') {
-            $('#toastSuccess .toast-body').text(message);
-            $('#toastSuccess').toast('show');
-            } else {
-            $('#toastError .toast-body').text(message);
-            $('#toastError').toast('show');
-            }
+                if (type === 'success') {
+                    $('#toastSuccess .toast-body').text(message);
+                    $('#toastSuccess').toast('show');
+                } else {
+                    $('#toastError .toast-body').text(message);
+                    $('#toastError').toast('show');
+                }
             }
 
             // Hàm format ngày
             function formatDate(dateString) {
-            if (!dateString) return '';
-            let date = new Date(dateString);
-            return date.getDate().toString().padStart(2, '0') + '/' +
-                    (date.getMonth() + 1).toString().padStart(2, '0') + '/' +
-                    date.getFullYear();
+                if (!dateString)
+                    return '';
+                let date = new Date(dateString);
+                return date.getDate().toString().padStart(2, '0') + '/' +
+                        (date.getMonth() + 1).toString().padStart(2, '0') + '/' +
+                        date.getFullYear();
             }
 
             // Event listener cho nút thêm mới
-            $(document).on('click', '[data-bs-target="#modalDepartment"]', function() {
-            showAddModal();
+            $(document).on('click', '[data-bs-target="#modalDepartment"]', function () {
+                showAddModal();
             });
             // Toast init
-            $('.toast').toast({ delay: 3000 });
+            $('.toast').toast({delay: 3000});
             // Load dữ liệu ban đầu
-            $(document).ready(function() {
-            console.log('Trang quản lý phòng ban đã được tải');
+            $(document).ready(function () {
+                console.log('Trang quản lý phòng ban đã được tải');
             });
         </script>
     </body>

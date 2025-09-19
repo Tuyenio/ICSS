@@ -266,6 +266,9 @@
                         <a href="./dsnhanvien"><i class="fa-solid fa-users"></i><span>Nhân sự</span></a>
                     </li>
                     <li>
+                        <a href="project.jsp"><i class="fa-solid fa-diagram-project"></i><span>Dự án</span></a>
+                    </li>
+                    <li>
                         <a href="./dsCongviec"><i class="fa-solid fa-tasks"></i><span>Công việc</span></a>
                     </li>
                     <li>
@@ -273,6 +276,9 @@
                     </li>
                     <li>
                         <a href="attendance.jsp"><i class="fa-solid fa-calendar-check"></i><span>Chấm công</span></a>
+                    </li>
+                    <li>
+                        <a href="calendar.jsp"><i class="fa-solid fa-calendar-days"></i><span>Lịch trình</span></a>
                     </li>
                     <li>
                         <a href="./svBaocao"><i class="fa-solid fa-chart-bar"></i><span>Báo cáo</span></a>

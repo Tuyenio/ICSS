@@ -18,6 +18,8 @@ public class themCongviec extends HttpServlet {
 
         PrintWriter out = response.getWriter();
 
+        String duan = getValue(request, "du_an_id");
+        System.out.println("📌 du_an_id = " + duan);
         String ten = getValue(request, "ten_cong_viec");
         String moTa = getValue(request, "mo_ta");
         String han = getValue(request, "han_hoan_thanh");
@@ -32,6 +34,7 @@ public class themCongviec extends HttpServlet {
             KNCSDL db = new KNCSDL();
             int giaoId = Integer.parseInt(tenNguoiGiao);
             int phongId = Integer.parseInt(tenPhong);
+            int duanid = Integer.parseInt(duan);
 
             if (giaoId == -1 || phongId == -1) {
                 out.print("{\"success\": false, \"message\": \"Không tìm thấy ID cho người giao hoặc phòng ban.\"}");
@@ -71,7 +74,7 @@ public class themCongviec extends HttpServlet {
             String fileDinhKem = String.join(";", filePaths);
 
             // === 2. Thêm công việc mới (DB phải có thêm cột file_dinh_kem) ===
-            int taskId = db.insertTask(ten, moTa, han, uuTien, giaoId, phongId, trangThai, tailieu, fileDinhKem);
+            int taskId = db.insertTask(duanid,ten, moTa, han, uuTien, giaoId, phongId, trangThai, tailieu, fileDinhKem);
             if (taskId <= 0) {
                 out.print("{\"success\": false, \"message\": \"Không thể thêm công việc.\"}");
                 return;

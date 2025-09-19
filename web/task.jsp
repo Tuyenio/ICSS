@@ -17,310 +17,306 @@
             var PAGE_TITLE = '<i class="fa-solid fa-tasks me-2"></i>Quản lý Công việc';
         </script>
         <style>
+            /* BODY + MAIN CONTENT */
             body {
-                background: #f4f6fa;
+                background: #f8fafc;
+                font-family: 'Segoe UI', Roboto, sans-serif;
+                color: #1e293b;
             }
-
-            .sidebar {
-                min-height: 100vh;
-                background: linear-gradient(180deg, #23272f 0%, #343a40 100%);
-                color: #fff;
-                width: 240px;
-                transition: width 0.2s;
-                box-shadow: 2px 0 8px #0001;
-                z-index: 10;
-                position: fixed;
-                top: 0;
-                left: 0;
-                bottom: 0;
-            }
-
-            .sidebar .sidebar-title {
-                font-size: 1.7rem;
-                font-weight: bold;
-                letter-spacing: 1px;
-                color: #0dcaf0;
-                background: #23272f;
-            }
-
-            .sidebar-nav {
-                padding: 0;
-                margin: 0;
-                list-style: none;
-            }
-
-            .sidebar-nav li {
-                margin-bottom: 2px;
-            }
-
-            .sidebar-nav a {
-                color: #fff;
-                text-decoration: none;
-                display: flex;
-                align-items: center;
-                gap: 14px;
-                padding: 14px 28px;
-                border-radius: 8px;
-                font-size: 1.08rem;
-                font-weight: 500;
-                transition: background 0.15s, color 0.15s;
-            }
-
-            .sidebar-nav a.active,
-            .sidebar-nav a:hover {
-                background: #0dcaf0;
-                color: #23272f;
-            }
-
-            .sidebar-nav a .fa-solid {
-                width: 26px;
-                text-align: center;
-                font-size: 1.25rem;
-            }
-
-            @media (max-width: 992px) {
-                .sidebar {
-                    width: 60px;
-                }
-
-                .sidebar .sidebar-title {
-                    font-size: 1.1rem;
-                    padding: 12px 0;
-                }
-
-                .sidebar-nav a span {
-                    display: none;
-                }
-
-                .sidebar-nav a {
-                    justify-content: center;
-                    padding: 14px 0;
-                }
-            }
-
             .header {
                 background: #fff;
-                border-bottom: 1px solid #dee2e6;
+                border-bottom: 1px solid #e2e8f0;
                 min-height: 64px;
-                box-shadow: 0 2px 8px #0001;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.05);
                 margin-left: 240px;
                 position: sticky;
                 top: 0;
                 z-index: 20;
             }
-
-            .avatar {
-                width: 38px;
-                height: 38px;
-                border-radius: 50%;
-                object-fit: cover;
-            }
-
             .main-content {
-                padding: 36px 36px 24px 36px;
+                padding: 32px;
                 min-height: 100vh;
                 margin-left: 240px;
+                animation: fadeIn 0.5s ease;
             }
-
             .main-box {
                 background: #fff;
-                border-radius: 14px;
-                box-shadow: 0 2px 12px #0001;
-                padding: 32px 24px;
+                border-radius: 16px;
+                box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+                padding: 28px 22px;
             }
 
+            /* KANBAN BOARD */
             .kanban-board {
                 display: flex;
-                gap: 24px;
+                gap: 20px;
                 overflow-x: auto;
-                min-height: 420px;
-                margin-bottom: 32px;
+                padding-bottom: 12px;
             }
-
             .kanban-col {
-                background: #f8fafd;
-                border-radius: 18px;
-                padding: 18px 12px;
+                background: #fff;
+                border-radius: 16px;
+                padding: 18px 14px;
                 flex: 1 1 0;
-                min-width: 270px;
+                min-width: 260px;
                 max-width: 340px;
-                box-shadow: 0 2px 12px #0001;
-                border: 2px solid #e9ecef;
-                display: flex;
-                flex-direction: column;
-                min-height: 420px;
-                transition: box-shadow 0.2s, border-color 0.2s;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+                border-top: 5px solid #e2e8f0;
+                animation: slideUp 0.4s ease;
+                transition: transform 0.2s ease, box-shadow 0.2s ease;
             }
-
             .kanban-col:hover {
-                box-shadow: 0 6px 24px #0002;
-                border-color: #0dcaf0;
+                transform: translateY(-4px);
+                box-shadow: 0 6px 20px rgba(0,0,0,0.12);
             }
-
             .kanban-col h5 {
-                font-size: 1.15rem;
-                font-weight: bold;
-                margin-bottom: 18px;
+                font-size: 1.1rem;
+                font-weight: 600;
+                margin-bottom: 16px;
                 display: flex;
                 align-items: center;
-                gap: 8px;
-                letter-spacing: 0.5px;
+                gap: 6px;
             }
 
-            .kanban-col .kanban-add-btn {
-                width: 100%;
-                margin-bottom: 12px;
-                border-radius: 20px;
-                font-size: 0.98rem;
-            }
-
-            .kanban-task {
-                background: #fff;
-                border-radius: 12px;
-                padding: 14px 12px;
-                margin-bottom: 16px;
-                box-shadow: 0 1px 8px #0001;
-                cursor: pointer;
-                border-left: 5px solid #0dcaf0;
-                transition: box-shadow 0.15s, border-color 0.15s;
-                position: relative;
-            }
-
-            .kanban-task:hover {
-                box-shadow: 0 4px 16px #0dcaf033;
-                border-color: #0d6efd;
-            }
-
-            .kanban-task .task-title {
-                font-weight: 600;
-                font-size: 1.08rem;
-                margin-bottom: 2px;
-            }
-
-            .kanban-task .task-meta {
-                font-size: 0.97em;
-                color: #888;
-                margin-bottom: 4px;
-            }
-
-            .kanban-task .task-priority,
-            .kanban-task .task-status {
-                display: inline-block;
-                margin-right: 6px;
-                font-size: 0.95em;
-            }
-
-            .kanban-task .progress {
-                height: 7px;
-                margin: 7px 0;
-                border-radius: 6px;
-            }
-
-            .kanban-task .task-actions {
-                position: absolute;
-                top: 10px;
-                right: 10px;
-                display: flex;
-                gap: 4px;
-            }
-
-            /* Màu sắc cho từng cột */
+            /* Column colors */
             .kanban-col.not-started {
-                border-top: 5px solid #adb5bd;
+                border-color: #94a3b8;
             }
-
             .kanban-col.in-progress {
-                border-top: 5px solid #ffc107;
+                border-color: #facc15;
             }
-
-            .kanban-col.completed {
-                border-top: 5px solid #198754;
+            .kanban-col.completed   {
+                border-color: #22c55e;
             }
-
-            .kanban-col.late {
-                border-top: 5px solid #dc3545;
+            .kanban-col.late        {
+                border-color: #ef4444;
             }
 
             .kanban-col.not-started h5 {
-                color: #6c757d;
+                color: #64748b;
             }
-
             .kanban-col.in-progress h5 {
-                color: #ffc107;
+                color: #eab308;
+            }
+            .kanban-col.completed h5   {
+                color: #16a34a;
+            }
+            .kanban-col.late h5        {
+                color: #dc2626;
             }
 
-            .kanban-col.completed h5 {
-                color: #198754;
+            /* TASK CARDS */
+            .kanban-task {
+                background: #fff;
+                border-radius: 12px;
+                padding: 14px;
+                margin-bottom: 14px;
+                box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+                border-left: 6px solid #0dcaf0;
+                cursor: pointer;
+                transition: transform 0.15s ease, box-shadow 0.15s ease;
+            }
+            .kanban-task:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+                border-color: #4f46e5;
+            }
+            .task-title {
+                font-weight: 600;
+                font-size: 1rem;
+                margin-bottom: 4px;
+            }
+            .task-meta {
+                font-size: 0.9rem;
+                color: #6b7280;
+                margin-bottom: 6px;
+            }
+            .progress {
+                height: 7px;
+                border-radius: 6px;
             }
 
-            .kanban-col.late h5 {
-                color: #dc3545;
+            /* TASK ACTIONS */
+            .task-actions .btn {
+                border-radius: 50px;
+                padding: 4px 8px;
+                transition: all 0.2s ease;
+            }
+            .task-actions .btn-danger {
+                background: linear-gradient(90deg,#ef4444,#dc2626);
+                border: none;
+                color: #fff;
+            }
+            .task-actions .btn-danger:hover {
+                transform: scale(1.1);
+                box-shadow: 0 2px 8px rgba(220,38,38,0.4);
             }
 
-            /* Responsive */
-            @media (max-width: 1200px) {
-                .kanban-board {
-                    gap: 12px;
+            /* MODALS */
+            .modal-content {
+                border-radius: 16px;
+                box-shadow: 0 6px 22px rgba(0,0,0,0.2);
+                animation: fadeIn 0.4s ease;
+            }
+            .modal-header {
+                border-bottom: 1px solid #f1f5f9;
+            }
+            .modal-footer {
+                border-top: 1px solid #f1f5f9;
+            }
+            .btn-primary {
+                background: linear-gradient(90deg,#0dcaf0,#4f46e5);
+                border: none;
+            }
+            .btn-primary:hover {
+                background: linear-gradient(90deg,#4f46e5,#0dcaf0);
+            }
+
+            /* ==== FIX BUTTON XÓA ==== */
+            .kanban-task {
+                position: relative; /* để absolute của task-actions ăn theo */
+            }
+
+            .task-actions {
+                position: absolute;
+                top: 8px;
+                right: 8px;
+                display: flex;
+                gap: 6px;
+            }
+
+            .task-actions .btn {
+                border-radius: 50%;
+                width: 28px;
+                height: 28px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 0;
+                font-size: 0.85rem;
+                transition: transform 0.2s, box-shadow 0.2s;
+            }
+
+            .task-actions .btn-danger {
+                background: linear-gradient(90deg, #ef4444, #dc2626);
+                border: none;
+                color: #fff;
+            }
+            .task-actions .btn-danger:hover {
+                transform: scale(1.1);
+                box-shadow: 0 2px 8px rgba(220,38,38,0.4);
+            }
+
+            /* ==== FIX NÚT + THÊM TASK ==== */
+            .kanban-col .kanban-add-btn {
+                margin-bottom: 16px; /* tạo khoảng cách với task */
+                border-radius: 20px;
+                font-size: 0.95rem;
+                background: #f9fafb;
+                border: 1px dashed #cbd5e1;
+                transition: background 0.2s, border 0.2s;
+            }
+
+            .kanban-col .kanban-add-btn:hover {
+                background: #e0f2fe;
+                border-color: #0dcaf0;
+            }
+
+            /* ==== NÚT + THÊM TASK (đẹp hơn) ==== */
+            .kanban-col .kanban-add-btn {
+                margin-bottom: 18px;
+                border: none;
+                border-radius: 12px;
+                font-size: 0.95rem;
+                font-weight: 500;
+                color: #fff;
+                background: linear-gradient(90deg, #0dcaf0, #4f46e5);
+                box-shadow: 0 3px 10px rgba(13, 202, 240, 0.3);
+                padding: 10px 14px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+                transition: all 0.25s ease;
+            }
+
+            .kanban-col .kanban-add-btn i {
+                font-size: 1rem;
+            }
+
+            .kanban-col .kanban-add-btn:hover {
+                background: linear-gradient(90deg, #4f46e5, #0dcaf0);
+                transform: translateY(-2px) scale(1.03);
+                box-shadow: 0 6px 18px rgba(79, 70, 229, 0.35);
+            }
+
+            /* ANIMATIONS */
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(8px);
                 }
-
-                .kanban-col {
-                    min-width: 220px;
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+            @keyframes slideUp {
+                from {
+                    opacity: 0;
+                    transform: translateY(20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
                 }
             }
 
-            @media (max-width: 900px) {
-                .kanban-board {
-                    flex-direction: column;
-                    gap: 18px;
-                }
-
-                .kanban-col {
-                    min-width: 100%;
-                    max-width: 100%;
+            /* RESPONSIVE */
+            @media (max-width: 992px) {
+                .main-content {
+                    margin-left: 60px;
+                    padding: 20px;
                 }
             }
-
             @media (max-width: 768px) {
                 .main-box {
-                    padding: 10px 2px;
+                    padding: 16px;
                 }
-
                 .main-content {
-                    padding: 10px 2px;
+                    padding: 12px;
                 }
+                .kanban-board {
+                    flex-direction: column;
+                    gap: 16px;
+                }
+            }
+
+            /* ==== CHỮ TRONG TASK ==== */
+            .task-title {
+                font-weight: 600;
+                font-size: 1.1rem; /* trước ~1rem, tăng 2 size */
+                margin-bottom: 6px;
+            }
+
+            .task-meta {
+                font-size: 0.95rem; /* trước ~0.9rem, tăng 2 size */
+                color: #4b5563;
+                margin-bottom: 8px;
+            }
+
+            .task-priority,
+            .task-status {
+                font-size: 0.9rem; /* trước ~0.85-0.9rem */
+                padding: 4px 8px;
+                border-radius: 8px;
             }
         </style>
     </head>
 
     <body>
         <div class="d-flex">
-            <!-- Sidebar -->
-            <nav class="sidebar p-0">
-                <div class="sidebar-title text-center py-4 border-bottom border-secondary" style="cursor:pointer;"
-                     onclick="location.href = 'index.jsp'">
-                    <i class="fa-solid fa-people-group me-2"></i>ICS
-                </div>
-                <ul class="sidebar-nav mt-3">
-                    <li>
-                        <a href="index.jsp"><i class="fa-solid fa-chart-line"></i><span>Dashboard</span></a>
-                    </li>
-                    <li>
-                        <a href="./dsnhanvien"><i class="fa-solid fa-users"></i><span>Nhân sự</span></a>
-                    </li>
-                    <li>
-                        <a href="./dsCongviec" class="active"><i class="fa-solid fa-tasks"></i><span>Công việc</span></a>
-                    </li>
-                    <li>
-                        <a href="./dsPhongban"><i class="fa-solid fa-building"></i><span>Phòng ban</span></a>
-                    </li>
-                    <li>
-                        <a href="./dsChamCong"><i class="fa-solid fa-calendar-check"></i><span>Chấm công</span></a>
-                    </li>
-                    <li>
-                        <a href="./svBaocao"><i class="fa-solid fa-chart-bar"></i><span>Báo cáo</span></a>
-                    </li>
-                </ul>
-            </nav>
+            <%@ include file="sidebar.jsp" %>
             <!-- Main -->
             <div class="flex-grow-1">
                 <!-- Header -->
@@ -468,6 +464,7 @@
                                 </div>
                                 <div class="modal-body">
                                     <input type="hidden" name="id">
+                                    <input type="hidden" name="du_an_id" value="1">
                                     <div class="mb-3">
                                         <label class="form-label"><b>Tên công việc</b></label>
                                         <input type="text" class="form-control" name="ten_cong_viec" required>
@@ -759,6 +756,33 @@
             });
         </script>
         <script>
+
+            // ====== LƯU CÔNG VIỆC (SỬA) ======
+            document.getElementById('btnSaveTask').addEventListener('click', function () {
+                const form = document.getElementById('formTaskDetail');
+                const formData = new FormData(form); // tự động lấy tất cả input, bao gồm cả file
+
+                fetch('./suaCongviec', {
+                    method: 'POST',
+                    body: formData
+                })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.success) {
+                                showToast('success', '✅ Cập nhật công việc thành công!');
+                                // Ẩn modal và làm mới danh sách (tuỳ theo bạn xử lý)
+                                bootstrap.Modal.getInstance(document.getElementById('modalTaskDetail')).hide();
+                                location.reload();
+                            } else {
+                                showToast('error', data.message || '❌ Lỗi khi cập nhật');
+                            }
+                        })
+                        .catch(err => {
+                            console.error(err);
+                            showToast('error', '❌ Lỗi kết nối server');
+                        });
+            });
+
             document.addEventListener("DOMContentLoaded", function () {
                 var buttonsThemNguoiNhan = document.querySelectorAll("#btnThemNguoiNhan2");
                 buttonsThemNguoiNhan.forEach(function (btnThem) {
@@ -957,6 +981,7 @@
 
                     if (fileTaiLieu) {
                         const files = fileTaiLieu.split(";").map(x => x.trim()).filter(Boolean);
+                        const taskId = modal.querySelector('[name="task_id"]').value;
 
                         files.forEach(path => {
                             const tenFile = path.substring(path.lastIndexOf("/") + 1).split("\\").pop();
@@ -1094,32 +1119,6 @@
             });
         </script>
         <script>
-            // ====== LƯU CÔNG VIỆC (SỬA) ======
-            document.getElementById('btnSaveTask').addEventListener('click', function () {
-                const form = document.getElementById('formTaskDetail');
-                const formData = new FormData(form); // tự động lấy tất cả input, bao gồm cả file
-
-                fetch('./suaCongviec', {
-                    method: 'POST',
-                    body: formData
-                })
-                        .then(res => res.json())
-                        .then(data => {
-                            if (data.success) {
-                                showToast('success', '✅ Cập nhật công việc thành công!');
-                                // Ẩn modal và làm mới danh sách (tuỳ theo bạn xử lý)
-                                bootstrap.Modal.getInstance(document.getElementById('modalTaskDetail')).hide();
-                                location.reload();
-                            } else {
-                                showToast('error', data.message || '❌ Lỗi khi cập nhật');
-                            }
-                        })
-                        .catch(err => {
-                            console.error(err);
-                            showToast('error', '❌ Lỗi kết nối server');
-                        });
-            });
-
             // ====== LỌC CÔNG VIỆC ======
             $('#btnFilter').on('click', function (e) {
                 e.preventDefault();

@@ -49,176 +49,120 @@
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
         <style>
+            /* ==== GLOBAL ==== */
             body {
-                background: #f4f6fa;
-            }
-
-            .sidebar {
-                min-height: 100vh;
-                background: linear-gradient(180deg, #23272f 0%, #343a40 100%);
-                color: #fff;
-                width: 240px;
-                transition: width 0.2s;
-                box-shadow: 2px 0 8px #0001;
-                z-index: 10;
-                position: fixed;
-                top: 0;
-                left: 0;
-                bottom: 0;
-            }
-
-            .sidebar .sidebar-title {
-                font-size: 1.7rem;
-                font-weight: bold;
-                letter-spacing: 1px;
-                color: #0dcaf0;
-                background: #23272f;
-            }
-
-            .sidebar-nav {
-                padding: 0;
-                margin: 0;
-                list-style: none;
-            }
-
-            .sidebar-nav li {
-                margin-bottom: 2px;
-            }
-
-            .sidebar-nav a {
-                color: #fff;
-                text-decoration: none;
-                display: flex;
-                align-items: center;
-                gap: 14px;
-                padding: 14px 28px;
-                border-radius: 8px;
-                font-size: 1.08rem;
-                font-weight: 500;
-                transition: background 0.15s, color 0.15s;
-            }
-
-            .sidebar-nav a.active,
-            .sidebar-nav a:hover {
-                background: #0dcaf0;
-                color: #23272f;
-            }
-
-            .sidebar-nav a .fa-solid {
-                width: 26px;
-                text-align: center;
-                font-size: 1.25rem;
-            }
-
-            @media (max-width: 992px) {
-                .sidebar {
-                    width: 60px;
-                }
-
-                .sidebar .sidebar-title {
-                    font-size: 1.1rem;
-                    padding: 12px 0;
-                }
-
-                .sidebar-nav a span {
-                    display: none;
-                }
-
-                .sidebar-nav a {
-                    justify-content: center;
-                    padding: 14px 0;
-                }
-            }
-
-            .header {
-                background: #fff;
-                border-bottom: 1px solid #dee2e6;
-                min-height: 64px;
-                box-shadow: 0 2px 8px #0001;
-                margin-left: 240px;
-                position: sticky;
-                top: 0;
-                z-index: 20;
-            }
-
-            .avatar {
-                width: 38px;
-                height: 38px;
-                border-radius: 50%;
-                object-fit: cover;
+                background: #f8fafc;
+                font-family: 'Segoe UI', Roboto, sans-serif;
+                color: #1e293b;
             }
 
             .main-content {
-                padding: 36px 36px 24px 36px;
+                padding: 32px;
                 min-height: 100vh;
                 margin-left: 240px;
+                animation: fadeIn 0.4s ease;
             }
 
             .main-box {
                 background: #fff;
-                border-radius: 14px;
-                box-shadow: 0 2px 12px #0001;
-                padding: 32px 24px;
+                border-radius: 16px;
+                box-shadow: 0 3px 14px rgba(0,0,0,0.08);
+                padding: 24px;
             }
 
-            .filter-row .form-select,
-            .filter-row .form-control {
+            /* ==== BUTTONS ==== */
+            .btn-action {
+                border-radius: 50px;
+                font-weight: 500;
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                padding: 8px 18px;
+                transition: all 0.2s ease-in-out;
+            }
+
+            .btn-action:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            }
+
+            /* Primary */
+            .btn-action-primary {
+                background: linear-gradient(45deg,#0d6efd,#0dcaf0);
+                color: #fff;
+                border: none;
+            }
+            .btn-action-primary:hover {
+                background: linear-gradient(45deg,#0b5ed7,#0bb3e6);
+            }
+
+            /* Success */
+            .btn-action-success {
+                background: linear-gradient(45deg,#198754,#20c997);
+                color: #fff;
+                border: none;
+            }
+            .btn-action-success:hover {
+                background: linear-gradient(45deg,#157347,#17a589);
+            }
+
+            /* ==== CHARTS ==== */
+            .chart-box {
+                background: #fff;
+                border-radius: 14px;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+                padding: 20px;
+                transition: transform 0.2s ease;
+            }
+            .chart-box:hover {
+                transform: translateY(-3px);
+            }
+
+            /* ==== TABLE ==== */
+            .table-hover tbody tr:hover {
+                background: #f1f5f9;
+            }
+            .table .badge {
+                font-size: 0.95rem;
+                padding: 6px 10px;
                 border-radius: 20px;
             }
 
-            .chart-box {
-                background: #f8fafc;
-                border-radius: 12px;
-                box-shadow: 0 1px 8px #0001;
-                padding: 18px 20px;
+            /* ==== MODAL ==== */
+            .modal-content {
+                border-radius: 16px;
+                box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+                animation: fadeIn 0.3s ease;
+            }
+            .modal-header, .modal-footer {
+                border-color: #f1f5f9;
+            }
+            .form-control, .form-select {
+                border-radius: 10px;
             }
 
-            @media (max-width: 768px) {
-                .main-box {
-                    padding: 10px 2px;
+            /* ==== ANIMATION ==== */
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(10px);
                 }
-
-                .main-content {
-                    padding: 10px 2px;
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
                 }
             }
+
         </style>
         <script>
-            var PAGE_TITLE = '<i class="fa-solid fa-chart-bar me-2"></i>Báo cáo tổng hợp';
+            var PAGE_TITLE = '<i class="fa-solid fa-tasks me-2"></i>Báo cáo tổng hợp';
         </script>
     </head>
 
     <body>
         <%= "DEBUG: phongBanParam = " + phongBanParam %>
         <div class="d-flex">
-            <!-- Sidebar -->
-            <nav class="sidebar p-0">
-                <div class="sidebar-title text-center py-4 border-bottom border-secondary" style="cursor:pointer;"
-                     onclick="location.href = 'index.jsp'">
-                    <i class="fa-solid fa-people-group me-2"></i>ICS
-                </div>
-                <ul class="sidebar-nav mt-3">
-                    <li>
-                        <a href="index.jsp"><i class="fa-solid fa-chart-line"></i><span>Dashboard</span></a>
-                    </li>
-                    <li>
-                        <a href="./dsnhanvien"><i class="fa-solid fa-users"></i><span>Nhân sự</span></a>
-                    </li>
-                    <li>
-                        <a href="./dsCongviec"><i class="fa-solid fa-tasks"></i><span>Công việc</span></a>
-                    </li>
-                    <li>
-                        <a href="./dsPhongban"><i class="fa-solid fa-building"></i><span>Phòng ban</span></a>
-                    </li>
-                    <li>
-                        <a href="./dsChamCong"><i class="fa-solid fa-calendar-check"></i><span>Chấm công</span></a>
-                    </li>
-                    <li>
-                        <a href="./svBaocao" class="active"><i class="fa-solid fa-chart-bar"></i><span>Báo
-                                cáo</span></a>
-                    </li>
-                </ul>
-            </nav>
+            <%@ include file="sidebar.jsp" %>
             <!-- Main -->
             <div class="flex-grow-1">
                 <!-- Header -->
@@ -228,10 +172,10 @@
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <h3 class="mb-0"><i class="fa-solid fa-chart-bar me-2"></i>Báo cáo tổng hợp</h3>
                             <div>
-                                <button class="btn btn-outline-primary rounded-pill px-3 me-2" id="refreshData">
+                                <button class="btn btn-action btn-action-primary me-2" id="refreshData">
                                     <i class="fa-solid fa-refresh"></i> Làm mới
                                 </button>
-                                <button class="btn btn-outline-success rounded-pill px-3" data-bs-toggle="modal"
+                                <button class="btn btn-action btn-action-success" data-bs-toggle="modal"
                                         data-bs-target="#modalExportReport">
                                     <i class="fa-solid fa-file-export"></i> Xuất báo cáo
                                 </button>

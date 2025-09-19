@@ -21,172 +21,178 @@
             const CURRENT_USER_CHUCVU = '<%= session.getAttribute("chucVu") != null ? session.getAttribute("chucVu") : "" %>';
         </script>
         <style>
-            body {
-                background: #f4f6fa;
-            }
-
-            .sidebar {
-                min-height: 100vh;
-                background: linear-gradient(180deg, #23272f 0%, #343a40 100%);
-                color: #fff;
-                width: 240px;
-                transition: width 0.2s;
-                box-shadow: 2px 0 8px #0001;
-                z-index: 10;
-                position: fixed;
-                top: 0;
-                left: 0;
-                bottom: 0;
-            }
-
-            .sidebar .sidebar-title {
-                font-size: 1.7rem;
-                font-weight: bold;
-                letter-spacing: 1px;
-                color: #0dcaf0;
-                background: #23272f;
-            }
-
-            .sidebar-nav {
-                padding: 0;
-                margin: 0;
-                list-style: none;
-            }
-
-            .sidebar-nav li {
-                margin-bottom: 2px;
-            }
-
-            .sidebar-nav a {
-                color: #fff;
-                text-decoration: none;
-                display: flex;
-                align-items: center;
-                gap: 14px;
-                padding: 14px 28px;
-                border-radius: 8px;
-                font-size: 1.08rem;
-                font-weight: 500;
-                transition: background 0.15s, color 0.15s;
-            }
-
-            .sidebar-nav a.active,
-            .sidebar-nav a:hover {
-                background: #0dcaf0;
-                color: #23272f;
-            }
-
-            .sidebar-nav a .fa-solid {
-                width: 26px;
-                text-align: center;
-                font-size: 1.25rem;
-            }
-
-            @media (max-width: 992px) {
-                .sidebar {
-                    width: 60px;
-                }
-
-                .sidebar .sidebar-title {
-                    font-size: 1.1rem;
-                    padding: 12px 0;
-                }
-
-                .sidebar-nav a span {
-                    display: none;
-                }
-
-                .sidebar-nav a {
-                    justify-content: center;
-                    padding: 14px 0;
-                }
-            }
-
+            /* ==== GLOBAL MAIN CONTENT ==== */
             .header {
                 background: #fff;
-                border-bottom: 1px solid #dee2e6;
+                border-bottom: 1px solid #e2e8f0;
                 min-height: 64px;
-                box-shadow: 0 2px 8px #0001;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.05);
                 margin-left: 240px;
                 position: sticky;
                 top: 0;
                 z-index: 20;
             }
 
-            .avatar {
-                width: 38px;
-                height: 38px;
-                border-radius: 50%;
-                object-fit: cover;
-            }
-
             .main-content {
-                padding: 36px 36px 24px 36px;
+                padding: 32px;
                 min-height: 100vh;
                 margin-left: 240px;
+                background: #f9fafb;
+                transition: margin-left 0.3s ease;
             }
 
             .main-box {
                 background: #fff;
-                border-radius: 14px;
-                box-shadow: 0 2px 12px #0001;
-                padding: 32px 24px;
+                border-radius: 16px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+                padding: 28px;
+                animation: fadeIn 0.4s ease;
             }
 
-            .table thead th {
-                vertical-align: middle;
+            /* ==== TABLE ==== */
+            .table thead {
+                background: #f1f5f9;
+                color: #1e293b;
+                font-weight: 600;
             }
-
             .table-hover tbody tr:hover {
-                background: #eaf6ff;
+                background: #e0f2fe;
+                transition: background 0.25s ease;
+            }
+            .table td, .table th {
+                vertical-align: middle;
+                text-align: center; /* căn giữa trong ô hành động */
             }
 
+            /* ==== FILTER ROW ==== */
             .filter-row .form-select,
             .filter-row .form-control {
                 border-radius: 20px;
+                padding: 6px 14px;
+                transition: box-shadow 0.2s;
+            }
+            .filter-row input:focus,
+            .filter-row select:focus {
+                box-shadow: 0 0 0 3px rgba(13,202,240,0.4);
             }
 
-            .modal-content {
-                border-radius: 14px;
+            /* ==== ACTION BUTTONS (chuẩn giống Phòng ban) ==== */
+            /* Nút trong ô hành động */
+            td .btn {
+                border-radius: 50%;
+                width: 34px;
+                height: 34px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                vertical-align: middle;   /* 👈 giữ ngang hàng */
+                margin: 0 2px;            /* 👈 tạo khoảng cách */
+                border: none;
+                color: #fff;
+                transition: all 0.25s ease;
             }
 
-            .modal-header,
-            .modal-footer {
-                border-color: #e9ecef;
+            /* Icon trong nút */
+            td .btn i {
+                font-size: 0.9rem;
+                line-height: 1; /* 👈 loại bỏ ảnh hưởng line-height của btn-sm */
             }
 
+            /* Nút sửa */
+            .edit-emp-btn {
+                background: linear-gradient(90deg,#facc15,#eab308);
+            }
+            .edit-emp-btn:hover {
+                transform: scale(1.1);
+                box-shadow: 0 2px 8px rgba(250,204,21,0.4);
+            }
+
+            /* Nút xóa */
+            .delete-emp-btn {
+                background: linear-gradient(90deg,#ef4444,#dc2626);
+            }
+            .delete-emp-btn:hover {
+                transform: scale(1.1);
+                box-shadow: 0 2px 8px rgba(220,38,38,0.4);
+            }
+
+            /* ==== BADGES ==== */
             .badge-status {
-                font-size: 0.95em;
+                font-size: 0.9em;
+                padding: 6px 12px;
+                border-radius: 10px;
+                animation: pulse 1.5s infinite;
+            }
+            .badge.bg-success {
+                background: #16a34a !important;
+            }
+            .badge.bg-warning {
+                background: #facc15 !important;
+                color: #000 !important;
+            }
+            .badge.bg-danger {
+                background: #dc2626 !important;
             }
 
-            .action-btns .btn {
-                margin-right: 4px;
+            /* ==== MODALS ==== */
+            .modal-content {
+                border-radius: 16px;
+                box-shadow: 0 6px 24px rgba(0,0,0,0.2);
+                animation: slideUp 0.4s ease;
+            }
+            .modal-header {
+                border-bottom: 1px solid #f1f5f9;
+            }
+            .modal-footer {
+                border-top: 1px solid #f1f5f9;
             }
 
-            .fw-semibold {
-                font-weight: 600 !important;
+            /* ==== ANIMATIONS ==== */
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(10px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+            @keyframes slideUp {
+                from {
+                    opacity: 0;
+                    transform: translateY(30px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+            @keyframes pulse {
+                0%,100% {
+                    transform: scale(1);
+                }
+                50% {
+                    transform: scale(1.05);
+                }
             }
 
-            .emp-detail-link {
-                cursor: pointer;
-            }
-
+            /* ==== RESPONSIVE ==== */
             @media (max-width: 992px) {
                 .main-content {
-                    padding: 18px 6px;
-                    margin-left: 60px;
+                    margin-left: 70px;
+                    padding: 20px;
                 }
             }
-
             @media (max-width: 768px) {
                 .main-box {
-                    padding: 10px 2px;
+                    padding: 16px;
                 }
-
                 .table-responsive {
-                    font-size: 0.95rem;
+                    font-size: 0.9rem;
                 }
             }
+
         </style>
         <script>
             var PAGE_TITLE = '<i class="fa-solid fa-users me-2"></i>Quản lý Nhân sự';
@@ -195,33 +201,7 @@
 
     <body>
         <div class="d-flex">
-            <!-- Sidebar -->
-            <nav class="sidebar p-0">
-                <div class="sidebar-title text-center py-4 border-bottom border-secondary" style="cursor:pointer;"
-                     onclick="location.href = 'index.jsp'">
-                    <i class="fa-solid fa-people-group me-2"></i>ICS
-                </div>
-                <ul class="sidebar-nav mt-3">
-                    <li>
-                        <a href="index.jsp"><i class="fa-solid fa-chart-line"></i><span>Dashboard</span></a>
-                    </li>
-                    <li>
-                        <a href="./dsnhanvien" class="active"><i class="fa-solid fa-users"></i><span>Nhân sự</span></a>
-                    </li>
-                    <li>
-                        <a href="./dsCongviec"><i class="fa-solid fa-tasks"></i><span>Công việc</span></a>
-                    </li>
-                    <li>
-                        <a href="./dsPhongban"><i class="fa-solid fa-building"></i><span>Phòng ban</span></a>
-                    </li>
-                    <li>
-                        <a href="./dsChamCong"><i class="fa-solid fa-calendar-check"></i><span>Chấm công</span></a>
-                    </li>
-                    <li>
-                        <a href="./svBaocao"><i class="fa-solid fa-chart-bar"></i><span>Báo cáo</span></a>
-                    </li>
-                </ul>
-            </nav>
+            <%@ include file="sidebar.jsp" %>
             <!-- Main -->
             <div class="flex-grow-1">
                 <!-- Header -->
@@ -309,7 +289,7 @@
                                         <td><%= nv.get("ngay_vao_lam") %></td>
                                         <td><span class="badge bg-success"><%= nv.get("trang_thai_lam_viec") %></span></td>
                                         <td><span class="badge bg-info text-dark"><%= nv.get("vai_tro") %></span></td>
-                                        <td class="action-btns">
+                                        <td>
                                             <button class="btn btn-sm btn-warning edit-emp-btn"
                                                     data-id="<%= nv.get("id") %>"
                                                     data-name="<%= nv.get("ho_ten") %>"
@@ -323,12 +303,9 @@
                                                     data-position="<%= nv.get("chuc_vu") %>"
                                                     data-status="<%= nv.get("trang_thai_lam_viec") %>"
                                                     data-role="<%= nv.get("vai_tro") %>"
-                                                    data-avatar="<%= nv.get("avatar_url") %>">
-                                                <i class="fa-solid fa-pen"></i>
+                                                    data-avatar="<%= nv.get("avatar_url") %>"><i class="fa-solid fa-pen"></i>
                                             </button>
-                                            <button class="btn btn-sm btn-danger delete-emp-btn"
-                                                    data-id="<%= nv.get("id") %>">
-                                                <i class="fa-solid fa-trash"></i>
+                                            <button class="btn btn-sm btn-danger delete-emp-btn" data-id="<%= nv.get("id") %>"><i class="fa-solid fa-trash"></i>
                                             </button>
                                         </td>
                                     </tr>
@@ -617,10 +594,10 @@
                         $('#modalEmpDetail .emp-dept').text(data.ten_phong_ban);
                         $('#modalEmpDetail .emp-position').text(data.chuc_vu);
                         $('#modalEmpDetail .emp-start').text(data.ngay_vao_lam);
-                        
+
                         const avatarUrl = data.avatar_url && data.avatar_url.trim() !== ''
-                            ? data.avatar_url
-                            : 'https://ui-avatars.com/api/?name=' + encodeURIComponent(data.ho_ten || 'User');
+                                ? data.avatar_url
+                                : 'https://ui-avatars.com/api/?name=' + encodeURIComponent(data.ho_ten || 'User');
 
                         $('#modalEmpDetail #avatarPreview').attr('src', avatarUrl);
 

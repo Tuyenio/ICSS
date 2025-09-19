@@ -447,6 +447,7 @@ public class KNCSDL {
                     task.put("muc_do_uu_tien", rs.getString("muc_do_uu_tien"));
                     task.put("trang_thai", rs.getString("trang_thai"));
                     task.put("tai_lieu_cv", rs.getString("tai_lieu_cv"));
+                    task.put("file_tai_lieu", rs.getString("file_tai_lieu"));
                     task.put("han_hoan_thanh", rs.getDate("han_hoan_thanh"));
                     tasks.add(task);
                 }
@@ -520,19 +521,20 @@ public class KNCSDL {
     }
 
     // Sửa insertTask trả về id mới
-    public int insertTask(String ten, String moTa, String han, String uuTien,
+    public int insertTask(int duanid, String ten, String moTa, String han, String uuTien,
             int giaoId, int phongId, String trangThai, String taiLieu, String file) throws SQLException {
-        String sql = "INSERT INTO cong_viec (ten_cong_viec, mo_ta, han_hoan_thanh, muc_do_uu_tien, nguoi_giao_id, phong_ban_id, trang_thai, tai_lieu_cv, file_tai_lieu) VALUES (?,?,?,?,?,?,?,?,?)";
+        String sql = "INSERT INTO cong_viec (du_an_id, ten_cong_viec, mo_ta, han_hoan_thanh, muc_do_uu_tien, nguoi_giao_id, phong_ban_id, trang_thai, tai_lieu_cv, file_tai_lieu) VALUES (?,?,?,?,?,?,?,?,?,?)";
         try (PreparedStatement ps = cn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            ps.setString(1, ten);
-            ps.setString(2, moTa);
-            ps.setString(3, han);
-            ps.setString(4, uuTien);
-            ps.setInt(5, giaoId);
-            ps.setInt(6, phongId);
-            ps.setString(7, trangThai);
-            ps.setString(8, taiLieu);
-            ps.setString(9, file);
+            ps.setInt(1, duanid);
+            ps.setString(2, ten);
+            ps.setString(3, moTa);
+            ps.setString(4, han);
+            ps.setString(5, uuTien);
+            ps.setInt(6, giaoId);
+            ps.setInt(7, phongId);
+            ps.setString(8, trangThai);
+            ps.setString(9, taiLieu);
+            ps.setString(10, file);
             ps.executeUpdate();
             ResultSet rs = ps.getGeneratedKeys();
             if (rs.next()) {
@@ -542,25 +544,6 @@ public class KNCSDL {
         return -1;
     }
 
-//    public void insertTask(String ten, String moTa, String han, String uuTien,
-//            int tenNguoiGiao, int tenNguoiNhan, int tenPhong, String trangThai, String tailieu) throws SQLException {
-//
-//        String sql = "INSERT INTO cong_viec (ten_cong_viec, mo_ta, han_hoan_thanh, muc_do_uu_tien, nguoi_giao_id, nguoi_nhan_id, phong_ban_id, trang_thai, tai_lieu_cv) "
-//                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-//
-//        try (PreparedStatement stmt = cn.prepareStatement(sql)) {
-//            stmt.setString(1, ten);
-//            stmt.setString(2, moTa);
-//            stmt.setDate(3, java.sql.Date.valueOf(han));
-//            stmt.setString(4, uuTien);
-//            stmt.setInt(5, tenNguoiGiao);
-//            stmt.setInt(6, tenNguoiNhan);
-//            stmt.setInt(7, tenPhong);
-//            stmt.setString(8, trangThai);
-//            stmt.setString(9, tailieu);
-//            stmt.executeUpdate();
-//        }
-//    }
     public void updateTask(int id, String ten, String moTa, String han, String uuTien,
             int giaoId, int phongBanId, String trangThai, String tailieu, String file) throws SQLException {
         String sql = "UPDATE cong_viec SET ten_cong_viec=?, mo_ta=?, han_hoan_thanh=?, muc_do_uu_tien=?, "
@@ -3091,7 +3074,7 @@ public class KNCSDL {
         String files = null;
         String sql = "SELECT file_tai_lieu FROM cong_viec WHERE id = ?";
 
-        try ( PreparedStatement ps = cn.prepareStatement(sql)) {
+        try (PreparedStatement ps = cn.prepareStatement(sql)) {
 
             ps.setInt(1, taskId);
             try (ResultSet rs = ps.executeQuery()) {
@@ -3102,6 +3085,129 @@ public class KNCSDL {
         }
         return files;
     }
+
+    public void updateFileCongViec(int taskId, String fileFinal) throws SQLException {
+        String sql = "UPDATE cong_viec SET file_tai_lieu = ? WHERE id = ?";
+        try (PreparedStatement ps = cn.prepareStatement(sql)) {
+            ps.setString(1, fileFinal);
+            ps.setInt(2, taskId);
+            ps.executeUpdate();
+        }
+    }
+
+    public List<Map<String, Object>> getAllProjects() throws SQLException {
+        List<Map<String, Object>> list = new ArrayList<>();
+        String sql = "SELECT id, ten_du_an, mo_ta, ngay_bat_dau, ngay_ket_thuc FROM du_an";
+        PreparedStatement ps = cn.prepareStatement(sql);
+        ResultSet rs = ps.executeQuery();
+        while (rs.next()) {
+            Map<String, Object> row = new HashMap<>();
+            row.put("id", rs.getInt("id"));
+            row.put("ten_du_an", rs.getString("ten_du_an"));
+            row.put("mo_ta", rs.getString("mo_ta"));
+            row.put("ngay_bat_dau", rs.getDate("ngay_bat_dau"));
+            row.put("ngay_ket_thuc", rs.getDate("ngay_ket_thuc"));
+            list.add(row);
+        }
+        return list;
+    }
+
+    public List<Map<String, Object>> getAllTasksByProject(String email, int projectId) throws SQLException {
+        List<Map<String, Object>> tasks = new ArrayList<>();
+
+        if (email == null || email.trim().isEmpty()) {
+            return tasks;
+        }
+
+        // Truy vấn vai trò và phòng ban từ email
+        String getInfoSql = "SELECT vai_tro, phong_ban_id, id FROM nhanvien WHERE email = ?";
+        String vaiTro = null;
+        int phongBanId = -1;
+        int userId = -1;
+
+        try (PreparedStatement infoStmt = cn.prepareStatement(getInfoSql)) {
+            infoStmt.setString(1, email);
+            try (ResultSet rs = infoStmt.executeQuery()) {
+                if (rs.next()) {
+                    vaiTro = rs.getString("vai_tro");
+                    phongBanId = rs.getInt("phong_ban_id");
+                    userId = rs.getInt("id");
+                } else {
+                    return tasks;
+                }
+            }
+        }
+
+        // Truy vấn chính
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT cv.id, cv.du_an_id, cv.ten_cong_viec, cv.mo_ta, cv.muc_do_uu_tien, cv.trang_thai, ")
+                .append("cv.tai_lieu_cv, cv.file_tai_lieu, cv.han_hoan_thanh, ")
+                .append("ng1.ho_ten AS nguoi_giao_ten, ")
+                .append("GROUP_CONCAT(DISTINCT ng2.ho_ten ORDER BY ng2.ho_ten SEPARATOR ', ') AS nguoi_nhan_ten, ")
+                .append("MAX(td.phan_tram) AS phan_tram, ")
+                .append("pb.ten_phong AS ten_phong ")
+                .append("FROM cong_viec cv ")
+                .append("LEFT JOIN nhanvien ng1 ON cv.nguoi_giao_id = ng1.id ")
+                .append("LEFT JOIN cong_viec_nguoi_nhan cvnn ON cv.id = cvnn.cong_viec_id ")
+                .append("LEFT JOIN nhanvien ng2 ON cvnn.nhan_vien_id = ng2.id ")
+                .append("LEFT JOIN cong_viec_tien_do td ON cv.id = td.cong_viec_id ")
+                .append("LEFT JOIN phong_ban pb ON cv.phong_ban_id = pb.id ");
+
+        boolean isAdmin = "Admin".equalsIgnoreCase(vaiTro);
+
+        if (isAdmin) {
+            sql.append("WHERE cv.du_an_id = ? ");
+        } else {
+            sql.append("WHERE cv.du_an_id = ? AND (cv.phong_ban_id = ? OR cvnn.nhan_vien_id = ?) ");
+        }
+
+        sql.append("GROUP BY cv.id");
+
+        try (PreparedStatement stmt = cn.prepareStatement(sql.toString())) {
+            if (isAdmin) {
+                stmt.setInt(1, projectId);
+            } else {
+                stmt.setInt(1, projectId);
+                stmt.setInt(2, phongBanId);
+                stmt.setInt(3, userId);
+            }
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> task = new HashMap<>();
+                    task.put("id", rs.getInt("id"));
+                    task.put("du_an_id", rs.getInt("du_an_id"));
+                    task.put("ten_cong_viec", rs.getString("ten_cong_viec"));
+                    task.put("mo_ta", rs.getString("mo_ta"));
+                    task.put("nguoi_giao_id", rs.getString("nguoi_giao_ten"));
+                    task.put("nguoi_nhan_ten", rs.getString("nguoi_nhan_ten"));
+                    task.put("phan_tram", rs.getString("phan_tram"));
+                    task.put("phong_ban_id", rs.getString("ten_phong"));
+                    task.put("muc_do_uu_tien", rs.getString("muc_do_uu_tien"));
+                    task.put("trang_thai", rs.getString("trang_thai"));
+                    task.put("tai_lieu_cv", rs.getString("tai_lieu_cv"));
+                    task.put("file_tai_lieu", rs.getString("file_tai_lieu"));
+                    task.put("han_hoan_thanh", rs.getDate("han_hoan_thanh"));
+                    tasks.add(task);
+                }
+            }
+        }
+        return tasks;
+    }
+    
+    public String getTenDuanById(int projectId) throws SQLException {
+    String sql = "SELECT ten_du_an FROM du_an WHERE id = ?";
+    try (PreparedStatement stmt = cn.prepareStatement(sql)) {
+        stmt.setInt(1, projectId);
+        try (ResultSet rs = stmt.executeQuery()) {
+            if (rs.next()) {
+                return rs.getString("ten_du_an");
+            }
+        }
+    }
+    return null;
+}
+
 
     public void close() throws SQLException {
         if (cn != null && !cn.isClosed()) {

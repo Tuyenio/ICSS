@@ -21,30 +21,22 @@ public class suaCongviec extends HttpServlet {
         PrintWriter out = response.getWriter();
 
         String id = getValue(request, "task_id");
-        String ten = getValue(request, "ten_cong_viec");
-        String moTa = getValue(request, "mo_ta");
-        String han = getValue(request, "han_hoan_thanh");
-        String uuTien = getValue(request, "muc_do_uu_tien");
-        String tenNguoiGiao = getValue(request, "ten_nguoi_giao");
-        String dsTenNguoiNhan = getValue(request, "ten_nguoi_nhan"); // danh sách tên, phân cách dấu ,
-        String tenPhong = getValue(request, "ten_phong_ban");
-        String trangThai = getValue(request, "trang_thai");
-        String tailieu = getValue(request, "tai_lieu_cv");
-        String file = getValue(request, "files");// Đường dẫn file cũ (đã có trong DB)
-
         try {
             KNCSDL db = new KNCSDL();
-            int giaoId = Integer.parseInt(tenNguoiGiao);
-            int phongId = Integer.parseInt(tenPhong);
             int taskId = Integer.parseInt(id);
 
             if (id == null || id.trim().isEmpty()) {
                 out.print("{\"success\": false, \"message\": \"Thiếu ID để cập nhật.\"}");
                 return;
             }
-            
+
+            boolean chiUploadFile = (request.getParameter("chi_file") != null)
+                    || (getValue(request, "ten_cong_viec") == null && getValue(request, "mo_ta") == null);
+
             String fileCu = db.getFileCongViec(taskId);
-            if (fileCu == null) fileCu = "";
+            if (fileCu == null) {
+                fileCu = "";
+            }
 
             // === 1. Lưu file đính kèm ===
             String uploadPath = System.getenv("ICSS_UPLOAD_DIR");
@@ -86,18 +78,35 @@ public class suaCongviec extends HttpServlet {
                 }
             }
 
-            // --- BƯỚC 2: CẬP NHẬT TASK ---
-            db.updateTask(taskId, ten, moTa, han, uuTien, giaoId, phongId, trangThai, tailieu, fileFinal);
+            if (chiUploadFile) {
+                db.updateFileCongViec(taskId, fileFinal);
+            } else {
+                String ten = getValue(request, "ten_cong_viec");
+                String moTa = getValue(request, "mo_ta");
+                String han = getValue(request, "han_hoan_thanh");
+                String uuTien = getValue(request, "muc_do_uu_tien");
+                String tenNguoiGiao = getValue(request, "ten_nguoi_giao");
+                String dsTenNguoiNhan = getValue(request, "ten_nguoi_nhan"); // danh sách tên, phân cách dấu ,
+                String tenPhong = getValue(request, "ten_phong_ban");
+                String trangThai = getValue(request, "trang_thai");
+                String tailieu = getValue(request, "tai_lieu_cv");
+                String file = getValue(request, "files");
 
-            // --- BƯỚC 3: XỬ LÝ NGƯỜI NHẬN ---
-            List<Integer> danhSachIdNhan = db.layIdTuDanhSachTen(dsTenNguoiNhan);  // tên → list id
-            db.capNhatDanhSachNguoiNhan(taskId, danhSachIdNhan);
+                int giaoId = Integer.parseInt(tenNguoiGiao);
+                int phongId = Integer.parseInt(tenPhong);
+                // --- BƯỚC 2: CẬP NHẬT TASK ---
+                db.updateTask(taskId, ten, moTa, han, uuTien, giaoId, phongId, trangThai, tailieu, fileFinal);
 
-            // --- BƯỚC 4: GỬI THÔNG BÁO ---
-            for (int nhanId : danhSachIdNhan) {
-                String tieuDeTB = "Cập nhật công việc";
-                String noiDungTB = "Công việc: " + ten + " vừa được cập nhật mới";
-                db.insertThongBao(nhanId, tieuDeTB, noiDungTB, "Cập nhật");
+                // --- BƯỚC 3: XỬ LÝ NGƯỜI NHẬN ---
+                List<Integer> danhSachIdNhan = db.layIdTuDanhSachTen(dsTenNguoiNhan);  // tên → list id
+                db.capNhatDanhSachNguoiNhan(taskId, danhSachIdNhan);
+
+                // --- BƯỚC 4: GỬI THÔNG BÁO ---
+                for (int nhanId : danhSachIdNhan) {
+                    String tieuDeTB = "Cập nhật công việc";
+                    String noiDungTB = "Công việc: " + ten + " vừa được cập nhật mới";
+                    db.insertThongBao(nhanId, tieuDeTB, noiDungTB, "Cập nhật");
+                }
             }
 
             out.print("{\"success\": true}");

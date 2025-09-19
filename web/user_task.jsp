@@ -10,8 +10,8 @@
         <title>Quản lý Công việc</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
         <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
         <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
         <script src="https://cdn.ckeditor.com/4.22.1/standard/ckeditor.js"></script>
         <style>
             html,
@@ -413,7 +413,8 @@
                              data-ten_nguoi_nhan="<%= task.get("nguoi_nhan_id") %>"
                              data-ten_phong_ban="<%= task.get("phong_ban_id") %>"
                              data-trang-thai="<%= task.get("trang_thai") %>"
-                             data-tai_lieu_cv="<%= task.get("tai_lieu_cv") %>">
+                             data-tai_lieu_cv="<%= task.get("tai_lieu_cv") %>"
+                             data-file_tai_lieu="<%= task.get("file_tai_lieu") %>">
                             <div class="task-title"><%= task.get("ten_cong_viec") %></div>
                             <div class="task-meta">Người giao: <b><%= task.get("nguoi_giao_id") %></b> <br>Người nhận: <b><%= task.get("nguoi_nhan_id") %></b></div>
                             <span class="task-priority badge <%= priorityBadge.getOrDefault(task.get("muc_do_uu_tien"), "bg-secondary") %>">
@@ -472,21 +473,22 @@
                                 <div class="tab-pane fade show active" id="tabTaskInfo" role="tabpanel">
                                     <form id="formTaskDetail" enctype="multipart/form-data">
                                         <input type="hidden" name="task_id" id="taskId">
+                                        <input type="hidden" name="chi_file" value="true">
                                         <div class="mb-2">
                                             <label class="form-label"><b>Tên công việc:</b></label>
-                                            <input type="text" class="form-control" name="ten_cong_viec">
+                                            <input type="text" class="form-control" name="ten_cong_viec" disabled>
                                         </div>
                                         <div class="mb-2">
                                             <label class="form-label"><b>Mô tả:</b></label>
-                                            <textarea class="form-control" rows="3" name="mo_ta"></textarea>
+                                            <textarea class="form-control" rows="3" name="mo_ta" disabled></textarea>
                                         </div>
                                         <div class="mb-2">
                                             <label class="form-label"><b>Hạn hoàn thành:</b></label>
-                                            <input type="date" class="form-control" name="han_hoan_thanh">
+                                            <input type="date" class="form-control" name="han_hoan_thanh" disabled>
                                         </div>
                                         <div class="mb-2">
                                             <label class="form-label"><b>Mức độ ưu tiên:</b></label>
-                                            <select class="form-select" name="muc_do_uu_tien">
+                                            <select class="form-select" name="muc_do_uu_tien" disabled>
                                                 <option>Cao</option>
                                                 <option>Trung bình</option>
                                                 <option>Thấp</option>
@@ -494,19 +496,19 @@
                                         </div>
                                         <div class="mb-2">
                                             <label class="form-label"><b>Người giao:</b></label>
-                                            <input type="text" class="form-control" name="ten_nguoi_giao">
+                                            <input type="text" class="form-control" name="ten_nguoi_giao" disabled>
                                         </div>
                                         <div class="mb-2">
                                             <label class="form-label"><b>Người nhận:</b></label>
-                                            <input type="text" class="form-control" name="ten_nguoi_nhan">
+                                            <input type="text" class="form-control" name="ten_nguoi_nhan" disabled>
                                         </div>
                                         <div class="mb-2">
                                             <label class="form-label"><b>Phòng ban:</b></label>
-                                            <select class="form-select" name="ten_phong_ban"></select>
+                                            <select class="form-select" name="ten_phong_ban" disabled></select>
                                         </div>
                                         <div class="mb-2">
                                             <label class="form-label"><b>Trạng thái:</b></label>
-                                            <select class="form-select" name="trang_thai">
+                                            <select class="form-select" name="trang_thai" disabled>
                                                 <option>Chưa bắt đầu</option>
                                                 <option>Đang thực hiện</option>
                                                 <option>Đã hoàn thành</option>
@@ -514,11 +516,20 @@
                                             </select>
                                         </div>
                                         <div class="mb-2">
-                                            <label class="form-label">Tài liệu công việc</label>
-                                            <input type="text" class="form-control" name="tai_lieu_cv">
+                                            <label class="form-label"><b>Tài liệu công việc (Link Driver)</b></label>
+                                            <input type="text" class="form-control" name="tai_lieu_cv" disabled>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label"><b>File công việc</b></label>
+                                            <input class="form-control" type="file" name="files" id="taskFiles" multiple>
+                                            <div id="taskFileList" class="form-text text-muted small mt-1">
+                                            </div>
                                         </div>
                                         <div class="modal-footer">
                                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                                            <button type="button" class="btn btn-primary" id="btnSaveTask">
+                                                <i class="fa-solid fa-save"></i> Lưu
+                                            </button>
                                         </div>
                                     </form>
                                 </div>
@@ -547,21 +558,90 @@
             </div>
         </div>
 
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
         <script>
-                     window.addEventListener('DOMContentLoaded', function () {
-                         var form = document.getElementById('formTaskDetail');
-                         var elements = form.querySelectorAll('input, textarea, select, button');
+            // Hiển thị danh sách file ngay khi chọn
+            document.getElementById('taskFiles').addEventListener('change', function () {
+                let files = this.files;
+                let list = "";
+                for (let i = 0; i < files.length; i++) {
+                    list += "📄 " + files[i].name + "<br>";
+                }
+                document.getElementById('taskFileList').innerHTML = list || "Chưa có file nào được chọn";
+            });
+            
+            function showToast(type, message) {
+                var map = {
+                    success: '#toastSuccess',
+                    error: '#toastError',
+                    info: '#toastInfo',
+                    warning: '#toastWarning'
+                };
+                var toastId = map[type] || '#toastInfo';
 
-                         elements.forEach(function (el) {
-                             // Không disable nút "Đóng"
-                             if (el.type !== "button" && !el.hasAttribute("data-bs-dismiss")) {
-                                 el.disabled = true;
-                             }
-                         });
-                     });
+                if ($(toastId).length === 0) {
+                    var toastHtml =
+                            '<div id="' + toastId.substring(1) + '" class="toast align-items-center border-0 position-fixed bottom-0 end-0 m-3" role="alert" aria-live="assertive" aria-atomic="true">' +
+                            '<div class="d-flex">' +
+                            '<div class="toast-body"></div>' +
+                            '<button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>' +
+                            '</div>' +
+                            '</div>';
+                    $('body').append(toastHtml);
+                }
+
+                $(toastId).find('.toast-body').text(message);
+                var bsToast = new bootstrap.Toast($(toastId)[0], {delay: 2500, autohide: true});
+                bsToast.show();
+            }
         </script>
+        
         <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                const btnSave = document.getElementById('btnSaveTask');
+                btnSave.addEventListener('click', function () {
+                    const form = document.getElementById('formTaskDetail');
+                    const formData = new FormData(form);
+
+                    fetch('./suaCongviec', {
+                        method: 'POST',
+                        body: formData
+                    })
+                            .then(res => res.json())
+                            .then(data => {
+                                if (data.success) {
+                                    showToast('success', '✅ Cập nhật công việc thành công!');
+
+                                    // ✅ Đóng modal TaskDetail
+                                    const modalEl = document.getElementById('modalTaskDetail');
+                                    const modalInstance = bootstrap.Modal.getInstance(modalEl);
+                                    if (modalInstance) {
+                                        modalInstance.hide();
+                                    } else {
+                                        // fallback nếu instance chưa được lấy ra
+                                        const closeBtn = modalEl.querySelector('.btn-close');
+                                        if (closeBtn)
+                                            closeBtn.click();
+                                    }
+
+                                    // ✅ Sau khi modal đóng 300ms thì redirect
+                                    setTimeout(() => {
+                                        window.location.href = './dsCongviecNV';
+                                    }, 300);
+
+                                } else {
+                                    showToast('error', data.message || '❌ Lỗi khi cập nhật');
+                                }
+                            })
+                            .catch(err => {
+                                console.error(err);
+                                showToast('error', '❌ Lỗi kết nối server');
+                            });
+                });
+            });
+        </script>
+
+        <script>
+
             // Hàm chọn option theo text
             function selectOptionByText(selectEl, targetText) {
                 if (!selectEl || !targetText)
@@ -624,6 +704,73 @@
                     selectOptionByText(modal.querySelector('[name="ten_phong_ban"]'), phongban);
                     selectOptionByText(modal.querySelector('[name="trang_thai"]'), trangthai);
                     modal.querySelector('[name="tai_lieu_cv"]').value = tailieu;
+
+                    let fileTaiLieu = button.getAttribute("data-file_tai_lieu") || "";
+                    if (fileTaiLieu.toLowerCase() === "null") {
+                        fileTaiLieu = "";
+                    }
+
+                    const fileListDiv = modal.querySelector("#taskFileList");
+                    if (!fileTaiLieu && taskFiles.files.length === 0) {
+                        fileListDiv.innerHTML = "Chưa có file nào được đính kèm";
+                    }
+
+                    if (fileTaiLieu) {
+                        const files = fileTaiLieu.split(";").map(x => x.trim()).filter(Boolean);
+                        const taskId = modal.querySelector('[name="task_id"]').value;
+
+                        files.forEach(path => {
+                            const tenFile = path.substring(path.lastIndexOf("/") + 1).split("\\").pop();
+
+                            const fileItem = document.createElement("div");
+                            fileItem.className = "d-flex align-items-center mb-1";
+
+                            const link = document.createElement("a");
+                            link.href = "downloadFile?file=" + encodeURIComponent(tenFile);
+                            link.className = "flex-grow-1 text-decoration-none";
+                            link.innerHTML = "📄 " + tenFile + " <i class='fa-solid fa-download'></i>";
+
+                            const delBtn = document.createElement("button");
+                            delBtn.className = "btn btn-sm btn-outline-danger ms-2";
+                            delBtn.innerHTML = "<i class='fa-solid fa-times'></i>";
+
+                            // 👉 KHÔNG cần confirm, gửi luôn full path
+                            delBtn.addEventListener("click", function () {
+                                fetch("deleteFile", {
+                                    method: "POST",
+                                    headers: {
+                                        "Content-Type": "application/x-www-form-urlencoded"
+                                    },
+                                    body: "file=" + encodeURIComponent(path) + "&taskId=" + encodeURIComponent(taskId)
+                                })
+                                        .then(res => res.json())
+                                        .then(data => {
+                                            if (data.success) {
+                                                fileItem.remove();
+
+                                                if (fileListDiv.children.length === 0) {
+                                                    fileListDiv.innerHTML = "Chưa có file nào được đính kèm";
+                                                }
+
+                                                showToast('success', '🗑️ File đã được xoá');
+                                            } else {
+                                                showToast('error', "❌ Lỗi xoá file: " + (data.message || "Không rõ nguyên nhân"));
+                                            }
+                                        })
+                                        .catch(err => {
+                                            console.error(err);
+                                            showToast('error', '❌ Lỗi kết nối server.');
+                                        });
+                            });
+
+                            fileItem.appendChild(link);
+                            fileItem.appendChild(delBtn);
+                            fileListDiv.appendChild(fileItem);
+                        });
+                    } else {
+                        fileListDiv.innerHTML = "Chưa có file nào được đính kèm";
+                    }
+
                     // Mở lại tab đầu tiên khi show modal
                     const tabTrigger = modal.querySelector('#tab-task-info');
                     if (tabTrigger)
@@ -843,7 +990,7 @@
                             console.log("Cập nhật thành công");
                         },
                         error: function () {
-                            alert("Cập nhật thất bại");
+                            showToast('error', '✅ Cập nhật thất bại!');
                         }
                     });
                 });
@@ -871,7 +1018,7 @@
                             renderProcessSteps();
                         },
                         error: function () {
-                            alert("Không thể tải quy trình.");
+                            showToast('error', 'Không thể tải quy trinh!');
                         }
                     });
                 });
@@ -888,7 +1035,7 @@
                                 renderTaskReviews(data);
                             },
                             error: function () {
-                                alert("Không thể tải đánh giá.");
+                                showToast('error', 'Không thể tải đánh giá!');
                             }
                         });
                     });
@@ -904,7 +1051,7 @@
                             renderTaskReviews(data);
                         })
                         .catch(function () {
-                            alert("Không thể tải lại danh sách đánh giá.");
+                            showToast('error', 'Không thể tải lại danh sách đánh giá!');
                         });
             }
 
