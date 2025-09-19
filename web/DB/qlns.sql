@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Máy chủ: 127.0.0.1
--- Thời gian đã tạo: Th9 19, 2025 lúc 04:40 AM
+-- Thời gian đã tạo: Th9 19, 2025 lúc 12:17 PM
 -- Phiên bản máy phục vụ: 10.4.32-MariaDB
 -- Phiên bản PHP: 8.0.30
 
@@ -110,7 +110,6 @@ CREATE TABLE `cong_viec` (
 --
 
 INSERT INTO `cong_viec` (`id`, `du_an_id`, `ten_cong_viec`, `mo_ta`, `han_hoan_thanh`, `muc_do_uu_tien`, `nguoi_giao_id`, `nguoi_nhan_id`, `phong_ban_id`, `trang_thai`, `tai_lieu_cv`, `file_tai_lieu`, `ngay_tao`, `ngay_bat_dau`, `ngay_hoan_thanh`) VALUES
-(52, 2, 'Gửi lại bảng lương T8.2025', '', '2025-09-09', 'Cao', 12, 7, 1, 'Đã hoàn thành', '', '', '2025-09-08 07:07:01', '2025-09-09', '2025-09-09'),
 (53, 1, 'Kế hoạch đăng bài', 'Lên kế hoạch đăng bài và đăng bài cho tuần này. Liên quan đến vấn tiết kiệm chi phí khi sử dụng Dashboard, bài toán CFO.', '2025-09-09', 'Trung bình', 11, 15, 7, 'Đã hoàn thành', '', NULL, '2025-09-08 08:14:00', NULL, NULL),
 (57, 1, 'Kế hoạch đăng bài', 'Lên kế hoạch đăng bài và đăng bài về ANM. Đưa ra các ', '2025-09-09', 'Trung bình', 11, 13, 7, 'Đã hoàn thành', '', NULL, '2025-09-08 08:29:50', NULL, NULL),
 (58, 1, 'Kế hoạch đăng bài', 'Lê kế hoạch đăng bài và đăng bài về OCI. Chú ý tới vấn đề tiết kiệm chi phí, khách hàng hướng đến là CTO', '2025-09-09', 'Trung bình', 11, 9, 7, 'Đã hoàn thành', '', NULL, '2025-09-08 08:31:12', NULL, NULL),
@@ -129,7 +128,7 @@ INSERT INTO `cong_viec` (`id`, `du_an_id`, `ten_cong_viec`, `mo_ta`, `han_hoan_t
 (73, 1, 'lắp đặt server', 'AI SOC-Allen cho đội sang lắp đặt, anh Hanh bố trí bạn bên đội KT để học hỏi', '2025-12-09', 'Trung bình', 6, 5, 6, 'Đã hoàn thành', '', NULL, '2025-09-10 07:18:55', NULL, NULL),
 (75, 1, 'lên phương án kinh doanh CLOUD cùng G Group', '', '2025-09-19', 'Trung bình', 10, 11, 7, 'Đang thực hiện', '', NULL, '2025-09-11 02:32:10', '2025-09-12', NULL),
 (76, 1, 'hoàn chỉnh hướng dẫn sử dụng ICS CIM ( trình bày bằng video hoặc pp ) ', '', '2025-09-15', 'Cao', 10, 1, 6, 'Trễ hạn', '', NULL, '2025-09-11 02:36:12', '2025-09-11', NULL),
-(87, 1, '1', '1', '2025-09-20', 'Thấp', 1, NULL, 6, 'Chưa bắt đầu', '1', '', '2025-09-18 10:30:37', NULL, NULL);
+(90, 19, '1', '1', '2025-09-20', 'Thấp', 1, NULL, 6, 'Chưa bắt đầu', '1', 'D:/uploads\\Phạm Minh Thắng_Báo cáo HNM.docx;D:/uploads\\z6099009923178_034b5ec3171d659dccc5ce20a01842a1.jpg', '2025-09-19 05:43:04', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -195,8 +194,7 @@ INSERT INTO `cong_viec_nguoi_nhan` (`id`, `cong_viec_id`, `nhan_vien_id`) VALUES
 (20, 53, 15),
 (32, 76, 1),
 (33, 76, 2),
-(71, 87, 14),
-(74, 52, 7);
+(75, 90, 16);
 
 -- --------------------------------------------------------
 
@@ -220,9 +218,6 @@ CREATE TABLE `cong_viec_quy_trinh` (
 --
 
 INSERT INTO `cong_viec_quy_trinh` (`id`, `cong_viec_id`, `ten_buoc`, `mo_ta`, `trang_thai`, `ngay_bat_dau`, `ngay_ket_thuc`, `ngay_tao`) VALUES
-(122, 52, 'Bước 1', 'Tạo file excel', 'Đã hoàn thành', '2025-09-08', '2025-09-09', '2025-09-08 09:07:16'),
-(123, 52, 'Bước 2', 'Gửi từng nhân viên check lại bảng lương của họ', 'Đã hoàn thành', '2025-09-09', '2025-09-09', '2025-09-08 09:07:55'),
-(124, 52, 'Bước 3', 'Gửi lại file cuối cùng cho Ms.Yến', 'Đã hoàn thành', '2025-09-09', '2025-09-09', '2025-09-08 09:08:31'),
 (128, 76, 'bước 1', 'Thắng và Tuyền hoàn thiện sớm', 'Đang thực hiện', '2025-09-11', '2025-09-15', '2025-09-11 02:37:36'),
 (129, 76, 'bước 2', 'báo cáo lại kết quả cho Mrs. Yến', 'Chưa bắt đầu', '2025-09-11', '2025-09-15', '2025-09-11 02:38:57'),
 (132, 62, 'bước 1', 'tham khảo giá một số công ty', 'Chưa bắt đầu', '2025-09-11', '2025-09-15', '2025-09-11 07:50:28'),
@@ -271,7 +266,6 @@ CREATE TABLE `cong_viec_tien_do` (
 --
 
 INSERT INTO `cong_viec_tien_do` (`id`, `cong_viec_id`, `phan_tram`, `thoi_gian_cap_nhat`) VALUES
-(30, 52, 100, '2025-09-19 02:34:26'),
 (33, 53, 0, '2025-09-18 19:00:26'),
 (34, 57, 0, '2025-09-12 02:32:38'),
 (35, 58, 0, '2025-09-11 07:18:44'),
@@ -289,7 +283,8 @@ INSERT INTO `cong_viec_tien_do` (`id`, `cong_viec_id`, `phan_tram`, `thoi_gian_c
 (50, 72, 0, '2025-09-17 08:41:57'),
 (52, 66, 0, '2025-09-12 06:43:37'),
 (53, 67, 0, '2025-09-11 08:27:03'),
-(54, 68, 0, '2025-09-12 06:43:40');
+(54, 68, 0, '2025-09-12 06:43:40'),
+(55, 90, 0, '2025-09-19 05:43:11');
 
 -- --------------------------------------------------------
 
@@ -312,7 +307,8 @@ CREATE TABLE `du_an` (
 
 INSERT INTO `du_an` (`id`, `ten_du_an`, `mo_ta`, `ngay_bat_dau`, `ngay_ket_thuc`, `ngay_tao`) VALUES
 (1, 'Công việc riêng', 'Công việc riêng', '2025-09-17', '2035-10-31', '2025-09-17 09:03:49'),
-(2, 'Dự án ICS', 'Test', '2025-09-18', '2034-09-13', '2025-09-18 09:54:28');
+(19, 'test', '222', '2025-09-21', '2025-09-26', '2025-09-19 04:56:30'),
+(30, '222', '2', '2025-09-19', '2025-09-30', '2025-09-19 05:41:05');
 
 -- --------------------------------------------------------
 
@@ -328,6 +324,30 @@ CREATE TABLE `file_dinh_kem` (
   `mo_ta` text DEFAULT NULL,
   `thoi_gian_upload` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Cấu trúc bảng cho bảng `lich_trinh`
+--
+
+CREATE TABLE `lich_trinh` (
+  `id` int(11) NOT NULL,
+  `tieu_de` varchar(255) NOT NULL,
+  `ngay_bat_dau` date NOT NULL,
+  `ngay_ket_thuc` date DEFAULT NULL,
+  `mo_ta` text DEFAULT NULL,
+  `ngay_tao` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Đang đổ dữ liệu cho bảng `lich_trinh`
+--
+
+INSERT INTO `lich_trinh` (`id`, `tieu_de`, `ngay_bat_dau`, `ngay_ket_thuc`, `mo_ta`, `ngay_tao`) VALUES
+(2, 'Họp dự án Web', '2025-09-22', NULL, 'Họp với team dự án Web.', '2025-09-19 05:46:52'),
+(3, 'Khảo sát thị trường', '2025-09-25', '2025-09-27', 'Đi khảo sát khách hàng tại TP.HCM.', '2025-09-19 05:46:52'),
+(5, '123', '2025-09-19', '2025-09-21', '1312313', '2025-09-19 09:09:25');
 
 -- --------------------------------------------------------
 
@@ -731,7 +751,8 @@ INSERT INTO `thong_bao` (`id`, `tieu_de`, `noi_dung`, `nguoi_nhan_id`, `loai_tho
 (225, 'Công việc mới', 'Bạn được giao công việc: 1. Hạn: 2025-09-20.', 14, 'Công việc mới', 0, '2025-09-18 10:30:37', '2025-09-18 10:30:37'),
 (226, 'Công việc mới', 'Bạn được giao công việc: 1. Hạn: 2025-09-21.', 9, 'Công việc mới', 0, '2025-09-19 02:28:42', '2025-09-19 02:28:42'),
 (227, 'Công việc mới', 'Bạn được giao công việc: 1. Hạn: 2025-09-21.', 15, 'Công việc mới', 0, '2025-09-19 02:33:02', '2025-09-19 02:33:02'),
-(228, 'Cập nhật công việc', 'Công việc: Gửi lại bảng lương T8.2025 vừa được cập nhật mới', 7, 'Cập nhật', 0, '2025-09-19 02:34:21', '2025-09-19 02:34:21');
+(228, 'Cập nhật công việc', 'Công việc: Gửi lại bảng lương T8.2025 vừa được cập nhật mới', 7, 'Cập nhật', 0, '2025-09-19 02:34:21', '2025-09-19 02:34:21'),
+(229, 'Công việc mới', 'Bạn được giao công việc: 1. Hạn: 2025-09-20.', 16, 'Công việc mới', 0, '2025-09-19 05:43:04', '2025-09-19 05:43:04');
 
 --
 -- Chỉ mục cho các bảng đã đổ
@@ -811,6 +832,12 @@ ALTER TABLE `file_dinh_kem`
   ADD PRIMARY KEY (`id`),
   ADD KEY `cong_viec_id` (`cong_viec_id`),
   ADD KEY `tien_do_id` (`tien_do_id`);
+
+--
+-- Chỉ mục cho bảng `lich_trinh`
+--
+ALTER TABLE `lich_trinh`
+  ADD PRIMARY KEY (`id`);
 
 --
 -- Chỉ mục cho bảng `luong`
@@ -894,7 +921,7 @@ ALTER TABLE `cham_cong`
 -- AUTO_INCREMENT cho bảng `cong_viec`
 --
 ALTER TABLE `cong_viec`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=90;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=91;
 
 --
 -- AUTO_INCREMENT cho bảng `cong_viec_danh_gia`
@@ -912,7 +939,7 @@ ALTER TABLE `cong_viec_lich_su`
 -- AUTO_INCREMENT cho bảng `cong_viec_nguoi_nhan`
 --
 ALTER TABLE `cong_viec_nguoi_nhan`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=75;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=76;
 
 --
 -- AUTO_INCREMENT cho bảng `cong_viec_quy_trinh`
@@ -924,19 +951,25 @@ ALTER TABLE `cong_viec_quy_trinh`
 -- AUTO_INCREMENT cho bảng `cong_viec_tien_do`
 --
 ALTER TABLE `cong_viec_tien_do`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=56;
 
 --
 -- AUTO_INCREMENT cho bảng `du_an`
 --
 ALTER TABLE `du_an`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
 
 --
 -- AUTO_INCREMENT cho bảng `file_dinh_kem`
 --
 ALTER TABLE `file_dinh_kem`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
+-- AUTO_INCREMENT cho bảng `lich_trinh`
+--
+ALTER TABLE `lich_trinh`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT cho bảng `luong`
@@ -978,7 +1011,7 @@ ALTER TABLE `phan_quyen_chuc_nang`
 -- AUTO_INCREMENT cho bảng `phong_ban`
 --
 ALTER TABLE `phong_ban`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT cho bảng `tep_dinh_kem`
@@ -990,7 +1023,7 @@ ALTER TABLE `tep_dinh_kem`
 -- AUTO_INCREMENT cho bảng `thong_bao`
 --
 ALTER TABLE `thong_bao`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=229;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=230;
 
 --
 -- Các ràng buộc cho các bảng đã đổ
@@ -1010,8 +1043,6 @@ ALTER TABLE `cong_viec`
   ADD CONSTRAINT `cong_viec_ibfk_2` FOREIGN KEY (`nguoi_nhan_id`) REFERENCES `nhanvien` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `cong_viec_ibfk_3` FOREIGN KEY (`phong_ban_id`) REFERENCES `phong_ban` (`id`) ON DELETE SET NULL,
   ADD CONSTRAINT `fk_cong_viec_du_an` FOREIGN KEY (`du_an_id`) REFERENCES `du_an` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-
--- Sửa ON DELETE SET NULL thành ON DELETE CASCADE cho fk_cong_viec_du_an để khi xóa dự án thì xóa luôn công việc
 
 --
 -- Các ràng buộc cho bảng `cong_viec_danh_gia`
@@ -1045,9 +1076,6 @@ ALTER TABLE `cong_viec_quy_trinh`
 --
 ALTER TABLE `cong_viec_tien_do`
   ADD CONSTRAINT `cong_viec_tien_do_ibfk_1` FOREIGN KEY (`cong_viec_id`) REFERENCES `cong_viec` (`id`) ON DELETE CASCADE;
-
--- Xóa dòng: ADD CONSTRAINT `cong_viec_tien_do_ibfk_2` FOREIGN KEY (`a`) REFERENCES `nhanvien` (`id`) ON DELETE CASCADE;
--- Vì trường `a` không tồn tại
 
 --
 -- Các ràng buộc cho bảng `file_dinh_kem`
