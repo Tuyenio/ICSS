@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Máy chủ: 127.0.0.1
--- Thời gian đã tạo: Th9 17, 2025 lúc 11:06 AM
+-- Thời gian đã tạo: Th9 19, 2025 lúc 04:40 AM
 -- Phiên bản máy phục vụ: 10.4.32-MariaDB
 -- Phiên bản PHP: 8.0.30
 
@@ -110,26 +110,26 @@ CREATE TABLE `cong_viec` (
 --
 
 INSERT INTO `cong_viec` (`id`, `du_an_id`, `ten_cong_viec`, `mo_ta`, `han_hoan_thanh`, `muc_do_uu_tien`, `nguoi_giao_id`, `nguoi_nhan_id`, `phong_ban_id`, `trang_thai`, `tai_lieu_cv`, `file_tai_lieu`, `ngay_tao`, `ngay_bat_dau`, `ngay_hoan_thanh`) VALUES
-(52, NULL, 'Gửi lại bảng lương T8.2025', '', '2025-09-09', 'Trung bình', 12, 7, 1, 'Đã hoàn thành', '', NULL, '2025-09-08 07:07:01', '2025-09-09', '2025-09-09'),
-(53, NULL, 'Kế hoạch đăng bài', 'Lên kế hoạch đăng bài và đăng bài cho tuần này. Liên quan đến vấn tiết kiệm chi phí khi sử dụng Dashboard, bài toán CFO.', '2025-09-09', 'Trung bình', 11, 15, 7, 'Đã hoàn thành', '', NULL, '2025-09-08 08:14:00', NULL, NULL),
-(57, NULL, 'Kế hoạch đăng bài', 'Lên kế hoạch đăng bài và đăng bài về ANM. Đưa ra các ', '2025-09-09', 'Trung bình', 11, 13, 7, 'Đã hoàn thành', '', NULL, '2025-09-08 08:29:50', NULL, NULL),
-(58, NULL, 'Kế hoạch đăng bài', 'Lê kế hoạch đăng bài và đăng bài về OCI. Chú ý tới vấn đề tiết kiệm chi phí, khách hàng hướng đến là CTO', '2025-09-09', 'Trung bình', 11, 9, 7, 'Đã hoàn thành', '', NULL, '2025-09-08 08:31:12', NULL, NULL),
-(61, NULL, 'Thiết kế Template ', '- Thư ngỏ\r\n- Giấy giới thiệu \r\n- Thư trả lời \r\n- Powerpoint template \r\n... các template cần cho công ty ', '2025-09-12', 'Trung bình', 4, 13, 7, 'Trễ hạn', '', NULL, '2025-09-10 06:52:18', NULL, NULL),
-(62, NULL, 'chính sách giá sản phẩm', '', '2025-12-09', 'Trung bình', 10, 11, 7, 'Chưa bắt đầu', '', NULL, '2025-09-10 07:02:34', NULL, NULL),
-(63, NULL, 'chính sách lương thưởng cho nhân viên ', '', '2025-12-09', 'Trung bình', 10, 11, 7, 'Chưa bắt đầu', '', NULL, '2025-09-10 07:03:33', NULL, NULL),
-(64, NULL, 'hoàn thiện danh sách 500 doanh nghiệp', 'Đưa ra kịch bản gọi điện cho các bạn tts liên hệ', '2025-12-09', 'Cao', 10, 11, 7, 'Chưa bắt đầu', '', NULL, '2025-09-10 07:04:55', NULL, NULL),
-(65, NULL, 'lên kế hoạch triển khai KPI cho từng đơn vị', '', '2025-12-09', 'Cao', 10, 11, 7, 'Đã hoàn thành', '', NULL, '2025-09-10 07:07:38', NULL, NULL),
-(66, NULL, 'đăng bài truyền thông', '7 bài, video ~3p /1 tuần trong đó 20/80 20-sp, 80- xu thế/Dẫn bài trang Web', '2025-12-09', 'Trung bình', 10, 11, 7, 'Chưa bắt đầu', '', NULL, '2025-09-10 07:08:27', NULL, NULL),
-(67, NULL, 'lên kế hoạch sự kiện ( trong và ngoài nước )', 'Lên kế hoạch sự kiện trong và ngoài nước ( từ giờ cho đến cuối năm, năm sau,…)', '2025-12-09', 'Trung bình', 10, 11, 7, 'Chưa bắt đầu', '', NULL, '2025-09-10 07:11:04', NULL, NULL),
-(68, NULL, 'làm việc trực tiếp với các đối tác đã kí', 'Làm việc tiếp vs các đối tác đã/ chuẩn bị kí MoU, cụ thể các công việc ( Dương hỗ trợ)', '2025-12-09', 'Trung bình', 10, 11, 7, 'Chưa bắt đầu', '', NULL, '2025-09-10 07:11:53', NULL, NULL),
-(69, NULL, 'đánh giá các đối thủ cạnh tranh an ninh mạng', '- Trao đổi vs Oracle, tổ chức các buổi  onl webinar (Dương, Linh hỗ trợ)\r\n', '2025-12-09', 'Trung bình', 10, 11, 7, 'Chưa bắt đầu', '', NULL, '2025-09-10 07:13:02', NULL, NULL),
-(70, NULL, 'triển khai chương trình đào tạo về an toàn thông tin', 'Triển khai trực tiếp , AI triển khai onl để thuận lợi cho ng học \r\n( Linh tham gia cùng đội KT, A Âu mời các đối tác triển khai khác), p.tich Mobile App theo thông tư 50 ', '2025-12-09', 'Trung bình', 18, 6, 6, 'Chưa bắt đầu', 'Đã lập phương án cho 1 số đối tác. ', NULL, '2025-09-10 07:14:34', NULL, NULL),
-(71, NULL, 'chỉnh sửa lại web công ty', '', '2025-12-09', 'Cao', 10, 8, 6, 'Chưa bắt đầu', '', NULL, '2025-09-10 07:15:36', NULL, NULL),
-(72, NULL, 'đề xuất bộ phận tiếp nhận thông tin khách hàng cho việc bán hàng OCI', '(đội KT cần ngồi lại về OCI live, công cụ ANBM,…). Đồng thời, giao lại cho anh Trung để bán hàng', '2025-12-09', 'Trung bình', 6, 8, 6, 'Chưa bắt đầu', '', NULL, '2025-09-10 07:17:05', NULL, NULL),
-(73, NULL, 'lắp đặt server', 'AI SOC-Allen cho đội sang lắp đặt, anh Hanh bố trí bạn bên đội KT để học hỏi', '2025-12-09', 'Trung bình', 6, 5, 6, 'Đã hoàn thành', '', NULL, '2025-09-10 07:18:55', NULL, NULL),
-(75, NULL, 'lên phương án kinh doanh CLOUD cùng G Group', '', '2025-09-19', 'Trung bình', 10, 11, 7, 'Đang thực hiện', '', NULL, '2025-09-11 02:32:10', '2025-09-12', NULL),
-(76, NULL, 'hoàn chỉnh hướng dẫn sử dụng ICS CIM ( trình bày bằng video hoặc pp ) ', '', '2025-09-15', 'Cao', 10, 1, 6, 'Trễ hạn', '', NULL, '2025-09-11 02:36:12', '2025-09-11', NULL),
-(85, NULL, '1', '1', '2025-09-21', 'Thấp', 1, NULL, 6, 'Chưa bắt đầu', '1', '', '2025-09-17 07:33:04', NULL, NULL);
+(52, 2, 'Gửi lại bảng lương T8.2025', '', '2025-09-09', 'Cao', 12, 7, 1, 'Đã hoàn thành', '', '', '2025-09-08 07:07:01', '2025-09-09', '2025-09-09'),
+(53, 1, 'Kế hoạch đăng bài', 'Lên kế hoạch đăng bài và đăng bài cho tuần này. Liên quan đến vấn tiết kiệm chi phí khi sử dụng Dashboard, bài toán CFO.', '2025-09-09', 'Trung bình', 11, 15, 7, 'Đã hoàn thành', '', NULL, '2025-09-08 08:14:00', NULL, NULL),
+(57, 1, 'Kế hoạch đăng bài', 'Lên kế hoạch đăng bài và đăng bài về ANM. Đưa ra các ', '2025-09-09', 'Trung bình', 11, 13, 7, 'Đã hoàn thành', '', NULL, '2025-09-08 08:29:50', NULL, NULL),
+(58, 1, 'Kế hoạch đăng bài', 'Lê kế hoạch đăng bài và đăng bài về OCI. Chú ý tới vấn đề tiết kiệm chi phí, khách hàng hướng đến là CTO', '2025-09-09', 'Trung bình', 11, 9, 7, 'Đã hoàn thành', '', NULL, '2025-09-08 08:31:12', NULL, NULL),
+(61, 1, 'Thiết kế Template ', '- Thư ngỏ\r\n- Giấy giới thiệu \r\n- Thư trả lời \r\n- Powerpoint template \r\n... các template cần cho công ty ', '2025-09-12', 'Trung bình', 4, 13, 7, 'Trễ hạn', '', NULL, '2025-09-10 06:52:18', NULL, NULL),
+(62, 1, 'chính sách giá sản phẩm', '', '2025-12-09', 'Trung bình', 10, 11, 7, 'Chưa bắt đầu', '', NULL, '2025-09-10 07:02:34', NULL, NULL),
+(63, 1, 'chính sách lương thưởng cho nhân viên ', '', '2025-12-09', 'Trung bình', 10, 11, 7, 'Chưa bắt đầu', '', NULL, '2025-09-10 07:03:33', NULL, NULL),
+(64, 1, 'hoàn thiện danh sách 500 doanh nghiệp', 'Đưa ra kịch bản gọi điện cho các bạn tts liên hệ', '2025-12-09', 'Cao', 10, 11, 7, 'Chưa bắt đầu', '', NULL, '2025-09-10 07:04:55', NULL, NULL),
+(65, 1, 'lên kế hoạch triển khai KPI cho từng đơn vị', '', '2025-12-09', 'Cao', 10, 11, 7, 'Đã hoàn thành', '', NULL, '2025-09-10 07:07:38', NULL, NULL),
+(66, 1, 'đăng bài truyền thông', '7 bài, video ~3p /1 tuần trong đó 20/80 20-sp, 80- xu thế/Dẫn bài trang Web', '2025-12-09', 'Trung bình', 10, 11, 7, 'Chưa bắt đầu', '', NULL, '2025-09-10 07:08:27', NULL, NULL),
+(67, 1, 'lên kế hoạch sự kiện ( trong và ngoài nước )', 'Lên kế hoạch sự kiện trong và ngoài nước ( từ giờ cho đến cuối năm, năm sau,…)', '2025-12-09', 'Trung bình', 10, 11, 7, 'Chưa bắt đầu', '', NULL, '2025-09-10 07:11:04', NULL, NULL),
+(68, 1, 'làm việc trực tiếp với các đối tác đã kí', 'Làm việc tiếp vs các đối tác đã/ chuẩn bị kí MoU, cụ thể các công việc ( Dương hỗ trợ)', '2025-12-09', 'Trung bình', 10, 11, 7, 'Chưa bắt đầu', '', NULL, '2025-09-10 07:11:53', NULL, NULL),
+(69, 1, 'đánh giá các đối thủ cạnh tranh an ninh mạng', '- Trao đổi vs Oracle, tổ chức các buổi  onl webinar (Dương, Linh hỗ trợ)\r\n', '2025-12-09', 'Trung bình', 10, 11, 7, 'Chưa bắt đầu', '', NULL, '2025-09-10 07:13:02', NULL, NULL),
+(70, 1, 'triển khai chương trình đào tạo về an toàn thông tin', 'Triển khai trực tiếp , AI triển khai onl để thuận lợi cho ng học \r\n( Linh tham gia cùng đội KT, A Âu mời các đối tác triển khai khác), p.tich Mobile App theo thông tư 50 ', '2025-12-09', 'Trung bình', 18, 6, 6, 'Chưa bắt đầu', 'Đã lập phương án cho 1 số đối tác. ', NULL, '2025-09-10 07:14:34', NULL, NULL),
+(71, 1, 'chỉnh sửa lại web công ty', '', '2025-12-09', 'Cao', 10, 8, 6, 'Chưa bắt đầu', '', NULL, '2025-09-10 07:15:36', NULL, NULL),
+(72, 1, 'đề xuất bộ phận tiếp nhận thông tin khách hàng cho việc bán hàng OCI', '(đội KT cần ngồi lại về OCI live, công cụ ANBM,…). Đồng thời, giao lại cho anh Trung để bán hàng', '2025-12-09', 'Trung bình', 6, 8, 6, 'Chưa bắt đầu', '', NULL, '2025-09-10 07:17:05', NULL, NULL),
+(73, 1, 'lắp đặt server', 'AI SOC-Allen cho đội sang lắp đặt, anh Hanh bố trí bạn bên đội KT để học hỏi', '2025-12-09', 'Trung bình', 6, 5, 6, 'Đã hoàn thành', '', NULL, '2025-09-10 07:18:55', NULL, NULL),
+(75, 1, 'lên phương án kinh doanh CLOUD cùng G Group', '', '2025-09-19', 'Trung bình', 10, 11, 7, 'Đang thực hiện', '', NULL, '2025-09-11 02:32:10', '2025-09-12', NULL),
+(76, 1, 'hoàn chỉnh hướng dẫn sử dụng ICS CIM ( trình bày bằng video hoặc pp ) ', '', '2025-09-15', 'Cao', 10, 1, 6, 'Trễ hạn', '', NULL, '2025-09-11 02:36:12', '2025-09-11', NULL),
+(87, 1, '1', '1', '2025-09-20', 'Thấp', 1, NULL, 6, 'Chưa bắt đầu', '1', '', '2025-09-18 10:30:37', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -178,7 +178,6 @@ CREATE TABLE `cong_viec_nguoi_nhan` (
 INSERT INTO `cong_viec_nguoi_nhan` (`id`, `cong_viec_id`, `nhan_vien_id`) VALUES
 (2, 73, 5),
 (4, 70, 6),
-(5, 52, 7),
 (6, 71, 8),
 (7, 72, 8),
 (8, 58, 9),
@@ -196,7 +195,8 @@ INSERT INTO `cong_viec_nguoi_nhan` (`id`, `cong_viec_id`, `nhan_vien_id`) VALUES
 (20, 53, 15),
 (32, 76, 1),
 (33, 76, 2),
-(66, 85, 1);
+(71, 87, 14),
+(74, 52, 7);
 
 -- --------------------------------------------------------
 
@@ -271,19 +271,19 @@ CREATE TABLE `cong_viec_tien_do` (
 --
 
 INSERT INTO `cong_viec_tien_do` (`id`, `cong_viec_id`, `phan_tram`, `thoi_gian_cap_nhat`) VALUES
-(30, 52, 0, '2025-09-17 08:48:14'),
-(33, 53, 0, '2025-09-11 10:34:13'),
+(30, 52, 100, '2025-09-19 02:34:26'),
+(33, 53, 0, '2025-09-18 19:00:26'),
 (34, 57, 0, '2025-09-12 02:32:38'),
 (35, 58, 0, '2025-09-11 07:18:44'),
 (38, 61, 0, '2025-09-12 02:37:53'),
-(39, 62, 0, '2025-09-17 08:38:37'),
+(39, 62, 0, '2025-09-17 09:31:40'),
 (40, 69, 0, '2025-09-11 08:26:54'),
 (41, 73, 0, '2025-09-12 03:00:09'),
 (42, 70, 0, '2025-09-12 06:43:44'),
 (43, 71, 0, '2025-09-17 08:54:40'),
 (45, 63, 0, '2025-09-17 08:48:11'),
-(46, 75, 0, '2025-09-17 08:18:18'),
-(47, 76, 0, '2025-09-15 04:16:55'),
+(46, 75, 0, '2025-09-19 01:57:59'),
+(47, 76, 0, '2025-09-18 02:39:44'),
 (48, 64, 0, '2025-09-11 08:27:18'),
 (49, 65, 0, '2025-09-11 08:27:12'),
 (50, 72, 0, '2025-09-17 08:41:57'),
@@ -311,7 +311,8 @@ CREATE TABLE `du_an` (
 --
 
 INSERT INTO `du_an` (`id`, `ten_du_an`, `mo_ta`, `ngay_bat_dau`, `ngay_ket_thuc`, `ngay_tao`) VALUES
-(1, 'Công việc riêng', 'Công việc riêng', '2025-09-17', '2035-10-31', '2025-09-17 09:03:49');
+(1, 'Công việc riêng', 'Công việc riêng', '2025-09-17', '2035-10-31', '2025-09-17 09:03:49'),
+(2, 'Dự án ICS', 'Test', '2025-09-18', '2034-09-13', '2025-09-18 09:54:28');
 
 -- --------------------------------------------------------
 
@@ -413,7 +414,7 @@ CREATE TABLE `nhanvien` (
 --
 
 INSERT INTO `nhanvien` (`id`, `ho_ten`, `email`, `mat_khau`, `so_dien_thoai`, `gioi_tinh`, `ngay_sinh`, `phong_ban_id`, `chuc_vu`, `luong_co_ban`, `trang_thai_lam_viec`, `vai_tro`, `ngay_vao_lam`, `avatar_url`, `ngay_tao`) VALUES
-(1, 'Phạm Minh Thắng', 'minhthang@gmail.com', '11112222', '0834035090', 'Nam', '2003-11-23', 6, 'Nhân viên', 20000000.00, 'Đang làm', 'Nhân viên', '2025-09-03', 'https://i.postimg.cc/C5Z5RWgt/z5863399686673-df5230e1f84835bf20b88f032388d49d.jpg', '2025-09-03 03:26:57'),
+(1, 'Phạm Minh Thắng', 'minhthang@gmail.com', '12345678', '0834035090', 'Nam', '2003-11-23', 6, 'Nhân viên', 20000000.00, 'Đang làm', 'Nhân viên', '2025-09-03', 'https://i.postimg.cc/C5Z5RWgt/z5863399686673-df5230e1f84835bf20b88f032388d49d.jpg', '2025-09-03 03:26:57'),
 (2, 'Nguyễn Ngọc Tuyền', 'tt98tuyen@gmail.com', 'tuyendz321', '0399045920', 'Nam', '2003-03-11', 6, 'Nhân viên', 0.00, 'Đang làm', 'Nhân viên', '2025-07-20', 'https://i.postimg.cc/q7nxs24X/z6976269052999-e22e9cb5e367830aede3a369c5f977b6.jpg', '2025-09-04 03:59:59'),
 (3, 'Nguyễn Tấn Dũng', 'jindonguyen2015@gmail.com', '12345678', '0943924816', 'Nam', '2002-08-24', 6, 'Nhân viên', 0.00, 'Đang làm', 'Nhân viên', '2025-05-05', 'https://i.postimg.cc/CLrmzggp/z6913446856097-ac16f34c6ba3cb76c40d753bb051e0a6-Nguyen-Dung.jpg', '2025-09-04 04:03:30'),
 (4, 'Võ Trung Âu', 'dr.votrungau@gmail.com', '12345678', '0931487231', 'Nam', '1989-03-03', 1, 'Giám đốc', 0.00, 'Đang làm', 'Admin', '2024-08-01', 'https://i.postimg.cc/QCX0WNCh/IMG-9548-Vo-Au.jpg', '2025-09-04 04:03:44'),
@@ -722,7 +723,15 @@ INSERT INTO `thong_bao` (`id`, `tieu_de`, `noi_dung`, `nguoi_nhan_id`, `loai_tho
 (217, 'Cập nhật công việc', 'Công việc: 1 vừa được cập nhật mới', 1, 'Cập nhật', 0, '2025-09-17 07:34:38', '2025-09-17 07:34:38'),
 (218, 'Cập nhật công việc', 'Công việc: 1 vừa được cập nhật mới', 1, 'Cập nhật', 0, '2025-09-17 08:03:09', '2025-09-17 08:03:09'),
 (219, 'Cập nhật công việc', 'Công việc: 1 vừa được cập nhật mới', 1, 'Cập nhật', 0, '2025-09-17 08:11:14', '2025-09-17 08:11:14'),
-(220, 'Cập nhật công việc', 'Công việc: 1 vừa được cập nhật mới', 1, 'Cập nhật', 0, '2025-09-17 08:18:24', '2025-09-17 08:18:24');
+(220, 'Cập nhật công việc', 'Công việc: 1 vừa được cập nhật mới', 1, 'Cập nhật', 0, '2025-09-17 08:18:24', '2025-09-17 08:18:24'),
+(221, 'Cập nhật công việc', 'Công việc: 1 vừa được cập nhật mới', 1, 'Cập nhật', 0, '2025-09-17 09:54:34', '2025-09-17 09:54:34'),
+(222, 'Cập nhật công việc', 'Công việc: 1 vừa được cập nhật mới', 1, 'Cập nhật', 0, '2025-09-17 10:11:17', '2025-09-17 10:11:17'),
+(223, 'Cập nhật công việc', 'Công việc: 1 vừa được cập nhật mới', 1, 'Cập nhật', 0, '2025-09-18 02:31:07', '2025-09-18 02:31:07'),
+(224, 'Công việc mới', 'Bạn được giao công việc: 1. Hạn: 2025-09-20.', 12, 'Công việc mới', 0, '2025-09-18 10:30:05', '2025-09-18 10:30:05'),
+(225, 'Công việc mới', 'Bạn được giao công việc: 1. Hạn: 2025-09-20.', 14, 'Công việc mới', 0, '2025-09-18 10:30:37', '2025-09-18 10:30:37'),
+(226, 'Công việc mới', 'Bạn được giao công việc: 1. Hạn: 2025-09-21.', 9, 'Công việc mới', 0, '2025-09-19 02:28:42', '2025-09-19 02:28:42'),
+(227, 'Công việc mới', 'Bạn được giao công việc: 1. Hạn: 2025-09-21.', 15, 'Công việc mới', 0, '2025-09-19 02:33:02', '2025-09-19 02:33:02'),
+(228, 'Cập nhật công việc', 'Công việc: Gửi lại bảng lương T8.2025 vừa được cập nhật mới', 7, 'Cập nhật', 0, '2025-09-19 02:34:21', '2025-09-19 02:34:21');
 
 --
 -- Chỉ mục cho các bảng đã đổ
@@ -885,7 +894,7 @@ ALTER TABLE `cham_cong`
 -- AUTO_INCREMENT cho bảng `cong_viec`
 --
 ALTER TABLE `cong_viec`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=86;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=90;
 
 --
 -- AUTO_INCREMENT cho bảng `cong_viec_danh_gia`
@@ -903,7 +912,7 @@ ALTER TABLE `cong_viec_lich_su`
 -- AUTO_INCREMENT cho bảng `cong_viec_nguoi_nhan`
 --
 ALTER TABLE `cong_viec_nguoi_nhan`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=67;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=75;
 
 --
 -- AUTO_INCREMENT cho bảng `cong_viec_quy_trinh`
@@ -921,7 +930,7 @@ ALTER TABLE `cong_viec_tien_do`
 -- AUTO_INCREMENT cho bảng `du_an`
 --
 ALTER TABLE `du_an`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT cho bảng `file_dinh_kem`
@@ -981,7 +990,7 @@ ALTER TABLE `tep_dinh_kem`
 -- AUTO_INCREMENT cho bảng `thong_bao`
 --
 ALTER TABLE `thong_bao`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=221;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=229;
 
 --
 -- Các ràng buộc cho các bảng đã đổ

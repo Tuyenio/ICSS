@@ -37,7 +37,12 @@ public class xoaCongviec extends HttpServlet {
             // === Xoá công việc trong DB (bao gồm xoá người nhận phụ nếu cần) ===
             db.xoaCongViec(id);
 
-            response.sendRedirect("./dsCongviec"); // Chuyển hướng sau khi xoá
+            String referer = request.getHeader("Referer");
+            if (referer != null && !referer.isEmpty()) {
+                response.sendRedirect(referer);
+            } else {
+                response.sendRedirect("./dsCongviec"); // fallback nếu không có referer
+            }
         } catch (Exception e) {
             e.printStackTrace();
             response.sendError(500, "Lỗi khi xoá công việc: " + e.getMessage());
