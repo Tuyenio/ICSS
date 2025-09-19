@@ -250,6 +250,18 @@
                 box-shadow: 0 6px 18px rgba(79, 70, 229, 0.35);
             }
 
+            /* Progress bar trong task */
+            .kanban-task .progress {
+                height: 7px;
+                border-radius: 6px;
+                margin-top: 10px;      /* tạo khoảng cách phía trên */
+                margin-bottom: 6px;    /* tạo khoảng cách phía dưới */
+                background-color: #e5e7eb; /* nền xám nhạt để nhìn rõ */
+            }
+            .kanban-task .progress-bar {
+                border-radius: 6px;
+            }
+
             /* ANIMATIONS */
             @keyframes fadeIn {
                 from {

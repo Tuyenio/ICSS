@@ -312,6 +312,19 @@
                 padding: 4px 8px;
                 border-radius: 8px;
             }
+
+            /* Progress bar trong task */
+            .kanban-task .progress {
+                height: 7px;
+                border-radius: 6px;
+                margin-top: 10px;      /* tạo khoảng cách phía trên */
+                margin-bottom: 6px;    /* tạo khoảng cách phía dưới */
+                background-color: #e5e7eb; /* nền xám nhạt để nhìn rõ */
+            }
+            .kanban-task .progress-bar {
+                border-radius: 6px;
+            }
+
         </style>
     </head>
 
@@ -1092,9 +1105,9 @@
 
                 const taskId = $('#taskId').val(); // nếu có ID thì là sửa, không thì là thêm
                 const formData = new FormData(this); // lấy dữ liệu form bao gồm cả file
-                
+
                 formData.append("du_an_id", PROJECT_ID);
-                
+
                 const url = taskId ? './capNhatCongviec' : './themCongviec';
 
                 $.ajax({
