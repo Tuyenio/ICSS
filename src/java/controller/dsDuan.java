@@ -16,10 +16,6 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- *
- * @author Admin
- */
 public class dsDuan extends HttpServlet {
 
     @Override
