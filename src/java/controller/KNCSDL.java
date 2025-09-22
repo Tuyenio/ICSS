@@ -856,119 +856,147 @@ public class KNCSDL {
         }
     }
 
-    public List<Map<String, Object>> locCongViec(String keyword, String phongBan, String trangThai) throws SQLException {
+    public List<Map<String, Object>> locCongViec(String keyword, String phongBan, String trangThai, Integer projectId) throws SQLException {
         List<Map<String, Object>> danhSach = new ArrayList<>();
 
-        String sql = "SELECT cv.*, "
-                + "ng1.ho_ten AS nguoi_giao_ten, "
-                + "ng2.ho_ten AS nguoi_nhan_ten, "
-                + "td.phan_tram, "
-                + "pb.ten_phong AS ten_phong "
-                + "FROM cong_viec cv "
-                + "LEFT JOIN nhanvien ng1 ON cv.nguoi_giao_id = ng1.id "
-                + "LEFT JOIN nhanvien ng2 ON cv.nguoi_nhan_id = ng2.id "
-                + "LEFT JOIN cong_viec_tien_do td ON cv.id = td.cong_viec_id "
-                + "LEFT JOIN phong_ban pb ON cv.phong_ban_id = pb.id "
-                + "WHERE 1=1 ";
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT cv.id, cv.du_an_id, cv.ten_cong_viec, cv.mo_ta, cv.muc_do_uu_tien, cv.trang_thai, ")
+                .append("cv.tai_lieu_cv, cv.file_tai_lieu, cv.han_hoan_thanh, ")
+                .append("ng1.ho_ten AS nguoi_giao_ten, ")
+                .append("GROUP_CONCAT(DISTINCT ng2.ho_ten ORDER BY ng2.ho_ten SEPARATOR ', ') AS nguoi_nhan_ten, ")
+                .append("MAX(td.phan_tram) AS phan_tram, ")
+                .append("pb.ten_phong AS ten_phong ")
+                .append("FROM cong_viec cv ")
+                .append("LEFT JOIN nhanvien ng1 ON cv.nguoi_giao_id = ng1.id ")
+                .append("LEFT JOIN cong_viec_nguoi_nhan cvnn ON cv.id = cvnn.cong_viec_id ")
+                .append("LEFT JOIN nhanvien ng2 ON cvnn.nhan_vien_id = ng2.id ")
+                .append("LEFT JOIN cong_viec_tien_do td ON cv.id = td.cong_viec_id ")
+                .append("LEFT JOIN phong_ban pb ON cv.phong_ban_id = pb.id ")
+                .append("WHERE 1=1 ");
 
         List<Object> params = new ArrayList<>();
 
+        if (projectId != null) {
+            sql.append(" AND cv.du_an_id = ? ");
+            params.add(projectId);
+        }
+
         if (keyword != null && !keyword.trim().isEmpty()) {
-            sql += " AND cv.ten_cong_viec LIKE ?";
+            sql.append(" AND cv.ten_cong_viec LIKE ? ");
             params.add("%" + keyword.trim() + "%");
         }
 
         if (phongBan != null && !phongBan.isEmpty()) {
-            sql += " AND pb.ten_phong = ?";
+            sql.append(" AND pb.ten_phong = ? ");
             params.add(phongBan);
         }
 
         if (trangThai != null && !trangThai.isEmpty()) {
-            sql += " AND cv.trang_thai = ?";
+            sql.append(" AND cv.trang_thai = ? ");
             params.add(trangThai);
         }
 
-        PreparedStatement ps = cn.prepareStatement(sql);
-        for (int i = 0; i < params.size(); i++) {
-            ps.setObject(i + 1, params.get(i));
-        }
+        sql.append(" GROUP BY cv.id ");
 
-        ResultSet rs = ps.executeQuery();
-        while (rs.next()) {
-            Map<String, Object> task = new HashMap<>();
-            task.put("id", rs.getInt("id"));
-            task.put("ten_cong_viec", rs.getString("ten_cong_viec"));
-            task.put("mo_ta", rs.getString("mo_ta"));
-            task.put("nguoi_giao_id", rs.getString("nguoi_giao_ten"));
-            task.put("nguoi_nhan_id", rs.getString("nguoi_nhan_ten"));
-            task.put("phan_tram", rs.getString("phan_tram"));
-            task.put("phong_ban_id", rs.getString("ten_phong"));
-            task.put("muc_do_uu_tien", rs.getString("muc_do_uu_tien"));
-            task.put("trang_thai", rs.getString("trang_thai"));
-            task.put("han_hoan_thanh", rs.getDate("han_hoan_thanh"));
-            danhSach.add(task);
-        }
+        try (PreparedStatement ps = cn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
 
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> task = new HashMap<>();
+                    task.put("id", rs.getInt("id"));
+                    task.put("du_an_id", rs.getInt("du_an_id"));
+                    task.put("ten_cong_viec", rs.getString("ten_cong_viec"));
+                    task.put("mo_ta", rs.getString("mo_ta"));
+                    task.put("nguoi_giao_id", rs.getString("nguoi_giao_ten"));
+                    task.put("nguoi_nhan_ten", rs.getString("nguoi_nhan_ten"));
+                    task.put("phan_tram", rs.getString("phan_tram"));
+                    task.put("phong_ban_id", rs.getString("ten_phong"));
+                    task.put("muc_do_uu_tien", rs.getString("muc_do_uu_tien"));
+                    task.put("trang_thai", rs.getString("trang_thai"));
+                    task.put("tai_lieu_cv", rs.getString("tai_lieu_cv"));
+                    task.put("file_tai_lieu", rs.getString("file_tai_lieu"));
+                    task.put("han_hoan_thanh", rs.getDate("han_hoan_thanh"));
+                    danhSach.add(task);
+                }
+            }
+        }
         return danhSach;
     }
 
-    public List<Map<String, Object>> locCongViecNV(String keyword, String trangThai, String emailNhanVien) throws SQLException {
+    public List<Map<String, Object>> locCongViecNV(String keyword, String trangThai, String emailNhanVien, Integer projectId) throws SQLException {
         List<Map<String, Object>> danhSach = new ArrayList<>();
 
-        String sql = "SELECT cv.*, "
-                + "ng1.ho_ten AS nguoi_giao_ten, "
-                + "ng2.ho_ten AS nguoi_nhan_ten, "
-                + "td.phan_tram, "
-                + "pb.ten_phong AS ten_phong "
-                + "FROM cong_viec cv "
-                + "LEFT JOIN nhanvien ng1 ON cv.nguoi_giao_id = ng1.id "
-                + "LEFT JOIN nhanvien ng2 ON cv.nguoi_nhan_id = ng2.id "
-                + "LEFT JOIN cong_viec_tien_do td ON cv.id = td.cong_viec_id "
-                + "LEFT JOIN phong_ban pb ON cv.phong_ban_id = pb.id "
-                + "WHERE 1=1 ";
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT cv.id, cv.du_an_id, cv.ten_cong_viec, cv.mo_ta, cv.muc_do_uu_tien, cv.trang_thai, ")
+                .append("cv.tai_lieu_cv, cv.file_tai_lieu, cv.han_hoan_thanh, ")
+                .append("ng1.ho_ten AS nguoi_giao_ten, ")
+                .append("GROUP_CONCAT(DISTINCT ng2.ho_ten ORDER BY ng2.ho_ten SEPARATOR ', ') AS nguoi_nhan_ten, ")
+                .append("MAX(td.phan_tram) AS phan_tram, ")
+                .append("pb.ten_phong AS ten_phong ")
+                .append("FROM cong_viec cv ")
+                .append("LEFT JOIN nhanvien ng1 ON cv.nguoi_giao_id = ng1.id ")
+                .append("LEFT JOIN cong_viec_nguoi_nhan cvnn ON cv.id = cvnn.cong_viec_id ")
+                .append("LEFT JOIN nhanvien ng2 ON cvnn.nhan_vien_id = ng2.id ")
+                .append("LEFT JOIN cong_viec_tien_do td ON cv.id = td.cong_viec_id ")
+                .append("LEFT JOIN phong_ban pb ON cv.phong_ban_id = pb.id ")
+                .append("WHERE 1=1 ");
 
         List<Object> params = new ArrayList<>();
 
+        if (projectId != null) {
+            sql.append(" AND cv.du_an_id = ? ");
+            params.add(projectId);
+        }
+
         if (keyword != null && !keyword.trim().isEmpty()) {
-            sql += " AND cv.ten_cong_viec LIKE ?";
+            sql.append(" AND cv.ten_cong_viec LIKE ? ");
             params.add("%" + keyword.trim() + "%");
         }
 
-        if (trangThai != null && !trangThai.isEmpty()) {
-            sql += " AND cv.trang_thai = ?";
-            params.add(trangThai);
+        if (trangThai != null && !trangThai.trim().isEmpty()) {
+            sql.append(" AND cv.trang_thai = ? ");
+            params.add(trangThai.trim());
         }
 
         if (emailNhanVien != null && !emailNhanVien.trim().isEmpty()) {
-            sql += " AND ng2.email = ?";
+            sql.append(" AND ng2.email = ? ");
             params.add(emailNhanVien.trim());
         }
 
-        PreparedStatement ps = cn.prepareStatement(sql);
-        for (int i = 0; i < params.size(); i++) {
-            ps.setObject(i + 1, params.get(i));
-        }
+        sql.append(" GROUP BY cv.id ");
 
-        ResultSet rs = ps.executeQuery();
-        while (rs.next()) {
-            Map<String, Object> task = new HashMap<>();
-            task.put("id", rs.getInt("id"));
-            task.put("ten_cong_viec", rs.getString("ten_cong_viec"));
-            task.put("mo_ta", rs.getString("mo_ta"));
-            task.put("nguoi_giao_id", rs.getString("nguoi_giao_ten"));
-            task.put("nguoi_nhan_id", rs.getString("nguoi_nhan_ten"));
-            task.put("phan_tram", rs.getString("phan_tram"));
-            task.put("phong_ban_id", rs.getString("ten_phong"));
-            task.put("muc_do_uu_tien", rs.getString("muc_do_uu_tien"));
-            task.put("trang_thai", rs.getString("trang_thai"));
-            task.put("han_hoan_thanh", rs.getDate("han_hoan_thanh"));
-            danhSach.add(task);
-        }
+        try (PreparedStatement ps = cn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
 
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> task = new HashMap<>();
+                    task.put("id", rs.getInt("id"));
+                    task.put("du_an_id", rs.getInt("du_an_id"));
+                    task.put("ten_cong_viec", rs.getString("ten_cong_viec"));
+                    task.put("mo_ta", rs.getString("mo_ta"));
+                    task.put("nguoi_giao_id", rs.getString("nguoi_giao_ten"));
+                    task.put("nguoi_nhan_ten", rs.getString("nguoi_nhan_ten"));
+                    task.put("phan_tram", rs.getString("phan_tram"));
+                    task.put("phong_ban_id", rs.getString("ten_phong"));
+                    task.put("muc_do_uu_tien", rs.getString("muc_do_uu_tien"));
+                    task.put("trang_thai", rs.getString("trang_thai"));
+                    task.put("tai_lieu_cv", rs.getString("tai_lieu_cv"));
+                    task.put("file_tai_lieu", rs.getString("file_tai_lieu"));
+                    task.put("han_hoan_thanh", rs.getDate("han_hoan_thanh"));
+                    danhSach.add(task);
+                }
+            }
+        }
         return danhSach;
     }
 
-    public List<Map<String, Object>> locCongViecQL(String keyword, String trangThai, String emailQL) throws SQLException {
+    public List<Map<String, Object>> locCongViecQL(String keyword, String trangThai, String emailQL, Integer projectId) throws SQLException {
         List<Map<String, Object>> danhSach = new ArrayList<>();
 
         // Lấy thông tin trưởng phòng
@@ -983,59 +1011,72 @@ public class KNCSDL {
                     idQL = rs.getInt("id");
                     phongBanId = rs.getInt("phong_ban_id");
                 } else {
-                    return danhSach; // Không có trưởng phòng hợp lệ
+                    return danhSach;
                 }
             }
         }
 
-        // Query công việc của phòng và của chính trưởng phòng
-        String sql = "SELECT cv.*, "
-                + "ng1.ho_ten AS nguoi_giao_ten, "
-                + "ng2.ho_ten AS nguoi_nhan_ten, "
-                + "td.phan_tram, "
-                + "pb.ten_phong AS ten_phong "
-                + "FROM cong_viec cv "
-                + "LEFT JOIN nhanvien ng1 ON cv.nguoi_giao_id = ng1.id "
-                + "LEFT JOIN nhanvien ng2 ON cv.nguoi_nhan_id = ng2.id "
-                + "LEFT JOIN cong_viec_tien_do td ON cv.id = td.cong_viec_id "
-                + "LEFT JOIN phong_ban pb ON cv.phong_ban_id = pb.id "
-                + "WHERE (cv.phong_ban_id = ? OR cv.nguoi_nhan_id = ?)";
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT cv.id, cv.du_an_id, cv.ten_cong_viec, cv.mo_ta, cv.muc_do_uu_tien, cv.trang_thai, ")
+                .append("cv.tai_lieu_cv, cv.file_tai_lieu, cv.han_hoan_thanh, ")
+                .append("ng1.ho_ten AS nguoi_giao_ten, ")
+                .append("GROUP_CONCAT(DISTINCT ng2.ho_ten ORDER BY ng2.ho_ten SEPARATOR ', ') AS nguoi_nhan_ten, ")
+                .append("MAX(td.phan_tram) AS phan_tram, ")
+                .append("pb.ten_phong AS ten_phong ")
+                .append("FROM cong_viec cv ")
+                .append("LEFT JOIN nhanvien ng1 ON cv.nguoi_giao_id = ng1.id ")
+                .append("LEFT JOIN cong_viec_nguoi_nhan cvnn ON cv.id = cvnn.cong_viec_id ")
+                .append("LEFT JOIN nhanvien ng2 ON cvnn.nhan_vien_id = ng2.id ")
+                .append("LEFT JOIN cong_viec_tien_do td ON cv.id = td.cong_viec_id ")
+                .append("LEFT JOIN phong_ban pb ON cv.phong_ban_id = pb.id ")
+                .append("WHERE (cv.phong_ban_id = ? OR cvnn.nhan_vien_id = ?) ");
 
         List<Object> params = new ArrayList<>();
         params.add(phongBanId);
         params.add(idQL);
 
+        if (projectId != null) {
+            sql.append(" AND cv.du_an_id = ? ");
+            params.add(projectId);
+        }
+
         if (keyword != null && !keyword.trim().isEmpty()) {
-            sql += " AND cv.ten_cong_viec LIKE ?";
+            sql.append(" AND cv.ten_cong_viec LIKE ? ");
             params.add("%" + keyword.trim() + "%");
         }
 
         if (trangThai != null && !trangThai.trim().isEmpty()) {
-            sql += " AND cv.trang_thai = ?";
+            sql.append(" AND cv.trang_thai = ? ");
             params.add(trangThai.trim());
         }
 
-        PreparedStatement ps = cn.prepareStatement(sql);
-        for (int i = 0; i < params.size(); i++) {
-            ps.setObject(i + 1, params.get(i));
-        }
+        sql.append(" GROUP BY cv.id ");
 
-        ResultSet rs = ps.executeQuery();
-        while (rs.next()) {
-            Map<String, Object> task = new HashMap<>();
-            task.put("id", rs.getInt("id"));
-            task.put("ten_cong_viec", rs.getString("ten_cong_viec"));
-            task.put("mo_ta", rs.getString("mo_ta"));
-            task.put("nguoi_giao_id", rs.getString("nguoi_giao_ten"));
-            task.put("nguoi_nhan_id", rs.getString("nguoi_nhan_ten"));
-            task.put("phan_tram", rs.getString("phan_tram"));
-            task.put("phong_ban_id", rs.getString("ten_phong"));
-            task.put("muc_do_uu_tien", rs.getString("muc_do_uu_tien"));
-            task.put("trang_thai", rs.getString("trang_thai"));
-            task.put("han_hoan_thanh", rs.getDate("han_hoan_thanh"));
-            danhSach.add(task);
-        }
+        try (PreparedStatement ps = cn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
 
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> task = new HashMap<>();
+                    task.put("id", rs.getInt("id"));
+                    task.put("du_an_id", rs.getInt("du_an_id"));
+                    task.put("ten_cong_viec", rs.getString("ten_cong_viec"));
+                    task.put("mo_ta", rs.getString("mo_ta"));
+                    task.put("nguoi_giao_id", rs.getString("nguoi_giao_ten"));
+                    task.put("nguoi_nhan_ten", rs.getString("nguoi_nhan_ten"));
+                    task.put("phan_tram", rs.getString("phan_tram"));
+                    task.put("phong_ban_id", rs.getString("ten_phong"));
+                    task.put("muc_do_uu_tien", rs.getString("muc_do_uu_tien"));
+                    task.put("trang_thai", rs.getString("trang_thai"));
+                    task.put("tai_lieu_cv", rs.getString("tai_lieu_cv"));
+                    task.put("file_tai_lieu", rs.getString("file_tai_lieu"));
+                    task.put("han_hoan_thanh", rs.getDate("han_hoan_thanh"));
+                    danhSach.add(task);
+                }
+            }
+        }
         return danhSach;
     }
 

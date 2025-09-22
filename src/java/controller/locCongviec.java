@@ -14,6 +14,11 @@ public class locCongviec extends HttpServlet {
             throws ServletException, IOException {
         String keyword = request.getParameter("keyword");
         String trangThai = request.getParameter("trang_thai");
+        String projectIdStr = request.getParameter("projectId");
+        Integer projectId = null;
+        if (projectIdStr != null && !projectIdStr.trim().isEmpty()) {
+            projectId = Integer.parseInt(projectIdStr);
+        }
 
         try {
             HttpSession session = request.getSession();
@@ -25,7 +30,6 @@ public class locCongviec extends HttpServlet {
             List<Map<String, Object>> taskList;
 
             if ("Admin".equalsIgnoreCase(vaiTro)) {
-                // Admin lọc toàn bộ
                 String phong = request.getParameter("phong_ban");
                 String phongban = null;
 
@@ -34,26 +38,23 @@ public class locCongviec extends HttpServlet {
                     phongban = db.getPhongNameById(idphong);
                 }
 
-                taskList = db.locCongViec(keyword, phongban, trangThai);
+                taskList = db.locCongViec(keyword, phongban, trangThai, projectId);
 
                 request.setAttribute("taskList", taskList);
                 RequestDispatcher dispatcher = request.getRequestDispatcher("kanban-board.jsp");
                 dispatcher.forward(request, response);
 
             } else if ("Quản lý".equalsIgnoreCase(vaiTro)) {
-                // Trưởng phòng lọc theo phòng ban của họ và công việc của họ
-                taskList = db.locCongViecQL(keyword, trangThai, email);
+                taskList = db.locCongViecQL(keyword, trangThai, email, projectId);
 
                 request.setAttribute("taskList", taskList);
                 RequestDispatcher dispatcher = request.getRequestDispatcher("kanban-board.jsp");
                 dispatcher.forward(request, response);
+
             } else {
-                // Nhân viên hoặc các vai trò khác
-                taskList = db.locCongViecNV(keyword, trangThai, email);
+                taskList = db.locCongViecNV(keyword, trangThai, email, projectId);
 
                 request.setAttribute("taskList", taskList);
-
-                // Gửi tới kanban riêng cho nhân viên
                 RequestDispatcher dispatcher = request.getRequestDispatcher("kanban-board-nv.jsp");
                 dispatcher.forward(request, response);
             }

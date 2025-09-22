@@ -61,8 +61,9 @@ public class DeleteFileServlet extends HttpServlet {
 
             // 3. Cập nhật lại danh sách trong DB
             db.capNhatTaiLieuCongViec(taskId, dsConLai);
+            int projectId = Integer.parseInt(request.getParameter("projectId"));
 
-            out.print("{\"success\": true}");
+            out.print("{\"success\": true, \"projectId\": " + projectId + "}");
         } catch (Exception e) {
             e.printStackTrace();
             out.print("{\"success\": false, \"message\": \"" + e.getMessage().replace("\"", "'") + "\"}");

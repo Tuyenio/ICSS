@@ -22,7 +22,6 @@
     priorityBadge.put("Thấp", "bg-success");
 %>
 
-
 <div class="kanban-board">
     <% for (String status : trangThaiLabels.keySet()) { 
            String columnClass = "";
@@ -57,11 +56,13 @@
              data-han="<%= task.get("han_hoan_thanh") %>"
              data-uu-tien="<%= task.get("muc_do_uu_tien") %>"
              data-ten_nguoi_giao="<%= task.get("nguoi_giao_id") %>"
-             data-ten_nguoi_nhan="<%= task.get("nguoi_nhan_id") %>"
+             data-ten_nguoi_nhan="<%= task.get("nguoi_nhan_ten") %>"
              data-ten_phong_ban="<%= task.get("phong_ban_id") %>"
-             data-trang-thai="<%= task.get("trang_thai") %>">
+             data-trang-thai="<%= task.get("trang_thai") %>"
+             data-tai_lieu_cv="<%= task.get("tai_lieu_cv") %>"
+             data-file_tai_lieu="<%= task.get("file_tai_lieu") %>">
             <div class="task-title"><%= task.get("ten_cong_viec") %></div>
-            <div class="task-meta">Người giao: <b><%= task.get("nguoi_giao_id") %></b> <br>Người nhận: <b><%= task.get("nguoi_nhan_id") %></b></div>
+            <div class="task-meta">Người giao: <b><%= task.get("nguoi_giao_id") %></b> <br>Người nhận: <b><%= task.get("nguoi_nhan_ten") %></b></div>
             <span class="task-priority badge <%= priorityBadge.getOrDefault(task.get("muc_do_uu_tien"), "bg-secondary") %>">
                 <%= task.get("muc_do_uu_tien") %>
             </span>

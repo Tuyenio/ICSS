@@ -368,7 +368,6 @@
                         </div>
                     </div>
 
-                    <!-- Kanban board -->
                     <%
                         List<Map<String, Object>> taskList = (List<Map<String, Object>>) request.getAttribute("taskList");
 
@@ -389,7 +388,6 @@
                         priorityBadge.put("Trung bình", "bg-warning text-dark");
                         priorityBadge.put("Thấp", "bg-success");
                     %>
-
 
                     <div class="kanban-board">
                         <% for (String status : trangThaiLabels.keySet()) { 
@@ -1139,6 +1137,7 @@
                 var keyword = $('input[name="keyword"]').val() || '';
                 var phongBan = $('select[name="ten_phong_ban"]').val() || '';
                 var trangThai = $('select[name="trangThai"]').val() || '';
+                var projectId = $('input[name="du_an_id"]').val() || '';
 
                 $.ajax({
                     url: './locCongviec',
@@ -1146,7 +1145,8 @@
                     data: {
                         keyword: keyword,
                         phong_ban: phongBan,
-                        trang_thai: trangThai
+                        trang_thai: trangThai,
+                        projectId: projectId
                     },
                     dataType: 'html',
                     beforeSend: function () {
@@ -1154,7 +1154,7 @@
                     },
                     success: function (html) {
                         if (html && $.trim(html).length > 0) {
-                            $('.kanban-board').html(html);
+                            $('.kanban-board').replaceWith(html);
                             showToast('success', 'Đã áp dụng bộ lọc.');
                         } else {
                             $('.kanban-board').html('<div class="text-center text-muted p-3">Không có dữ liệu phù hợp</div>');

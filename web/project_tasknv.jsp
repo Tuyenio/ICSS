@@ -389,7 +389,6 @@
                         priorityBadge.put("Thấp", "bg-success");
                     %>
 
-
                     <div class="kanban-board">
                         <% for (String status : trangThaiLabels.keySet()) { 
                                String columnClass = "";
@@ -409,10 +408,6 @@
                             <h5><i class="fa-solid fa-exclamation-circle"></i><%= trangThaiLabels.get(status) %></h5>
                                 <% } %>   
                                 <% if ("Chưa bắt đầu".equals(status)) { %>
-<!--                            <button class="btn btn-outline-secondary kanban-add-btn" data-bs-toggle="modal"
-                                    data-bs-target="#modalTask">
-                                <i class="fa-solid fa-plus"></i> Thêm task
-                            </button>-->
                             <% } %>
                             <% for (Map<String, Object> task : taskList) {
                                    if (status.equals(task.get("trang_thai"))) {
@@ -1015,7 +1010,7 @@
                                     headers: {
                                         "Content-Type": "application/x-www-form-urlencoded"
                                     },
-                                    body: "file=" + encodeURIComponent(path) + "&taskId=" + encodeURIComponent(taskId)
+                                    body: "file=" + encodeURIComponent(path) + "&taskId=" + encodeURIComponent(taskId) + "&projectId=" + encodeURIComponent(PROJECT_ID)
                                 })
                                         .then(res => res.json())
                                         .then(data => {
@@ -1027,6 +1022,7 @@
                                                 }
 
                                                 showToast('success', '🗑️ File đã được xoá');
+                                                window.location.href = "<%=request.getContextPath()%>/dsCongviecDuan?projectId=" + data.projectId;
                                             } else {
                                                 showToast('error', "❌ Lỗi xoá file: " + (data.message || "Không rõ nguyên nhân"));
                                             }
@@ -1147,7 +1143,8 @@
                     data: {
                         keyword: keyword,
                         phong_ban: phongBan,
-                        trang_thai: trangThai
+                        trang_thai: trangThai,
+                        projectId: PROJECT_ID
                     },
                     dataType: 'html',
                     beforeSend: function () {
@@ -1155,7 +1152,7 @@
                     },
                     success: function (html) {
                         if (html && $.trim(html).length > 0) {
-                            $('.kanban-board').html(html);
+                            $('.kanban-board').replaceWith(html);
                             showToast('success', 'Đã áp dụng bộ lọc.');
                         } else {
                             $('.kanban-board').html('<div class="text-center text-muted p-3">Không có dữ liệu phù hợp</div>');

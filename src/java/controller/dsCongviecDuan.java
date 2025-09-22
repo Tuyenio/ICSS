@@ -27,7 +27,7 @@ public class dsCongviecDuan extends HttpServlet {
             String projectIdStr = req.getParameter("projectId");
 
             if (projectIdStr == null) {
-                resp.sendRedirect("projects"); // quay lại danh sách nếu không có id
+                resp.sendRedirect("dsDuan"); // quay lại danh sách nếu không có id
                 return;
             }
 

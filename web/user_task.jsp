@@ -771,7 +771,7 @@
                         trang_thai: trangThai
                     },
                     success: function (html) {
-                        $('.kanban-board').html(html); // Thay thế toàn bộ bảng Kanban
+                        $('.kanban-board').replaceWith(html); // Thay thế toàn bộ bảng Kanban
                     },
                     error: function () {
                         $('.kanban-board').html("<div class='text-danger text-center'>Lỗi khi lọc công việc</div>");

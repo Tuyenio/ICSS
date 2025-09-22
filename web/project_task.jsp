@@ -1010,12 +1010,12 @@
 
                             // 👉 KHÔNG cần confirm, gửi luôn full path
                             delBtn.addEventListener("click", function () {
-                                fetch("deleteFile", {
+                                fetch("<%=request.getContextPath()%>/deleteFile", {
                                     method: "POST",
                                     headers: {
                                         "Content-Type": "application/x-www-form-urlencoded"
                                     },
-                                    body: "file=" + encodeURIComponent(path) + "&taskId=" + encodeURIComponent(taskId)
+                                    body: "file=" + encodeURIComponent(path) + "&taskId=" + encodeURIComponent(taskId) + "&projectId=" + encodeURIComponent(PROJECT_ID)
                                 })
                                         .then(res => res.json())
                                         .then(data => {
@@ -1027,6 +1027,7 @@
                                                 }
 
                                                 showToast('success', '🗑️ File đã được xoá');
+                                                window.location.href = "<%=request.getContextPath()%>/dsCongviecDuan?projectId=" + data.projectId;
                                             } else {
                                                 showToast('error', "❌ Lỗi xoá file: " + (data.message || "Không rõ nguyên nhân"));
                                             }
@@ -1147,7 +1148,8 @@
                     data: {
                         keyword: keyword,
                         phong_ban: phongBan,
-                        trang_thai: trangThai
+                        trang_thai: trangThai,
+                        projectId: PROJECT_ID
                     },
                     dataType: 'html',
                     beforeSend: function () {
@@ -1155,7 +1157,7 @@
                     },
                     success: function (html) {
                         if (html && $.trim(html).length > 0) {
-                            $('.kanban-board').html(html);
+                            $('.kanban-board').replaceWith(html);
                             showToast('success', 'Đã áp dụng bộ lọc.');
                         } else {
                             $('.kanban-board').html('<div class="text-center text-muted p-3">Không có dữ liệu phù hợp</div>');
