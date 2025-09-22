@@ -24,89 +24,12 @@
                 background: #f4f6fa;
             }
 
-            .sidebar {
-                min-height: 100vh;
-                background: linear-gradient(180deg, #23272f 0%, #343a40 100%);
-                color: #fff;
-                width: 240px;
-                transition: width 0.2s;
-                box-shadow: 2px 0 8px #0001;
-                z-index: 10;
-                position: fixed;
-                top: 0;
-                left: 0;
-                bottom: 0;
-            }
-
-            .sidebar .sidebar-title {
-                font-size: 1.7rem;
-                font-weight: bold;
-                letter-spacing: 1px;
-                color: #0dcaf0;
-                background: #23272f;
-            }
-
-            .sidebar-nav {
-                padding: 0;
-                margin: 0;
-                list-style: none;
-            }
-
-            .sidebar-nav li {
-                margin-bottom: 2px;
-            }
-
-            .sidebar-nav a {
-                color: #fff;
-                text-decoration: none;
-                display: flex;
-                align-items: center;
-                gap: 14px;
-                padding: 14px 28px;
-                border-radius: 8px;
-                font-size: 1.08rem;
-                font-weight: 500;
-                transition: background 0.15s, color 0.15s;
-            }
-
-            .sidebar-nav a.active,
-            .sidebar-nav a:hover {
-                background: #0dcaf0;
-                color: #23272f;
-            }
-
-            .sidebar-nav a .fa-solid {
-                width: 26px;
-                text-align: center;
-                font-size: 1.25rem;
-            }
-
-            @media (max-width: 992px) {
-                .sidebar {
-                    width: 60px;
-                }
-
-                .sidebar .sidebar-title {
-                    font-size: 1.1rem;
-                    padding: 12px 0;
-                }
-
-                .sidebar-nav a span {
-                    display: none;
-                }
-
-                .sidebar-nav a {
-                    justify-content: center;
-                    padding: 14px 0;
-                }
-            }
-
             .header {
                 background: #fff;
                 border-bottom: 1px solid #dee2e6;
                 min-height: 64px;
                 box-shadow: 0 2px 8px #0001;
-                margin-left: 240px;
+                margin-left: 260px;
             }
 
             .avatar {
@@ -131,24 +54,7 @@
                 display: flex;
                 justify-content: center;
                 align-items: flex-start;
-                margin-left: 240px;
-            }
-
-
-            @media (max-width: 992px) {
-                .main-content {
-                    margin-left: 60px;
-                }
-            }
-
-            @media (max-width: 600px) {
-                .main-box {
-                    padding: 8px 0;
-                }
-
-                .main-content {
-                    padding: 8px 0;
-                }
+                margin-left: 260px;
             }
 
             .list-group-item {
@@ -172,6 +78,8 @@
                 font-size: 0.95em;
                 min-width: 80px;
                 text-align: center;
+                box-shadow: 0 1px 4px #0001;
+                border: 1px solid #e9ecef;
             }
 
             .fw-semibold {
@@ -196,35 +104,6 @@
                 vertical-align: middle;
             }
 
-            @media (max-width: 900px) {
-                .main-box {
-                    padding: 18px 4px;
-                }
-            }
-
-            @media (max-width: 600px) {
-                .main-box {
-                    padding: 8px 0;
-                }
-
-                .main-content {
-                    padding: 8px 0;
-                }
-
-                .list-group-item {
-                    padding: 12px 8px 10px 8px;
-                }
-
-                h3.mb-0 {
-                    font-size: 1.2rem;
-                }
-            }
-
-            .badge-status {
-                box-shadow: 0 1px 4px #0001;
-                border: 1px solid #e9ecef;
-            }
-
             .list-group-item .badge.bg-danger,
             .list-group-item .badge.bg-warning {
                 animation: pulse 1.2s infinite alternate;
@@ -240,9 +119,51 @@
                 }
             }
 
-            .sidebar i {
-                font-family: "Font Awesome 6 Free" !important;
-                font-weight: 900;
+            @media (max-width: 1200px) {
+                .main-content {
+                    margin-left: 240px;
+                }
+                .header {
+                    margin-left: 240px;
+                }
+            }
+
+            @media (max-width: 992px) {
+                .main-content {
+                    margin-left: 76px;
+                }
+                .header {
+                    margin-left: 76px;
+                }
+            }
+
+            @media (max-width: 900px) {
+                .main-box {
+                    padding: 18px 4px;
+                }
+            }
+
+            @media (max-width: 600px) {
+                .main-box {
+                    padding: 8px 0;
+                }
+
+                .main-content {
+                    padding: 8px 0;
+                    margin-left: 60px;
+                }
+
+                .header {
+                    margin-left: 60px;
+                }
+
+                .list-group-item {
+                    padding: 12px 8px 10px 8px;
+                }
+
+                h3.mb-0 {
+                    font-size: 1.2rem;
+                }
             }
         </style>
         <script>
@@ -252,43 +173,8 @@
 
     <body>
         <div class="d-flex">
-            <!-- Sidebar -->
-            <nav class="sidebar p-0">
-                <div class="sidebar-title text-center py-4 border-bottom border-secondary" style="cursor:pointer;"
-                     onclick="location.href = 'index.jsp'">
-                    <i class="fa-solid fa-people-group me-2"></i>ICS
-                </div>
-                <ul class="sidebar-nav mt-3">
-                    <li>
-                        <a href="index.jsp"><i class="fa-solid fa-chart-line"></i><span>Dashboard</span></a>
-                    </li>
-                    <li>
-                        <a href="./dsnhanvien"><i class="fa-solid fa-users"></i><span>Nhân sự</span></a>
-                    </li>
-                    <li>
-                        <a href="project.jsp"><i class="fa-solid fa-diagram-project"></i><span>Dự án</span></a>
-                    </li>
-                    <li>
-                        <a href="./dsCongviec"><i class="fa-solid fa-tasks"></i><span>Công việc</span></a>
-                    </li>
-                    <li>
-                        <a href="./dsPhongban"><i class="fa-solid fa-building"></i><span>Phòng ban</span></a>
-                    </li>
-                    <li>
-                        <a href="attendance.jsp"><i class="fa-solid fa-calendar-check"></i><span>Chấm công</span></a>
-                    </li>
-                    <li>
-                        <a href="calendar.jsp"><i class="fa-solid fa-calendar-days"></i><span>Lịch trình</span></a>
-                    </li>
-                    <li>
-                        <a href="./svBaocao"><i class="fa-solid fa-chart-bar"></i><span>Báo cáo</span></a>
-                    </li>
-                    <!-- <li>
-                        <a href="notification.jsp" class="active"><i class="fa-solid fa-bell"></i><span>Thông
-                                báo</span></a>
-                    </li> -->
-                </ul>
-            </nav>
+            <!-- Include Sidebar -->
+            <%@ include file="sidebar.jsp" %>
             <!-- Main -->
             <div class="flex-grow-1">
                 <%@ include file="header.jsp" %>
