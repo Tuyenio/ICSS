@@ -23,6 +23,7 @@ public class dsCongviecDuan extends HttpServlet {
             KNCSDL kn = new KNCSDL();
             HttpSession session = req.getSession();
             String email = (String) session.getAttribute("userEmail");
+            String chucVu = (String) session.getAttribute("chucVu");
             String projectIdStr = req.getParameter("projectId");
 
             if (projectIdStr == null) {
@@ -55,7 +56,12 @@ public class dsCongviecDuan extends HttpServlet {
             req.setAttribute("projectId", projectId);
             req.setAttribute("trangThaiLabels", trangThaiLabels);
 
-            req.getRequestDispatcher("project_task.jsp").forward(req, resp);
+            // 5. Chuyển hướng theo chức vụ
+            if ("Nhân viên".equalsIgnoreCase(chucVu)) {
+                req.getRequestDispatcher("project_tasknv.jsp").forward(req, resp);
+            } else {
+                req.getRequestDispatcher("project_task.jsp").forward(req, resp);
+            }
 
         } catch (ClassNotFoundException | SQLException ex) {
             Logger.getLogger(dsCongviecDuan.class.getName()).log(Level.SEVERE, null, ex);
@@ -68,6 +74,6 @@ public class dsCongviecDuan extends HttpServlet {
 
     @Override
     public String getServletInfo() {
-        return "Hiển thị danh sách công việc theo dự án kèm trạng thái";
+        return "Hiển thị danh sách công việc theo dự án kèm trạng thái (theo chức vụ)";
     }
 }

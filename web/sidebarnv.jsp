@@ -1,7 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%
-    String uri = request.getRequestURI();
-    String currentPath = uri.substring(uri.lastIndexOf("/") + 1);
+    String uri = request.getRequestURI(); // ví dụ: /ICSS/dsnhanvien
+    String currentPath = uri.substring(uri.lastIndexOf("/") + 1); // ví dụ: dsnhanvien
 %>
 
 <style>
@@ -127,33 +127,27 @@
 
 <nav class="sidebar p-0">
     <div class="sidebar-title text-center py-4 border-bottom border-secondary" style="cursor:pointer;"
-         onclick="location.href = 'index.jsp'">
+         onclick="location.href = 'userDashboard'">
         <i class="fa-solid fa-people-group me-2"></i>ICS
     </div>
 
     <ul class="sidebar-nav mt-3">
-        <li><a href="index.jsp" class="<%= currentPath.equals("index.jsp") ? "active" : "" %>">
+        <li><a href="userDashboard" class="<%= currentPath.equals("user_dashboard.jsp") ? "active" : "" %>">
                 <i class="fa-solid fa-chart-line"></i><span>Dashboard</span></a></li>
 
-        <li><a href="dsnhanvien" class="<%= currentPath.equals("employee.jsp") ? "active" : "" %>">
-                <i class="fa-solid fa-users"></i><span>Nhân sự</span></a></li>
-
-        <li><a href="dsDuan" class="<%= currentPath.equals("project.jsp") ? "active" : "" %>">
+        <li><a href="dsDuannv" class="<%= currentPath.equals("projectnv.jsp") ? "active" : "" %>">
                 <i class="fa-solid fa-diagram-project"></i><span>Dự án</span></a></li>
 
-        <li><a href="dsCongviec" class="<%= currentPath.equals("task.jsp") ? "active" : "" %>">
+        <li><a href="dsCongviecNV" class="<%= currentPath.equals("user_task.jsp") ? "active" : "" %>">
                 <i class="fa-solid fa-tasks"></i><span>Công việc</span></a></li>
 
-        <li><a href="dsPhongban" class="<%= currentPath.equals("department.jsp") ? "active" : "" %>">
-                <i class="fa-solid fa-building"></i><span>Phòng ban</span></a></li>
-
-        <li><a href="dsChamCong" class="<%= currentPath.equals("attendance.jsp") ? "active" : "" %>">
+        <li><a href="userChamCong" class="<%= currentPath.equals("user_attendance.jsp") ? "active" : "" %>">
                 <i class="fa-solid fa-calendar-check"></i><span>Chấm công</span></a></li>
 
-        <li><a href="calendar.jsp" class="<%= currentPath.equals("calendar.jsp") ? "active" : "" %>">
+        <li><a href="calendarnv.jsp" class="<%= currentPath.equals("calendarnv.jsp") ? "active" : "" %>">
                 <i class="fa-solid fa-calendar-days"></i><span>Lịch trình</span></a></li>
 
-        <li><a href="svBaocao" class="<%= currentPath.equals("report.jsp") ? "active" : "" %>">
-                <i class="fa-solid fa-chart-bar"></i><span>Báo cáo</span></a></li>
+        <li><a href="userLuong" class="<%= currentPath.equals("user_salary.jsp") ? "active" : "" %>">
+                <i class="fa-solid fa-money-bill"></i><span>Lương & KPI</span></a></li>
     </ul>
 </nav>

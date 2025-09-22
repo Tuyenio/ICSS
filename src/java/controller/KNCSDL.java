@@ -3099,7 +3099,7 @@ public class KNCSDL {
     public List<Map<String, Object>> getAllProjects() throws SQLException {
         List<Map<String, Object>> list = new ArrayList<>();
         String sql = "SELECT id, ten_du_an, mo_ta, ngay_bat_dau, ngay_ket_thuc "
-                + "FROM du_an WHERE id <> 1"; // bỏ id = 1
+                + "FROM du_an WHERE id <> 1";
         PreparedStatement ps = cn.prepareStatement(sql);
         ResultSet rs = ps.executeQuery();
         while (rs.next()) {

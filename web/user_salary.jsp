@@ -234,26 +234,7 @@
         </script>
     </head>
     <body>
-        <nav class="sidebar p-0">
-            <div class="sidebar-title text-center py-4 border-bottom border-secondary" style="cursor:pointer;" onclick="location.href = './userDashboard'">
-                <i class="fa-solid fa-user me-2"></i>ICS
-            </div>
-            <ul class="sidebar-nav mt-3">
-                <li>
-                    <a href="./userDashboard"><i class="fa-solid fa-chart-line"></i><span>Dashboard</span></a>
-                </li>
-                <li>
-                    <a href="./dsCongviecNV"><i class="fa-solid fa-tasks"></i><span>Công việc của tôi</span></a>
-                </li>
-                <li>
-                    <a href="./userChamCong"><i class="fa-solid fa-calendar-check"></i><span>Chấm công</span></a>
-                </li>
-                <li>
-                    <a href="./userLuong" class="active"><i class="fa-solid fa-money-bill"></i><span>Lương & KPI</span></a>
-                </li>
-
-            </ul>
-        </nav>
+        <%@ include file="sidebarnv.jsp" %>
         <%@ include file="user_header.jsp" %>
         <div class="main-content">
             <!-- Thông tin lương tháng hiện tại -->
