@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Bot Demo</title>
+    <!-- Include Vyin Chat Bot SDK -->
+    <script src="https://botsdk.gamania.chat/index.umd.js"></script>
+</head>
+<body>
+    <h1>Welcome to Our Site</h1>
+    <p>Click the chat icon at the bottom-right to talk to our bot.</p>
+
+    <script>
+    // Khởi tạo chatbot
+    window.GIMBotTool.init({
+        url: 'https://helpdesk.gamania.chat/beanfun',
+        position: 'bottom-right',
+        title: 'Customer Service Bot',
+        style: {
+            header: {
+                backgroundColor: '#000000',
+                color: '#ffffff'
+            }
+        },
+        languages: [
+            {
+                value: 'en-US',
+                label: 'English'
+            }
+        ]
+    });
+    </script>
+</body>
+</html>

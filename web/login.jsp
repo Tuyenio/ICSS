@@ -48,6 +48,8 @@
     <title>Đăng nhập - ICS</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <!-- Include Vyin Chat Bot SDK -->
+    <script src="https://botsdk.gamania.chat/index.umd.js"></script>
     <style>
         body {
             background: linear-gradient(135deg, #1e293b, #0f172a);
@@ -339,5 +341,30 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+    // Khởi tạo chatbot
+    window.GIMBotTool.init({
+        url: 'https://helpdesk.gamania.chat/beanfun',
+        position: 'bottom-right',
+        title: 'ICS Customer Service Bot',
+        style: {
+            header: {
+                backgroundColor: '#4f46e5',
+                color: '#ffffff'
+            }
+        },
+        languages: [
+            {
+                value: 'vi-VN',
+                label: 'Tiếng Việt'
+            },
+            {
+                value: 'en-US',
+                label: 'English'
+            }
+        ]
+    });
+    </script>
 </body>
 </html>
