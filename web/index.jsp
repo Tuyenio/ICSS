@@ -73,128 +73,297 @@
         <style>
             /* BODY + MAIN CONTENT */
             body {
-                background: #f8fafc;
-                font-family: 'Segoe UI', Roboto, sans-serif;
-                color: #1e293b;
-            }
-            .header {
-                background: #fff;
-                border-bottom: 1px solid #e2e8f0;
-                min-height: 64px;
-                box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-                margin-left: 240px;
-                position: sticky;
-                top: 0;
-                z-index: 20;
-            }
-            .main-content {
-                padding: 32px;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
                 min-height: 100vh;
-                margin-left: 240px;
-                animation: fadeIn 0.5s ease;
-            }
-
-            /* CARD MODULES (shortcut menu) */
-            .card-module {
-                border: none;
-                border-radius: 18px;
-                box-shadow: 0 2px 14px rgba(0,0,0,0.06);
-                background: #fff;
-                transition: transform 0.2s ease, box-shadow 0.2s ease;
-            }
-            .card-module:hover {
-                transform: translateY(-4px) scale(1.03);
-                box-shadow: 0 6px 20px rgba(0,0,0,0.12);
-            }
-            .card-module .card-title {
-                font-size: 1.15rem;
-                font-weight: 600;
-                margin-bottom: 6px;
-            }
-            .card-module .card-text {
-                color: #64748b;
-                font-size: 0.92rem;
-                min-height: 48px;
-            }
-
-            /* DASHBOARD ROW (menu grid) */
-            .dashboard-row {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 28px 20px;
-                justify-content: center;
-            }
-            .dashboard-row>div {
-                flex: 1 1 220px;
-                min-width: 220px;
-                max-width: 300px;
-            }
-
-            /* STAT CARDS */
-            .stat-card-eq .card {
-                border: none;
-                border-radius: 16px;
-                background: linear-gradient(135deg, #f8fafc, #ffffff);
-                box-shadow: 0 3px 10px rgba(0,0,0,0.05);
-                transition: transform 0.25s ease;
-            }
-            .stat-card-eq .card:hover {
-                transform: translateY(-3px);
-            }
-            .stat-card-eq h3 {
-                font-size: 1.8rem;
-                font-weight: 700;
-            }
-
-            /* QUICK REPORT BOX */
-            .quick-report-box {
-                background: #fff;
-                border-radius: 16px;
-                box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-                padding: 22px;
-                animation: slideUp 0.5s ease;
-            }
-            .quick-report-box h5 {
-                font-weight: 600;
-                margin-bottom: 16px;
-            }
-
-            /* CHART CARDS */
-            .chart-card {
-                background: #fff;
-                border-radius: 20px;
-                box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-                padding: 22px;
-                display: flex;
-                flex-direction: column;
-                animation: fadeIn 0.6s ease;
-            }
-            .chart-card h6 {
-                font-size: 0.85rem;
-                font-weight: 600;
-                text-transform: uppercase;
-                color: #475569;
-                margin-bottom: 12px;
-            }
-            .chart-wrapper {
+                font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+                color: #1e293b;
                 position: relative;
             }
 
-            /* ANIMATIONS */
+            body::before {
+                content: '';
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: url('data:image/svg+xml,<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><g fill="none" fill-rule="evenodd"><g fill="%23ffffff" fill-opacity="0.03"><circle cx="30" cy="30" r="2"/></g></svg>');
+                pointer-events: none;
+                z-index: 0;
+            }
+
+            .header {
+                background: rgba(255, 255, 255, 0.95);
+                backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
+                border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+                min-height: 64px;
+                box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
+                margin-left: 260px;
+                position: sticky;
+                top: 0;
+                z-index: 100;
+            }
+
+            .main-content {
+                padding: 40px;
+                min-height: 100vh;
+                margin-left: 260px;
+                animation: fadeIn 0.8s ease;
+                position: relative;
+                z-index: 1;
+            }
+
+            /* PREMIUM CARD MODULES */
+            .card-module {
+                border: none;
+                border-radius: 24px;
+                background: rgba(255, 255, 255, 0.95);
+                backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
+                box-shadow: 
+                    0 8px 32px rgba(31, 38, 135, 0.15),
+                    0 2px 16px rgba(0, 0, 0, 0.1),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+                transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                position: relative;
+                overflow: hidden;
+            }
+
+            .card-module::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(
+                    90deg,
+                    transparent,
+                    rgba(255, 255, 255, 0.3),
+                    transparent
+                );
+                transition: left 0.6s ease;
+            }
+
+            .card-module:hover::before {
+                left: 100%;
+            }
+
+            .card-module:hover {
+                transform: translateY(-12px) scale(1.05);
+                box-shadow: 
+                    0 20px 60px rgba(31, 38, 135, 0.25),
+                    0 8px 32px rgba(0, 0, 0, 0.15),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            }
+
+            .card-module .card-body {
+                padding: 2rem;
+                position: relative;
+                z-index: 2;
+            }
+
+            .card-module .card-title {
+                font-size: 1.25rem;
+                font-weight: 700;
+                margin-bottom: 8px;
+                background: linear-gradient(135deg, #667eea, #764ba2);
+                -webkit-background-clip: text;
+                background-clip: text;
+                -webkit-text-fill-color: transparent;
+            }
+
+            .card-module .card-text {
+                color: #64748b;
+                font-size: 0.95rem;
+                min-height: 48px;
+                line-height: 1.6;
+            }
+
+            .card-module i {
+                background: linear-gradient(135deg, #667eea, #764ba2);
+                -webkit-background-clip: text;
+                background-clip: text;
+                -webkit-text-fill-color: transparent;
+                filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+                transition: transform 0.3s ease;
+            }
+
+            .card-module:hover i {
+                transform: scale(1.1) rotate(5deg);
+            }
+
+            .card-module .btn {
+                background: linear-gradient(135deg, #667eea, #764ba2);
+                border: none;
+                border-radius: 50px;
+                padding: 8px 20px;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                transition: all 0.3s ease;
+                box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            }
+
+            .card-module .btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+            }
+
+            /* DASHBOARD GRID */
+            .dashboard-row {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+                gap: 2rem;
+                margin-bottom: 3rem;
+            }
+
+            /* PREMIUM STAT CARDS */
+            .stat-card-eq .card {
+                border: none;
+                border-radius: 20px;
+                background: rgba(255, 255, 255, 0.95);
+                backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
+                box-shadow: 
+                    0 8px 32px rgba(31, 38, 135, 0.15),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+                transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                position: relative;
+                overflow: hidden;
+            }
+
+            .stat-card-eq .card::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 4px;
+                background: linear-gradient(90deg, #667eea, #764ba2, #f093fb, #f5576c);
+                background-size: 300% 300%;
+                animation: gradient 3s ease infinite;
+            }
+
+            @keyframes gradient {
+                0% { background-position: 0% 50%; }
+                50% { background-position: 100% 50%; }
+                100% { background-position: 0% 50%; }
+            }
+
+            .stat-card-eq .card:hover {
+                transform: translateY(-8px) scale(1.02);
+                box-shadow: 
+                    0 20px 60px rgba(31, 38, 135, 0.2),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            }
+
+            .stat-card-eq h3 {
+                font-size: 2.5rem;
+                font-weight: 800;
+                background: linear-gradient(135deg, #667eea, #764ba2);
+                -webkit-background-clip: text;
+                background-clip: text;
+                -webkit-text-fill-color: transparent;
+                text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            }
+
+            /* PREMIUM REPORT BOX */
+            .quick-report-box {
+                background: rgba(255, 255, 255, 0.95);
+                backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
+                border-radius: 24px;
+                box-shadow: 
+                    0 8px 32px rgba(31, 38, 135, 0.15),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+                padding: 2rem;
+                animation: slideUp 0.6s ease;
+                position: relative;
+                overflow: hidden;
+            }
+
+            .quick-report-box::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 4px;
+                background: linear-gradient(90deg, #667eea, #764ba2);
+            }
+
+            .quick-report-box h5 {
+                font-weight: 700;
+                margin-bottom: 1.5rem;
+                background: linear-gradient(135deg, #667eea, #764ba2);
+                -webkit-background-clip: text;
+                background-clip: text;
+                -webkit-text-fill-color: transparent;
+            }
+
+            /* PREMIUM CHART CARDS */
+            .chart-card {
+                background: rgba(255, 255, 255, 0.95);
+                backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
+                border-radius: 24px;
+                box-shadow: 
+                    0 8px 32px rgba(31, 38, 135, 0.15),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+                padding: 2rem;
+                display: flex;
+                flex-direction: column;
+                animation: fadeIn 0.8s ease;
+                position: relative;
+                overflow: hidden;
+            }
+
+            .chart-card::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 4px;
+                background: linear-gradient(90deg, #667eea, #764ba2);
+            }
+
+            .chart-card h6 {
+                font-size: 0.9rem;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                color: #475569;
+                margin-bottom: 1rem;
+                background: linear-gradient(135deg, #667eea, #764ba2);
+                -webkit-background-clip: text;
+                background-clip: text;
+                -webkit-text-fill-color: transparent;
+            }
+
+            .chart-wrapper {
+                position: relative;
+                flex: 1;
+            }
+
+            /* ENHANCED ANIMATIONS */
             @keyframes fadeIn {
                 from {
                     opacity: 0;
-                    transform: translateY(12px);
+                    transform: translateY(20px) scale(0.95);
                 }
                 to {
                     opacity: 1;
-                    transform: translateY(0);
+                    transform: translateY(0) scale(1);
                 }
             }
+
             @keyframes slideUp {
                 from {
                     opacity: 0;
-                    transform: translateY(20px);
+                    transform: translateY(30px);
                 }
                 to {
                     opacity: 1;
@@ -202,25 +371,63 @@
                 }
             }
 
-            /* RESPONSIVE */
-            @media (max-width: 992px) {
+            /* RESPONSIVE DESIGN */
+            @media (max-width: 1200px) {
                 .main-content {
-                    margin-left: 60px;
-                    padding: 20px;
+                    margin-left: 240px;
                 }
-                .dashboard-row {
-                    gap: 16px;
-                }
-            }
-            @media (max-width: 576px) {
-                .main-content {
-                    padding: 12px;
-                }
-                .dashboard-row>div {
-                    min-width: 100%;
+                .header {
+                    margin-left: 240px;
                 }
             }
 
+            @media (max-width: 992px) {
+                .main-content {
+                    margin-left: 76px;
+                    padding: 24px;
+                }
+                .header {
+                    margin-left: 76px;
+                }
+                .dashboard-row {
+                    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+                    gap: 1.5rem;
+                }
+            }
+
+            @media (max-width: 576px) {
+                .main-content {
+                    padding: 16px;
+                    margin-left: 60px;
+                }
+                .header {
+                    margin-left: 60px;
+                }
+                .dashboard-row {
+                    grid-template-columns: 1fr;
+                    gap: 1rem;
+                }
+                .card-module .card-body {
+                    padding: 1.5rem;
+                }
+            }
+
+            /* SPECIAL EFFECTS FOR DIFFERENT MODULES */
+            .card-module:nth-child(1) .card-title { color: #3b82f6; }
+            .card-module:nth-child(2) .card-title { color: #10b981; }
+            .card-module:nth-child(3) .card-title { color: #8b5cf6; }
+            .card-module:nth-child(4) .card-title { color: #f59e0b; }
+            .card-module:nth-child(5) .card-title { color: #06b6d4; }
+            .card-module:nth-child(6) .card-title { color: #ef4444; }
+            .card-module:nth-child(7) .card-title { color: #6366f1; }
+
+            /* GLASSMORPHISM ENHANCEMENTS */
+            .card-module:hover,
+            .stat-card-eq .card:hover,
+            .quick-report-box:hover,
+            .chart-card:hover {
+                background: rgba(255, 255, 255, 0.98);
+            }
         </style>
         <script>
             var PAGE_TITLE = '<i class="fa-solid fa-chart-line"></i> Dashboard';
@@ -236,55 +443,77 @@
                 <%@ include file="header.jsp" %>
                 <!-- Main Content -->
                 <div class="main-content">
-                    <!-- Module shortcuts moved to top -->
-                    <div class="dashboard-row mb-5">
+                    <!-- Module shortcuts: 2 rows, 4 columns first row, 3 columns second row -->
+                    <div class="dashboard-row mb-5" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 2rem;">
                         <div>
                             <div class="card card-module text-center">
                                 <div class="card-body">
-                                    <i class="fa-solid fa-users fa-2x text-primary mb-2"></i>
+                                    <i class="fa-solid fa-users fa-3x mb-3"></i>
                                     <h5 class="card-title">Nhân sự</h5>
-                                    <p class="card-text">Quản lý thông tin nhân viên, phân quyền, tìm kiếm...</p>
-                                    <a href="./dsnhanvien" class="btn btn-outline-primary btn-sm rounded-pill px-3">Xem chi tiết</a>
+                                    <p class="card-text">Quản lý thông tin nhân viên, phân quyền, tìm kiếm và đánh giá hiệu suất làm việc.</p>
+                                    <a href="./dsnhanvien" class="btn btn-primary btn-sm rounded-pill px-4">Xem chi tiết</a>
                                 </div>
                             </div>
                         </div>
                         <div>
                             <div class="card card-module text-center">
                                 <div class="card-body">
-                                    <i class="fa-solid fa-tasks fa-2x text-success mb-2"></i>
+                                    <i class="fa-solid fa-diagram-project fa-3x mb-3"></i>
+                                    <h5 class="card-title">Dự án</h5>
+                                    <p class="card-text">Quản lý dự án, phân chia công việc, theo dõi tiến độ và báo cáo kết quả.</p>
+                                    <a href="./dsDuan" class="btn btn-primary btn-sm rounded-pill px-4">Xem chi tiết</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="card card-module text-center">
+                                <div class="card-body">
+                                    <i class="fa-solid fa-list-check fa-3x mb-3"></i>
                                     <h5 class="card-title">Công việc</h5>
-                                    <p class="card-text">Tạo, phân công, theo dõi tiến độ, báo cáo công việc...</p>
-                                    <a href="./dsCongviec" class="btn btn-outline-success btn-sm rounded-pill px-3">Xem chi tiết</a>
+                                    <p class="card-text">Tạo, phân công, theo dõi tiến độ, báo cáo công việc và đánh giá kết quả.</p>
+                                    <a href="./dsCongviec" class="btn btn-primary btn-sm rounded-pill px-4">Xem chi tiết</a>
                                 </div>
                             </div>
                         </div>
                         <div>
                             <div class="card card-module text-center">
                                 <div class="card-body">
-                                    <i class="fa-solid fa-building fa-2x text-warning mb-2"></i>
+                                    <i class="fa-solid fa-building-user fa-3x mb-3"></i>
                                     <h5 class="card-title">Phòng ban</h5>
-                                    <p class="card-text">Quản lý phòng ban, trưởng phòng, gán nhân viên...</p>
-                                    <a href="./dsPhongban" class="btn btn-outline-warning btn-sm rounded-pill px-3">Xem chi tiết</a>
+                                    <p class="card-text">Quản lý phòng ban, trưởng phòng, gán nhân viên và theo dõi hiệu suất.</p>
+                                    <a href="./dsPhongban" class="btn btn-primary btn-sm rounded-pill px-4">Xem chi tiết</a>
                                 </div>
                             </div>
                         </div>
+                    </div>
+                    <div class="dashboard-row mb-5" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem;">
                         <div>
                             <div class="card card-module text-center">
                                 <div class="card-body">
-                                    <i class="fa-solid fa-calendar-check fa-2x text-info mb-2"></i>
+                                    <i class="fa-solid fa-calendar-check fa-3x mb-3"></i>
                                     <h5 class="card-title">Chấm công</h5>
-                                    <p class="card-text">Chấm công, check-in/out, xem lịch sử, xuất phiếu lương...</p>
-                                    <a href="./dsChamCong" class="btn btn-outline-info btn-sm rounded-pill px-3">Xem chi tiết</a>
+                                    <p class="card-text">Chấm công, check-in/out, xem lịch sử, xuất phiếu lương và thống kê.</p>
+                                    <a href="./dsChamCong" class="btn btn-primary btn-sm rounded-pill px-4">Xem chi tiết</a>
                                 </div>
                             </div>
                         </div>
                         <div>
                             <div class="card card-module text-center">
                                 <div class="card-body">
-                                    <i class="fa-solid fa-chart-bar fa-2x text-secondary mb-2"></i>
+                                    <i class="fa-solid fa-calendar-days fa-3x mb-3"></i>
+                                    <h5 class="card-title">Lịch trình</h5>
+                                    <p class="card-text">Lên lịch họp, sự kiện, deadline dự án và nhắc nhở công việc quan trọng.</p>
+                                    <a href="calendar.jsp" class="btn btn-primary btn-sm rounded-pill px-4">Xem chi tiết</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="card card-module text-center">
+                                <div class="card-body">
+                                    <i class="fa-solid fa-chart-column fa-3x mb-3"></i>
                                     <h5 class="card-title">Báo cáo</h5>
-                                    <p class="card-text">Báo cáo tổng hợp, xuất file, biểu đồ tiến độ, xem KPI...</p>
-                                    <a href="report.jsp" class="btn btn-outline-secondary btn-sm rounded-pill px-3">Xem chi tiết</a>
+                                    <p class="card-text">Báo cáo tổng hợp, xuất file, biểu đồ tiến độ, xem KPI và phân tích dữ liệu.</p>
+                                    <a href="./svBaocao" class="btn btn-primary btn-sm rounded-pill px-4">Xem chi tiết</a>
                                 </div>
                             </div>
                         </div>
