@@ -71,13 +71,16 @@
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <style>
-            /* BODY + MAIN CONTENT */
+            /* BODY + MAIN CONTENT - MODERN WHITE THEME */
             body {
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 30%, #cbd5e1 70%, #94a3b8 100%);
                 min-height: 100vh;
                 font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
                 color: #1e293b;
                 position: relative;
+                overflow-x: hidden;
+                font-weight: 500;
+                letter-spacing: 0.025em;
             }
 
             body::before {
@@ -87,18 +90,30 @@
                 left: 0;
                 right: 0;
                 bottom: 0;
-                background: url('data:image/svg+xml,<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><g fill="none" fill-rule="evenodd"><g fill="%23ffffff" fill-opacity="0.03"><circle cx="30" cy="30" r="2"/></g></svg>');
+                background: 
+                    radial-gradient(circle at 20% 80%, rgba(59, 130, 246, 0.08) 0%, transparent 50%),
+                    radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.06) 0%, transparent 50%),
+                    radial-gradient(circle at 40% 40%, rgba(16, 185, 129, 0.05) 0%, transparent 50%),
+                    url('data:image/svg+xml,<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M 20 0 L 0 0 0 20" fill="none" stroke="%23e2e8f0" stroke-width="0.5" opacity="0.4"/></pattern></defs><rect width="100%" height="100%" fill="url(%23grid)"/></svg>');
                 pointer-events: none;
                 z-index: 0;
+                animation: subtleGrid 40s ease-in-out infinite alternate;
+            }
+
+            @keyframes subtleGrid {
+                0% { opacity: 0.6; transform: translateX(0px) translateY(0px); }
+                100% { opacity: 0.8; transform: translateX(-5px) translateY(-5px); }
             }
 
             .header {
-                background: rgba(255, 255, 255, 0.95);
+                background: rgba(255, 255, 255, 0.98);
                 backdrop-filter: blur(20px);
                 -webkit-backdrop-filter: blur(20px);
-                border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+                border-bottom: 1px solid rgba(226, 232, 240, 0.6);
                 min-height: 64px;
-                box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
+                box-shadow: 
+                    0 4px 24px rgba(0, 0, 0, 0.04),
+                    0 1px 3px rgba(0, 0, 0, 0.08);
                 margin-left: 260px;
                 position: sticky;
                 top: 0;
@@ -114,17 +129,18 @@
                 z-index: 1;
             }
 
-            /* PREMIUM CARD MODULES */
+            /* PREMIUM CARD MODULES - MODERN WHITE STYLE */
             .card-module {
                 border: none;
-                border-radius: 24px;
+                border-radius: 20px;
                 background: rgba(255, 255, 255, 0.95);
                 backdrop-filter: blur(20px);
                 -webkit-backdrop-filter: blur(20px);
+                border: 1px solid rgba(226, 232, 240, 0.8);
                 box-shadow: 
-                    0 8px 32px rgba(31, 38, 135, 0.15),
-                    0 2px 16px rgba(0, 0, 0, 0.1),
-                    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+                    0 8px 32px rgba(0, 0, 0, 0.08),
+                    0 2px 8px rgba(0, 0, 0, 0.04),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.8);
                 transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
                 position: relative;
                 overflow: hidden;
@@ -140,7 +156,7 @@
                 background: linear-gradient(
                     90deg,
                     transparent,
-                    rgba(255, 255, 255, 0.3),
+                    rgba(59, 130, 246, 0.08),
                     transparent
                 );
                 transition: left 0.6s ease;
@@ -152,10 +168,11 @@
 
             .card-module:hover {
                 transform: translateY(-12px) scale(1.05);
+                border-color: rgba(59, 130, 246, 0.3);
                 box-shadow: 
-                    0 20px 60px rgba(31, 38, 135, 0.25),
-                    0 8px 32px rgba(0, 0, 0, 0.15),
-                    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+                    0 20px 60px rgba(0, 0, 0, 0.12),
+                    0 8px 32px rgba(59, 130, 246, 0.15),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.9);
             }
 
             .card-module .card-body {
@@ -168,10 +185,11 @@
                 font-size: 1.25rem;
                 font-weight: 700;
                 margin-bottom: 8px;
-                background: linear-gradient(135deg, #667eea, #764ba2);
+                background: linear-gradient(135deg, #3b82f6, #8b5cf6, #10b981);
                 -webkit-background-clip: text;
                 background-clip: text;
                 -webkit-text-fill-color: transparent;
+                filter: contrast(1.2) brightness(1.1);
             }
 
             .card-module .card-text {
@@ -179,36 +197,62 @@
                 font-size: 0.95rem;
                 min-height: 48px;
                 line-height: 1.6;
+                font-weight: 500;
+                letter-spacing: 0.01em;
             }
 
             .card-module i {
-                background: linear-gradient(135deg, #667eea, #764ba2);
+                background: linear-gradient(135deg, #3b82f6, #8b5cf6);
                 -webkit-background-clip: text;
                 background-clip: text;
                 -webkit-text-fill-color: transparent;
-                filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
-                transition: transform 0.3s ease;
+                filter: contrast(1.3) brightness(1.2);
+                transition: all 0.3s ease;
             }
 
             .card-module:hover i {
                 transform: scale(1.1) rotate(5deg);
+                filter: contrast(1.4) brightness(1.3) drop-shadow(0 2px 8px rgba(59, 130, 246, 0.3));
             }
 
             .card-module .btn {
-                background: linear-gradient(135deg, #667eea, #764ba2);
+                background: linear-gradient(135deg, #3b82f6, #1d4ed8);
                 border: none;
                 border-radius: 50px;
-                padding: 8px 20px;
+                padding: 10px 24px;
                 font-weight: 600;
                 text-transform: uppercase;
                 letter-spacing: 0.5px;
                 transition: all 0.3s ease;
-                box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+                box-shadow: 
+                    0 4px 15px rgba(59, 130, 246, 0.25),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+                color: #ffffff;
+                position: relative;
+                overflow: hidden;
+                text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            }
+
+            .card-module .btn::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+                transition: left 0.5s ease;
+            }
+
+            .card-module .btn:hover::before {
+                left: 100%;
             }
 
             .card-module .btn:hover {
                 transform: translateY(-2px);
-                box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+                box-shadow: 
+                    0 8px 25px rgba(59, 130, 246, 0.35),
+                    0 0 20px rgba(59, 130, 246, 0.2);
             }
 
             /* DASHBOARD GRID */
@@ -219,16 +263,18 @@
                 margin-bottom: 3rem;
             }
 
-            /* PREMIUM STAT CARDS */
+            /* PREMIUM STAT CARDS - MODERN WHITE STYLE */
             .stat-card-eq .card {
                 border: none;
                 border-radius: 20px;
-                background: rgba(255, 255, 255, 0.95);
+                background: rgba(255, 255, 255, 0.98);
                 backdrop-filter: blur(20px);
                 -webkit-backdrop-filter: blur(20px);
+                border: 1px solid rgba(226, 232, 240, 0.8);
                 box-shadow: 
-                    0 8px 32px rgba(31, 38, 135, 0.15),
-                    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+                    0 8px 32px rgba(0, 0, 0, 0.08),
+                    0 2px 8px rgba(0, 0, 0, 0.04),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.9);
                 transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
                 position: relative;
                 overflow: hidden;
@@ -240,44 +286,115 @@
                 top: 0;
                 left: 0;
                 right: 0;
-                height: 4px;
-                background: linear-gradient(90deg, #667eea, #764ba2, #f093fb, #f5576c);
+                height: 3px;
+                background: linear-gradient(90deg, #3b82f6, #8b5cf6, #10b981, #f59e0b);
                 background-size: 300% 300%;
-                animation: gradient 3s ease infinite;
+                animation: modernGlow 3s ease infinite;
             }
 
-            @keyframes gradient {
-                0% { background-position: 0% 50%; }
-                50% { background-position: 100% 50%; }
-                100% { background-position: 0% 50%; }
+            @keyframes modernGlow {
+                0%, 100% { 
+                    background-position: 0% 50%;
+                    filter: brightness(1.0);
+                }
+                50% { 
+                    background-position: 100% 50%;
+                    filter: brightness(1.2);
+                }
             }
 
             .stat-card-eq .card:hover {
-                transform: translateY(-8px) scale(1.02);
+                transform: translateY(-8px) scale(1.03);
+                border-color: rgba(59, 130, 246, 0.4);
                 box-shadow: 
-                    0 20px 60px rgba(31, 38, 135, 0.2),
-                    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+                    0 20px 60px rgba(0, 0, 0, 0.12),
+                    0 8px 32px rgba(59, 130, 246, 0.2),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.95);
             }
 
             .stat-card-eq h3 {
-                font-size: 2.5rem;
-                font-weight: 800;
-                background: linear-gradient(135deg, #667eea, #764ba2);
+                font-size: 2.8rem;
+                font-weight: 900;
+                background: linear-gradient(135deg, #1e40af, #7c3aed);
                 -webkit-background-clip: text;
                 background-clip: text;
                 -webkit-text-fill-color: transparent;
-                text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                filter: contrast(1.3) brightness(1.1);
+                transition: all 0.3s ease;
+                letter-spacing: -0.02em;
             }
 
-            /* PREMIUM REPORT BOX */
+            /* ANIMATION STYLES FOR COUNTING NUMBERS */
+            .stat-number {
+                display: inline-block;
+                position: relative;
+            }
+
+            .stat-number.counting {
+                animation: modernPulse 0.3s ease-in-out;
+            }
+
+            @keyframes modernPulse {
+                0% { transform: scale(1); }
+                50% { 
+                    transform: scale(1.05); 
+                    filter: contrast(1.2) brightness(1.1);
+                }
+                100% { transform: scale(1); }
+            }
+
+            @keyframes countUp {
+                0% { 
+                    opacity: 0.7;
+                    transform: translateY(10px);
+                }
+                100% { 
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            .stat-card-eq h3.animating {
+                animation: countUp 0.6s ease-out;
+            }
+
+            .stat-card-eq .card-body {
+                position: relative;
+                z-index: 2;
+            }
+
+            .stat-card-eq i {
+                color: #3b82f6;
+                filter: contrast(1.2) brightness(1.1);
+                transition: all 0.3s ease;
+            }
+
+            .stat-card-eq .card:hover i {
+                transform: scale(1.1);
+                filter: contrast(1.3) brightness(1.2) drop-shadow(0 2px 8px rgba(59, 130, 246, 0.3));
+            }
+
+            .stat-card-eq p, .stat-card-eq small {
+                color: #64748b;
+                font-weight: 500;
+            }
+
+            .stat-card-eq small b {
+                color: #1e40af;
+                font-weight: 600;
+            }
+
+            /* PREMIUM REPORT BOX - MODERN WHITE STYLE */
             .quick-report-box {
-                background: rgba(255, 255, 255, 0.95);
+                background: rgba(255, 255, 255, 0.98);
                 backdrop-filter: blur(20px);
                 -webkit-backdrop-filter: blur(20px);
-                border-radius: 24px;
+                border-radius: 20px;
+                border: 1px solid rgba(226, 232, 240, 0.8);
                 box-shadow: 
-                    0 8px 32px rgba(31, 38, 135, 0.15),
-                    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+                    0 8px 32px rgba(0, 0, 0, 0.08),
+                    0 2px 8px rgba(0, 0, 0, 0.04),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.9);
                 padding: 2rem;
                 animation: slideUp 0.6s ease;
                 position: relative;
@@ -290,28 +407,38 @@
                 top: 0;
                 left: 0;
                 right: 0;
-                height: 4px;
-                background: linear-gradient(90deg, #667eea, #764ba2);
+                height: 3px;
+                background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+                filter: brightness(1.1);
             }
 
             .quick-report-box h5 {
                 font-weight: 700;
                 margin-bottom: 1.5rem;
-                background: linear-gradient(135deg, #667eea, #764ba2);
+                background: linear-gradient(135deg, #1e40af, #7c3aed);
                 -webkit-background-clip: text;
                 background-clip: text;
                 -webkit-text-fill-color: transparent;
+                filter: contrast(1.2) brightness(1.1);
+                letter-spacing: 0.01em;
             }
 
-            /* PREMIUM CHART CARDS */
+            .quick-report-box i {
+                color: #3b82f6;
+                filter: contrast(1.2) brightness(1.1);
+            }
+
+            /* PREMIUM CHART CARDS - MODERN WHITE */
             .chart-card {
-                background: rgba(255, 255, 255, 0.95);
+                background: rgba(255, 255, 255, 0.98);
                 backdrop-filter: blur(20px);
                 -webkit-backdrop-filter: blur(20px);
-                border-radius: 24px;
+                border-radius: 20px;
+                border: 1px solid rgba(226, 232, 240, 0.8);
                 box-shadow: 
-                    0 8px 32px rgba(31, 38, 135, 0.15),
-                    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+                    0 8px 32px rgba(0, 0, 0, 0.08),
+                    0 2px 8px rgba(0, 0, 0, 0.04),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.9);
                 padding: 2rem;
                 display: flex;
                 flex-direction: column;
@@ -326,8 +453,9 @@
                 top: 0;
                 left: 0;
                 right: 0;
-                height: 4px;
-                background: linear-gradient(90deg, #667eea, #764ba2);
+                height: 3px;
+                background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+                filter: brightness(1.1);
             }
 
             .chart-card h6 {
@@ -335,12 +463,27 @@
                 font-weight: 700;
                 text-transform: uppercase;
                 letter-spacing: 1px;
-                color: #475569;
                 margin-bottom: 1rem;
-                background: linear-gradient(135deg, #667eea, #764ba2);
+                background: linear-gradient(135deg, #1e40af, #059669);
                 -webkit-background-clip: text;
                 background-clip: text;
                 -webkit-text-fill-color: transparent;
+                filter: contrast(1.2) brightness(1.1);
+            }
+
+            .chart-card i {
+                color: #3b82f6;
+                filter: contrast(1.2) brightness(1.1);
+            }
+
+            .chart-card .small {
+                color: #64748b;
+                font-weight: 500;
+            }
+
+            .chart-card .small b {
+                color: #1e40af;
+                font-weight: 600;
             }
 
             .chart-wrapper {
@@ -412,21 +555,83 @@
                 }
             }
 
-            /* SPECIAL EFFECTS FOR DIFFERENT MODULES */
-            .card-module:nth-child(1) .card-title { color: #3b82f6; }
-            .card-module:nth-child(2) .card-title { color: #10b981; }
-            .card-module:nth-child(3) .card-title { color: #8b5cf6; }
-            .card-module:nth-child(4) .card-title { color: #f59e0b; }
-            .card-module:nth-child(5) .card-title { color: #06b6d4; }
-            .card-module:nth-child(6) .card-title { color: #ef4444; }
-            .card-module:nth-child(7) .card-title { color: #6366f1; }
+            /* SPECIAL EFFECTS FOR DIFFERENT MODULES - MODERN COLORS */
+            .card-module:nth-child(1) .card-title { 
+                background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+                -webkit-background-clip: text;
+                background-clip: text;
+                -webkit-text-fill-color: transparent;
+            }
+            .card-module:nth-child(2) .card-title { 
+                background: linear-gradient(135deg, #10b981, #059669);
+                -webkit-background-clip: text;
+                background-clip: text;
+                -webkit-text-fill-color: transparent;
+            }
+            .card-module:nth-child(3) .card-title { 
+                background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+                -webkit-background-clip: text;
+                background-clip: text;
+                -webkit-text-fill-color: transparent;
+            }
+            .card-module:nth-child(4) .card-title { 
+                background: linear-gradient(135deg, #f59e0b, #d97706);
+                -webkit-background-clip: text;
+                background-clip: text;
+                -webkit-text-fill-color: transparent;
+            }
+            .card-module:nth-child(5) .card-title { 
+                background: linear-gradient(135deg, #06b6d4, #0891b2);
+                -webkit-background-clip: text;
+                background-clip: text;
+                -webkit-text-fill-color: transparent;
+            }
+            .card-module:nth-child(6) .card-title { 
+                background: linear-gradient(135deg, #ef4444, #dc2626);
+                -webkit-background-clip: text;
+                background-clip: text;
+                -webkit-text-fill-color: transparent;
+            }
+            .card-module:nth-child(7) .card-title { 
+                background: linear-gradient(135deg, #6366f1, #4f46e5);
+                -webkit-background-clip: text;
+                background-clip: text;
+                -webkit-text-fill-color: transparent;
+            }
 
-            /* GLASSMORPHISM ENHANCEMENTS */
+            /* GLASSMORPHISM ENHANCEMENTS - MODERN WHITE */
             .card-module:hover,
             .stat-card-eq .card:hover,
             .quick-report-box:hover,
             .chart-card:hover {
-                background: rgba(255, 255, 255, 0.98);
+                background: rgba(255, 255, 255, 0.99);
+                border-color: rgba(59, 130, 246, 0.3);
+            }
+
+            /* STATUS INDICATOR BOXES - MODERN STYLE */
+            .quick-report-box .col-6 > div {
+                background: rgba(248, 250, 252, 0.8) !important;
+                border: 1px solid rgba(226, 232, 240, 0.8) !important;
+                transition: all 0.3s ease;
+            }
+
+            .quick-report-box .col-6 > div:hover {
+                background: rgba(255, 255, 255, 0.95) !important;
+                border-color: rgba(59, 130, 246, 0.3) !important;
+                box-shadow: 0 4px 15px rgba(59, 130, 246, 0.15);
+            }
+
+            .quick-report-box .small {
+                color: #64748b !important;
+                font-weight: 500;
+            }
+
+            /* ENHANCED TEXT CONTRAST */
+            .card-module:hover .card-title,
+            .stat-card-eq .card:hover h3,
+            .quick-report-box:hover h5,
+            .chart-card:hover h6 {
+                filter: contrast(1.3) brightness(1.1);
             }
         </style>
         <script>
@@ -443,90 +648,15 @@
                 <%@ include file="header.jsp" %>
                 <!-- Main Content -->
                 <div class="main-content">
-                    <!-- Module shortcuts: 2 rows, 4 columns first row, 3 columns second row -->
-                    <div class="dashboard-row mb-5" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 2rem;">
-                        <div>
-                            <div class="card card-module text-center">
-                                <div class="card-body">
-                                    <i class="fa-solid fa-users fa-3x mb-3"></i>
-                                    <h5 class="card-title">Nhân sự</h5>
-                                    <p class="card-text">Quản lý thông tin nhân viên, phân quyền, tìm kiếm và đánh giá hiệu suất làm việc.</p>
-                                    <a href="./dsnhanvien" class="btn btn-primary btn-sm rounded-pill px-4">Xem chi tiết</a>
-                                </div>
-                            </div>
-                        </div>
-                        <div>
-                            <div class="card card-module text-center">
-                                <div class="card-body">
-                                    <i class="fa-solid fa-diagram-project fa-3x mb-3"></i>
-                                    <h5 class="card-title">Dự án</h5>
-                                    <p class="card-text">Quản lý dự án, phân chia công việc, theo dõi tiến độ và báo cáo kết quả.</p>
-                                    <a href="./dsDuan" class="btn btn-primary btn-sm rounded-pill px-4">Xem chi tiết</a>
-                                </div>
-                            </div>
-                        </div>
-                        <div>
-                            <div class="card card-module text-center">
-                                <div class="card-body">
-                                    <i class="fa-solid fa-list-check fa-3x mb-3"></i>
-                                    <h5 class="card-title">Công việc</h5>
-                                    <p class="card-text">Tạo, phân công, theo dõi tiến độ, báo cáo công việc và đánh giá kết quả.</p>
-                                    <a href="./dsCongviec" class="btn btn-primary btn-sm rounded-pill px-4">Xem chi tiết</a>
-                                </div>
-                            </div>
-                        </div>
-                        <div>
-                            <div class="card card-module text-center">
-                                <div class="card-body">
-                                    <i class="fa-solid fa-building-user fa-3x mb-3"></i>
-                                    <h5 class="card-title">Phòng ban</h5>
-                                    <p class="card-text">Quản lý phòng ban, trưởng phòng, gán nhân viên và theo dõi hiệu suất.</p>
-                                    <a href="./dsPhongban" class="btn btn-primary btn-sm rounded-pill px-4">Xem chi tiết</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="dashboard-row mb-5" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem;">
-                        <div>
-                            <div class="card card-module text-center">
-                                <div class="card-body">
-                                    <i class="fa-solid fa-calendar-check fa-3x mb-3"></i>
-                                    <h5 class="card-title">Chấm công</h5>
-                                    <p class="card-text">Chấm công, check-in/out, xem lịch sử, xuất phiếu lương và thống kê.</p>
-                                    <a href="./dsChamCong" class="btn btn-primary btn-sm rounded-pill px-4">Xem chi tiết</a>
-                                </div>
-                            </div>
-                        </div>
-                        <div>
-                            <div class="card card-module text-center">
-                                <div class="card-body">
-                                    <i class="fa-solid fa-calendar-days fa-3x mb-3"></i>
-                                    <h5 class="card-title">Lịch trình</h5>
-                                    <p class="card-text">Lên lịch họp, sự kiện, deadline dự án và nhắc nhở công việc quan trọng.</p>
-                                    <a href="calendar.jsp" class="btn btn-primary btn-sm rounded-pill px-4">Xem chi tiết</a>
-                                </div>
-                            </div>
-                        </div>
-                        <div>
-                            <div class="card card-module text-center">
-                                <div class="card-body">
-                                    <i class="fa-solid fa-chart-column fa-3x mb-3"></i>
-                                    <h5 class="card-title">Báo cáo</h5>
-                                    <p class="card-text">Báo cáo tổng hợp, xuất file, biểu đồ tiến độ, xem KPI và phân tích dữ liệu.</p>
-                                    <a href="./svBaocao" class="btn btn-primary btn-sm rounded-pill px-4">Xem chi tiết</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                     <!-- Thống kê tổng quan -->
                     <div class="row mb-4">
                         <div class="col-md-3 mb-3 stat-card-eq">
                             <div class="card text-center border-0 shadow-sm h-100">
                                 <div class="card-body">
                                     <i class="fa-solid fa-users fa-2x text-primary mb-2"></i>
-                                    <h3 class="text-primary mb-1"><%= thongKeTongQuan.getOrDefault("tong_nhan_vien", 0) %></h3>
+                                    <h3 class="text-primary mb-1 stat-number" data-target="<%= thongKeTongQuan.getOrDefault("tong_nhan_vien", 0) %>">0</h3>
                                     <p class="text-muted mb-1">Tổng nhân viên</p>
-                                    <small class="text-secondary d-block">Đang làm: <b><%= thongKeTongQuan.getOrDefault("nv_dang_lam",0) %></b> | Tạm nghỉ: <b><%= thongKeTongQuan.getOrDefault("nv_tam_nghi",0) %></b> | Nghỉ việc: <b><%= thongKeTongQuan.getOrDefault("nv_nghi_viec",0) %></b></small>
+                                    <small class="text-secondary d-block">Đang làm: <b class="stat-number" data-target="<%= thongKeTongQuan.getOrDefault("nv_dang_lam",0) %>">0</b> | Tạm nghỉ: <b class="stat-number" data-target="<%= thongKeTongQuan.getOrDefault("nv_tam_nghi",0) %>">0</b> | Nghỉ việc: <b class="stat-number" data-target="<%= thongKeTongQuan.getOrDefault("nv_nghi_viec",0) %>">0</b></small>
                                 </div>
                             </div>
                         </div>
@@ -534,7 +664,7 @@
                             <div class="card text-center border-0 shadow-sm h-100">
                                 <div class="card-body">
                                     <i class="fa-solid fa-building fa-2x text-info mb-2"></i>
-                                    <h3 class="text-info"><%= thongKeTongQuan.getOrDefault("tong_phong_ban", 0) %></h3>
+                                    <h3 class="text-info stat-number" data-target="<%= thongKeTongQuan.getOrDefault("tong_phong_ban", 0) %>">0</h3>
                                     <p class="text-muted mb-0">Phòng ban</p>
                                 </div>
                             </div>
@@ -543,7 +673,7 @@
                             <div class="card text-center border-0 shadow-sm h-100">
                                 <div class="card-body">
                                     <i class="fa-solid fa-tasks fa-2x text-success mb-2"></i>
-                                    <h3 class="text-success"><%= thongKeTongQuan.getOrDefault("tong_cong_viec", 0) %></h3>
+                                    <h3 class="text-success stat-number" data-target="<%= thongKeTongQuan.getOrDefault("tong_cong_viec", 0) %>">0</h3>
                                     <p class="text-muted mb-0">Công việc</p>
                                 </div>
                             </div>
@@ -552,7 +682,7 @@
                             <div class="card text-center border-0 shadow-sm h-100">
                                 <div class="card-body">
                                     <i class="fa-solid fa-chart-line fa-2x text-warning mb-2"></i>
-                                    <h3 class="text-warning"><%= thongKeTongQuan.getOrDefault("ty_le_hoan_thanh", 0.0) %>%</h3>
+                                    <h3 class="text-warning stat-number" data-target="<%= Math.round((Double)thongKeTongQuan.getOrDefault("ty_le_hoan_thanh", 0.0)) %>" data-suffix="%">0%</h3>
                                     <p class="text-muted mb-0">Tỷ lệ hoàn thành</p>
                                 </div>
                             </div>
@@ -573,31 +703,31 @@
                             <div class="col-md-7">
                                 <div class="row g-2 small" style="--bs-gutter-x:0.75rem;">
                                     <div class="col-6">
-                                        <div class="p-2 rounded-3 d-flex align-items-center gap-2 shadow-sm" style="background:#f1f8f4;">
-                                            <span class="d-inline-block rounded-circle" style="width:10px;height:10px;background:#198754;"></span>
-                                            <span>Đã hoàn thành: <b><%= daHoanThanh %></b><br><small class="text-muted"><%= pctHoanThanhInt %>%</small></span>
+                                        <div class="p-2 rounded-3 d-flex align-items-center gap-2 shadow-sm" style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);">
+                                            <span class="d-inline-block rounded-circle" style="width:10px;height:10px;background:#10b981;box-shadow:0 0 8px rgba(16,185,129,0.4);"></span>
+                                            <span style="color:#1e293b;font-weight:600;">Đã hoàn thành: <b style="color:#059669;" class="stat-number" data-target="<%= daHoanThanh %>">0</b><br><small style="color:#64748b;" class="stat-number" data-target="<%= pctHoanThanhInt %>" data-suffix="%">0%</small></span>
                                         </div>
                                     </div>
                                     <div class="col-6">
-                                        <div class="p-2 rounded-3 d-flex align-items-center gap-2 shadow-sm" style="background:#fff9e6;">
-                                            <span class="d-inline-block rounded-circle" style="width:10px;height:10px;background:#ffc107;"></span>
-                                            <span>Đang thực hiện: <b><%= dangThucHien %></b><br><small class="text-muted"><%= pctDangTHInt %>%</small></span>
+                                        <div class="p-2 rounded-3 d-flex align-items-center gap-2 shadow-sm" style="background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.3);">
+                                            <span class="d-inline-block rounded-circle" style="width:10px;height:10px;background:#3b82f6;box-shadow:0 0 8px rgba(59,130,246,0.4);"></span>
+                                            <span style="color:#1e293b;font-weight:600;">Đang thực hiện: <b style="color:#1d4ed8;" class="stat-number" data-target="<%= dangThucHien %>">0</b><br><small style="color:#64748b;" class="stat-number" data-target="<%= pctDangTHInt %>" data-suffix="%">0%</small></span>
                                         </div>
                                     </div>
                                     <div class="col-6">
-                                        <div class="p-2 rounded-3 d-flex align-items-center gap-2 shadow-sm" style="background:#fdecec;">
-                                            <span class="d-inline-block rounded-circle" style="width:10px;height:10px;background:#dc3545;"></span>
-                                            <span>Trễ hạn: <b><%= treHan %></b><br><small class="text-muted"><%= pctTreHanInt %>%</small></span>
+                                        <div class="p-2 rounded-3 d-flex align-items-center gap-2 shadow-sm" style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);">
+                                            <span class="d-inline-block rounded-circle" style="width:10px;height:10px;background:#ef4444;box-shadow:0 0 8px rgba(239,68,68,0.4);"></span>
+                                            <span style="color:#1e293b;font-weight:600;">Trễ hạn: <b style="color:#dc2626;" class="stat-number" data-target="<%= treHan %>">0</b><br><small style="color:#64748b;" class="stat-number" data-target="<%= pctTreHanInt %>" data-suffix="%">0%</small></span>
                                         </div>
                                     </div>
                                     <div class="col-6">
-                                        <div class="p-2 rounded-3 d-flex align-items-center gap-2 shadow-sm" style="background:#f2f3f5;">
-                                            <span class="d-inline-block rounded-circle" style="width:10px;height:10px;background:#6c757d;"></span>
-                                            <span>Chưa bắt đầu: <b><%= chuaBatDau %></b><br><small class="text-muted"><%= pctChuaBDInt %>%</small></span>
+                                        <div class="p-2 rounded-3 d-flex align-items-center gap-2 shadow-sm" style="background:rgba(100,116,139,0.1);border:1px solid rgba(100,116,139,0.3);">
+                                            <span class="d-inline-block rounded-circle" style="width:10px;height:10px;background:#64748b;"></span>
+                                            <span style="color:#1e293b;font-weight:600;">Chưa bắt đầu: <b style="color:#475569;" class="stat-number" data-target="<%= chuaBatDau %>">0</b><br><small style="color:#64748b;" class="stat-number" data-target="<%= pctChuaBDInt %>" data-suffix="%">0%</small></span>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="mt-3 small text-muted">Phân bố trạng thái công việc</div>
+                                <div class="mt-3 small" style="color:#64748b;font-weight:500;">Phân bố trạng thái công việc</div>
                             </div>
                         </div>
                     </div>
@@ -692,14 +822,14 @@
                     const sortedVals = pbPairs.map(p => p.val);
                     const colorScale = v => {
                         if (v >= 90)
-                            return '#198754';
+                            return '#10b981';  // Modern green
                         if (v >= 70)
-                            return '#0d6efd';
+                            return '#3b82f6';  // Modern blue  
                         if (v >= 50)
-                            return '#ffc107';
+                            return '#f59e0b';  // Modern amber
                         if (v >= 30)
-                            return '#fd7e14';
-                        return '#dc3545';
+                            return '#f97316';  // Modern orange
+                        return '#ef4444';      // Modern red
                     };
                     const barColors = sortedVals.map(colorScale);
                     new Chart(ctxPB, {type: 'bar', data: {labels: sortedLabels, datasets: [{label: '% Hoàn thành', data: sortedVals, backgroundColor: barColors, borderWidth: 0, barPercentage: 0.55, categoryPercentage: 0.55}]}, options: {indexAxis: 'y', responsive: true, plugins: {legend: {display: false}, tooltip: {callbacks: {label: (c) => c.parsed.x + '%'}}}, scales: {x: {beginAtZero: true, max: 100, ticks: {callback: (v) => v + '%'}}, y: {ticks: {autoSkip: false}}}}});
@@ -708,7 +838,7 @@
                 const ctxTT = document.getElementById('chartTrangThaiCV');
                 if (ctxTT) {
                     const trangThaiData = [parseInt(h.dataset.stHt || '0'), parseInt(h.dataset.stTh || '0'), parseInt(h.dataset.stTre || '0'), parseInt(h.dataset.stCbd || '0')];
-                    const colorsTT = ['#198754', '#0d6efd', '#dc3545', '#6c757d']; // xanh lá, xanh dương, đỏ, xám
+                    const colorsTT = ['#10b981', '#3b82f6', '#ef4444', '#64748b']; // Modern green, blue, red, gray
                     const labelsTT = ['Hoàn thành', 'Đang thực hiện', 'Trễ hạn', 'Chưa bắt đầu'];
                     const totalTT = trangThaiData.reduce((a, b) => a + b, 0);
                     const centerText = totalTT + " CV";
@@ -747,15 +877,122 @@
                     const parseArr = s => s ? s.split(',').map(Number) : [];
                     const days = h2.dataset.days ? h2.dataset.days.split(',') : [];
                     const ds = [
-                        {label: 'Đủ công', data: parseArr(h2.dataset.du), backgroundColor: '#198754', stack: 'att'},
-                        {label: 'Đi muộn', data: parseArr(h2.dataset.muon), backgroundColor: '#0d6efd', stack: 'att'},
-                        {label: 'Thiếu giờ', data: parseArr(h2.dataset.thieu), backgroundColor: '#ffc107', stack: 'att'},
-                        {label: 'Vắng', data: parseArr(h2.dataset.vang), backgroundColor: '#dc3545', stack: 'att'},
-                        {label: 'OT/WFH', data: parseArr(h2.dataset.ot), backgroundColor: '#20c997', stack: 'att'}
+                        {label: 'Đủ công', data: parseArr(h2.dataset.du), backgroundColor: '#10b981', stack: 'att'},      // Modern green
+                        {label: 'Đi muộn', data: parseArr(h2.dataset.muon), backgroundColor: '#3b82f6', stack: 'att'},   // Modern blue
+                        {label: 'Thiếu giờ', data: parseArr(h2.dataset.thieu), backgroundColor: '#f59e0b', stack: 'att'}, // Modern amber
+                        {label: 'Vắng', data: parseArr(h2.dataset.vang), backgroundColor: '#ef4444', stack: 'att'},       // Modern red
+                        {label: 'OT/WFH', data: parseArr(h2.dataset.ot), backgroundColor: '#8b5cf6', stack: 'att'}        // Modern purple
                     ];
                     new Chart(ctxCCongNgay, {type: 'bar', data: {labels: days, datasets: ds}, options: {responsive: true, plugins: {legend: {position: 'bottom'}, tooltip: {mode: 'index', intersect: false}}, scales: {x: {stacked: true}, y: {stacked: true, beginAtZero: true}}}});
                 }
             })();
+        </script>
+        
+        <!-- PROFESSIONAL NUMBER COUNTER ANIMATION -->
+        <script>
+            class PremiumCounter {
+                constructor() {
+                    this.numbers = [];
+                    this.isAnimating = false;
+                    this.init();
+                }
+                
+                init() {
+                    // Collect all stat numbers
+                    document.querySelectorAll('.stat-number').forEach(element => {
+                        const target = parseInt(element.getAttribute('data-target')) || 0;
+                        const suffix = element.getAttribute('data-suffix') || '';
+                        
+                        this.numbers.push({
+                            element: element,
+                            target: target,
+                            current: 0,
+                            suffix: suffix
+                        });
+                    });
+                    
+                    // Start initial animation after page load
+                    setTimeout(() => {
+                        this.animateAll();
+                    }, 1000);
+                    
+                    // Set interval for periodic animation every 8 seconds
+                    setInterval(() => {
+                        if (!this.isAnimating) {
+                            this.animateAll();
+                        }
+                    }, 8000);
+                }
+                
+                animateAll() {
+                    this.isAnimating = true;
+                    
+                    // Add subtle glow effect to cards
+                    document.querySelectorAll('.stat-card-eq .card').forEach(card => {
+                        card.style.transition = 'all 0.6s ease';
+                        card.style.boxShadow = '0 20px 60px rgba(0, 0, 0, 0.15), 0 8px 32px rgba(59, 130, 246, 0.2)';
+                    });
+                    
+                    this.numbers.forEach((num, index) => {
+                        setTimeout(() => {
+                            this.animateNumber(num);
+                        }, index * 200); // Stagger animations
+                    });
+                    
+                    // Reset card glow after animation
+                    setTimeout(() => {
+                        document.querySelectorAll('.stat-card-eq .card').forEach(card => {
+                            card.style.boxShadow = '';
+                        });
+                        this.isAnimating = false;
+                    }, 3000);
+                }
+                
+                animateNumber(num) {
+                    const duration = 1500; // 1.5 seconds
+                    const startTime = Date.now();
+                    const startValue = 0;
+                    
+                    // Add animation class
+                    num.element.classList.add('animating');
+                    
+                    const animate = () => {
+                        const elapsed = Date.now() - startTime;
+                        const progress = Math.min(elapsed / duration, 1);
+                        
+                        // Easing function for smooth acceleration/deceleration
+                        const easeOutCubic = 1 - Math.pow(1 - progress, 3);
+                        
+                        const currentValue = Math.round(startValue + (num.target - startValue) * easeOutCubic);
+                        num.element.textContent = currentValue + num.suffix;
+                        
+                        // Add subtle pulsing effect during animation
+                        if (progress < 1) {
+                            const intensity = 10 + Math.sin(progress * Math.PI * 4) * 5;
+                            num.element.style.filter = `contrast(1.2) brightness(${1.1 + Math.sin(progress * Math.PI * 4) * 0.1})`;
+                            requestAnimationFrame(animate);
+                        } else {
+                            num.element.style.filter = '';
+                            num.element.classList.remove('animating');
+                        }
+                    };
+                    
+                    animate();
+                }
+                
+                // Method to manually trigger animation (for testing)
+                trigger() {
+                    if (!this.isAnimating) {
+                        this.animateAll();
+                    }
+                }
+            }
+            
+            // Initialize the counter system
+            const premiumCounter = new PremiumCounter();
+            
+            // Expose to global scope for testing
+            window.premiumCounter = premiumCounter;
         </script>
     </body>
 </html>
