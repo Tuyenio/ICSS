@@ -503,20 +503,14 @@
                                     </div>
                                     <div class="mb-3">
                                         <label class="form-label"><b>Người nhận</b></label>
-                                        <div class="input-group mb-2">
-                                            <select class="form-select" id="nguoiNhanSelect2">
-                                                <!-- Dữ liệu nhân viên load bằng AJAX -->
-                                            </select>
-                                            <button type="button" class="btn btn-outline-primary" id="btnThemNguoiNhan2">
-                                                <i class="fa-solid fa-user-plus"></i> Thêm
-                                            </button>
-                                        </div>
-                                        <div id="danhSachNguoiNhan2" class="d-flex flex-wrap gap-2">
+                                        <button type="button" class="btn btn-outline-primary" id="btnOpenNguoiNhanCreate">
+                                            <i class="fa-solid fa-user-plus"></i> Thêm người nhận
+                                        </button>
+                                        <div id="danhSachNguoiNhan2" class="d-flex flex-wrap gap-2 mt-2">
                                             <!-- Tag tên người nhận sẽ hiển thị ở đây -->
                                         </div>
                                         <input type="hidden" name="ten_nguoi_nhan" id="nguoiNhanHidden2">
                                     </div>
-
                                     <div class="mb-3">
                                         <label class="form-label"><b>Phòng ban</b></label>
                                         <select class="form-select" name="ten_phong_ban" id="phongSelect">
@@ -600,21 +594,14 @@
                                                 </div>
                                                 <div class="mb-3">
                                                     <label class="form-label"><b>Người nhận</b></label>
-                                                    <div class="input-group mb-2">
-                                                        <select class="form-select" id="nguoiNhanSelect">
-                                                            <!-- Dữ liệu nhân viên load bằng AJAX -->
-                                                        </select>
-                                                        <button type="button" class="btn btn-outline-primary" id="btnThemNguoiNhan">
-                                                            <i class="fa-solid fa-user-plus"></i> Thêm
-                                                        </button>
-                                                    </div>
-                                                    <div id="danhSachNguoiNhan" class="d-flex flex-wrap gap-2">
+                                                    <button type="button" class="btn btn-outline-primary" id="btnOpenNguoiNhanDetail">
+                                                        <i class="fa-solid fa-user-plus"></i> Thêm người nhận
+                                                    </button>
+                                                    <div id="danhSachNguoiNhan" class="d-flex flex-wrap gap-2 mt-2">
                                                         <!-- Tag tên người nhận sẽ hiển thị ở đây -->
                                                     </div>
+                                                    <input type="hidden" name="ten_nguoi_nhan" id="nguoiNhanHidden">
                                                 </div>
-                                                <input type="hidden" name="ten_nguoi_nhan" id="nguoiNhanHidden">
-                                                <!-- Input ẩn để lưu danh sách -->
-                                                <input type="hidden" name="ten_nguoi_nhan" id="nguoiNhanHidden">
                                                 <div class="mb-2">
                                                     <label class="form-label"><b>Phòng ban:</b></label>
                                                     <select class="form-select" name="ten_phong_ban"></select>
@@ -692,6 +679,26 @@
                                             </div>
                                         </div>
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Modal chọn nhiều người -->
+                    <div class="modal fade" id="modalChonNguoiNhan" tabindex="-1">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title"><i class="fa-solid fa-users"></i> Chọn người nhận</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div id="listNguoiNhanCheckbox" class="row"></div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" id="btnXacNhanNguoiNhan" class="btn btn-primary">
+                                        <i class="fa-solid fa-check"></i> Xác nhận
+                                    </button>
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
                                 </div>
                             </div>
                         </div>
@@ -927,16 +934,31 @@
                         });
                 // Load danh sách nhân viên (giao & nhận)
                 fetch('./apiNhanvien')
-                        .then(res => res.text())
-                        .then(html => {
-                            document.querySelectorAll('#nguoiNhanSelect').forEach(el => el.innerHTML = html);
-                            // (hoặc document.getElementById("nguoiNhanSelect").innerHTML = html;)
-                        });
-                fetch('./apiNhanvien')
-                        .then(res => res.text())
-                        .then(html => {
-                            document.querySelectorAll('#nguoiNhanSelect2').forEach(el => el.innerHTML = html);
-                            // (hoặc document.getElementById("nguoiNhanSelect").innerHTML = html;)
+                        .then(function (res) {
+                            return res.text();
+                        })
+                        .then(function (html) {
+                            var container = document.getElementById("listNguoiNhanCheckbox");
+                            container.innerHTML = "";
+
+                            // Tạo thẻ div để parse chuỗi option thành DOM
+                            var temp = document.createElement("div");
+                            temp.innerHTML = "<select>" + html + "</select>";
+                            var options = temp.querySelectorAll("option");
+
+                            for (var i = 0; i < options.length; i++) {
+                                var opt = options[i];
+                                if (!opt.value)
+                                    continue;
+                                var col = document.createElement("div");
+                                col.className = "col-md-4";
+                                col.innerHTML =
+                                        '<div class="form-check">' +
+                                        '<input class="form-check-input nguoiNhanItem" type="checkbox" value="' + opt.text + '" id="nv_' + opt.value + '">' +
+                                        '<label class="form-check-label" for="nv_' + opt.value + '">' + opt.text + '</label>' +
+                                        '</div>';
+                                container.appendChild(col);
+                            }
                         });
                 fetch('./apiNhanvien')
                         .then(res => res.text())
@@ -1099,6 +1121,89 @@
                 });
             });
         </script>
+
+        <script>
+            var currentTarget = null;
+
+            // Tick lại checkbox theo hidden input hiện tại
+            function syncNguoiNhanCheckboxes(hiddenId) {
+                var hidden = document.getElementById(hiddenId);
+                var selected = (hidden.value || "").split(",").map(function (s) {
+                    return s.trim();
+                }).filter(function (s) {
+                    return s.length > 0;
+                });
+
+                var boxes = document.querySelectorAll(".nguoiNhanItem");
+                for (var i = 0; i < boxes.length; i++) {
+                    boxes[i].checked = selected.indexOf(boxes[i].value) !== -1;
+                }
+            }
+
+            // Nút trong modal tạo mới
+            document.getElementById("btnOpenNguoiNhanCreate").addEventListener("click", function () {
+                currentTarget = "create";
+                syncNguoiNhanCheckboxes("nguoiNhanHidden2"); // tick theo hidden của form tạo
+                new bootstrap.Modal(document.getElementById("modalChonNguoiNhan")).show();
+            });
+
+            // Nút trong modal chi tiết
+            document.getElementById("btnOpenNguoiNhanDetail").addEventListener("click", function () {
+                currentTarget = "detail";
+                syncNguoiNhanCheckboxes("nguoiNhanHidden"); // tick theo hidden của form chi tiết
+                new bootstrap.Modal(document.getElementById("modalChonNguoiNhan")).show();
+            });
+
+            // Xác nhận chọn người nhận
+            document.getElementById("btnXacNhanNguoiNhan").addEventListener("click", function () {
+                var checked = document.querySelectorAll(".nguoiNhanItem:checked");
+
+                var danhSachDiv, hiddenInput;
+                if (currentTarget === "create") {
+                    danhSachDiv = document.getElementById("danhSachNguoiNhan2");
+                    hiddenInput = document.getElementById("nguoiNhanHidden2");
+                } else {
+                    danhSachDiv = document.getElementById("danhSachNguoiNhan");
+                    hiddenInput = document.getElementById("nguoiNhanHidden");
+                }
+
+                danhSachDiv.innerHTML = "";
+                var values = [];
+
+                for (var i = 0; i < checked.length; i++) {
+                    var ten = checked[i].value;
+                    values.push(ten);
+
+                    var tag = document.createElement("span");
+                    tag.className = "badge bg-primary d-flex align-items-center me-2";
+                    tag.style.padding = "0.5em 0.75em";
+                    tag.setAttribute("data-ten", ten);
+                    tag.innerHTML = ten +
+                            '<button type="button" class="btn btn-sm btn-close ms-2" aria-label="Xoá"></button>';
+
+                    tag.querySelector(".btn-close").addEventListener("click", function () {
+                        this.parentElement.remove();
+                        capNhatHiddenInput(danhSachDiv, hiddenInput);
+                    });
+
+                    danhSachDiv.appendChild(tag);
+                }
+
+                hiddenInput.value = values.join(",");
+
+                bootstrap.Modal.getInstance(document.getElementById("modalChonNguoiNhan")).hide();
+            });
+
+            function capNhatHiddenInput(danhSachDiv, hiddenInput) {
+                var badges = danhSachDiv.querySelectorAll("span[data-ten]");
+                var arr = [];
+                for (var i = 0; i < badges.length; i++) {
+                    arr.push(badges[i].getAttribute("data-ten"));
+                }
+                hiddenInput.value = arr.join(",");
+            }
+        </script>
+
         <script>
             $('#taskForm').on('submit', function (e) {
                 e.preventDefault(); // Ngăn form submit mặc định
