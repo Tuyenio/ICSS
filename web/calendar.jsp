@@ -228,7 +228,7 @@
                         center: 'title',
                         right: 'dayGridMonth,timeGridWeek,timeGridDay'
                     },
-                    events: "dsLichtrinh",
+                    events: "<%=request.getContextPath()%>/dsLichtrinh",
                     eventClick: function (info) {
                         var event = info.event;
                         $("#eventForm")[0].reset();
@@ -261,7 +261,7 @@
                 $("#eventForm").on("submit", function (e) {
                     e.preventDefault();
                     let formData = $(this).serialize();
-                    $.post("luuLichTrinh", formData, function (res) {
+                    $.post("<%=request.getContextPath()%>/luuLichTrinh", formData, function (res) {
                         console.log("Kết quả server:", res);  // 👈 in ra console kiểm tra
                         if (res.success) {
                             Swal.fire({

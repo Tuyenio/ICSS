@@ -11,16 +11,22 @@ import java.net.URLDecoder;
 
 public class DownloadFileServlet extends HttpServlet {
 
-    private static final String UPLOAD_DIR = "D:/uploads"; // đổi theo server nếu cần
+    private static String getUploadDir() {
+        // Ưu tiên lấy từ biến môi trường (server)
+        String dir = System.getenv("ICSS_UPLOAD_DIR");
+        if (dir == null || dir.trim().isEmpty()) {
+            dir = "D:/uploads"; // fallback local
+        }
+        return dir;
+    }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 
-        // Đảm bảo nhận UTF-8 từ query string
         req.setCharacterEncoding("UTF-8");
 
-        // Lấy tên file từ request và decode UTF-8
+        // Lấy tên file từ request
         String rawFileName = req.getParameter("file");
         if (rawFileName == null || rawFileName.trim().isEmpty()) {
             resp.setContentType("text/plain;charset=UTF-8");
@@ -31,8 +37,11 @@ public class DownloadFileServlet extends HttpServlet {
         // Decode UTF-8 tên file từ URL
         String fileName = URLDecoder.decode(rawFileName, "UTF-8");
 
+        // Lấy thư mục upload đúng theo môi trường
+        String uploadDir = getUploadDir();
+
         // Tạo file object
-        File file = new File(UPLOAD_DIR, fileName);
+        File file = new File(uploadDir, fileName);
 
         if (!file.exists() || !file.isFile()) {
             resp.setContentType("text/plain;charset=UTF-8");
@@ -40,12 +49,11 @@ public class DownloadFileServlet extends HttpServlet {
             return;
         }
 
-        // Thiết lập response header
+        // Thiết lập header tải file
         resp.setContentType("application/octet-stream");
         resp.setHeader("Content-Disposition", "attachment; filename=\"" + file.getName() + "\"");
         resp.setContentLengthLong(file.length());
 
-        // Truyền file về client
         try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file));
              BufferedOutputStream bos = new BufferedOutputStream(resp.getOutputStream())) {
 

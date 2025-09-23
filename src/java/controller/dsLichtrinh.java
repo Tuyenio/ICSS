@@ -47,6 +47,10 @@ public class dsLichtrinh extends HttpServlet {
         if (giaTri == null) {
             return "";
         }
-        return giaTri.toString().replace("\"", "\\\"");
+        return giaTri.toString()
+                .replace("\\", "\\\\") // escape dấu \
+                .replace("\"", "\\\"") // escape dấu "
+                .replace("\n", "\\n") // escape xuống dòng
+                .replace("\r", "\\r");   // escape carriage return
     }
 }

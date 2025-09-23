@@ -19,7 +19,6 @@ public class themCongviec extends HttpServlet {
         PrintWriter out = response.getWriter();
 
         String duan = getValue(request, "du_an_id");
-        System.out.println("📌 du_an_id = " + duan);
         String ten = getValue(request, "ten_cong_viec");
         String moTa = getValue(request, "mo_ta");
         String han = getValue(request, "han_hoan_thanh");

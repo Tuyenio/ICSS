@@ -24,8 +24,8 @@ public class KNCSDL {
 
     public KNCSDL() throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
-        //this.cn = DriverManager.getConnection(path, "root", "");
-        this.cn = DriverManager.getConnection(path, "icssapp", "StrongPass!2025");
+        this.cn = DriverManager.getConnection(path, "root", "");
+        //this.cn = DriverManager.getConnection(path, "icssapp", "StrongPass!2025");
     }
 
     public ResultSet laydl(String email) throws SQLException {

@@ -8,7 +8,14 @@ import java.util.*;
 
 public class DeleteFileServlet extends HttpServlet {
 
-    private static final String FILE_BASE_PATH = "D:/uploads"; // thư mục chứa file
+    // Hàm tiện ích: lấy thư mục upload
+    private static String getUploadDir() {
+        String dir = System.getenv("ICSS_UPLOAD_DIR");
+        if (dir == null || dir.trim().isEmpty()) {
+            dir = "D:/uploads"; // fallback local
+        }
+        return dir;
+    }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -30,7 +37,7 @@ public class DeleteFileServlet extends HttpServlet {
             int taskId = Integer.parseInt(taskIdStr);
             KNCSDL db = new KNCSDL();
 
-            // 1. Lấy danh sách file hiện tại
+            // 1. Lấy danh sách file hiện tại từ DB (đang lưu full path dạng "…/uploads/abc.docx")
             List<String> danhSach = db.getDanhSachTaiLieuByTaskId(taskId);
 
             // 2. Xóa file khỏi danh sách
@@ -41,8 +48,14 @@ public class DeleteFileServlet extends HttpServlet {
                 if (path.endsWith(fileName)) {
                     found = true;
 
-                    // Thử xóa file vật lý
-                    File file = new File(path);
+                    // Nếu path trong DB đã là full path thì dùng luôn, nếu chỉ là tên file thì nối lại
+                    File file;
+                    if (new File(path).isAbsolute()) {
+                        file = new File(path);
+                    } else {
+                        file = new File(getUploadDir(), path);
+                    }
+
                     if (file.exists()) {
                         if (!file.delete()) {
                             out.print("{\"success\": false, \"message\": \"Không thể xóa file vật lý.\"}");
@@ -59,10 +72,10 @@ public class DeleteFileServlet extends HttpServlet {
                 return;
             }
 
-            // 3. Cập nhật lại danh sách trong DB
+            // 3. Cập nhật lại danh sách file trong DB
             db.capNhatTaiLieuCongViec(taskId, dsConLai);
-            int projectId = Integer.parseInt(request.getParameter("projectId"));
 
+            int projectId = Integer.parseInt(request.getParameter("projectId"));
             out.print("{\"success\": true, \"projectId\": " + projectId + "}");
         } catch (Exception e) {
             e.printStackTrace();
@@ -70,4 +83,3 @@ public class DeleteFileServlet extends HttpServlet {
         }
     }
 }
-
