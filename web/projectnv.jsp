@@ -174,29 +174,31 @@
                             <i class="fa-solid fa-plus me-1"></i> Thêm dự án
                         </button>-->
                     </div>
-                    <div class="project-list">
+                    <div class="row project-list">
                         <!-- Lặp lại cho các dự án khác -->
                         <%
                             List<Map<String, Object>> projects = (List<Map<String, Object>>) request.getAttribute("projects");
                             if (projects != null) {
                                 for (Map<String, Object> project : projects) {
                         %>
-                        <div class="project-card" data-id="<%= project.get("id") %>" onclick="goToProjectTask(<%= project.get("id") %>, event)">
-                            <div class="project-header d-flex justify-content-between align-items-center">
-                                <span class="project-title"><%= project.get("ten_du_an") %></span>
-                                <div class="project-actions">
-                                    <button class="btn btn-info" onclick="showProjectDetail(event, <%= project.get("id") %>)">
-                                        <i class="fa-solid fa-eye"></i>
-                                    </button>
-                                    <button class="btn btn-warning" onclick="editProject(<%= project.get("id") %>); event.stopPropagation();">
-                                        <i class="fa-solid fa-pen"></i>
-                                    </button>
-                                    <button class="btn btn-danger delete-project-btn" data-id="<%= project.get("id") %>">
-                                        <i class="fa-solid fa-trash"></i>
-                                    </button>
+                        <div class="col-md-6 mb-4">
+                            <div class="project-card" data-id="<%= project.get("id") %>" onclick="goToProjectTask(<%= project.get("id") %>, event)">
+                                <div class="project-header d-flex justify-content-between align-items-center">
+                                    <span class="project-title"><%= project.get("ten_du_an") %></span>
+                                    <div class="project-actions">
+                                        <button class="btn btn-info" onclick="showProjectDetail(event, <%= project.get("id") %>)">
+                                            <i class="fa-solid fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-warning" onclick="editProject(<%= project.get("id") %>); event.stopPropagation();">
+                                            <i class="fa-solid fa-pen"></i>
+                                        </button>
+                                        <button class="btn btn-danger delete-project-btn" data-id="<%= project.get("id") %>">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    </div>
                                 </div>
+                                <div class="project-desc mt-2 text-muted">Mô tả: <%= project.get("mo_ta") %></div>
                             </div>
-                            <div class="project-desc mt-2 text-muted">Mô tả: <%= project.get("mo_ta") %></div>
                         </div>
                         <%
                                 }

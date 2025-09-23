@@ -343,64 +343,6 @@
             </div>
             <% } %>
 
-            <!-- Modules dashboard -->
-            <div class="dashboard-row mb-5">
-                <div>
-                    <div class="card card-module text-center">
-                        <div class="card-body">
-                            <i class="fa-solid fa-tasks fa-2x text-success mb-2"></i>
-                            <h5 class="card-title">Công việc của tôi</h5>
-                            <p class="card-text">Xem, cập nhật tiến độ, tải file, nhận đánh giá công việc...</p>
-                            <a href="./dsCongviecNV" class="btn btn-outline-success btn-sm rounded-pill px-3">Xem chi
-                                tiết</a>
-                        </div>
-                    </div>
-                </div>
-                <div>
-                    <div class="card card-module text-center">
-                        <div class="card-body">
-                            <i class="fa-solid fa-calendar-check fa-2x text-info mb-2"></i>
-                            <h5 class="card-title">Chấm công</h5>
-                            <p class="card-text">Chấm công, xem lịch sử, kiểm tra trạng thái ngày công...</p>
-                            <a href="./userChamCong" class="btn btn-outline-info btn-sm rounded-pill px-3">Xem
-                                chi tiết</a>
-                        </div>
-                    </div>
-                </div>
-                <div>
-                    <div class="card card-module text-center">
-                        <div class="card-body">
-                            <i class="fa-solid fa-money-bill fa-2x text-warning mb-2"></i>
-                            <h5 class="card-title">Lương & KPI</h5>
-                            <p class="card-text">Xem bảng lương, thưởng, phạt, KPI cá nhân từng tháng...</p>
-                            <a href="./userLuong" class="btn btn-outline-warning btn-sm rounded-pill px-3">Xem
-                                chi tiết</a>
-                        </div>
-                    </div>
-                </div>
-                <div>
-                    <div class="card card-module text-center">
-                        <div class="card-body">
-                            <i class="fa-solid fa-bell fa-2x text-danger mb-2"></i>
-                            <h5 class="card-title">Thông báo</h5>
-                            <p class="card-text">Nhận thông báo công việc, deadline, lương, khen thưởng...</p>
-                            <a href="user_notification.jsp"
-                               class="btn btn-outline-danger btn-sm rounded-pill px-3">Xem chi tiết</a>
-                        </div>
-                    </div>
-                </div>
-                <div>
-                    <div class="card card-module text-center">
-                        <div class="card-body">
-                            <i class="fa-solid fa-user-circle fa-2x text-secondary mb-2"></i>
-                            <h5 class="card-title">Hồ sơ cá nhân</h5>
-                            <p class="card-text">Xem, cập nhật thông tin cá nhân, đổi mật khẩu, avatar...</p>
-                            <a href="user_profile.jsp"
-                               class="btn btn-outline-secondary btn-sm rounded-pill px-3">Xem chi tiết</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
             <!-- Quick report (doughnut giống admin) -->
             <div class="quick-report-box mt-4" id="userQuickReport"
                  data-ht="<%= thongKeCongViec.getOrDefault("Đã hoàn thành",0) %>"
