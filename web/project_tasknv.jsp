@@ -446,14 +446,7 @@
                                 <div class="progress">
                                     <div class="progress-bar <%= badgeClass.getOrDefault(status, "bg-secondary") %>" style="width: <%= percent %>%;"></div>
                                 </div>
-                                <div class="task-actions">
-                                    <form action="./xoaCongviec" method="post" onsubmit="return confirm('Bạn có chắc muốn xóa công việc này không?');">
-                                        <input type="hidden" name="id" value="<%= task.get("id") %>">
-                                        <button type="submit" class="btn btn-sm btn-danger">
-                                            <i class="fa-solid fa-trash"></i>
-                                        </button>
-                                    </form>
-                                </div>
+                                <!-- Nút xóa công việc đã bị ẩn cho nhân viên -->
                             </div>
                             <% }} %>
                         </div>
