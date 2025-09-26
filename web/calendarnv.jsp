@@ -155,9 +155,7 @@
                 <div class="main-content">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h3 class="mb-0"><i class="fa-solid fa-calendar-days me-2"></i>Lịch trình công tác</h3>
-                        <button class="btn btn-action btn-action-primary" id="btnAddSchedule">
-                            <i class="fa-solid fa-plus"></i> Thêm lịch trình
-                        </button>
+                        <!-- Nút Thêm lịch trình đã bị ẩn cho nhân viên -->
                     </div>
                     <div id="calendar"></div>
                 </div>
@@ -191,8 +189,7 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="submit" class="btn btn-primary rounded-pill">Lưu</button>
-                        <button type="button" class="btn btn-danger rounded-pill" id="btnDeleteEvent" style="display:none">Xóa</button>
+                        <!-- Nút Lưu và Xóa đã bị ẩn cho nhân viên -->
                         <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Huỷ</button>
                     </div>
                 </form>
@@ -237,15 +234,11 @@
                         $("#eventForm input[name='start']").val(event.startStr);
                         $("#eventForm input[name='end']").val(event.endStr ? event.endStr.split('T')[0] : '');
                         $("#eventForm textarea[name='description']").val(event.extendedProps.description || '');
-                        $('#btnDeleteEvent').show();
-                        $("#modalEvent").modal("show");
-                    },
-                    dateClick: function (info) {
-                        $("#eventForm")[0].reset();
-                        $("#eventForm input[name='start']").val(info.dateStr);
+                        // Ẩn nút Lưu và Xóa để chỉ xem
+                        $("#eventForm button[type='submit']").hide();
                         $('#btnDeleteEvent').hide();
                         $("#modalEvent").modal("show");
-                    }
+                    },
                 });
                 calendar.render();
 
