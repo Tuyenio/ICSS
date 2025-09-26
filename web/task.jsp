@@ -337,10 +337,18 @@
                     <div class="main-box mb-3">
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <h3 class="mb-0"><i class="fa-solid fa-tasks me-2"></i>Quản lý Công việc</h3>
-                            <button class="btn btn-primary rounded-pill px-3" data-bs-toggle="modal"
-                                    data-bs-target="#modalTask">
-                                <i class="fa-solid fa-plus"></i> Tạo công việc
-                            </button>
+                            <div class="d-flex gap-2">
+                                <!-- Nút thêm từ Excel -->
+                                <button class="btn btn-success rounded-pill px-3" data-bs-toggle="modal"
+                                        data-bs-target="#modalExcel">
+                                    <i class="fa-solid fa-file-excel"></i> Thêm việc từ Excel
+                                </button>
+                                <!-- Nút tạo công việc -->
+                                <button class="btn btn-primary rounded-pill px-3" data-bs-toggle="modal"
+                                        data-bs-target="#modalTask">
+                                    <i class="fa-solid fa-plus"></i> Tạo công việc
+                                </button>
+                            </div>
                         </div>
                         <div class="row mb-2 g-2" id="phongban">
                             <div class="col-md-3">
@@ -701,6 +709,28 @@
                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                    <!-- Modal Upload Excel -->
+                    <div class="modal fade" id="modalExcel" tabindex="-1">
+                        <div class="modal-dialog">
+                            <form class="modal-content" action="UploadExcelServlet" method="post" enctype="multipart/form-data">
+                                <div class="modal-header">
+                                    <h5 class="modal-title"><i class="fa-solid fa-file-excel"></i> Upload Excel công việc</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="mb-3">
+                                        <label class="form-label">Chọn file Excel</label>
+                                        <input type="file" name="excelFile" accept=".xls,.xlsx" class="form-control" required>
+                                    </div>
+                                    <p class="text-muted small">File phải có cột trùng với cấu trúc bảng <code>cong_viec</code></p>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="submit" class="btn btn-success">Upload & Import</button>
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                                </div>
+                            </form>
                         </div>
                     </div>
                     <!-- Modal thêm quy trình/giai đoạn -->

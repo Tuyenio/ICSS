@@ -199,6 +199,10 @@
         <servlet-name>dsDuannv</servlet-name>
         <servlet-class>controller.dsDuannv</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>UploadExcelServlet</servlet-name>
+        <servlet-class>controller.UploadExcelServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>dsnhanvien</servlet-name>
         <url-pattern>/dsnhanvien</url-pattern>
@@ -394,6 +398,10 @@
     <servlet-mapping>
         <servlet-name>dsDuannv</servlet-name>
         <url-pattern>/dsDuannv</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>UploadExcelServlet</servlet-name>
+        <url-pattern>/UploadExcelServlet</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>

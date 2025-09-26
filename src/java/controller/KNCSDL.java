@@ -12,6 +12,10 @@ import java.time.YearMonth;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Row;
 
 /**
  *
@@ -3355,6 +3359,181 @@ public class KNCSDL {
             ps.setInt(1, id);
             return ps.executeUpdate() > 0;
         }
+    }
+
+    private java.sql.Date getSqlDate(Cell cell) {
+        if (cell == null) {
+            return null;
+        }
+
+        switch (cell.getCellType()) {
+            case STRING:
+                try {
+                    String value = cell.getStringCellValue().trim();
+                    if (value.isEmpty()) {
+                        return null;
+                    }
+
+                    // Parse chuỗi dd/MM/yyyy
+                    java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy");
+                    java.util.Date utilDate = sdf.parse(value);
+                    return new java.sql.Date(utilDate.getTime());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return null;
+                }
+            case NUMERIC:
+                if (org.apache.poi.ss.usermodel.DateUtil.isCellDateFormatted(cell)) {
+                    return new java.sql.Date(cell.getDateCellValue().getTime());
+                } else {
+                    // nếu là số (Excel lưu date dạng số) thì convert
+                    return new java.sql.Date(org.apache.poi.ss.usermodel.DateUtil.getJavaDate(cell.getNumericCellValue()).getTime());
+                }
+            default:
+                return null;
+        }
+    }
+
+    private int getDuAnIdByName(String tenDuAn) throws SQLException {
+        String sql = "SELECT id FROM du_an WHERE ten_du_an = ?";
+        try (PreparedStatement ps = cn.prepareStatement(sql)) {
+            ps.setString(1, tenDuAn);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("id");
+            }
+        }
+        return 0; // hoặc throw new SQLException("Không tìm thấy dự án: " + tenDuAn);
+    }
+
+    private String getNullableString(Cell cell) {
+        if (cell == null) {
+            return null;
+        }
+
+        switch (cell.getCellType()) {
+            case STRING:
+                String s = cell.getStringCellValue().trim();
+                return s.isEmpty() ? null : s;
+
+            case NUMERIC:
+                // Nếu là số -> chuyển về chuỗi (vd: "123")
+                return String.valueOf((long) cell.getNumericCellValue());
+
+            case BOOLEAN:
+                return String.valueOf(cell.getBooleanCellValue());
+
+            case BLANK:
+                return null;
+
+            default:
+                return null;
+        }
+    }
+
+    public int importTasksFromExcel(Sheet sheet) throws SQLException {
+        String sql = "INSERT INTO cong_viec (du_an_id, ten_cong_viec, mo_ta, ngay_bat_dau, han_hoan_thanh, muc_do_uu_tien, "
+                + "nguoi_giao_id, phong_ban_id, trang_thai, tai_lieu_cv, file_tai_lieu) "
+                + "VALUES (?,?,?,?,?,?,?,?,?,?,?)";
+
+        int count = 0;
+
+        try (PreparedStatement ps = cn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            for (Row row : sheet) {
+                if (row.getRowNum() == 0) {
+                    continue; // bỏ dòng tiêu đề
+                }
+                // 1. du_an_id
+                String tenDuAn = getNullableString(row.getCell(0));
+                int duAnId = getDuAnIdByName(tenDuAn);
+                ps.setInt(1, duAnId);
+
+                // 2. ten_cong_viec
+                String tenCongViec = getNullableString(row.getCell(1));
+                ps.setString(2, tenCongViec);
+
+                // 3. mo_ta
+                String moTa = getNullableString(row.getCell(2));
+                ps.setString(3, moTa);
+
+                // 4. ngay_bat_dau
+                java.sql.Date ngayBatDau = getSqlDate(row.getCell(3));
+                ps.setDate(4, ngayBatDau);
+
+                // 5. han_hoan_thanh
+                java.sql.Date ngayKetThuc = getSqlDate(row.getCell(4));
+                ps.setDate(5, ngayKetThuc);
+
+                // 6. muc_do_uu_tien
+                String mucDo = getNullableString(row.getCell(5));
+                ps.setString(6, mucDo);
+
+                // 7. nguoi_giao_id
+                String tenNguoiGiao = getNullableString(row.getCell(6));
+                int giaoId = getNhanVienIdByName(tenNguoiGiao);
+                ps.setInt(7, giaoId);
+
+                // 8. Người nhận (PIC)
+                String dsNguoiNhan = getNullableString(row.getCell(7));
+
+                // 9. phong_ban_id
+                String tenPhongBan = getNullableString(row.getCell(8));
+                int phongBanId = getPhongIdByName(tenPhongBan);
+                ps.setInt(8, phongBanId);
+
+                // 10. trang_thai
+                String trangThai = getNullableString(row.getCell(9));
+                ps.setString(9, trangThai);
+
+                // 11. tai_lieu_cv
+                String taiLieu = getNullableString(row.getCell(10));
+                if (taiLieu != null) {
+                    ps.setString(10, taiLieu);
+                } else {
+                    ps.setNull(10, java.sql.Types.VARCHAR);
+                }
+
+                // 12. file_tai_lieu
+                String fileTaiLieu = getNullableString(row.getCell(11));
+                if (fileTaiLieu != null) {
+                    ps.setString(11, fileTaiLieu);
+                } else {
+                    ps.setNull(11, java.sql.Types.VARCHAR);
+                }
+
+                // 👉 IN RA CONSOLE ĐỂ KIỂM TRA
+                System.out.printf("Row %d => DuAn: %s, CongViec: %s, MoTa: %s, BatDau: %s, KetThuc: %s, MucDo: %s, Giao: %s, Nhan: %s, Phong: %s, TrangThai: %s, TaiLieu: %s, File: %s%n",
+                        row.getRowNum(), tenDuAn, tenCongViec, moTa, ngayBatDau, ngayKetThuc,
+                        mucDo, tenNguoiGiao, dsNguoiNhan, tenPhongBan, trangThai, taiLieu, fileTaiLieu);
+
+                // Thực hiện insert công việc
+                ps.executeUpdate();
+                count++;
+
+                // Lấy id công việc
+                int taskId = -1;
+                try (ResultSet rs = ps.getGeneratedKeys()) {
+                    if (rs.next()) {
+                        taskId = rs.getInt(1);
+                    }
+                }
+
+                // Insert người nhận
+                if (taskId > 0 && dsNguoiNhan != null && !dsNguoiNhan.trim().isEmpty()) {
+                    for (String tenNhan : dsNguoiNhan.split(",")) {
+                        tenNhan = tenNhan.trim();
+                        if (tenNhan.isEmpty()) {
+                            continue;
+                        }
+                        int nhanId = getNhanVienIdByName(tenNhan);
+                        if (nhanId > 0) {
+                            addNguoiNhan(taskId, nhanId);
+                        }
+                    }
+                }
+            }
+        }
+        return count;
     }
 
     public void close() throws SQLException {
