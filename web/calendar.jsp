@@ -146,6 +146,9 @@
             }
 
         </style>
+        <script>
+            var PAGE_TITLE = '<i class="fa-solid fa-calendar-days me-2"></i>Lịch trình công tác';
+        </script>
     </head>
     <body>
         <div class="d-flex">

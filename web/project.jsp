@@ -161,6 +161,9 @@
             }
 
         </style>
+        <script>
+            var PAGE_TITLE = '<i class="fa-solid fa-diagram-project me-2"></i>Quản lý Dự án';
+        </script>
     </head>
     <body>
         <div class="d-flex">
