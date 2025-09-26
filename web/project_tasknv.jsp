@@ -339,7 +339,7 @@
                     <div class="main-box mb-3">
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <h3 class="mb-0"><i class="fa-solid fa-diagram-project me-2"></i>Quản lý Dự án: <%= request.getAttribute("tenDuan") %></h3>
-                            <a href="./dsDuan" class="btn btn-secondary rounded-pill px-3"><i class="fa-solid fa-arrow-left"></i> Quay lại dự án</a>
+                            <a href="./dsDuannv" class="btn btn-secondary rounded-pill px-3"><i class="fa-solid fa-arrow-left"></i> Quay lại dự án</a>
                         </div>
                         <div class="row mb-2 g-2" id="phongban">
                             <div class="col-md-3">

@@ -186,15 +186,10 @@
                                 <div class="project-header d-flex justify-content-between align-items-center">
                                     <span class="project-title"><%= project.get("ten_du_an") %></span>
                                     <div class="project-actions">
-                                        <button class="btn btn-info" onclick="showProjectDetail(event, <%= project.get("id") %>)">
+                                        <button class="btn btn-info" onclick="showProjectDetail(event, '<%= project.get("id") %>')">
                                             <i class="fa-solid fa-eye"></i>
                                         </button>
-                                        <button class="btn btn-warning" onclick="editProject(<%= project.get("id") %>); event.stopPropagation();">
-                                            <i class="fa-solid fa-pen"></i>
-                                        </button>
-                                        <button class="btn btn-danger delete-project-btn" data-id="<%= project.get("id") %>">
-                                            <i class="fa-solid fa-trash"></i>
-                                        </button>
+                                            <!-- Nút Sửa và Xóa đã bị ẩn cho nhân viên -->
                                     </div>
                                 </div>
                                 <div class="project-desc mt-2 text-muted">Mô tả: <%= project.get("mo_ta") %></div>
