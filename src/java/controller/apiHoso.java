@@ -6,6 +6,7 @@ package controller;
 
 import java.io.IOException;
 import java.sql.*;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -15,10 +16,10 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-
 public class apiHoso extends HttpServlet {
 
     private static final SimpleDateFormat DF = new SimpleDateFormat("dd/MM/yyyy");
+    private static final SimpleDateFormat INPUT_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -141,6 +142,76 @@ public class apiHoso extends HttpServlet {
         // Quyết định trang đích theo vai trò
         String target = decideTargetByRole(vaiTroFromDb);
         forwardTo(request, response, target);
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        request.setCharacterEncoding("UTF-8");
+        response.setCharacterEncoding("UTF-8");
+
+        HttpSession session = request.getSession(false);
+        String email = (String) session.getAttribute("userEmail");
+
+        if (email == null || email.isBlank()) {
+            request.setAttribute("error", "Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.");
+            forwardTo(request, response, "/login.jsp");
+            return;
+        }
+
+        try {
+            // Lấy dữ liệu từ form
+            String hoTen = request.getParameter("ho_ten");
+            String soDienThoai = request.getParameter("so_dien_thoai");
+            String gioiTinh = request.getParameter("gioi_tinh");
+            String ngaySinhStr = request.getParameter("ngay_sinh");
+
+            // Chuyển đổi ngày sinh từ yyyy-MM-dd sang dd/MM/yyyy
+            String ngaySinh = null;
+            if (ngaySinhStr != null && !ngaySinhStr.trim().isEmpty()) {
+                try {
+                    java.util.Date date = INPUT_DATE_FORMAT.parse(ngaySinhStr);
+                    ngaySinh = DF.format(date);
+                } catch (ParseException e) {
+                    request.setAttribute("error", "Định dạng ngày sinh không hợp lệ.");
+                    doGet(request, response);
+                    return;
+                }
+            }
+
+            // Lấy URL avatar từ form
+            String avatarUrl = request.getParameter("avatar_url");
+            if (avatarUrl != null && !avatarUrl.trim().isEmpty()) {
+                avatarUrl = avatarUrl.trim();
+                // Validate URL format
+                if (!avatarUrl.startsWith("http://") && !avatarUrl.startsWith("https://")) {
+                    request.setAttribute("error", "URL ảnh phải bắt đầu bằng http:// hoặc https://");
+                    doGet(request, response);
+                    return;
+                }
+            } else {
+                avatarUrl = null; // Không cập nhật avatar nếu để trống
+            }
+
+            // Cập nhật thông tin trong database
+            KNCSDL db = new KNCSDL();
+            boolean success = db.capNhatHoSoCaNhan(email, hoTen, soDienThoai, gioiTinh, ngaySinh, avatarUrl);
+            db.close();
+
+            if (success) {
+                request.setAttribute("success", "Cập nhật thông tin thành công!");
+            } else {
+                request.setAttribute("error", "Không thể cập nhật thông tin. Vui lòng thử lại.");
+            }
+
+        } catch (Exception e) {
+            request.setAttribute("error", "Đã xảy ra lỗi: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        // Redirect về trang profile để hiển thị thông tin mới
+        doGet(request, response);
     }
 
     private String decideTargetByRole(String role) {

@@ -3560,6 +3560,64 @@ public class KNCSDL {
         return count;
     }
 
+    // Phương thức cập nhật hồ sơ cá nhân
+    public boolean capNhatHoSoCaNhan(String email, String hoTen, String soDienThoai, String gioiTinh, String ngaySinh, String avatarUrl) throws SQLException {
+        StringBuilder sql = new StringBuilder("UPDATE nhanvien SET ");
+        List<Object> params = new ArrayList<>();
+        boolean hasUpdate = false;
+
+        // Chỉ cập nhật các trường có giá trị
+        if (hoTen != null && !hoTen.trim().isEmpty()) {
+            sql.append("ho_ten = ?");
+            params.add(hoTen.trim());
+            hasUpdate = true;
+        }
+
+        if (soDienThoai != null && !soDienThoai.trim().isEmpty()) {
+            if (hasUpdate) sql.append(", ");
+            sql.append("so_dien_thoai = ?");
+            params.add(soDienThoai.trim());
+            hasUpdate = true;
+        }
+
+        if (gioiTinh != null && !gioiTinh.trim().isEmpty()) {
+            if (hasUpdate) sql.append(", ");
+            sql.append("gioi_tinh = ?");
+            params.add(gioiTinh.trim());
+            hasUpdate = true;
+        }
+
+        if (ngaySinh != null && !ngaySinh.trim().isEmpty()) {
+            if (hasUpdate) sql.append(", ");
+            sql.append("ngay_sinh = STR_TO_DATE(?, '%d/%m/%Y')");
+            params.add(ngaySinh.trim());
+            hasUpdate = true;
+        }
+
+        if (avatarUrl != null && !avatarUrl.trim().isEmpty()) {
+            if (hasUpdate) sql.append(", ");
+            sql.append("avatar_url = ?");
+            params.add(avatarUrl.trim());
+            hasUpdate = true;
+        }
+
+        if (!hasUpdate) {
+            return false; // Không có gì để cập nhật
+        }
+
+        sql.append(" WHERE email = ?");
+        params.add(email);
+
+        try (PreparedStatement ps = cn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
+
+            int rowsAffected = ps.executeUpdate();
+            return rowsAffected > 0;
+        }
+    }
+
     public void close() throws SQLException {
         if (cn != null && !cn.isClosed()) {
             cn.close();

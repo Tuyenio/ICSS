@@ -97,30 +97,59 @@
 
         <div class="main-content">
             <div class="main-box mb-3">
-                <h3 class="mb-0"><i class="fa-solid fa-user-circle me-2"></i>Hồ sơ cá nhân</h3>
+                <div class="d-flex justify-content-between align-items-center">
+                    <h3 class="mb-0"><i class="fa-solid fa-user-circle me-2"></i>Hồ sơ cá nhân</h3>
+                    <button class="btn btn-primary" id="btnEditProfile" type="button" onclick="enableEdit()"><i class="fa fa-pen"></i> Chỉnh sửa</button>
+                </div>
 
                 <% if (error != null && !error.isEmpty()) { %>
                 <div class="alert alert-danger mt-3"><%= error %></div>
                 <% } %>
+                <% String success = (String) request.getAttribute("success"); %>
+                <% if (success != null && !success.isEmpty()) { %>
+                <div class="alert alert-success mt-3"><%= success %></div>
+                <% } %>
 
-                <div class="row mt-2">
+                <form id="profileForm" class="row mt-2" method="post" action="apiHoso" autocomplete="off">
                     <!-- Avatar + tên + email -->
                     <div class="col-md-3 text-center">
-                        <img src="<%= avatarUrl %>" class="rounded-circle mb-2" width="220" id="profileAvatar" alt="Avatar">
-                        <div class="fw-bold fs-5" id="profileName"><%= hoTen %></div>
+                        <div id="avatarView">
+                            <img src="<%= avatarUrl %>" class="rounded-circle mb-2" width="220" id="profileAvatar" alt="Avatar">
+                        </div>
+                        <div id="avatarEdit" style="display:none;">
+                            <img src="<%= avatarUrl %>" class="rounded-circle mb-2" width="220" id="avatarPreview" alt="Avatar">
+                            <input type="url" class="form-control mt-2" name="avatar_url" id="avatarUrlInput" 
+                                   placeholder="Nhập URL ảnh (VD: https://i.postimg.cc/FsFtLgZ4/DSC-0130.jpg)" 
+                                   value="<%= avatarUrl != null ? avatarUrl : "" %>">
+                            <small class="text-muted">Hỗ trợ: Postimg, Imgur, Google Drive, v.v.</small>
+                        </div>
+                        <div class="fw-bold fs-5" id="profileNameView"><%= hoTen %></div>
+                        <input type="text" class="form-control fw-bold fs-5 mb-2" name="ho_ten" id="profileNameEdit" value="<%= hoTen %>" style="display:none;">
                         <div class="text-muted small" id="profileEmail"><%= email %></div>
                     </div>
 
                     <div class="col-md-9">
                         <div class="profile-section">
                             <span class="profile-label">SĐT:</span>
-                            <span class="profile-value" id="profilePhone"><%= soDienThoai %></span><br>
+                            <span class="profile-value" id="profilePhoneView"><%= soDienThoai %></span>
+                            <input type="text" class="form-control mb-2" name="so_dien_thoai" id="profilePhoneEdit" value="<%= soDienThoai %>" style="display:none;">
+                            <br>
 
                             <span class="profile-label">Giới tính:</span>
-                            <span class="profile-value" id="profileGender"><%= gioiTinh %></span><br>
+                            <span class="profile-value" id="profileGenderView"><%= gioiTinh %></span>
+                            <select class="form-select mb-2" name="gioi_tinh" id="profileGenderEdit" style="display:none;">
+                                <option value="Nam" <%= "Nam".equals(gioiTinh)?"selected":"" %>>Nam</option>
+                                <option value="Nữ" <%= "Nữ".equals(gioiTinh)?"selected":"" %>>Nữ</option>
+                                <option value="Khác" <%= "Khác".equals(gioiTinh)?"selected":"" %>>Khác</option>
+                            </select>
+                            <br>
 
                             <span class="profile-label">Ngày sinh:</span>
-                            <span class="profile-value" id="profileBirth"><%= ngaySinh %></span><br>
+                            <span class="profile-value" id="profileBirthView">
+                                <%= (ngaySinh != null && !ngaySinh.isEmpty() && !"null".equals(ngaySinh)) ? ngaySinh : "Chưa cập nhật" %>
+                            </span>
+                            <input type="date" class="form-control mb-2" name="ngay_sinh" id="profileBirthEdit" value="<%= (ngaySinh!=null && !ngaySinh.isEmpty() && ngaySinh.matches("\\d{2}/\\d{2}/\\d{4}")) ? (ngaySinh.substring(6,10)+"-"+ngaySinh.substring(3,5)+"-"+ngaySinh.substring(0,2)) : "" %>" style="display:none;">
+                            <br>
 
                             <span class="profile-label">Phòng ban:</span>
                             <span class="profile-value" id="profileDept"><%= tenPhongBan %></span><br>
@@ -146,10 +175,62 @@
                             <span class="profile-label">Ngày tạo tài khoản:</span>
                             <span class="profile-value" id="profileCreated"><%= ngayTao %></span><br>
                         </div>
+
+                        <div id="editBtnGroup" style="display:none;">
+                            <button type="submit" class="btn btn-success me-2"><i class="fa fa-save"></i> Lưu</button>
+                            <button type="button" class="btn btn-secondary" onclick="disableEdit()">Hủy</button>
+                        </div>
                     </div>
-                </div>
+                </form>
             </div>
         </div>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <script>
+        function enableEdit() {
+            document.getElementById('btnEditProfile').style.display = 'none';
+            document.getElementById('editBtnGroup').style.display = '';
+            // Avatar
+            document.getElementById('avatarView').style.display = 'none';
+            document.getElementById('avatarEdit').style.display = '';
+            // Họ tên
+            document.getElementById('profileNameView').style.display = 'none';
+            document.getElementById('profileNameEdit').style.display = '';
+            // SĐT
+            document.getElementById('profilePhoneView').style.display = 'none';
+            document.getElementById('profilePhoneEdit').style.display = '';
+            // Giới tính
+            document.getElementById('profileGenderView').style.display = 'none';
+            document.getElementById('profileGenderEdit').style.display = '';
+            // Ngày sinh
+            document.getElementById('profileBirthView').style.display = 'none';
+            document.getElementById('profileBirthEdit').style.display = '';
+        }
+        function disableEdit() {
+            document.getElementById('btnEditProfile').style.display = '';
+            document.getElementById('editBtnGroup').style.display = 'none';
+            document.getElementById('avatarView').style.display = '';
+            document.getElementById('avatarEdit').style.display = 'none';
+            document.getElementById('profileNameView').style.display = '';
+            document.getElementById('profileNameEdit').style.display = 'none';
+            document.getElementById('profilePhoneView').style.display = '';
+            document.getElementById('profilePhoneEdit').style.display = 'none';
+            document.getElementById('profileGenderView').style.display = '';
+            document.getElementById('profileGenderEdit').style.display = 'none';
+            document.getElementById('profileBirthView').style.display = '';
+            document.getElementById('profileBirthEdit').style.display = 'none';
+        }
+        // Xem trước avatar khi nhập URL
+        document.addEventListener('DOMContentLoaded', function() {
+            var avatarUrlInput = document.getElementById('avatarUrlInput');
+            if (avatarUrlInput) {
+                avatarUrlInput.addEventListener('input', function(e) {
+                    var url = e.target.value.trim();
+                    if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
+                        document.getElementById('avatarPreview').src = url;
+                    }
+                });
+            }
+        });
+        </script>
     </body>
 </html>
