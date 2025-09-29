@@ -2637,14 +2637,22 @@ public class KNCSDL {
 
         // 4. Tỷ lệ công việc hoàn thành
         String sql4 = """
-        SELECT COUNT(DISTINCT cv.id) as tong_cv,
-               SUM(CASE WHEN cv.trang_thai = 'Đã hoàn thành' THEN 1 ELSE 0 END) as hoan_thanh
+    SELECT COUNT(*) as tong_cv,
+           SUM(CASE WHEN trang_thai = 'Đã hoàn thành' THEN 1 ELSE 0 END) as hoan_thanh
+    FROM (
+        SELECT cv.id, cv.trang_thai
         FROM cong_viec cv
         JOIN cong_viec_nguoi_nhan cvr ON cv.id = cvr.cong_viec_id
         JOIN nhanvien nv ON cvr.nhan_vien_id = nv.id
-    """;
+        /**WHERE_COND**/
+        GROUP BY cv.id, cv.trang_thai
+    ) t
+""";
+
         if (phongBanId != null) {
-            sql4 += " WHERE nv.phong_ban_id = ?";
+            sql4 = sql4.replace("/**WHERE_COND**/", "WHERE nv.phong_ban_id = ?");
+        } else {
+            sql4 = sql4.replace("/**WHERE_COND**/", "");
         }
 
         try (PreparedStatement stmt = cn.prepareStatement(sql4)) {
@@ -3026,19 +3034,18 @@ public class KNCSDL {
         return null;
     }
 
-    public Integer getNguoiNhanIdByCongVI(int congViecId) throws SQLException {
-        String sql = "SELECT nguoi_nhan_id FROM cong_viec WHERE id = ? LIMIT 1";
-        try (PreparedStatement ps = cn.prepareStatement(sql)) {
-            ps.setInt(1, congViecId);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return (Integer) rs.getObject(1);
-                }
-            }
-        }
-        return null;
-    }
-
+//    public Integer getNguoiNhanIdByCongVI(int congViecId) throws SQLException {
+//        String sql = "SELECT nguoi_nhan_id FROM cong_viec WHERE id = ? LIMIT 1";
+//        try (PreparedStatement ps = cn.prepareStatement(sql)) {
+//            ps.setInt(1, congViecId);
+//            try (ResultSet rs = ps.executeQuery()) {
+//                if (rs.next()) {
+//                    return (Integer) rs.getObject(1);
+//                }
+//            }
+//        }
+//        return null;
+//    }
     public Integer getCongViecIdByBuocId(int buocId) throws SQLException {
         String sql = "SELECT cong_viec_id FROM cong_viec_quy_trinh WHERE id = ? LIMIT 1";
         try (PreparedStatement ps = cn.prepareStatement(sql)) {

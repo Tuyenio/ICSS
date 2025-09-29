@@ -22,7 +22,7 @@
             .main-content {
                 padding: 36px 36px 24px 36px;
                 min-height: 100vh;
-                margin-left: 240px;
+                margin-left: 260px;
                 animation: fadeIn 0.6s ease-in-out;
             }
             @keyframes fadeIn {
@@ -163,44 +163,37 @@
         </style>
     </head>
     <body>
-        <div class="d-flex">
-            <%@ include file="sidebarnv.jsp" %>
-            <div class="flex-grow-1">
-                <%@ include file="header.jsp" %>
-                <div class="main-content">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h3 class="mb-0"><i class="fa-solid fa-diagram-project me-2"></i>Quản lý Dự án</h3>
-<!--                        <button class="btn btn-add-project" data-bs-toggle="modal" data-bs-target="#modalProject">
-                            <i class="fa-solid fa-plus me-1"></i> Thêm dự án
-                        </button>-->
-                    </div>
-                    <div class="row project-list">
-                        <!-- Lặp lại cho các dự án khác -->
-                        <%
-                            List<Map<String, Object>> projects = (List<Map<String, Object>>) request.getAttribute("projects");
-                            if (projects != null) {
-                                for (Map<String, Object> project : projects) {
-                        %>
-                        <div class="col-md-6 mb-4">
-                            <div class="project-card" data-id="<%= project.get("id") %>" onclick="goToProjectTask(<%= project.get("id") %>, event)">
-                                <div class="project-header d-flex justify-content-between align-items-center">
-                                    <span class="project-title"><%= project.get("ten_du_an") %></span>
-                                    <div class="project-actions">
-                                        <button class="btn btn-info" onclick="showProjectDetail(event, '<%= project.get("id") %>')">
-                                            <i class="fa-solid fa-eye"></i>
-                                        </button>
-                                            <!-- Nút Sửa và Xóa đã bị ẩn cho nhân viên -->
-                                    </div>
-                                </div>
-                                <div class="project-desc mt-2 text-muted">Mô tả: <%= project.get("mo_ta") %></div>
+        <%@ include file="sidebarnv.jsp" %>
+        <%@ include file="header.jsp" %>
+        <div class="main-content">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3 class="mb-0"><i class="fa-solid fa-diagram-project me-2"></i>Quản lý Dự án</h3>
+            </div>
+            <div class="row project-list">
+                <!-- Lặp lại cho các dự án khác -->
+                <%
+                    List<Map<String, Object>> projects = (List<Map<String, Object>>) request.getAttribute("projects");
+                    if (projects != null) {
+                        for (Map<String, Object> project : projects) {
+                %>
+                <div class="col-md-6 mb-4">
+                    <div class="project-card" data-id="<%= project.get("id") %>" onclick="goToProjectTask(<%= project.get("id") %>, event)">
+                        <div class="project-header d-flex justify-content-between align-items-center">
+                            <span class="project-title"><%= project.get("ten_du_an") %></span>
+                            <div class="project-actions">
+                                <button class="btn btn-info" onclick="showProjectDetail(event, '<%= project.get("id") %>')">
+                                    <i class="fa-solid fa-eye"></i>
+                                </button>
+                                <!-- Nút Sửa và Xóa đã bị ẩn cho nhân viên -->
                             </div>
                         </div>
-                        <%
-                                }
-                            }
-                        %>
+                        <div class="project-desc mt-2 text-muted">Mô tả: <%= project.get("mo_ta") %></div>
                     </div>
                 </div>
+                <%
+                        }
+                    }
+                %>
             </div>
         </div>
         <!-- Modal Thêm/Sửa Dự án -->

@@ -8,19 +8,19 @@
     /* PREMIUM SIDEBAR DESIGN - Nâng cấp giống sidebar.jsp */
     .sidebar {
         min-height: 100vh;
-        background: linear-gradient(145deg, 
+        background: linear-gradient(145deg,
             rgba(15, 23, 42, 0.95) 0%,
-            rgba(30, 41, 59, 0.95) 35%, 
+            rgba(30, 41, 59, 0.95) 35%,
             rgba(51, 65, 85, 0.95) 70%,
             rgba(30, 41, 59, 0.95) 100%
-        );
+            );
         backdrop-filter: blur(20px);
         -webkit-backdrop-filter: blur(20px);
         border-right: 1px solid rgba(255, 255, 255, 0.1);
         color: #fff;
         width: 260px;
         transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-        box-shadow: 
+        box-shadow:
             0 25px 50px rgba(0, 0, 0, 0.25),
             inset 0 1px 0 rgba(255, 255, 255, 0.1),
             0 0 0 1px rgba(255, 255, 255, 0.05);
@@ -44,13 +44,13 @@
     }
 
     .sidebar:hover {
-        background: linear-gradient(145deg, 
+        background: linear-gradient(145deg,
             rgba(30, 41, 59, 0.98) 0%,
-            rgba(51, 65, 85, 0.98) 35%, 
+            rgba(51, 65, 85, 0.98) 35%,
             rgba(71, 85, 105, 0.98) 70%,
             rgba(51, 65, 85, 0.98) 100%
-        );
-        box-shadow: 
+            );
+        box-shadow:
             0 30px 60px rgba(0, 0, 0, 0.3),
             inset 0 1px 0 rgba(255, 255, 255, 0.15),
             0 0 0 1px rgba(255, 255, 255, 0.1);
@@ -90,7 +90,7 @@
     }
 
     .sidebar .sidebar-title:hover {
-        text-shadow: 
+        text-shadow:
             0 0 20px rgba(96, 165, 250, 0.6),
             0 0 40px rgba(52, 211, 153, 0.4),
             0 0 60px rgba(168, 85, 247, 0.3);
@@ -132,11 +132,11 @@
         left: -100%;
         width: 100%;
         height: 100%;
-        background: linear-gradient(135deg, 
+        background: linear-gradient(135deg,
             rgba(96, 165, 250, 0.3) 0%,
             rgba(52, 211, 153, 0.2) 50%,
             rgba(168, 85, 247, 0.3) 100%
-        );
+            );
         transition: left 0.6s cubic-bezier(0.23, 1, 0.320, 1);
         border-radius: 16px;
     }
@@ -163,26 +163,26 @@
     }
 
     .sidebar-nav a:hover {
-        background: linear-gradient(135deg, 
+        background: linear-gradient(135deg,
             rgba(255, 255, 255, 0.15) 0%,
             rgba(255, 255, 255, 0.05) 100%
-        );
+            );
         color: #ffffff;
         transform: translateX(8px) scale(1.02);
-        box-shadow: 
+        box-shadow:
             0 10px 25px rgba(0, 0, 0, 0.15),
             inset 0 1px 0 rgba(255, 255, 255, 0.2);
     }
 
     .sidebar-nav a.active {
-        background: linear-gradient(135deg, 
+        background: linear-gradient(135deg,
             rgba(96, 165, 250, 0.3) 0%,
             rgba(52, 211, 153, 0.2) 50%,
             rgba(168, 85, 247, 0.3) 100%
-        );
+            );
         color: #ffffff;
         font-weight: 700;
-        box-shadow: 
+        box-shadow:
             0 15px 35px rgba(96, 165, 250, 0.2),
             inset 0 1px 0 rgba(255, 255, 255, 0.3);
         border: 1px solid rgba(255, 255, 255, 0.2);
