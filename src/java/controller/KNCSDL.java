@@ -1461,7 +1461,8 @@ public class KNCSDL {
         sql.append("SUM(CASE WHEN cv.ngay_bat_dau > ? THEN 1 ELSE 0 END) AS chua_bat_dau ");
         sql.append("FROM nhanvien nv ");
         sql.append("LEFT JOIN phong_ban pb ON nv.phong_ban_id = pb.id ");
-        sql.append("LEFT JOIN cong_viec cv ON nv.id = cv.nguoi_nhan_id ");
+        sql.append("LEFT JOIN cong_viec_nguoi_nhan cvr ON nv.id = cvr.nhan_vien_id ");
+        sql.append("LEFT JOIN cong_viec cv ON cvr.cong_viec_id = cv.id ");
 
         List<Object> params = new ArrayList<>();
         List<String> whereConditions = new ArrayList<>();
@@ -1483,7 +1484,7 @@ public class KNCSDL {
         // Thêm điều kiện lọc theo tháng/năm của công việc
         whereConditions.add("(cv.ngay_bat_dau <= ? AND (cv.ngay_hoan_thanh IS NULL OR cv.ngay_hoan_thanh >= ?))");
         params.add(sqlNgayCuoiThang); // cv.ngay_bat_dau <= ?
-        params.add(sqlNgayCuoiThang);  // cv.ngay_hoan_thanh >= ?
+        params.add(sqlNgayDauThang);  // cv.ngay_hoan_thanh >= ?
 
         // Lọc phòng ban nếu có
         if (phongBan != null && !phongBan.trim().isEmpty()) {
@@ -1556,23 +1557,23 @@ public class KNCSDL {
         try {
             userId = Integer.parseInt(session.getAttribute("userId").toString());
         } catch (Exception e) {
-            // fallback nếu userId không đúng định dạng
             userId = null;
         }
 
         String sql;
         if ("Quản lý".equalsIgnoreCase(vaiTro) && userId != null) {
-            // Trưởng phòng: thống kê theo nhân viên trong phòng do mình quản lý
+            // Trưởng phòng: thống kê tiến độ trung bình theo nhân viên trong phòng
             sql = """
-            SELECT nv.ho_ten, AVG(COALESCE(td.phan_tram, 0)) as tien_do_trung_binh
-            FROM phong_ban pb
-            JOIN nhanvien nv ON pb.id = nv.phong_ban_id
-            LEFT JOIN cong_viec cv ON nv.id = cv.nguoi_nhan_id
-            LEFT JOIN cong_viec_tien_do td ON cv.id = td.cong_viec_id
-            WHERE pb.truong_phong_id = ?
-            GROUP BY nv.id, nv.ho_ten
-            ORDER BY nv.ho_ten
-            """;
+        SELECT nv.ho_ten, AVG(COALESCE(td.phan_tram, 0)) AS tien_do_trung_binh
+        FROM phong_ban pb
+        JOIN nhanvien nv ON pb.id = nv.phong_ban_id
+        LEFT JOIN cong_viec_nguoi_nhan cvr ON nv.id = cvr.nhan_vien_id
+        LEFT JOIN cong_viec cv ON cvr.cong_viec_id = cv.id
+        LEFT JOIN cong_viec_tien_do td ON cv.id = td.cong_viec_id
+        WHERE pb.truong_phong_id = ?
+        GROUP BY nv.id, nv.ho_ten
+        ORDER BY nv.ho_ten
+        """;
 
             try (PreparedStatement stmt = cn.prepareStatement(sql)) {
                 stmt.setInt(1, userId);
@@ -1587,13 +1588,15 @@ public class KNCSDL {
         } else {
             // Admin hoặc vai trò khác: thống kê theo phòng ban
             sql = """
-            SELECT pb.ten_phong, AVG(COALESCE(td.phan_tram, 0)) as tien_do_trung_binh
-            FROM phong_ban pb
-            LEFT JOIN cong_viec cv ON pb.id = cv.phong_ban_id
-            LEFT JOIN cong_viec_tien_do td ON cv.id = td.cong_viec_id
-            GROUP BY pb.id, pb.ten_phong
-            ORDER BY pb.ten_phong
-            """;
+        SELECT pb.ten_phong, AVG(COALESCE(td.phan_tram, 0)) AS tien_do_trung_binh
+        FROM phong_ban pb
+        LEFT JOIN nhanvien nv ON pb.id = nv.phong_ban_id
+        LEFT JOIN cong_viec_nguoi_nhan cvr ON nv.id = cvr.nhan_vien_id
+        LEFT JOIN cong_viec cv ON cvr.cong_viec_id = cv.id
+        LEFT JOIN cong_viec_tien_do td ON cv.id = td.cong_viec_id
+        GROUP BY pb.id, pb.ten_phong
+        ORDER BY pb.ten_phong
+        """;
 
             try (PreparedStatement stmt = cn.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
@@ -2392,24 +2395,30 @@ public class KNCSDL {
     public Map<String, Object> getTongHopKPIUser(int nhanVienId, int thang, int nam) throws SQLException {
         Map<String, Object> tongHop = new HashMap<>();
 
-        // Điểm KPI trung bình
-        String sql1 = "SELECT AVG(diem_kpi) as diem_tb, COUNT(*) as so_chi_tieu FROM luu_kpi "
-                + "WHERE nhan_vien_id = ? AND thang = ? AND nam = ?";
+        // 1. Điểm KPI trung bình
+        String sql1 = """
+        SELECT AVG(diem_kpi) AS diem_tb, COUNT(*) AS so_chi_tieu
+        FROM luu_kpi
+        WHERE nhan_vien_id = ? AND thang = ? AND nam = ?
+    """;
 
-        // Số công việc hoàn thành trong tháng
-        String sql2 = "SELECT COUNT(*) as cong_viec_hoan_thanh FROM cong_viec "
-                + "WHERE nguoi_nhan_id = ? AND trang_thai = 'Đã hoàn thành' "
-                + "AND MONTH(ngay_tao) = ? AND YEAR(ngay_tao) = ?";
+        // 2. Số công việc hoàn thành trong tháng
+        String sql2 = """
+        SELECT COUNT(cv.id) AS cong_viec_hoan_thanh
+        FROM cong_viec cv
+        JOIN cong_viec_nguoi_nhan cvr ON cv.id = cvr.cong_viec_id
+        WHERE cvr.nhan_vien_id = ?
+          AND cv.trang_thai = 'Đã hoàn thành'
+          AND MONTH(cv.ngay_tao) = ?
+          AND YEAR(cv.ngay_tao) = ?
+    """;
 
-        try (PreparedStatement stmt1 = cn.prepareStatement(sql1); PreparedStatement stmt2 = cn.prepareStatement(sql2)) {
-
+        try (
+                PreparedStatement stmt1 = cn.prepareStatement(sql1); PreparedStatement stmt2 = cn.prepareStatement(sql2)) {
+            // KPI
             stmt1.setInt(1, nhanVienId);
             stmt1.setInt(2, thang);
             stmt1.setInt(3, nam);
-            stmt2.setInt(1, nhanVienId);
-            stmt2.setInt(2, thang);
-            stmt2.setInt(3, nam);
-
             try (ResultSet rs1 = stmt1.executeQuery()) {
                 if (rs1.next()) {
                     tongHop.put("diem_kpi_trung_binh", rs1.getDouble("diem_tb"));
@@ -2417,6 +2426,10 @@ public class KNCSDL {
                 }
             }
 
+            // Công việc
+            stmt2.setInt(1, nhanVienId);
+            stmt2.setInt(2, thang);
+            stmt2.setInt(3, nam);
             try (ResultSet rs2 = stmt2.executeQuery()) {
                 if (rs2.next()) {
                     tongHop.put("cong_viec_hoan_thanh", rs2.getInt("cong_viec_hoan_thanh"));
@@ -2602,9 +2615,14 @@ public class KNCSDL {
         }
 
         // 3. Tổng số công việc
-        String sql3 = "SELECT COUNT(*) as tong FROM cong_viec";
+        String sql3 = """
+        SELECT COUNT(DISTINCT cv.id) as tong
+        FROM cong_viec cv
+        JOIN cong_viec_nguoi_nhan cvr ON cv.id = cvr.cong_viec_id
+        JOIN nhanvien nv ON cvr.nhan_vien_id = nv.id
+    """;
         if (phongBanId != null) {
-            sql3 += " WHERE nguoi_nhan_id IN (SELECT id FROM nhanvien WHERE phong_ban_id = ?)";
+            sql3 += " WHERE nv.phong_ban_id = ?";
         }
         try (PreparedStatement stmt = cn.prepareStatement(sql3)) {
             if (phongBanId != null) {
@@ -2618,11 +2636,15 @@ public class KNCSDL {
         }
 
         // 4. Tỷ lệ công việc hoàn thành
-        String sql4 = "SELECT COUNT(*) as tong_cv, "
-                + "SUM(CASE WHEN trang_thai = 'Đã hoàn thành' THEN 1 ELSE 0 END) as hoan_thanh "
-                + "FROM cong_viec";
+        String sql4 = """
+        SELECT COUNT(DISTINCT cv.id) as tong_cv,
+               SUM(CASE WHEN cv.trang_thai = 'Đã hoàn thành' THEN 1 ELSE 0 END) as hoan_thanh
+        FROM cong_viec cv
+        JOIN cong_viec_nguoi_nhan cvr ON cv.id = cvr.cong_viec_id
+        JOIN nhanvien nv ON cvr.nhan_vien_id = nv.id
+    """;
         if (phongBanId != null) {
-            sql4 += " WHERE nguoi_nhan_id IN (SELECT id FROM nhanvien WHERE phong_ban_id = ?)";
+            sql4 += " WHERE nv.phong_ban_id = ?";
         }
 
         try (PreparedStatement stmt = cn.prepareStatement(sql4)) {
@@ -3004,7 +3026,7 @@ public class KNCSDL {
         return null;
     }
 
-    public Integer getNguoiNhanIdByCongViecId(int congViecId) throws SQLException {
+    public Integer getNguoiNhanIdByCongVI(int congViecId) throws SQLException {
         String sql = "SELECT nguoi_nhan_id FROM cong_viec WHERE id = ? LIMIT 1";
         try (PreparedStatement ps = cn.prepareStatement(sql)) {
             ps.setInt(1, congViecId);
@@ -3500,11 +3522,6 @@ public class KNCSDL {
                 } else {
                     ps.setNull(11, java.sql.Types.VARCHAR);
                 }
-
-                // 👉 IN RA CONSOLE ĐỂ KIỂM TRA
-                System.out.printf("Row %d => DuAn: %s, CongViec: %s, MoTa: %s, BatDau: %s, KetThuc: %s, MucDo: %s, Giao: %s, Nhan: %s, Phong: %s, TrangThai: %s, TaiLieu: %s, File: %s%n",
-                        row.getRowNum(), tenDuAn, tenCongViec, moTa, ngayBatDau, ngayKetThuc,
-                        mucDo, tenNguoiGiao, dsNguoiNhan, tenPhongBan, trangThai, taiLieu, fileTaiLieu);
 
                 // Thực hiện insert công việc
                 ps.executeUpdate();
