@@ -375,7 +375,7 @@
             <div class="alert alert-info mt-4" role="alert">
                 <i class="fa-solid fa-bell me-2"></i>
                 Bạn có <strong><%= soThongBaoChuaDoc %></strong> thông báo chưa đọc. 
-                <a href="user_notification.jsp" class="alert-link">Xem ngay</a>
+                <a href="/ICSS/apiThongbao" class="alert-link">Xem ngay</a>
             </div>
             <% } %>
         </div>
