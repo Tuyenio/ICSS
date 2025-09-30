@@ -487,7 +487,7 @@
                                         </div>
                                         <div class="mb-2">
                                             <label class="form-label"><b>Trạng thái:</b></label>
-                                            <select class="form-select" name="trang_thai" disabled>
+                                            <select class="form-select" name="trang_thai">
                                                 <option>Chưa bắt đầu</option>
                                                 <option>Đang thực hiện</option>
                                                 <option>Đã hoàn thành</option>
