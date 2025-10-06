@@ -48,8 +48,6 @@
         <title>Đăng nhập - ICS</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
         <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
-        <!-- Include Vyin Chat Bot SDK -->
-        <script src="https://botsdk.gamania.chat/index.umd.js"></script>
         <style>
             body {
                 background: linear-gradient(135deg, #1e293b, #0f172a);
@@ -318,7 +316,7 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <p><b>1. Giờ giấc làm việc:</b> Làm việc từ Thứ 2 – Thứ 6, thời gian: 08h30 – 17h30 (nghỉ trưa 12h00 – 13h00). Có mặt đúng giờ, hạn chế đi muộn hoặc về sớm.</p>
+                        <p><b>1. Giờ giấc làm việc:</b> Làm việc từ Thứ 2 – Thứ 6, thời gian: 08h00 – 17h00 (nghỉ trưa 12h00 – 13h00). Có mặt đúng giờ, hạn chế đi muộn hoặc về sớm.</p>
                         <p><b>2. Trang phục:</b> Ăn mặc lịch sự, gọn gàng; ưu tiên áo sơ mi, áo polo, quần/váy công sở. Không mặc trang phục phản cảm hoặc không phù hợp môi trường làm việc.</p>
                         <p><b>3. Tác phong:</b> Giao tiếp văn minh, tôn trọng đồng nghiệp và khách hàng. Giữ bàn làm việc gọn gàng, hạn chế gây ồn ào. Thái độ chủ động, trách nhiệm với công việc được giao.</p>
                         <p><b>4. An ninh – Bảo mật:</b> Không chia sẻ thông tin nội bộ ra ngoài khi chưa được phép. Tuân thủ nghiêm ngặt quy định an toàn thông tin và an ninh mạng. Sử dụng tài nguyên công ty (máy tính, email, mạng nội bộ) đúng mục đích.</p>
@@ -347,7 +345,6 @@
         </div>
 
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
         <script>
                                 window.__gim = window.__gim || {};
                                 window.__gim.licenseId = "586508500633432247";

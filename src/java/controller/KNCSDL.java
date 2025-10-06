@@ -37,7 +37,7 @@ public class KNCSDL {
             return null;  // Không hợp lệ
         }
 
-        // Truy vấn vai trò và phòng ban từ email
+        // 🔹 Lấy vai trò và phòng ban từ email
         String getInfoSql = "SELECT vai_tro, phong_ban_id FROM nhanvien WHERE email = ?";
         String vaiTro = null;
         int phongBanId = -1;
@@ -56,6 +56,7 @@ public class KNCSDL {
 
         boolean isAdmin = "Admin".equalsIgnoreCase(vaiTro);
 
+        // 🔹 Câu SQL chính
         StringBuilder sql = new StringBuilder();
         sql.append("SELECT nv.id, nv.ho_ten, nv.email, nv.mat_khau, nv.so_dien_thoai, ")
                 .append("nv.gioi_tinh, nv.ngay_sinh, nv.phong_ban_id, pb.ten_phong AS ten_phong_ban, ")
@@ -64,8 +65,16 @@ public class KNCSDL {
                 .append("LEFT JOIN phong_ban pb ON nv.phong_ban_id = pb.id ");
 
         if (!isAdmin) {
-            sql.append("WHERE nv.phong_ban_id = ?");
+            sql.append("WHERE nv.phong_ban_id = ? ");
         }
+
+        // 🔹 Thêm sắp xếp vai trò
+        sql.append("ORDER BY CASE ")
+                .append("WHEN nv.chuc_vu = 'Giám đốc' THEN 1 ")
+                .append("WHEN nv.chuc_vu = 'Trưởng phòng' THEN 2 ")
+                .append("WHEN nv.chuc_vu = 'Nhân viên' THEN 3 ")
+                .append("WHEN nv.chuc_vu = 'Thực tập sinh' THEN 4 ")
+                .append("ELSE 4 END, nv.ho_ten ASC");
 
         PreparedStatement stmt = this.cn.prepareStatement(sql.toString());
 
@@ -3295,9 +3304,48 @@ public class KNCSDL {
                     project.put("id", rs.getInt("id"));
                     project.put("ten_du_an", rs.getString("ten_du_an"));
                     project.put("mo_ta", rs.getString("mo_ta"));
-                    project.put("ngay_bat_dau", rs.getDate("ngay_bat_dau"));
-                    project.put("ngay_ket_thuc", rs.getDate("ngay_ket_thuc"));
-                    project.put("ngay_tao", rs.getTimestamp("ngay_tao"));
+
+                    // Format ngày
+                    java.sql.Date ngayBatDau = rs.getDate("ngay_bat_dau");
+                    java.sql.Date ngayKetThuc = rs.getDate("ngay_ket_thuc");
+                    java.sql.Timestamp ngayTao = rs.getTimestamp("ngay_tao");
+
+                    java.text.SimpleDateFormat df = new java.text.SimpleDateFormat("yyyy-MM-dd");
+                    java.text.SimpleDateFormat dtf = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+                    project.put("ngay_bat_dau", ngayBatDau != null ? df.format(ngayBatDau) : "");
+                    project.put("ngay_ket_thuc", ngayKetThuc != null ? df.format(ngayKetThuc) : "");
+                    project.put("ngay_tao", ngayTao != null ? dtf.format(ngayTao) : "");
+
+                    // ====== Lấy tổng công việc ======
+                    String sqlCv = "SELECT COUNT(*) FROM cong_viec WHERE du_an_id = ?";
+                    try (PreparedStatement psCv = cn.prepareStatement(sqlCv)) {
+                        psCv.setInt(1, id);
+                        try (ResultSet rsCv = psCv.executeQuery()) {
+                            if (rsCv.next()) {
+                                project.put("tong_cong_viec", rsCv.getInt(1));
+                            } else {
+                                project.put("tong_cong_viec", 0);
+                            }
+                        }
+                    }
+
+                    // ====== Lấy tổng số người duy nhất trong dự án ======
+                    String sqlNguoi = "SELECT COUNT(DISTINCT cvr.nhan_vien_id) "
+                            + "FROM cong_viec cv "
+                            + "JOIN cong_viec_nguoi_nhan cvr ON cv.id = cvr.cong_viec_id "
+                            + "WHERE cv.du_an_id = ?";
+                    try (PreparedStatement psNguoi = cn.prepareStatement(sqlNguoi)) {
+                        psNguoi.setInt(1, id);
+                        try (ResultSet rsNguoi = psNguoi.executeQuery()) {
+                            if (rsNguoi.next()) {
+                                project.put("tong_nguoi", rsNguoi.getInt(1));
+                            } else {
+                                project.put("tong_nguoi", 0);
+                            }
+                        }
+                    }
+
                     return project;
                 }
             }
@@ -3574,28 +3622,36 @@ public class KNCSDL {
         }
 
         if (soDienThoai != null && !soDienThoai.trim().isEmpty()) {
-            if (hasUpdate) sql.append(", ");
+            if (hasUpdate) {
+                sql.append(", ");
+            }
             sql.append("so_dien_thoai = ?");
             params.add(soDienThoai.trim());
             hasUpdate = true;
         }
 
         if (gioiTinh != null && !gioiTinh.trim().isEmpty()) {
-            if (hasUpdate) sql.append(", ");
+            if (hasUpdate) {
+                sql.append(", ");
+            }
             sql.append("gioi_tinh = ?");
             params.add(gioiTinh.trim());
             hasUpdate = true;
         }
 
         if (ngaySinh != null && !ngaySinh.trim().isEmpty()) {
-            if (hasUpdate) sql.append(", ");
+            if (hasUpdate) {
+                sql.append(", ");
+            }
             sql.append("ngay_sinh = STR_TO_DATE(?, '%d/%m/%Y')");
             params.add(ngaySinh.trim());
             hasUpdate = true;
         }
 
         if (avatarUrl != null && !avatarUrl.trim().isEmpty()) {
-            if (hasUpdate) sql.append(", ");
+            if (hasUpdate) {
+                sql.append(", ");
+            }
             sql.append("avatar_url = ?");
             params.add(avatarUrl.trim());
             hasUpdate = true;
@@ -3616,6 +3672,93 @@ public class KNCSDL {
             int rowsAffected = ps.executeUpdate();
             return rowsAffected > 0;
         }
+    }
+
+    public List<Map<String, Object>> getTasksByStatus(String email, int projectId, String trangThai) throws SQLException {
+        List<Map<String, Object>> tasks = new ArrayList<>();
+
+        if (email == null || email.trim().isEmpty()) {
+            return tasks;
+        }
+
+        // 🔹 Lấy thông tin vai trò và phòng ban từ email
+        String getInfoSql = "SELECT vai_tro, phong_ban_id, id FROM nhanvien WHERE email = ?";
+        String vaiTro = null;
+        int phongBanId = -1;
+        int userId = -1;
+
+        try (PreparedStatement infoStmt = cn.prepareStatement(getInfoSql)) {
+            infoStmt.setString(1, email);
+            try (ResultSet rs = infoStmt.executeQuery()) {
+                if (rs.next()) {
+                    vaiTro = rs.getString("vai_tro");
+                    phongBanId = rs.getInt("phong_ban_id");
+                    userId = rs.getInt("id");
+                } else {
+                    return tasks;
+                }
+            }
+        }
+
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT cv.id, cv.du_an_id, cv.ten_cong_viec, cv.mo_ta, cv.muc_do_uu_tien, cv.trang_thai, ")
+                .append("cv.tai_lieu_cv, cv.file_tai_lieu, cv.han_hoan_thanh, ")
+                .append("ng1.ho_ten AS nguoi_giao_ten, ")
+                .append("GROUP_CONCAT(DISTINCT ng2.ho_ten ORDER BY ng2.ho_ten SEPARATOR ', ') AS nguoi_nhan_ten, ")
+                .append("MAX(td.phan_tram) AS phan_tram, ")
+                .append("pb.ten_phong AS ten_phong ")
+                .append("FROM cong_viec cv ")
+                .append("LEFT JOIN nhanvien ng1 ON cv.nguoi_giao_id = ng1.id ")
+                .append("LEFT JOIN cong_viec_nguoi_nhan cvnn ON cv.id = cvnn.cong_viec_id ")
+                .append("LEFT JOIN nhanvien ng2 ON cvnn.nhan_vien_id = ng2.id ")
+                .append("LEFT JOIN cong_viec_tien_do td ON cv.id = td.cong_viec_id ")
+                .append("LEFT JOIN phong_ban pb ON cv.phong_ban_id = pb.id ");
+
+        boolean isAdmin = "Admin".equalsIgnoreCase(vaiTro);
+
+        if (isAdmin) {
+            sql.append("WHERE cv.du_an_id = ? AND cv.trang_thai = ? ");
+        } else {
+            sql.append("WHERE cv.du_an_id = ? AND cv.trang_thai = ? ")
+                    .append("AND (cv.phong_ban_id = ? OR cvnn.nhan_vien_id = ?) ");
+        }
+
+        sql.append("GROUP BY cv.id");
+
+        // 🔹 Gán tham số
+        try (PreparedStatement stmt = cn.prepareStatement(sql.toString())) {
+            if (isAdmin) {
+                stmt.setInt(1, projectId);
+                stmt.setString(2, trangThai);
+            } else {
+                stmt.setInt(1, projectId);
+                stmt.setString(2, trangThai);
+                stmt.setInt(3, phongBanId);
+                stmt.setInt(4, userId);
+            }
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> task = new HashMap<>();
+                    task.put("id", rs.getInt("id"));
+                    task.put("du_an_id", rs.getInt("du_an_id"));
+                    task.put("ten_cong_viec", rs.getString("ten_cong_viec"));
+                    task.put("mo_ta", rs.getString("mo_ta"));
+                    task.put("nguoi_giao_id", rs.getString("nguoi_giao_ten"));
+                    task.put("nguoi_nhan_ten", rs.getString("nguoi_nhan_ten"));
+                    task.put("phan_tram", rs.getString("phan_tram"));
+                    task.put("phong_ban_id", rs.getString("ten_phong"));
+                    task.put("muc_do_uu_tien", rs.getString("muc_do_uu_tien"));
+                    task.put("trang_thai", rs.getString("trang_thai"));
+                    task.put("tai_lieu_cv", rs.getString("tai_lieu_cv"));
+                    task.put("file_tai_lieu", rs.getString("file_tai_lieu"));
+                    task.put("han_hoan_thanh", rs.getDate("han_hoan_thanh"));
+                    tasks.add(task);
+                }
+            }
+        }
+
+        return tasks;
     }
 
     public void close() throws SQLException {

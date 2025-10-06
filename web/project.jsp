@@ -309,9 +309,6 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                        <button type="button" class="btn btn-primary" onclick="editProjectFromDetail()">
-                            <i class="fa-solid fa-edit"></i> Chỉnh sửa
-                        </button>
                     </div>
                 </div>
             </div>
@@ -416,22 +413,26 @@
             let currentProjectId = null;
 
             function showProjectDetail(event, projectId) {
-                event.stopPropagation();
+                if (event)
+                    event.stopPropagation();
                 currentProjectId = projectId;
 
                 $.getJSON("chitietDuan", {id: projectId}, function (project) {
+
                     if (project && !project.error) {
                         $("#detailTenDuAn").text(project.ten_du_an);
-                        $("#detailMoTa").text(project.mo_ta || 'Chưa có mô tả');
-                        $("#detailNgayBatDau").text(formatDate(project.ngay_bat_dau));
-                        $("#detailNgayKetThuc").text(formatDate(project.ngay_ket_thuc));
-                        $("#detailNgayTao").text(formatDate(project.ngay_tao));
-                        $("#detailTongCongViec").text(project.tong_cong_viec || 0);
-                        $("#detailTongNguoi").text(project.tong_nguoi || 0);
+                        $("#detailMoTa").text(project.mo_ta ? project.mo_ta : "Chưa có mô tả");
+                        $("#detailNgayBatDau").text(project.ngay_bat_dau ? project.ngay_bat_dau : "");
+                        $("#detailNgayKetThuc").text(project.ngay_ket_thuc ? project.ngay_ket_thuc : "");
+                        $("#detailNgayTao").text(project.ngay_tao ? project.ngay_tao : "");
+                        $("#detailTongCongViec").text(project.tong_cong_viec ? project.tong_cong_viec : 0);
+                        $("#detailTongNguoi").text(project.tong_nguoi ? project.tong_nguoi : 0);
 
-                        $("#modalProjectDetail").modal("show");
+                        // Bootstrap 5 API để mở modal
+                        var modal = new bootstrap.Modal(document.getElementById("modalProjectDetail"));
+                        modal.show();
                     } else {
-                        showToast('error', project.error || "Không lấy được chi tiết dự án");
+                        showToast('error', project.error ? project.error : "Không lấy được chi tiết dự án");
                     }
                 });
             }

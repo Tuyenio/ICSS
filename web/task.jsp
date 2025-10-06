@@ -354,7 +354,10 @@
                             <div class="col-md-3">
                                 <input type="text" name="keyword" class="form-control" placeholder="Tìm kiếm tên công việc...">
                             </div>
-                            <% String vaiTro = (String) session.getAttribute("vaiTro"); %>
+                            <% 
+                                String vaiTro = (String) session.getAttribute("vaiTro");
+                                String selectedTrangThai = (String) request.getAttribute("selectedTrangThai");
+                            %>
                             <div class="col-md-3">
                                 <select class="form-select" name="ten_phong_ban" id="phongSelect"
                                         <%= !"Admin".equalsIgnoreCase(vaiTro) ? "disabled" : "" %>>
@@ -362,11 +365,11 @@
                             </div>
                             <div class="col-md-3">
                                 <select class="form-select" name="trangThai">
-                                    <option value="">Tất cả trạng thái</option>
-                                    <option value="Chưa bắt đầu">Chưa bắt đầu</option>
-                                    <option value="Đang thực hiện">Đang thực hiện</option>
-                                    <option value="Đã hoàn thành">Đã hoàn thành</option>
-                                    <option value="Trễ hạn">Trễ hạn</option>
+                                    <option value="" <%= (selectedTrangThai == null || selectedTrangThai.isEmpty()) ? "selected" : "" %>>Tất cả trạng thái</option>
+                                    <option value="Chưa bắt đầu" <%= "Chưa bắt đầu".equals(selectedTrangThai) ? "selected" : "" %>>Chưa bắt đầu</option>
+                                    <option value="Đang thực hiện" <%= "Đang thực hiện".equals(selectedTrangThai) ? "selected" : "" %>>Đang thực hiện</option>
+                                    <option value="Đã hoàn thành" <%= "Đã hoàn thành".equals(selectedTrangThai) ? "selected" : "" %>>Đã hoàn thành</option>
+                                    <option value="Trễ hạn" <%= "Trễ hạn".equals(selectedTrangThai) ? "selected" : "" %>>Trễ hạn</option>
                                 </select>
                             </div>
                             <div class="col-md-3">

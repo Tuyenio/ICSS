@@ -90,7 +90,7 @@
                 left: 0;
                 right: 0;
                 bottom: 0;
-                background: 
+                background:
                     radial-gradient(circle at 20% 80%, rgba(59, 130, 246, 0.08) 0%, transparent 50%),
                     radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.06) 0%, transparent 50%),
                     radial-gradient(circle at 40% 40%, rgba(16, 185, 129, 0.05) 0%, transparent 50%),
@@ -101,8 +101,14 @@
             }
 
             @keyframes subtleGrid {
-                0% { opacity: 0.6; transform: translateX(0px) translateY(0px); }
-                100% { opacity: 0.8; transform: translateX(-5px) translateY(-5px); }
+                0% {
+                    opacity: 0.6;
+                    transform: translateX(0px) translateY(0px);
+                }
+                100% {
+                    opacity: 0.8;
+                    transform: translateX(-5px) translateY(-5px);
+                }
             }
 
             .header {
@@ -111,7 +117,7 @@
                 -webkit-backdrop-filter: blur(20px);
                 border-bottom: 1px solid rgba(226, 232, 240, 0.6);
                 min-height: 64px;
-                box-shadow: 
+                box-shadow:
                     0 4px 24px rgba(0, 0, 0, 0.04),
                     0 1px 3px rgba(0, 0, 0, 0.08);
                 margin-left: 260px;
@@ -137,7 +143,7 @@
                 backdrop-filter: blur(20px);
                 -webkit-backdrop-filter: blur(20px);
                 border: 1px solid rgba(226, 232, 240, 0.8);
-                box-shadow: 
+                box-shadow:
                     0 8px 32px rgba(0, 0, 0, 0.08),
                     0 2px 8px rgba(0, 0, 0, 0.04),
                     inset 0 1px 0 rgba(255, 255, 255, 0.8);
@@ -158,7 +164,7 @@
                     transparent,
                     rgba(59, 130, 246, 0.08),
                     transparent
-                );
+                    );
                 transition: left 0.6s ease;
             }
 
@@ -169,7 +175,7 @@
             .card-module:hover {
                 transform: translateY(-12px) scale(1.05);
                 border-color: rgba(59, 130, 246, 0.3);
-                box-shadow: 
+                box-shadow:
                     0 20px 60px rgba(0, 0, 0, 0.12),
                     0 8px 32px rgba(59, 130, 246, 0.15),
                     inset 0 1px 0 rgba(255, 255, 255, 0.9);
@@ -224,7 +230,7 @@
                 text-transform: uppercase;
                 letter-spacing: 0.5px;
                 transition: all 0.3s ease;
-                box-shadow: 
+                box-shadow:
                     0 4px 15px rgba(59, 130, 246, 0.25),
                     inset 0 1px 0 rgba(255, 255, 255, 0.3);
                 color: #ffffff;
@@ -250,7 +256,7 @@
 
             .card-module .btn:hover {
                 transform: translateY(-2px);
-                box-shadow: 
+                box-shadow:
                     0 8px 25px rgba(59, 130, 246, 0.35),
                     0 0 20px rgba(59, 130, 246, 0.2);
             }
@@ -271,7 +277,7 @@
                 backdrop-filter: blur(20px);
                 -webkit-backdrop-filter: blur(20px);
                 border: 1px solid rgba(226, 232, 240, 0.8);
-                box-shadow: 
+                box-shadow:
                     0 8px 32px rgba(0, 0, 0, 0.08),
                     0 2px 8px rgba(0, 0, 0, 0.04),
                     inset 0 1px 0 rgba(255, 255, 255, 0.9);
@@ -293,11 +299,11 @@
             }
 
             @keyframes modernGlow {
-                0%, 100% { 
+                0%, 100% {
                     background-position: 0% 50%;
                     filter: brightness(1.0);
                 }
-                50% { 
+                50% {
                     background-position: 100% 50%;
                     filter: brightness(1.2);
                 }
@@ -306,7 +312,7 @@
             .stat-card-eq .card:hover {
                 transform: translateY(-8px) scale(1.03);
                 border-color: rgba(59, 130, 246, 0.4);
-                box-shadow: 
+                box-shadow:
                     0 20px 60px rgba(0, 0, 0, 0.12),
                     0 8px 32px rgba(59, 130, 246, 0.2),
                     inset 0 1px 0 rgba(255, 255, 255, 0.95);
@@ -335,20 +341,24 @@
             }
 
             @keyframes modernPulse {
-                0% { transform: scale(1); }
-                50% { 
-                    transform: scale(1.05); 
+                0% {
+                    transform: scale(1);
+                }
+                50% {
+                    transform: scale(1.05);
                     filter: contrast(1.2) brightness(1.1);
                 }
-                100% { transform: scale(1); }
+                100% {
+                    transform: scale(1);
+                }
             }
 
             @keyframes countUp {
-                0% { 
+                0% {
                     opacity: 0.7;
                     transform: translateY(10px);
                 }
-                100% { 
+                100% {
                     opacity: 1;
                     transform: translateY(0);
                 }
@@ -391,7 +401,7 @@
                 -webkit-backdrop-filter: blur(20px);
                 border-radius: 20px;
                 border: 1px solid rgba(226, 232, 240, 0.8);
-                box-shadow: 
+                box-shadow:
                     0 8px 32px rgba(0, 0, 0, 0.08),
                     0 2px 8px rgba(0, 0, 0, 0.04),
                     inset 0 1px 0 rgba(255, 255, 255, 0.9);
@@ -435,7 +445,7 @@
                 -webkit-backdrop-filter: blur(20px);
                 border-radius: 20px;
                 border: 1px solid rgba(226, 232, 240, 0.8);
-                box-shadow: 
+                box-shadow:
                     0 8px 32px rgba(0, 0, 0, 0.08),
                     0 2px 8px rgba(0, 0, 0, 0.04),
                     inset 0 1px 0 rgba(255, 255, 255, 0.9);
@@ -556,43 +566,43 @@
             }
 
             /* SPECIAL EFFECTS FOR DIFFERENT MODULES - MODERN COLORS */
-            .card-module:nth-child(1) .card-title { 
+            .card-module:nth-child(1) .card-title {
                 background: linear-gradient(135deg, #3b82f6, #1d4ed8);
                 -webkit-background-clip: text;
                 background-clip: text;
                 -webkit-text-fill-color: transparent;
             }
-            .card-module:nth-child(2) .card-title { 
+            .card-module:nth-child(2) .card-title {
                 background: linear-gradient(135deg, #10b981, #059669);
                 -webkit-background-clip: text;
                 background-clip: text;
                 -webkit-text-fill-color: transparent;
             }
-            .card-module:nth-child(3) .card-title { 
+            .card-module:nth-child(3) .card-title {
                 background: linear-gradient(135deg, #8b5cf6, #7c3aed);
                 -webkit-background-clip: text;
                 background-clip: text;
                 -webkit-text-fill-color: transparent;
             }
-            .card-module:nth-child(4) .card-title { 
+            .card-module:nth-child(4) .card-title {
                 background: linear-gradient(135deg, #f59e0b, #d97706);
                 -webkit-background-clip: text;
                 background-clip: text;
                 -webkit-text-fill-color: transparent;
             }
-            .card-module:nth-child(5) .card-title { 
+            .card-module:nth-child(5) .card-title {
                 background: linear-gradient(135deg, #06b6d4, #0891b2);
                 -webkit-background-clip: text;
                 background-clip: text;
                 -webkit-text-fill-color: transparent;
             }
-            .card-module:nth-child(6) .card-title { 
+            .card-module:nth-child(6) .card-title {
                 background: linear-gradient(135deg, #ef4444, #dc2626);
                 -webkit-background-clip: text;
                 background-clip: text;
                 -webkit-text-fill-color: transparent;
             }
-            .card-module:nth-child(7) .card-title { 
+            .card-module:nth-child(7) .card-title {
                 background: linear-gradient(135deg, #6366f1, #4f46e5);
                 -webkit-background-clip: text;
                 background-clip: text;
@@ -651,7 +661,7 @@
                     <!-- Thống kê tổng quan -->
                     <div class="row mb-4">
                         <div class="col-md-3 mb-3 stat-card-eq">
-                            <div class="card text-center border-0 shadow-sm h-100">
+                            <div class="card text-center border-0 shadow-sm h-100 clickable-card" onclick="window.location.href = 'dsnhanvien'">
                                 <div class="card-body">
                                     <i class="fa-solid fa-users fa-2x text-primary mb-2"></i>
                                     <h3 class="text-primary mb-1 stat-number" data-target="<%= thongKeTongQuan.getOrDefault("tong_nhan_vien", 0) %>">0</h3>
@@ -661,7 +671,7 @@
                             </div>
                         </div>
                         <div class="col-md-3 mb-3 stat-card-eq">
-                            <div class="card text-center border-0 shadow-sm h-100">
+                            <div class="card text-center border-0 shadow-sm h-100 clickable-card" onclick="window.location.href = 'dsPhongban'">
                                 <div class="card-body">
                                     <i class="fa-solid fa-building fa-2x text-info mb-2"></i>
                                     <h3 class="text-info stat-number" data-target="<%= thongKeTongQuan.getOrDefault("tong_phong_ban", 0) %>">0</h3>
@@ -670,7 +680,7 @@
                             </div>
                         </div>
                         <div class="col-md-3 mb-3 stat-card-eq">
-                            <div class="card text-center border-0 shadow-sm h-100">
+                            <div class="card text-center border-0 shadow-sm h-100 clickable-card" onclick="window.location.href = 'dsCongviec'">
                                 <div class="card-body">
                                     <i class="fa-solid fa-tasks fa-2x text-success mb-2"></i>
                                     <h3 class="text-success stat-number" data-target="<%= thongKeTongQuan.getOrDefault("tong_cong_viec", 0) %>">0</h3>
@@ -703,27 +713,47 @@
                             <div class="col-md-7">
                                 <div class="row g-2 small" style="--bs-gutter-x:0.75rem;">
                                     <div class="col-6">
-                                        <div class="p-2 rounded-3 d-flex align-items-center gap-2 shadow-sm" style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);">
+                                        <div class="p-2 rounded-3 d-flex align-items-center gap-2 shadow-sm status-card" 
+                                             onclick="window.location.href = 'dsCongviec?trangThai=Đã hoàn thành'"
+                                             style="cursor:pointer;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);">
                                             <span class="d-inline-block rounded-circle" style="width:10px;height:10px;background:#10b981;box-shadow:0 0 8px rgba(16,185,129,0.4);"></span>
-                                            <span style="color:#1e293b;font-weight:600;">Đã hoàn thành: <b style="color:#059669;" class="stat-number" data-target="<%= daHoanThanh %>">0</b><br><small style="color:#64748b;" class="stat-number" data-target="<%= pctHoanThanhInt %>" data-suffix="%">0%</small></span>
+                                            <span style="color:#1e293b;font-weight:600;">
+                                                Đã hoàn thành: <b style="color:#059669;" class="stat-number" data-target="<%= daHoanThanh %>">0</b><br>
+                                                <small style="color:#64748b;" class="stat-number" data-target="<%= pctHoanThanhInt %>" data-suffix="%">0%</small>
+                                            </span>
                                         </div>
                                     </div>
                                     <div class="col-6">
-                                        <div class="p-2 rounded-3 d-flex align-items-center gap-2 shadow-sm" style="background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.3);">
+                                        <div class="p-2 rounded-3 d-flex align-items-center gap-2 shadow-sm status-card" 
+                                             onclick="window.location.href = 'dsCongviec?trangThai=Đang thực hiện'"
+                                             style="cursor:pointer;background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.3);">
                                             <span class="d-inline-block rounded-circle" style="width:10px;height:10px;background:#3b82f6;box-shadow:0 0 8px rgba(59,130,246,0.4);"></span>
-                                            <span style="color:#1e293b;font-weight:600;">Đang thực hiện: <b style="color:#1d4ed8;" class="stat-number" data-target="<%= dangThucHien %>">0</b><br><small style="color:#64748b;" class="stat-number" data-target="<%= pctDangTHInt %>" data-suffix="%">0%</small></span>
+                                            <span style="color:#1e293b;font-weight:600;">
+                                                Đang thực hiện: <b style="color:#1d4ed8;" class="stat-number" data-target="<%= dangThucHien %>">0</b><br>
+                                                <small style="color:#64748b;" class="stat-number" data-target="<%= pctDangTHInt %>" data-suffix="%">0%</small>
+                                            </span>
                                         </div>
                                     </div>
                                     <div class="col-6">
-                                        <div class="p-2 rounded-3 d-flex align-items-center gap-2 shadow-sm" style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);">
+                                        <div class="p-2 rounded-3 d-flex align-items-center gap-2 shadow-sm status-card" 
+                                             onclick="window.location.href = 'dsCongviec?trangThai=Trễ hạn'"
+                                             style="cursor:pointer;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);">
                                             <span class="d-inline-block rounded-circle" style="width:10px;height:10px;background:#ef4444;box-shadow:0 0 8px rgba(239,68,68,0.4);"></span>
-                                            <span style="color:#1e293b;font-weight:600;">Trễ hạn: <b style="color:#dc2626;" class="stat-number" data-target="<%= treHan %>">0</b><br><small style="color:#64748b;" class="stat-number" data-target="<%= pctTreHanInt %>" data-suffix="%">0%</small></span>
+                                            <span style="color:#1e293b;font-weight:600;">
+                                                Trễ hạn: <b style="color:#dc2626;" class="stat-number" data-target="<%= treHan %>">0</b><br>
+                                                <small style="color:#64748b;" class="stat-number" data-target="<%= pctTreHanInt %>" data-suffix="%">0%</small>
+                                            </span>
                                         </div>
                                     </div>
                                     <div class="col-6">
-                                        <div class="p-2 rounded-3 d-flex align-items-center gap-2 shadow-sm" style="background:rgba(100,116,139,0.1);border:1px solid rgba(100,116,139,0.3);">
+                                        <div class="p-2 rounded-3 d-flex align-items-center gap-2 shadow-sm status-card" 
+                                             onclick="window.location.href = 'dsCongviec?trangThai=Chưa bắt đầu'"
+                                             style="cursor:pointer;background:rgba(100,116,139,0.1);border:1px solid rgba(100,116,139,0.3);">
                                             <span class="d-inline-block rounded-circle" style="width:10px;height:10px;background:#64748b;"></span>
-                                            <span style="color:#1e293b;font-weight:600;">Chưa bắt đầu: <b style="color:#475569;" class="stat-number" data-target="<%= chuaBatDau %>">0</b><br><small style="color:#64748b;" class="stat-number" data-target="<%= pctChuaBDInt %>" data-suffix="%">0%</small></span>
+                                            <span style="color:#1e293b;font-weight:600;">
+                                                Chưa bắt đầu: <b style="color:#475569;" class="stat-number" data-target="<%= chuaBatDau %>">0</b><br>
+                                                <small style="color:#64748b;" class="stat-number" data-target="<%= pctChuaBDInt %>" data-suffix="%">0%</small>
+                                            </span>
                                         </div>
                                     </div>
                                 </div>
@@ -877,17 +907,17 @@
                     const parseArr = s => s ? s.split(',').map(Number) : [];
                     const days = h2.dataset.days ? h2.dataset.days.split(',') : [];
                     const ds = [
-                        {label: 'Đủ công', data: parseArr(h2.dataset.du), backgroundColor: '#10b981', stack: 'att'},      // Modern green
-                        {label: 'Đi muộn', data: parseArr(h2.dataset.muon), backgroundColor: '#3b82f6', stack: 'att'},   // Modern blue
+                        {label: 'Đủ công', data: parseArr(h2.dataset.du), backgroundColor: '#10b981', stack: 'att'}, // Modern green
+                        {label: 'Đi muộn', data: parseArr(h2.dataset.muon), backgroundColor: '#3b82f6', stack: 'att'}, // Modern blue
                         {label: 'Thiếu giờ', data: parseArr(h2.dataset.thieu), backgroundColor: '#f59e0b', stack: 'att'}, // Modern amber
-                        {label: 'Vắng', data: parseArr(h2.dataset.vang), backgroundColor: '#ef4444', stack: 'att'},       // Modern red
+                        {label: 'Vắng', data: parseArr(h2.dataset.vang), backgroundColor: '#ef4444', stack: 'att'}, // Modern red
                         {label: 'OT/WFH', data: parseArr(h2.dataset.ot), backgroundColor: '#8b5cf6', stack: 'att'}        // Modern purple
                     ];
                     new Chart(ctxCCongNgay, {type: 'bar', data: {labels: days, datasets: ds}, options: {responsive: true, plugins: {legend: {position: 'bottom'}, tooltip: {mode: 'index', intersect: false}}, scales: {x: {stacked: true}, y: {stacked: true, beginAtZero: true}}}});
                 }
             })();
         </script>
-        
+
         <!-- PROFESSIONAL NUMBER COUNTER ANIMATION -->
         <script>
             class PremiumCounter {
@@ -896,13 +926,13 @@
                     this.isAnimating = false;
                     this.init();
                 }
-                
+
                 init() {
                     // Collect all stat numbers
                     document.querySelectorAll('.stat-number').forEach(element => {
                         const target = parseInt(element.getAttribute('data-target')) || 0;
                         const suffix = element.getAttribute('data-suffix') || '';
-                        
+
                         this.numbers.push({
                             element: element,
                             target: target,
@@ -910,12 +940,12 @@
                             suffix: suffix
                         });
                     });
-                    
+
                     // Start initial animation after page load
                     setTimeout(() => {
                         this.animateAll();
                     }, 1000);
-                    
+
                     // Set interval for periodic animation every 8 seconds
                     setInterval(() => {
                         if (!this.isAnimating) {
@@ -923,22 +953,22 @@
                         }
                     }, 8000);
                 }
-                
+
                 animateAll() {
                     this.isAnimating = true;
-                    
+
                     // Add subtle glow effect to cards
                     document.querySelectorAll('.stat-card-eq .card').forEach(card => {
                         card.style.transition = 'all 0.6s ease';
                         card.style.boxShadow = '0 20px 60px rgba(0, 0, 0, 0.15), 0 8px 32px rgba(59, 130, 246, 0.2)';
                     });
-                    
+
                     this.numbers.forEach((num, index) => {
                         setTimeout(() => {
                             this.animateNumber(num);
                         }, index * 200); // Stagger animations
                     });
-                    
+
                     // Reset card glow after animation
                     setTimeout(() => {
                         document.querySelectorAll('.stat-card-eq .card').forEach(card => {
@@ -947,25 +977,25 @@
                         this.isAnimating = false;
                     }, 3000);
                 }
-                
+
                 animateNumber(num) {
                     const duration = 1500; // 1.5 seconds
                     const startTime = Date.now();
                     const startValue = 0;
-                    
+
                     // Add animation class
                     num.element.classList.add('animating');
-                    
+
                     const animate = () => {
                         const elapsed = Date.now() - startTime;
                         const progress = Math.min(elapsed / duration, 1);
-                        
+
                         // Easing function for smooth acceleration/deceleration
                         const easeOutCubic = 1 - Math.pow(1 - progress, 3);
-                        
+
                         const currentValue = Math.round(startValue + (num.target - startValue) * easeOutCubic);
                         num.element.textContent = currentValue + num.suffix;
-                        
+
                         // Add subtle pulsing effect during animation
                         if (progress < 1) {
                             const intensity = 10 + Math.sin(progress * Math.PI * 4) * 5;
@@ -976,10 +1006,10 @@
                             num.element.classList.remove('animating');
                         }
                     };
-                    
+
                     animate();
                 }
-                
+
                 // Method to manually trigger animation (for testing)
                 trigger() {
                     if (!this.isAnimating) {
@@ -987,10 +1017,10 @@
                     }
                 }
             }
-            
+
             // Initialize the counter system
             const premiumCounter = new PremiumCounter();
-            
+
             // Expose to global scope for testing
             window.premiumCounter = premiumCounter;
         </script>
