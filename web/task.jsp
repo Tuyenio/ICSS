@@ -48,26 +48,46 @@
 
             /* KANBAN BOARD */
             .kanban-board {
-                display: flex;
+                display: grid;
+                grid-template-columns: repeat(4, 1fr);
                 gap: 20px;
-                overflow-x: auto;
-                padding-bottom: 12px;
+                min-height: 420px;
+                margin-bottom: 32px;
             }
             .kanban-col {
-                background: #fff;
-                border-radius: 16px;
-                padding: 18px 14px;
-                flex: 1 1 0;
-                min-width: 260px;
-                max-width: 340px;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.06);
-                border-top: 5px solid #e2e8f0;
-                animation: slideUp 0.4s ease;
-                transition: transform 0.2s ease, box-shadow 0.2s ease;
+                background: linear-gradient(145deg, #ffffff, #f8fafc);
+                border-radius: 20px;
+                padding: 20px 16px;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+                border-top: 6px solid #e2e8f0;
+                animation: slideUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                position: relative;
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
+                min-height: 420px;
             }
+            
+            .kanban-col::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+                transition: left 0.6s;
+            }
+            
+            .kanban-col:hover::before {
+                left: 100%;
+            }
+            
             .kanban-col:hover {
-                transform: translateY(-4px);
-                box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+                transform: translateY(-6px) scale(1.02);
+                box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+                background: linear-gradient(145deg, #ffffff, #f1f5f9);
             }
             .kanban-col h5 {
                 font-size: 1.1rem;
@@ -107,19 +127,43 @@
 
             /* TASK CARDS */
             .kanban-task {
-                background: #fff;
-                border-radius: 12px;
-                padding: 14px;
-                margin-bottom: 14px;
-                box-shadow: 0 1px 6px rgba(0,0,0,0.08);
-                border-left: 6px solid #0dcaf0;
+                background: linear-gradient(135deg, #ffffff, #fafbff);
+                border-radius: 16px;
+                padding: 16px;
+                margin-bottom: 16px;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+                border: 1px solid rgba(226, 232, 240, 0.5);
+                border-left: 5px solid #0dcaf0;
                 cursor: pointer;
-                transition: transform 0.15s ease, box-shadow 0.15s ease;
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                position: relative;
+                overflow: hidden;
             }
+            
+            .kanban-task::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 100%;
+                height: 2px;
+                background: linear-gradient(90deg, #0dcaf0, #4f46e5);
+                transition: left 0.4s ease;
+            }
+            
+            .kanban-task:hover::before {
+                left: 0;
+            }
+            
             .kanban-task:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 4px 14px rgba(0,0,0,0.12);
-                border-color: #4f46e5;
+                transform: translateY(-4px) scale(1.02);
+                box-shadow: 0 8px 25px rgba(13, 202, 240, 0.2);
+                border-left-color: #4f46e5;
+                background: linear-gradient(135deg, #ffffff, #f0f9ff);
+            }
+            
+            .kanban-task:active {
+                transform: translateY(-2px) scale(1.01);
             }
             .task-title {
                 font-weight: 600;
@@ -136,40 +180,284 @@
                 border-radius: 6px;
             }
 
-            /* TASK ACTIONS */
-            .task-actions .btn {
-                border-radius: 50px;
-                padding: 4px 8px;
+            /* TASK ACTIONS - Nút 3 chấm với dropdown */
+            .task-actions {
+                position: absolute;
+                top: 8px;
+                right: 8px;
+                z-index: 10;
+            }
+            
+            .task-dots-btn {
+                background: rgba(255,255,255,0.9);
+                border: 1px solid #e2e8f0;
+                border-radius: 50%;
+                width: 28px;
+                height: 28px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 0;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+                backdrop-filter: blur(10px);
+            }
+            
+            .task-dots-btn:hover {
+                background: rgba(13, 202, 240, 0.1);
+                border-color: #0dcaf0;
+                transform: scale(1.05);
+                box-shadow: 0 4px 12px rgba(13, 202, 240, 0.3);
+            }
+            
+            .task-dots-btn i {
+                color: #64748b;
+                font-size: 0.9rem;
+            }
+            
+            .task-actions-dropdown {
+                position: absolute;
+                top: 100%;
+                right: 0;
+                background: white;
+                border: 1px solid #e2e8f0;
+                border-radius: 12px;
+                box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+                min-width: 160px;
+                opacity: 0;
+                visibility: hidden;
+                transform: translateY(-10px) scale(0.95);
+                transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+                z-index: 1000;
+                backdrop-filter: blur(20px);
+            }
+            
+            .task-actions:hover .task-actions-dropdown {
+                opacity: 1;
+                visibility: visible;
+                transform: translateY(0) scale(1);
+            }
+            
+            .task-action-item {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 10px 14px;
+                border: none;
+                background: transparent;
+                width: 100%;
+                text-align: left;
+                font-size: 0.9rem;
+                color: #374151;
+                transition: all 0.15s ease;
+                border-radius: 0;
+                text-decoration: none;
+                cursor: pointer;
+                user-select: none;
+            }
+            
+            .task-action-item:focus {
+                outline: 2px solid #0dcaf0;
+                outline-offset: -2px;
+            }
+            
+            .task-action-item:first-child {
+                border-radius: 12px 12px 0 0;
+            }
+            
+            .task-action-item:last-child {
+                border-radius: 0 0 12px 12px;
+            }
+            
+            .task-action-item:only-child {
+                border-radius: 12px;
+            }
+            
+            .task-action-item:hover {
+                background: #f8fafc;
+                color: #1e293b;
+                transform: translateX(2px);
+            }
+            
+            .task-action-item.archive:hover {
+                background: linear-gradient(90deg, #f59e0b, #fbbf24);
+                color: white;
+            }
+            
+            .task-action-item.remind:hover {
+                background: linear-gradient(90deg, #0ea5e9, #38bdf8);
+                color: white;
+            }
+            
+            .task-action-item.delete:hover {
+                background: linear-gradient(90deg, #ef4444, #f87171);
+                color: white;
+            }
+            
+            .task-action-item i {
+                width: 16px;
+                font-size: 0.85rem;
+            }
+
+            /* TASK NAVIGATION TABS */
+            .task-nav-tabs .nav-link {
+                background: transparent;
+                border: 2px solid transparent;
+                border-radius: 25px;
+                color: #64748b;
+                font-weight: 500;
+                padding: 8px 16px;
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                position: relative;
+                overflow: hidden;
+            }
+            
+            .task-nav-tabs .nav-link:before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+                transition: left 0.5s;
+            }
+            
+            .task-nav-tabs .nav-link:hover:before {
+                left: 100%;
+            }
+            
+            .task-nav-tabs .nav-link:hover {
+                color: #0dcaf0;
+                border-color: rgba(13, 202, 240, 0.3);
+                background: rgba(13, 202, 240, 0.05);
+                transform: translateY(-2px);
+            }
+            
+            .task-nav-tabs .nav-link.active {
+                background: linear-gradient(135deg, #0dcaf0, #4f46e5);
+                border-color: #0dcaf0;
+                color: white;
+                box-shadow: 0 4px 15px rgba(13, 202, 240, 0.4);
+                transform: translateY(-1px);
+            }
+            
+            .task-nav-tabs .nav-link.active:hover {
+                background: linear-gradient(135deg, #4f46e5, #0dcaf0);
+                transform: translateY(-3px);
+                box-shadow: 0 6px 20px rgba(13, 202, 240, 0.5);
+            }
+            
+            .task-nav-tabs .nav-link i {
+                font-size: 0.9rem;
+            }
+
+            /* ARCHIVED & DELETED TASKS STYLING */
+            .archived-col, .deleted-col {
+                border-top: 5px solid #f59e0b !important;
+                background: #fef3c7;
+            }
+            
+            .deleted-col {
+                border-top-color: #ef4444 !important;
+                background: #fee2e2;
+            }
+            
+            .archived-col h5, .deleted-col h5 {
+                color: #92400e;
+            }
+            
+            .deleted-col h5 {
+                color: #dc2626;
+            }
+            
+            .archived-task, .deleted-task {
+                background: white;
+                border-left-color: #f59e0b;
+                opacity: 0.85;
                 transition: all 0.2s ease;
             }
-            .task-actions .btn-danger {
-                background: linear-gradient(90deg,#ef4444,#dc2626);
-                border: none;
-                color: #fff;
+            
+            .deleted-task {
+                border-left-color: #ef4444;
             }
-            .task-actions .btn-danger:hover {
-                transform: scale(1.1);
-                box-shadow: 0 2px 8px rgba(220,38,38,0.4);
+            
+            .archived-task:hover, .deleted-task:hover {
+                opacity: 1;
+                transform: translateY(-2px);
+            }
+            
+            /* Special actions for archived/deleted tasks */
+            .restore-action:hover {
+                background: linear-gradient(90deg, #10b981, #34d399);
+                color: white;
+            }
+            
+            .permanent-delete-action:hover {
+                background: linear-gradient(90deg, #dc2626, #ef4444);
+                color: white;
             }
 
             /* MODALS */
             .modal-content {
-                border-radius: 16px;
-                box-shadow: 0 6px 22px rgba(0,0,0,0.2);
-                animation: fadeIn 0.4s ease;
+                border-radius: 20px;
+                box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+                animation: modalSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                border: 1px solid rgba(226, 232, 240, 0.3);
+                backdrop-filter: blur(10px);
             }
+            
+            @keyframes modalSlideIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(-30px) scale(0.95);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0) scale(1);
+                }
+            }
+            
             .modal-header {
-                border-bottom: 1px solid #f1f5f9;
+                border-bottom: 1px solid rgba(241, 245, 249, 0.5);
+                background: linear-gradient(135deg, #f8fafc, #ffffff);
+                border-radius: 20px 20px 0 0;
             }
+            
             .modal-footer {
-                border-top: 1px solid #f1f5f9;
+                border-top: 1px solid rgba(241, 245, 249, 0.5);
+                background: linear-gradient(135deg, #ffffff, #f8fafc);
+                border-radius: 0 0 20px 20px;
             }
+            
             .btn-primary {
-                background: linear-gradient(90deg,#0dcaf0,#4f46e5);
+                background: linear-gradient(135deg, #0dcaf0, #4f46e5);
                 border: none;
+                border-radius: 12px;
+                font-weight: 600;
+                padding: 10px 20px;
+                transition: all 0.3s ease;
+                box-shadow: 0 4px 15px rgba(13, 202, 240, 0.3);
             }
+            
             .btn-primary:hover {
-                background: linear-gradient(90deg,#4f46e5,#0dcaf0);
+                background: linear-gradient(135deg, #4f46e5, #0dcaf0);
+                transform: translateY(-2px);
+                box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4);
+            }
+            
+            .btn-success {
+                background: linear-gradient(135deg, #10b981, #34d399);
+                border: none;
+                border-radius: 12px;
+                font-weight: 600;
+                transition: all 0.3s ease;
+            }
+            
+            .btn-success:hover {
+                background: linear-gradient(135deg, #059669, #10b981);
+                transform: translateY(-2px);
             }
 
             /* ==== FIX BUTTON XÓA ==== */
@@ -224,30 +512,56 @@
 
             /* ==== NÚT + THÊM TASK (đẹp hơn) ==== */
             .kanban-col .kanban-add-btn {
-                margin-bottom: 18px;
+                margin-bottom: 20px;
                 border: none;
-                border-radius: 12px;
+                border-radius: 16px;
                 font-size: 0.95rem;
-                font-weight: 500;
+                font-weight: 600;
                 color: #fff;
-                background: linear-gradient(90deg, #0dcaf0, #4f46e5);
-                box-shadow: 0 3px 10px rgba(13, 202, 240, 0.3);
-                padding: 10px 14px;
+                background: linear-gradient(135deg, #0dcaf0, #4f46e5);
+                box-shadow: 0 4px 15px rgba(13, 202, 240, 0.3);
+                padding: 12px 16px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                gap: 8px;
-                transition: all 0.25s ease;
+                gap: 10px;
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                position: relative;
+                overflow: hidden;
+            }
+            
+            .kanban-col .kanban-add-btn::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+                transition: left 0.5s;
+            }
+            
+            .kanban-col .kanban-add-btn:hover::before {
+                left: 100%;
             }
 
             .kanban-col .kanban-add-btn i {
                 font-size: 1rem;
+                transition: transform 0.3s ease;
             }
 
             .kanban-col .kanban-add-btn:hover {
-                background: linear-gradient(90deg, #4f46e5, #0dcaf0);
-                transform: translateY(-2px) scale(1.03);
-                box-shadow: 0 6px 18px rgba(79, 70, 229, 0.35);
+                background: linear-gradient(135deg, #4f46e5, #0dcaf0);
+                transform: translateY(-3px) scale(1.05);
+                box-shadow: 0 8px 25px rgba(79, 70, 229, 0.4);
+            }
+            
+            .kanban-col .kanban-add-btn:hover i {
+                transform: rotate(180deg) scale(1.1);
+            }
+            
+            .kanban-col .kanban-add-btn:active {
+                transform: translateY(-1px) scale(1.02);
             }
 
             /* Progress bar trong task */
@@ -266,41 +580,158 @@
             @keyframes fadeIn {
                 from {
                     opacity: 0;
-                    transform: translateY(8px);
+                    transform: translateY(12px);
                 }
                 to {
                     opacity: 1;
                     transform: translateY(0);
                 }
             }
+            
             @keyframes slideUp {
                 from {
                     opacity: 0;
-                    transform: translateY(20px);
+                    transform: translateY(30px) scale(0.95);
                 }
                 to {
                     opacity: 1;
-                    transform: translateY(0);
+                    transform: translateY(0) scale(1);
                 }
+            }
+            
+            @keyframes pulse {
+                0%, 100% { 
+                    opacity: 1; 
+                    transform: scale(1);
+                }
+                50% { 
+                    opacity: 0.8; 
+                    transform: scale(1.02);
+                }
+            }
+            
+            @keyframes glow {
+                0%, 100% {
+                    box-shadow: 0 0 10px rgba(13, 202, 240, 0.3);
+                }
+                50% {
+                    box-shadow: 0 0 20px rgba(79, 70, 229, 0.5);
+                }
+            }
+            
+            .loading-spinner {
+                display: inline-block;
+                width: 20px;
+                height: 20px;
+                border: 2px solid rgba(255,255,255,0.3);
+                border-radius: 50%;
+                border-top-color: #fff;
+                animation: spin 0.8s ease-in-out infinite;
+            }
+            
+            @keyframes spin {
+                to { transform: rotate(360deg); }
             }
 
             /* RESPONSIVE */
+            @media (max-width: 1200px) {
+                .kanban-board {
+                    grid-template-columns: repeat(2, 1fr);
+                    gap: 16px;
+                }
+                
+                .task-nav-tabs {
+                    flex-wrap: wrap;
+                    gap: 8px;
+                }
+            }
+            
             @media (max-width: 992px) {
                 .main-content {
                     margin-left: 60px;
                     padding: 20px;
                 }
+                
+                .d-flex.justify-content-between.align-items-center {
+                    flex-direction: column;
+                    align-items: flex-start !important;
+                    gap: 16px;
+                }
+                
+                .task-nav-tabs {
+                    order: 2;
+                }
+                
+                .d-flex.gap-2 {
+                    order: 1;
+                    align-self: flex-end;
+                }
             }
+            
             @media (max-width: 768px) {
                 .main-box {
-                    padding: 16px;
-                }
-                .main-content {
                     padding: 12px;
+                    margin: 8px;
                 }
+                
+                .main-content {
+                    padding: 8px;
+                    margin-left: 60px;
+                }
+                
                 .kanban-board {
+                    grid-template-columns: 1fr;
+                    gap: 12px;
+                }
+                
+                .task-nav-tabs .nav-link {
+                    padding: 6px 12px;
+                    font-size: 0.9rem;
+                }
+                
+                .task-actions-dropdown {
+                    min-width: 140px;
+                    right: -10px;
+                }
+                
+                .d-flex.gap-2 {
                     flex-direction: column;
-                    gap: 16px;
+                    width: 100%;
+                }
+                
+                .btn {
+                    width: 100%;
+                }
+            }
+            
+            @media (max-width: 480px) {
+                .main-content {
+                    padding: 4px;
+                    margin-left: 0;
+                }
+                
+                .main-box {
+                    margin: 4px;
+                    padding: 8px;
+                    border-radius: 12px;
+                }
+                
+                .kanban-col {
+                    padding: 12px;
+                    border-radius: 12px;
+                }
+                
+                .kanban-task {
+                    padding: 12px;
+                    margin-bottom: 12px;
+                }
+                
+                .task-title {
+                    font-size: 0.95rem;
+                }
+                
+                .task-meta {
+                    font-size: 0.85rem;
                 }
             }
 
@@ -335,8 +766,33 @@
                 <%@ include file="header.jsp" %>
                 <div class="main-content">
                     <div class="main-box mb-3">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <h3 class="mb-0"><i class="fa-solid fa-tasks me-2"></i>Quản lý Công việc</h3>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div class="d-flex align-items-center gap-3">
+                                <h3 class="mb-0"><i class="fa-solid fa-tasks me-2"></i>Quản lý Công việc</h3>
+                                
+                                <!-- Các tab điều hướng -->
+                                <ul class="nav nav-pills task-nav-tabs" id="taskViewTabs" role="tablist">
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link active" id="active-tasks-tab" data-bs-toggle="pill" 
+                                                data-bs-target="#active-tasks" type="button" role="tab">
+                                            <i class="fa-solid fa-list-check me-1"></i>Công việc
+                                        </button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="archived-tasks-tab" data-bs-toggle="pill" 
+                                                data-bs-target="#archived-tasks" type="button" role="tab">
+                                            <i class="fa-solid fa-archive me-1"></i>Lưu trữ
+                                        </button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="deleted-tasks-tab" data-bs-toggle="pill" 
+                                                data-bs-target="#deleted-tasks" type="button" role="tab">
+                                            <i class="fa-solid fa-trash me-1"></i>Thùng rác
+                                        </button>
+                                    </li>
+                                </ul>
+                            </div>
+                            
                             <div class="d-flex gap-2">
                                 <!-- Nút thêm từ Excel -->
                                 <button class="btn btn-success rounded-pill px-3" data-bs-toggle="modal"
@@ -379,28 +835,32 @@
                         </div>
                     </div>
 
-                    <%
-                        List<Map<String, Object>> taskList = (List<Map<String, Object>>) request.getAttribute("taskList");
+                    <!-- Tab Content -->
+                    <div class="tab-content" id="taskViewTabContent">
+                        <!-- Tab Công việc hoạt động -->
+                        <div class="tab-pane fade show active" id="active-tasks" role="tabpanel">
+                            <%
+                                List<Map<String, Object>> taskList = (List<Map<String, Object>>) request.getAttribute("taskList");
 
-                        Map<String, String> trangThaiLabels = new LinkedHashMap<>();
-                        trangThaiLabels.put("Chưa bắt đầu", "Chưa bắt đầu");
-                        trangThaiLabels.put("Đang thực hiện", "Đang thực hiện");
-                        trangThaiLabels.put("Đã hoàn thành", "Đã hoàn thành");
-                        trangThaiLabels.put("Trễ hạn", "Trễ hạn");
+                                Map<String, String> trangThaiLabels = new LinkedHashMap<>();
+                                trangThaiLabels.put("Chưa bắt đầu", "Chưa bắt đầu");
+                                trangThaiLabels.put("Đang thực hiện", "Đang thực hiện");
+                                trangThaiLabels.put("Đã hoàn thành", "Đã hoàn thành");
+                                trangThaiLabels.put("Trễ hạn", "Trễ hạn");
 
-                        Map<String, String> badgeClass = new HashMap<>();
-                        badgeClass.put("Chưa bắt đầu", "bg-secondary");
-                        badgeClass.put("Đang thực hiện", "bg-warning text-dark");
-                        badgeClass.put("Đã hoàn thành", "bg-success");
-                        badgeClass.put("Trễ hạn", "bg-danger");
+                                Map<String, String> badgeClass = new HashMap<>();
+                                badgeClass.put("Chưa bắt đầu", "bg-secondary");
+                                badgeClass.put("Đang thực hiện", "bg-warning text-dark");
+                                badgeClass.put("Đã hoàn thành", "bg-success");
+                                badgeClass.put("Trễ hạn", "bg-danger");
 
-                        Map<String, String> priorityBadge = new HashMap<>();
-                        priorityBadge.put("Cao", "bg-danger");
-                        priorityBadge.put("Trung bình", "bg-warning text-dark");
-                        priorityBadge.put("Thấp", "bg-success");
-                    %>
+                                Map<String, String> priorityBadge = new HashMap<>();
+                                priorityBadge.put("Cao", "bg-danger");
+                                priorityBadge.put("Trung bình", "bg-warning text-dark");
+                                priorityBadge.put("Thấp", "bg-success");
+                            %>
 
-                    <div class="kanban-board">
+                            <div class="kanban-board">
                         <% for (String status : trangThaiLabels.keySet()) { 
                                String columnClass = "";
                                if ("Chưa bắt đầu".equals(status)) columnClass = "not-started";
@@ -410,13 +870,13 @@
                         %>
                         <div class="kanban-col <%= columnClass %>">
                             <% if ("Chưa bắt đầu".equals(status)) { %>
-                            <h5><i  class="fa-solid fa-hourglass-start"></i><%= trangThaiLabels.get(status) %></h5>
+                            <h5><i class="fa-solid fa-hourglass-start"></i> <%= trangThaiLabels.get(status) %></h5>
                                 <% }else if("Đang thực hiện".equals(status)) { %>
-                            <h5><i class="fa-solid fa-hourglass-start"></i><%= trangThaiLabels.get(status) %></h5>
+                            <h5><i class="fa-solid fa-spinner"></i> <%= trangThaiLabels.get(status) %></h5>
                                 <% }else if("Đã hoàn thành".equals(status)) { %>
-                            <h5><i class="fa-solid fa-check-circle"></i><%= trangThaiLabels.get(status) %></h5> 
+                            <h5><i class="fa-solid fa-check-circle"></i> <%= trangThaiLabels.get(status) %></h5> 
                                 <% }else if("Trễ hạn".equals(status)) { %>
-                            <h5><i class="fa-solid fa-exclamation-circle"></i><%= trangThaiLabels.get(status) %></h5>
+                            <h5><i class="fa-solid fa-exclamation-triangle"></i> <%= trangThaiLabels.get(status) %></h5>
                                 <% } %>   
                                 <% if ("Chưa bắt đầu".equals(status)) { %>
                             <button class="btn btn-outline-secondary kanban-add-btn" data-bs-toggle="modal"
@@ -462,17 +922,102 @@
                                     <div class="progress-bar <%= badgeClass.getOrDefault(status, "bg-secondary") %>" style="width: <%= percent %>%;"></div>
                                 </div>
                                 <div class="task-actions">
-                                    <form action="./xoaCongviec" method="post" onsubmit="return confirm('Bạn có chắc muốn xóa công việc này không?');">
-                                        <input type="hidden" name="id" value="<%= task.get("id") %>">
-                                        <button type="submit" class="btn btn-sm btn-danger">
-                                            <i class="fa-solid fa-trash"></i>
+                                    <button class="task-dots-btn" type="button">
+                                        <i class="fa-solid fa-ellipsis-vertical"></i>
+                                    </button>
+                                    <div class="task-actions-dropdown">
+                                        <button class="task-action-item archive" type="button" data-task-id="<%= task.get("id") %>" data-action="archive">
+                                            <i class="fa-solid fa-archive"></i>
+                                            <span>Lưu trữ</span>
                                         </button>
-                                    </form>
+                                        <button class="task-action-item remind" type="button" data-task-id="<%= task.get("id") %>" data-action="remind">
+                                            <i class="fa-solid fa-bell"></i>
+                                            <span>Nhắc việc</span>
+                                        </button>
+                                        <button class="task-action-item delete" type="button" data-task-id="<%= task.get("id") %>" data-action="delete">
+                                            <i class="fa-solid fa-trash"></i>
+                                            <span>Xóa</span>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                             <% }} %>
                         </div>
                         <% } %>
+                    </div>
+                        </div>
+                        
+                        <!-- Tab Lưu trữ -->
+                        <div class="tab-pane fade" id="archived-tasks" role="tabpanel">
+                            <div class="archived-tasks-container">
+                                <div class="kanban-board">
+                                    <div class="kanban-col not-started archived-col">
+                                        <h5><i class="fa-solid fa-hourglass-start"></i> Chưa bắt đầu</h5>
+                                        <div class="text-center text-muted py-3">
+                                            <i class="fa-solid fa-inbox fa-2x mb-2"></i>
+                                            <p>Chưa có công việc lưu trữ</p>
+                                        </div>
+                                    </div>
+                                    <div class="kanban-col in-progress archived-col">
+                                        <h5><i class="fa-solid fa-spinner"></i> Đang thực hiện</h5>
+                                        <div class="text-center text-muted py-3">
+                                            <i class="fa-solid fa-inbox fa-2x mb-2"></i>
+                                            <p>Chưa có công việc lưu trữ</p>
+                                        </div>
+                                    </div>
+                                    <div class="kanban-col completed archived-col">
+                                        <h5><i class="fa-solid fa-check-circle"></i> Đã hoàn thành</h5>
+                                        <div class="text-center text-muted py-3">
+                                            <i class="fa-solid fa-inbox fa-2x mb-2"></i>
+                                            <p>Chưa có công việc lưu trữ</p>
+                                        </div>
+                                    </div>
+                                    <div class="kanban-col late archived-col">
+                                        <h5><i class="fa-solid fa-exclamation-triangle"></i> Trễ hạn</h5>
+                                        <div class="text-center text-muted py-3">
+                                            <i class="fa-solid fa-inbox fa-2x mb-2"></i>
+                                            <p>Chưa có công việc lưu trữ</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Tab Thùng rác -->
+                        <div class="tab-pane fade" id="deleted-tasks" role="tabpanel">
+                            <div class="deleted-tasks-container">
+                                <div class="kanban-board">
+                                    <div class="kanban-col not-started deleted-col">
+                                        <h5><i class="fa-solid fa-hourglass-start"></i> Chưa bắt đầu</h5>
+                                        <div class="text-center text-muted py-3">
+                                            <i class="fa-solid fa-trash fa-2x mb-2"></i>
+                                            <p>Thùng rác trống</p>
+                                        </div>
+                                    </div>
+                                    <div class="kanban-col in-progress deleted-col">
+                                        <h5><i class="fa-solid fa-spinner"></i> Đang thực hiện</h5>
+                                        <div class="text-center text-muted py-3">
+                                            <i class="fa-solid fa-trash fa-2x mb-2"></i>
+                                            <p>Thùng rác trống</p>
+                                        </div>
+                                    </div>
+                                    <div class="kanban-col completed deleted-col">
+                                        <h5><i class="fa-solid fa-check-circle"></i> Đã hoàn thành</h5>
+                                        <div class="text-center text-muted py-3">
+                                            <i class="fa-solid fa-trash fa-2x mb-2"></i>
+                                            <p>Thùng rác trống</p>
+                                        </div>
+                                    </div>
+                                    <div class="kanban-col late deleted-col">
+                                        <h5><i class="fa-solid fa-exclamation-triangle"></i> Trễ hạn</h5>
+                                        <div class="text-center text-muted py-3">
+                                            <i class="fa-solid fa-trash fa-2x mb-2"></i>
+                                            <p>Thùng rác trống</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <!-- Modal tạo/sửa task -->
                     <div class="modal fade" id="modalTask" tabindex="-1">
@@ -1702,6 +2247,463 @@
             });
         </script>
 
+        <script>
+            // ====== TAB NAVIGATION ======
+            document.addEventListener('DOMContentLoaded', function() {
+                // Xử lý click tab để load dữ liệu
+                const archivedTab = document.getElementById('archived-tasks-tab');
+                const deletedTab = document.getElementById('deleted-tasks-tab');
+                
+                if (archivedTab) {
+                    archivedTab.addEventListener('shown.bs.tab', function() {
+                        loadArchivedTasks();
+                    });
+                }
+                
+                if (deletedTab) {
+                    deletedTab.addEventListener('shown.bs.tab', function() {
+                        loadDeletedTasks();
+                    });
+                }
+                
+                // Thêm keyboard navigation cho tabs
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Tab' && e.target.classList.contains('nav-link')) {
+                        e.target.focus();
+                    }
+                });
+            });
+
+            // ====== LOAD ARCHIVED TASKS ======
+            function loadArchivedTasks() {
+                const container = document.querySelector('.archived-tasks-container');
+                container.innerHTML = '<div class="text-center py-3"><i class="fa-solid fa-spinner fa-spin"></i> Đang tải...</div>';
+                
+                fetch('./locCongviec', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: 'trang_thai=Lưu trữ&view=archived'
+                })
+                .then(res => res.text())
+                .then(html => {
+                    if (html.trim()) {
+                        renderArchivedTasks(html);
+                    } else {
+                        container.innerHTML = '<div class="text-muted text-center py-4"><i class="fa-solid fa-archive fa-2x mb-2"></i><br>Chưa có công việc nào được lưu trữ</div>';
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    container.innerHTML = '<div class="text-danger text-center py-3">Lỗi khi tải dữ liệu</div>';
+                });
+            }
+
+            // ====== LOAD DELETED TASKS ======
+            function loadDeletedTasks() {
+                const container = document.querySelector('.deleted-tasks-container');
+                container.innerHTML = '<div class="text-center py-3"><i class="fa-solid fa-spinner fa-spin"></i> Đang tải...</div>';
+                
+                fetch('./locCongviec', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: 'trang_thai=Đã xóa&view=deleted'
+                })
+                .then(res => res.text())
+                .then(html => {
+                    if (html.trim()) {
+                        renderDeletedTasks(html);
+                    } else {
+                        container.innerHTML = '<div class="text-muted text-center py-4"><i class="fa-solid fa-trash fa-2x mb-2"></i><br>Thùng rác trống</div>';
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    container.innerHTML = '<div class="text-danger text-center py-3">Lỗi khi tải dữ liệu</div>';
+                });
+            }
+
+            // ====== RENDER ARCHIVED TASKS ======
+            function renderArchivedTasks(html) {
+                // Tạm thời tạo HTML mẫu cho archived task
+                const container = document.querySelector('.archived-tasks-container');
+                container.innerHTML = `
+                    <div class="archived-task kanban-task">
+                        <div class="task-title">Mẫu công việc đã lưu trữ</div>
+                        <div class="task-meta">Người giao: <b>Admin</b><br>Người nhận: <b>User</b></div>
+                        <span class="task-priority badge bg-warning text-dark">Trung bình</span>
+                        <span class="task-status badge bg-secondary">Lưu trữ</span>
+                        <div class="progress">
+                            <div class="progress-bar bg-secondary" style="width: 75%;"></div>
+                        </div>
+                        <div class="task-actions">
+                            <button class="task-dots-btn" type="button">
+                                <i class="fa-solid fa-ellipsis-vertical"></i>
+                            </button>
+                            <div class="task-actions-dropdown">
+                                <button class="task-action-item restore-action" type="button" data-task-id="1" data-action="restore">
+                                    <i class="fa-solid fa-undo"></i>
+                                    <span>Khôi phục</span>
+                                </button>
+                                <button class="task-action-item permanent-delete-action" type="button" data-task-id="1" data-action="permanent-delete">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                    <span>Xóa vĩnh viễn</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // ====== RENDER DELETED TASKS ======
+            function renderDeletedTasks(html) {
+                // Tạm thời tạo HTML mẫu cho deleted task  
+                const container = document.querySelector('.deleted-tasks-container');
+                container.innerHTML = `
+                    <div class="deleted-task kanban-task">
+                        <div class="task-title">Mẫu công việc đã xóa</div>
+                        <div class="task-meta">Người giao: <b>Admin</b><br>Người nhận: <b>User</b></div>
+                        <span class="task-priority badge bg-danger">Cao</span>
+                        <span class="task-status badge bg-danger">Đã xóa</span>
+                        <div class="progress">
+                            <div class="progress-bar bg-danger" style="width: 30%;"></div>
+                        </div>
+                        <div class="task-actions">
+                            <button class="task-dots-btn" type="button">
+                                <i class="fa-solid fa-ellipsis-vertical"></i>
+                            </button>
+                            <div class="task-actions-dropdown">
+                                <button class="task-action-item restore-action" type="button" data-task-id="2" data-action="restore">
+                                    <i class="fa-solid fa-undo"></i>
+                                    <span>Khôi phục</span>
+                                </button>
+                                <button class="task-action-item permanent-delete-action" type="button" data-task-id="2" data-action="permanent-delete">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                    <span>Xóa vĩnh viễn</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // ====== TASK ACTIONS - NÚT 3 CHẤM ======
+            document.addEventListener('DOMContentLoaded', function() {
+                // Xử lý click cho các action item
+                document.addEventListener('click', function(e) {
+                    if (e.target.closest('.task-action-item')) {
+                        const item = e.target.closest('.task-action-item');
+                        const taskId = item.dataset.taskId;
+                        const action = item.dataset.action;
+                        
+                        // Ngăn event bubble để không trigger modal
+                        e.stopPropagation();
+                        e.preventDefault();
+                        
+                        switch(action) {
+                            case 'archive':
+                                archiveTask(taskId);
+                                break;
+                            case 'remind':
+                                remindTask(taskId);
+                                break;
+                            case 'delete':
+                                deleteTask(taskId);
+                                break;
+                            case 'restore':
+                                restoreTask(taskId);
+                                break;
+                            case 'permanent-delete':
+                                permanentDeleteTask(taskId);
+                                break;
+                        }
+                    }
+                });
+                
+                // Ngăn dropdown đóng khi click vào
+                document.addEventListener('click', function(e) {
+                    if (e.target.closest('.task-actions-dropdown')) {
+                        e.stopPropagation();
+                    }
+                });
+            });
+
+            // ====== CÁC HÀM XỬ LÝ ACTION ======
+            function archiveTask(taskId) {
+                if (confirm('Bạn có chắc chắn muốn lưu trữ công việc này không?')) {
+                    showToast('info', '📁 Đang lưu trữ công việc...');
+                    
+                    fetch('./suaCongviec', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: `task_id=${taskId}&trang_thai=Lưu trữ&action=archive`
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            showToast('success', '✅ Đã lưu trữ công việc thành công!');
+                            setTimeout(() => location.reload(), 1000);
+                        } else {
+                            showToast('error', data.message || '❌ Lưu trữ thất bại');
+                        }
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        showToast('error', '❌ Lỗi kết nối server');
+                    });
+                }
+            }
+
+            function remindTask(taskId) {
+                if (confirm('Bạn có muốn gửi nhắc nhở cho nhân viên về công việc này không?')) {
+                    showToast('info', '🔔 Đang gửi nhắc nhở...');
+                    
+                    fetch('./suaCongviec', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: `task_id=${taskId}&action=remind&nhac_nho=1`
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            showToast('success', '✅ Đã gửi nhắc nhở thành công!');
+                        } else {
+                            showToast('error', data.message || '❌ Gửi nhắc nhở thất bại');
+                        }
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        showToast('error', '❌ Lỗi kết nối server');
+                    });
+                }
+            }
+
+            function deleteTask(taskId) {
+                if (confirm('Bạn có chắc chắn muốn xóa công việc này không? (Sẽ được chuyển vào thùng rác)')) {
+                    showToast('info', '🗑️ Đang chuyển vào thùng rác...');
+                    
+                    fetch('./suaCongviec', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: `task_id=${taskId}&trang_thai=Đã xóa&action=delete`
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            showToast('success', '✅ Đã chuyển vào thùng rác thành công!');
+                            setTimeout(() => location.reload(), 1000);
+                        } else {
+                            showToast('error', data.message || '❌ Xóa thất bại');
+                        }
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        showToast('error', '❌ Lỗi kết nối server');
+                    });
+                }
+            }
+
+            // ====== KHÔI PHỤC CÔNG VIỆC ======
+            function restoreTask(taskId) {
+                if (confirm('Bạn có chắc chắn muốn khôi phục công việc này không?')) {
+                    showToast('info', '🔄 Đang khôi phục công việc...');
+                    
+                    fetch('./suaCongviec', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: `task_id=${taskId}&trang_thai=Chưa bắt đầu&action=restore`
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            showToast('success', '✅ Đã khôi phục công việc thành công!');
+                            // Reload current tab content
+                            const activeTab = document.querySelector('.nav-link.active');
+                            if (activeTab.id === 'archived-tasks-tab') {
+                                loadArchivedTasks();
+                            } else if (activeTab.id === 'deleted-tasks-tab') {
+                                loadDeletedTasks();
+                            }
+                        } else {
+                            showToast('error', data.message || '❌ Khôi phục thất bại');
+                        }
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        showToast('error', '❌ Lỗi kết nối server');
+                    });
+                }
+            }
+
+            // ====== XÓA VĨNH VIỄN CÔNG VIỆC ======
+            function permanentDeleteTask(taskId) {
+                if (confirm('⚠️ CẢNH BÁO: Bạn có chắc chắn muốn xóa vĩnh viễn công việc này không?\n\nHành động này không thể hoàn tác!')) {
+                    showToast('info', '🗑️ Đang xóa vĩnh viễn...');
+                    
+                    fetch('./xoaCongviec', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: `id=${taskId}&permanent=true`
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            showToast('success', '✅ Đã xóa vĩnh viễn công việc!');
+                            // Reload current tab content
+                            const activeTab = document.querySelector('.nav-link.active');
+                            if (activeTab.id === 'archived-tasks-tab') {
+                                loadArchivedTasks();
+                            } else if (activeTab.id === 'deleted-tasks-tab') {
+                                loadDeletedTasks();
+                            }
+                        } else {
+                            showToast('error', data.message || '❌ Xóa vĩnh viễn thất bại');
+                        }
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        showToast('error', '❌ Lỗi kết nối server');
+                    });
+                }
+            }
+
+            // ====== TAB NAVIGATION ======
+            document.addEventListener('DOMContentLoaded', function() {
+                // Xử lý click tab để load dữ liệu
+                const archivedTab = document.getElementById('archived-tasks-tab');
+                const deletedTab = document.getElementById('deleted-tasks-tab');
+                
+                if (archivedTab) {
+                    archivedTab.addEventListener('shown.bs.tab', function() {
+                        loadArchivedTasks();
+                    });
+                }
+                
+                if (deletedTab) {
+                    deletedTab.addEventListener('shown.bs.tab', function() {
+                        loadDeletedTasks();
+                    });
+                }
+            });
+
+            // ====== LOAD ARCHIVED TASKS ======
+            function loadArchivedTasks() {
+                const container = document.querySelector('.archived-tasks-container');
+                const kanbanBoard = container.querySelector('.kanban-board');
+                
+                // Hiển thị loading
+                kanbanBoard.querySelectorAll('.kanban-col').forEach(col => {
+                    const placeholder = col.querySelector('.text-center');
+                    if (placeholder) {
+                        placeholder.innerHTML = '<i class="fa-solid fa-spinner fa-spin fa-2x mb-2"></i><p>Đang tải...</p>';
+                    }
+                });
+                
+                fetch('./locCongviec', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: 'trang_thai=Lưu trữ&view=archived'
+                })
+                .then(res => res.text())
+                .then(html => {
+                    if (html.trim()) {
+                        renderArchivedTasks(html);
+                    } else {
+                        resetArchivedPlaceholders();
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    kanbanBoard.querySelectorAll('.kanban-col').forEach(col => {
+                        const placeholder = col.querySelector('.text-center');
+                        if (placeholder) {
+                            placeholder.innerHTML = '<i class="fa-solid fa-exclamation-triangle fa-2x mb-2 text-danger"></i><p class="text-danger">Lỗi khi tải dữ liệu</p>';
+                        }
+                    });
+                });
+            }
+
+            // ====== LOAD DELETED TASKS ======
+            function loadDeletedTasks() {
+                const container = document.querySelector('.deleted-tasks-container');
+                const kanbanBoard = container.querySelector('.kanban-board');
+                
+                // Hiển thị loading
+                kanbanBoard.querySelectorAll('.kanban-col').forEach(col => {
+                    const placeholder = col.querySelector('.text-center');
+                    if (placeholder) {
+                        placeholder.innerHTML = '<i class="fa-solid fa-spinner fa-spin fa-2x mb-2"></i><p>Đang tải...</p>';
+                    }
+                });
+                
+                fetch('./locCongviec', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: 'trang_thai=Đã xóa&view=deleted'
+                })
+                .then(res => res.text())
+                .then(html => {
+                    if (html.trim()) {
+                        renderDeletedTasks(html);
+                    } else {
+                        resetDeletedPlaceholders();
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    kanbanBoard.querySelectorAll('.kanban-col').forEach(col => {
+                        const placeholder = col.querySelector('.text-center');
+                        if (placeholder) {
+                            placeholder.innerHTML = '<i class="fa-solid fa-exclamation-triangle fa-2x mb-2 text-danger"></i><p class="text-danger">Lỗi khi tải dữ liệu</p>';
+                        }
+                    });
+                });
+            }
+
+            // ====== RENDER ARCHIVED TASKS ======
+            function renderArchivedTasks(html) {
+                // Placeholder cho việc render archived tasks
+                resetArchivedPlaceholders();
+                showToast('info', 'Đã tải công việc lưu trữ');
+            }
+
+            // ====== RENDER DELETED TASKS ======
+            function renderDeletedTasks(html) {
+                // Placeholder cho việc render deleted tasks
+                resetDeletedPlaceholders();
+                showToast('info', 'Đã tải thùng rác');
+            }
+
+            // ====== RESET PLACEHOLDERS ======
+            function resetArchivedPlaceholders() {
+                document.querySelectorAll('.archived-col .text-center').forEach(placeholder => {
+                    placeholder.innerHTML = '<i class="fa-solid fa-inbox fa-2x mb-2"></i><p>Chưa có công việc lưu trữ</p>';
+                });
+            }
+
+            function resetDeletedPlaceholders() {
+                document.querySelectorAll('.deleted-col .text-center').forEach(placeholder => {
+                    placeholder.innerHTML = '<i class="fa-solid fa-trash fa-2x mb-2"></i><p>Thùng rác trống</p>';
+                });
+            }
+        </script>
 
     </body>
 </html>
