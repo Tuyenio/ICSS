@@ -24,27 +24,38 @@ public class dsCongviec extends HttpServlet {
             HttpSession session = request.getSession();
             String email = (String) session.getAttribute("userEmail");
 
-            // 🟢 Nhận tham số lọc trạng thái (từ dashboard)
-            String trangThai = request.getParameter("trangThai");
-            System.out.println("🟢 [DEBUG] TrangThai được truyền vào: " + trangThai);
+            // 🟢 Tham số lọc
+            String trangThai = request.getParameter("trangThai");   // trạng_thái công việc (đang thực hiện/hoàn thành/…)
+            String tinhTrang = request.getParameter("tinhTrang");   // tình_trạng (archived/active/…)
 
-            // 🟢 Lấy danh sách công việc có thể lọc theo trạng thái
+            System.out.println("🟢 [DEBUG] TrangThai: " + trangThai + " | TinhTrang: " + tinhTrang);
+
+            // 🟢 Lấy danh sách công việc
             List<Map<String, Object>> taskList;
+            List<Map<String, Object>> archivedTaskList;
+            List<Map<String, Object>> deletedTaskList;
+
             if (trangThai != null && !trangThai.trim().isEmpty()) {
-                // Gọi hàm lọc theo trạng thái (bạn cần thêm vào KNCSDL nếu chưa có)
+                // Lọc theo TRẠNG THÁI
                 taskList = kn.getTasksByStatus(email, 1, trangThai);
             } else {
-                // Mặc định lấy tất cả công việc
+                // Không truyền filter → lấy tất cả
                 taskList = kn.getAllTasksByProject(email, 1);
             }
 
-            // 🟢 Cập nhật trạng thái từng công việc trước khi render
+            archivedTaskList = kn.getTasksByTinhTrang(email, 1, "Lưu trữ");
+            deletedTaskList = kn.getTasksByTinhTrang(email, 1, "Đã xóa");
+
+            // 🟢 Cập nhật trạng thái từ tiến độ (không đụng đến task archived)
             for (Map<String, Object> task : taskList) {
-                int congViecId = (int) task.get("id");
-                kn.capNhatTrangThaiTuTienDo(congViecId);
+                String tt = (String) task.get("tinh_trang"); // field này được select trong getTasksByTinhTrang / getAll...
+                if (tt == null || !tt.equalsIgnoreCase("archived")) {
+                    int congViecId = (int) task.get("id");
+                    kn.capNhatTrangThaiTuTienDo(congViecId);
+                }
             }
 
-            // 🟢 Map giữ thứ tự hiển thị các cột
+            // 🟢 Nhãn lọc trạng thái (business status)
             LinkedHashMap<String, String> trangThaiLabels = new LinkedHashMap<>();
             trangThaiLabels.put("Chưa bắt đầu", "Chưa bắt đầu");
             trangThaiLabels.put("Đang thực hiện", "Đang thực hiện");
@@ -54,7 +65,10 @@ public class dsCongviec extends HttpServlet {
             // 🟢 Gửi dữ liệu ra JSP
             request.setAttribute("taskList", taskList);
             request.setAttribute("trangThaiLabels", trangThaiLabels);
-            request.setAttribute("selectedTrangThai", trangThai); // để JSP chọn đúng trạng thái
+            request.setAttribute("archivedTaskList", archivedTaskList);    
+            request.setAttribute("deletedTaskList", deletedTaskList);
+            request.setAttribute("selectedTrangThai", trangThai);
+            request.setAttribute("selectedTinhTrang", tinhTrang); // để JSP tick đúng “archived” nếu có
 
             // 🟢 Chuyển trang
             request.getRequestDispatcher("/task.jsp").forward(request, response);

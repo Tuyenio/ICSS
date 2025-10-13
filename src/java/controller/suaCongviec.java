@@ -20,14 +20,66 @@ public class suaCongviec extends HttpServlet {
 
         PrintWriter out = response.getWriter();
 
-        String id = getValue(request, "task_id");
-        try {
-            KNCSDL db = new KNCSDL();
-            int taskId = Integer.parseInt(id);
+        // Lấy tham số kiểu form-urlencoded
+        String action = request.getParameter("action");       // archive | delete | restore | remind...
+        String tinhTrang = request.getParameter("tinh_trang");   // "Lưu trữ" | "Đã xóa" | "NULL" (khi restore)
+        String trangThai0 = request.getParameter("trang_thai");   // dùng cho restore (VD: "Chưa bắt đầu")
+        String idParam = request.getParameter("task_id");
 
+        // Với multipart parts (khi update nội dung/file), bạn vẫn đang dùng getValue(...)
+        String id = (idParam != null) ? idParam : getValue(request, "task_id");
+
+        try {
             if (id == null || id.trim().isEmpty()) {
                 out.print("{\"success\": false, \"message\": \"Thiếu ID để cập nhật.\"}");
                 return;
+            }   
+            int taskId = Integer.parseInt(id);
+            KNCSDL db = new KNCSDL();
+
+            // =========================
+            // [A] NHÁNH XỬ LÝ HÀNH ĐỘNG NHANH (KHÔNG ĐỤNG TỚI UPLOAD)
+            // =========================
+            if (action != null && !action.trim().isEmpty()) {
+                boolean ok = false;
+                String msg = "Thao tác không hợp lệ";
+
+                switch (action.toLowerCase()) {
+                    case "archive": {
+                        // tinh_trang = 'Lưu trữ'
+                        ok = db.updateTinhTrang(taskId, "Lưu trữ");
+                        msg = ok ? "Đã lưu trữ" : "Lưu trữ thất bại";
+                        break;
+                    }
+                    case "delete": {
+                        // tinh_trang = 'Đã xóa'
+                        ok = db.updateTinhTrang(taskId, "Đã xóa");
+                        msg = ok ? "Đã chuyển vào thùng rác" : "Xóa thất bại";
+                        break;
+                    }
+                    case "restore": {
+                        // tinh_trang = NULL, và set lại trạng_thái nghiệp vụ
+                        ok = db.updateTinhTrang(taskId, null);
+                        if (ok) {
+                            String fallbackTrangThai = (trangThai0 != null && !trangThai0.isEmpty())
+                                    ? trangThai0 : null; // VD: "Chưa bắt đầu"
+                            if (fallbackTrangThai != null) {
+                                ok = db.updateTrangThai(taskId, fallbackTrangThai);
+                            }
+                        }
+                        msg = ok ? "Đã khôi phục" : "Khôi phục thất bại";
+                        break;
+                    }
+                    case "remind": {
+                        // Giữ nguyên logic bạn sẽ dùng (nếu có)
+                        ok = true;
+                        msg = "Đã gửi nhắc nhở";
+                        break;
+                    }
+                }
+
+                out.print("{\"success\":" + ok + ",\"message\":\"" + msg + "\"}");
+                return; // ❗ KẾT THÚC ở đây, không đi tiếp xuống luồng upload/update
             }
 
             boolean chiUploadFile = (request.getParameter("chi_file") != null)
@@ -38,12 +90,11 @@ public class suaCongviec extends HttpServlet {
                 fileCu = "";
             }
 
-            // === 1. Lưu file đính kèm ===
+            // 1. Lưu file đính kèm
             String uploadPath = System.getenv("ICSS_UPLOAD_DIR");
             if (uploadPath == null || uploadPath.trim().isEmpty()) {
-                uploadPath = "D:/uploads"; // fallback khi local
+                uploadPath = "D:/uploads"; // fallback local
             }
-
             File uploadDir = new File(uploadPath);
             if (!uploadDir.exists()) {
                 uploadDir.mkdirs();
@@ -62,12 +113,11 @@ public class suaCongviec extends HttpServlet {
                             fos.write(buffer, 0, bytesRead);
                         }
                     }
-
-                    filePaths.add(fullPath.replace("\\", "/")); // Lưu path dùng dấu / để đồng nhất
+                    filePaths.add(fullPath.replace("\\", "/"));
                 }
             }
 
-            // === 2. Nối file cũ và file mới ===
+            // 2. Nối file cũ và file mới
             String fileFinal = fileCu;
             if (!filePaths.isEmpty()) {
                 String moi = String.join(";", filePaths);
@@ -86,7 +136,7 @@ public class suaCongviec extends HttpServlet {
                 String han = getValue(request, "han_hoan_thanh");
                 String uuTien = getValue(request, "muc_do_uu_tien");
                 String tenNguoiGiao = getValue(request, "ten_nguoi_giao");
-                String dsTenNguoiNhan = getValue(request, "ten_nguoi_nhan"); // danh sách tên, phân cách dấu ,
+                String dsTenNguoiNhan = getValue(request, "ten_nguoi_nhan");
                 String tenPhong = getValue(request, "ten_phong_ban");
                 String trangThai = getValue(request, "trang_thai");
                 String tailieu = getValue(request, "tai_lieu_cv");
@@ -94,14 +144,15 @@ public class suaCongviec extends HttpServlet {
 
                 int giaoId = Integer.parseInt(tenNguoiGiao);
                 int phongId = Integer.parseInt(tenPhong);
-                // --- BƯỚC 2: CẬP NHẬT TASK ---
+
+                // 2: Cập nhật task
                 db.updateTask(taskId, ten, moTa, han, uuTien, giaoId, phongId, trangThai, tailieu, fileFinal);
 
-                // --- BƯỚC 3: XỬ LÝ NGƯỜI NHẬN ---
-                List<Integer> danhSachIdNhan = db.layIdTuDanhSachTen(dsTenNguoiNhan);  // tên → list id
+                // 3: Cập nhật người nhận
+                List<Integer> danhSachIdNhan = db.layIdTuDanhSachTen(dsTenNguoiNhan);
                 db.capNhatDanhSachNguoiNhan(taskId, danhSachIdNhan);
 
-                // --- BƯỚC 4: GỬI THÔNG BÁO ---
+                // 4: Gửi thông báo
                 for (int nhanId : danhSachIdNhan) {
                     String tieuDeTB = "Cập nhật công việc";
                     String noiDungTB = "Công việc: " + ten + " vừa được cập nhật mới";
