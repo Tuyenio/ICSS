@@ -181,7 +181,7 @@
                 border-radius: 6px;
             }
 
-            /* TASK ACTIONS - Nút 3 chấm với dropdown */
+            /* ========== FIXED DROPDOWN CHO TASK ACTIONS ========== */
             .task-actions {
                 position: absolute;
                 top: 8px;
@@ -190,7 +190,7 @@
             }
 
             .task-dots-btn {
-                background: rgba(255,255,255,0.9);
+                background: rgba(255,255,255,0.95);
                 border: 1px solid #e2e8f0;
                 border-radius: 50%;
                 width: 28px;
@@ -201,15 +201,6 @@
                 padding: 0;
                 cursor: pointer;
                 transition: all 0.2s ease;
-                box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-                backdrop-filter: blur(10px);
-            }
-
-            .task-dots-btn:hover {
-                background: rgba(13, 202, 240, 0.1);
-                border-color: #0dcaf0;
-                transform: scale(1.05);
-                box-shadow: 0 4px 12px rgba(13, 202, 240, 0.3);
             }
 
             .task-dots-btn i {
@@ -217,27 +208,54 @@
                 font-size: 0.9rem;
             }
 
-            .task-actions-dropdown {
-                position: absolute;
-                top: 100%;
-                right: 0;
-                background: white;
-                border: 1px solid #e2e8f0;
-                border-radius: 12px;
-                box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-                min-width: 160px;
-                opacity: 0;
-                visibility: hidden;
-                transform: translateY(-10px) scale(0.95);
-                transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-                z-index: 1000;
-                backdrop-filter: blur(20px);
+            .task-dots-btn:hover {
+                background: rgba(13, 202, 240, 0.1);
+                border-color: #0dcaf0;
+                transform: scale(1.05);
             }
 
-            .task-actions:hover .task-actions-dropdown {
+            .task-actions-dropdown {
+                position: absolute;
+                top: 34px;
+                right: 0;
+                min-width: 160px;
+                background: #fff;
+                border: 1px solid #e2e8f0;
+                border-radius: 10px;
+                box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+                padding: 6px 0;
+                z-index: 100;
+                display: none;
+                opacity: 0;
+                visibility: hidden;
+                transform: translateY(-10px);
+                transition: all 0.25s ease;
+            }
+
+            .task-actions-dropdown.show {
+                display: block;
                 opacity: 1;
                 visibility: visible;
-                transform: translateY(0) scale(1);
+                transform: translateY(0);
+            }
+
+            .task-actions-dropdown .task-action-item {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                padding: 8px 14px;
+                width: 100%;
+                border: none;
+                background: transparent;
+                font-size: 14px;
+                color: #333;
+                text-align: left;
+                cursor: pointer;
+                transition: background 0.15s ease;
+            }
+
+            .task-actions-dropdown .task-action-item:hover {
+                background-color: #f1f5f9;
             }
 
             .task-action-item {
@@ -466,36 +484,6 @@
                 position: relative; /* để absolute của task-actions ăn theo */
             }
 
-            .task-actions {
-                position: absolute;
-                top: 8px;
-                right: 8px;
-                display: flex;
-                gap: 6px;
-            }
-
-            .task-actions .btn {
-                border-radius: 50%;
-                width: 28px;
-                height: 28px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                padding: 0;
-                font-size: 0.85rem;
-                transition: transform 0.2s, box-shadow 0.2s;
-            }
-
-            .task-actions .btn-danger {
-                background: linear-gradient(90deg, #ef4444, #dc2626);
-                border: none;
-                color: #fff;
-            }
-            .task-actions .btn-danger:hover {
-                transform: scale(1.1);
-                box-shadow: 0 2px 8px rgba(220,38,38,0.4);
-            }
-
             /* ==== FIX NÚT + THÊM TASK ==== */
             .kanban-col .kanban-add-btn {
                 margin-bottom: 16px; /* tạo khoảng cách với task */
@@ -687,14 +675,14 @@
                     gap: 12px;
                 }
 
-                .task-nav-tabs .nav-link {
-                    padding: 6px 12px;
-                    font-size: 0.9rem;
-                }
-
                 .task-actions-dropdown {
                     min-width: 140px;
                     right: -10px;
+                }
+
+                .task-nav-tabs .nav-link {
+                    padding: 6px 12px;
+                    font-size: 0.9rem;
                 }
 
                 .d-flex.gap-2 {
@@ -890,57 +878,54 @@
                                     <% for (Map<String, Object> task : taskList) {
                                            if (status.equals(task.get("trang_thai"))) {
                                     %>
-                                    <div class="kanban-task" data-bs-toggle="modal" data-bs-target="#modalTaskDetail"
-                                         data-id="<%= task.get("id") %>"
-                                         data-ten="<%= task.get("ten_cong_viec") %>"
-                                         data-mo-ta="<%= task.get("mo_ta") %>"
-                                         data-han="<%= task.get("han_hoan_thanh") %>"
-                                         data-uu-tien="<%= task.get("muc_do_uu_tien") %>"
-                                         data-ten_nguoi_giao="<%= task.get("nguoi_giao_id") %>"
-                                         data-ten_nguoi_nhan="<%= task.get("nguoi_nhan_ten") %>"
-                                         data-ten_phong_ban="<%= task.get("phong_ban_id") %>"
-                                         data-trang-thai="<%= task.get("trang_thai") %>"
-                                         data-tai_lieu_cv="<%= task.get("tai_lieu_cv") %>"
-                                         data-file_tai_lieu="<%= task.get("file_tai_lieu") %>">
-                                        <div class="task-title"><%= task.get("ten_cong_viec") %></div>
-                                        <div class="task-meta">Người giao: <b><%= task.get("nguoi_giao_id") %></b> <br>Người nhận: <b><%= task.get("nguoi_nhan_ten") %></b></div>
-                                        <span class="task-priority badge <%= priorityBadge.getOrDefault(task.get("muc_do_uu_tien"), "bg-secondary") %>">
-                                            <%= task.get("muc_do_uu_tien") %>
-                                        </span>
-                                        <span class="task-status badge <%= badgeClass.getOrDefault(status, "bg-secondary") %>">
-                                            <%= trangThaiLabels.get(status) %>
-                                        </span>
-                                        <%
-                                            Object p = task.get("phan_tram");
-                                            int percent = 0;
-                                            if (p != null) {
-                                                try {
-                                                    percent = Integer.parseInt(p.toString());
-                                                } catch (NumberFormatException e) {
-                                                    percent = 0;
+                                    <div class="kanban-task" data-task-id="<%= task.get("id") %>">
+                                        <div class="task-content" 
+                                             data-bs-toggle="modal" 
+                                             data-bs-target="#modalTaskDetail"
+                                             data-id="<%= task.get("id") %>"
+                                             data-ten="<%= task.get("ten_cong_viec") %>"
+                                             data-mo-ta="<%= task.get("mo_ta") %>"
+                                             data-han="<%= task.get("han_hoan_thanh") %>"
+                                             data-uu-tien="<%= task.get("muc_do_uu_tien") %>"
+                                             data-ten_nguoi_giao="<%= task.get("nguoi_giao_id") %>"
+                                             data-ten_nguoi_nhan="<%= task.get("nguoi_nhan_ten") %>"
+                                             data-ten_phong_ban="<%= task.get("phong_ban_id") %>"
+                                             data-trang-thai="<%= task.get("trang_thai") %>"
+                                             data-tai_lieu_cv="<%= task.get("tai_lieu_cv") %>"
+                                             data-file_tai_lieu="<%= task.get("file_tai_lieu") %>">
+
+                                            <!-- Nội dung công việc -->
+                                            <div class="task-title"><%= task.get("ten_cong_viec") %></div>
+                                            <div class="task-meta">Người giao: <b><%= task.get("nguoi_giao_id") %></b><br>Người nhận: <b><%= task.get("nguoi_nhan_ten") %></b></div>
+                                            <span class="task-priority badge <%= priorityBadge.getOrDefault(task.get("muc_do_uu_tien"), "bg-secondary") %>"><%= task.get("muc_do_uu_tien") %></span>
+                                            <span class="task-status badge <%= badgeClass.getOrDefault(status, "bg-secondary") %>"><%= trangThaiLabels.get(status) %></span>
+                                            <%
+                                                Object p = task.get("phan_tram");
+                                                int percent = 0;
+                                                if (p != null) {
+                                                    try {
+                                                        percent = Integer.parseInt(p.toString());
+                                                    } catch (NumberFormatException e) {
+                                                        percent = 0;
+                                                    }
                                                 }
-                                            }
-                                        %>
-                                        <div class="progress">
-                                            <div class="progress-bar <%= badgeClass.getOrDefault(status, "bg-secondary") %>" style="width: <%= percent %>%;"></div>
+                                            %>
+                                            <div class="progress">
+                                                <div class="progress-bar <%= badgeClass.getOrDefault(status, "bg-secondary") %>"
+                                                     style="width: <%= percent %>%;">
+                                                </div>
+                                            </div>
                                         </div>
+
+                                        <!-- Nút 3 chấm -->
                                         <div class="task-actions">
-                                            <button class="task-dots-btn" type="button">
+                                            <button class="task-dots-btn" type="button" data-stop-modal="true">
                                                 <i class="fa-solid fa-ellipsis-vertical"></i>
                                             </button>
                                             <div class="task-actions-dropdown">
-                                                <button class="task-action-item archive" type="button" data-task-id="<%= task.get("id") %>" data-action="archive">
-                                                    <i class="fa-solid fa-archive"></i>
-                                                    <span>Lưu trữ</span>
-                                                </button>
-                                                <button class="task-action-item remind" type="button" data-task-id="<%= task.get("id") %>" data-action="remind">
-                                                    <i class="fa-solid fa-bell"></i>
-                                                    <span>Nhắc việc</span>
-                                                </button>
-                                                <button class="task-action-item delete" type="button" data-task-id="<%= task.get("id") %>" data-action="delete">
-                                                    <i class="fa-solid fa-trash"></i>
-                                                    <span>Xóa</span>
-                                                </button>
+                                                <button class="task-action-item archive" data-task-id="<%= task.get("id") %>" data-action="archive"><i class="fa-solid fa-archive"></i> Lưu trữ</button>
+                                                <button class="task-action-item remind" data-task-id="<%= task.get("id") %>" data-action="remind"><i class="fa-solid fa-bell"></i> Nhắc việc</button>
+                                                <button class="task-action-item delete" data-task-id="<%= task.get("id") %>" data-action="delete"><i class="fa-solid fa-trash"></i> Xóa</button>
                                             </div>
                                         </div>
                                     </div>
@@ -2612,29 +2597,28 @@
                 }
 
                 function remindTask(taskId) {
-                    if (confirm('Bạn có muốn gửi nhắc nhở cho nhân viên về công việc này không?')) {
-                        showToast('info', '🔔 Đang gửi nhắc nhở...');
-
-                        fetch('./suaCongviec', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/x-www-form-urlencoded',
-                            },
-                            body: `task_id=${taskId}&action=remind&nhac_nho=1`
+                    fetch('./suaCongviec', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                        body: new URLSearchParams({
+                            task_id: String(taskId),
+                            action: 'remind',
+                            nhac_viec: '1'
                         })
-                                .then(res => res.json())
-                                .then(data => {
-                                    if (data.success) {
-                                        showToast('success', '✅ Đã gửi nhắc nhở thành công!');
-                                    } else {
-                                        showToast('error', data.message || '❌ Gửi nhắc nhở thất bại');
-                                    }
-                                })
-                                .catch(err => {
-                                    console.error(err);
-                                    showToast('error', '❌ Lỗi kết nối server');
-                                });
-                    }
+                    })
+                            .then(res => res.json())
+                            .then(data => {
+                                if (data.success) {
+                                    Swal.fire('Thành công!', 'Nhắc việc thành công.', 'success');
+                                    setTimeout(() => location.reload(), 1200);
+                                } else {
+                                    Swal.fire('Lỗi!', data.message || 'Lưu trữ thất bại.', 'error');
+                                }
+                            })
+                            .catch(err => {
+                                console.error(err);
+                                Swal.fire('Lỗi!', 'Không thể kết nối tới server.', 'error');
+                            });
                 }
 
                 function deleteTask(taskId) {
@@ -2899,6 +2883,28 @@
                     });
                 }
             </script>
+            <script>
+                document.addEventListener('click', function (e) {
+                    const btn = e.target.closest('.task-dots-btn');
+                    const dropdown = btn?.nextElementSibling;
 
+                    // Nếu click vào nút 3 chấm
+                    if (btn && dropdown) {
+                        e.stopPropagation();
+                        e.preventDefault(); // 🔥 ngăn Bootstrap modal trigger
+                        document.querySelectorAll('.task-actions-dropdown.show').forEach(d => {
+                            if (d !== dropdown)
+                                d.classList.remove('show');
+                        });
+                        dropdown.classList.toggle('show');
+                        return;
+                    }
+
+                    // Nếu click ra ngoài thì ẩn tất cả menu
+                    if (!e.target.closest('.task-actions-dropdown')) {
+                        document.querySelectorAll('.task-actions-dropdown.show').forEach(d => d.classList.remove('show'));
+                    }
+                }, true); // 🔥 thêm "true" để bắt ở capture phase (trước Bootstrap)
+            </script>
     </body>
 </html>
