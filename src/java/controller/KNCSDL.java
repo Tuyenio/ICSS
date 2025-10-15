@@ -463,6 +463,7 @@ public class KNCSDL {
                     task.put("tai_lieu_cv", rs.getString("tai_lieu_cv"));
                     task.put("file_tai_lieu", rs.getString("file_tai_lieu"));
                     task.put("han_hoan_thanh", rs.getDate("han_hoan_thanh"));
+                    task.put("nhac_viec", rs.getString("nhac_viec"));
                     tasks.add(task);
                 }
             }
@@ -3866,6 +3867,15 @@ public class KNCSDL {
             return ps.executeUpdate() > 0;
         }
     }
+    
+   public boolean updateNhacViec(int taskId, int nhacViec) throws SQLException {
+    final String sql = "UPDATE cong_viec SET nhac_viec = ? WHERE id = ?";
+    try (PreparedStatement ps = cn.prepareStatement(sql)) {
+        ps.setInt(1, nhacViec); // 1 = đã bật nhắc việc, 0 = tắt
+        ps.setInt(2, taskId);
+        return ps.executeUpdate() > 0;
+    }
+}
 
 // tuỳ chọn: khi khôi phục muốn reset trạng_thái nghiệp vụ
     public boolean updateTrangThai(int taskId, String trangThai) throws SQLException {

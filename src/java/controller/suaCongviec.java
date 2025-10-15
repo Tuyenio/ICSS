@@ -23,7 +23,8 @@ public class suaCongviec extends HttpServlet {
         // Lấy tham số kiểu form-urlencoded
         String action = request.getParameter("action");       // archive | delete | restore | remind...
         String tinhTrang = request.getParameter("tinh_trang");   // "Lưu trữ" | "Đã xóa" | "NULL" (khi restore)
-        String trangThai0 = request.getParameter("trang_thai");   // dùng cho restore (VD: "Chưa bắt đầu")
+        String trangThai0 = request.getParameter("trang_thai");
+        String nhacviec = request.getParameter("nhac_viec");
         String idParam = request.getParameter("task_id");
 
         // Với multipart parts (khi update nội dung/file), bạn vẫn đang dùng getValue(...)
@@ -33,7 +34,7 @@ public class suaCongviec extends HttpServlet {
             if (id == null || id.trim().isEmpty()) {
                 out.print("{\"success\": false, \"message\": \"Thiếu ID để cập nhật.\"}");
                 return;
-            }   
+            }
             int taskId = Integer.parseInt(id);
             KNCSDL db = new KNCSDL();
 
@@ -71,10 +72,17 @@ public class suaCongviec extends HttpServlet {
                         break;
                     }
                     case "remind": {
-                        // Giữ nguyên logic bạn sẽ dùng (nếu có)
-                        ok = true;
-                        msg = "Đã gửi nhắc nhở";
-                        break;
+                        boolean okRemind = db.updateNhacViec(taskId, 1);
+                        ok = okRemind;
+                        msg = ok ? "Đã bật nhắc việc cho công việc này" : "Bật nhắc việc thất bại";
+                        out.print("{\"success\":" + ok + ",\"message\":\"" + msg + "\"}");
+                        return;
+                    }
+                    case "markremind": {
+                        ok = db.updateNhacViec(taskId, 0);
+                        msg = ok ? "Đã tắt nhắc việc cho công việc này" : "Tắt nhắc việc thất bại";
+                        out.print("{\"success\":" + ok + ",\"message\":\"" + msg + "\"}");
+                        return;
                     }
                 }
 

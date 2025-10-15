@@ -13,6 +13,7 @@
         <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
         <script src="https://cdn.ckeditor.com/4.22.1/standard/ckeditor.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <style>
             html,
             body {
@@ -231,6 +232,30 @@
                 gap: 4px;
             }
 
+            /* Khi task đang được nhắc nhở */
+            .kanban-task.task--alert {
+                border-left-color: #dc3545;                 /* đỏ */
+                animation: taskBlink 1.1s ease-in-out infinite;
+            }
+
+            /* Không đổi sang xanh khi hover nếu đang alert */
+            .kanban-task.task--alert:hover {
+                border-color: #dc3545;
+            }
+
+            /* Hiệu ứng nhấp nháy đỏ (viền + glow + chút nền) */
+            @keyframes taskBlink {
+                0%, 100% {
+                    box-shadow: 0 1px 8px #0001, 0 0 0 0 rgba(220,53,69,0);
+                    background-image: none;
+                }
+                50% {
+                    box-shadow: 0 1px 8px #0001, 0 0 0 4px rgba(220,53,69,0.18),
+                        0 6px 18px rgba(220,53,69,0.35);
+                    background-image: linear-gradient(0deg, rgba(220,53,69,0.06), rgba(220,53,69,0));
+                }
+            }
+
             .kanban-col.not-started {
                 border-top: 5px solid #adb5bd;
             }
@@ -308,7 +333,7 @@
             .task-reminder-bell {
                 position: absolute;
                 top: 6px;
-                left: 6px;
+                right: 6px;
                 background: linear-gradient(135deg, #f59e0b, #fbbf24);
                 color: white;
                 border-radius: 50%;
@@ -319,31 +344,43 @@
                 justify-content: center;
                 font-size: 0.75rem;
                 box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4);
-                animation: bellPulse 2s infinite;
                 z-index: 5;
-                opacity: 0.9;
+                opacity: 0.95;
+                animation: bellPulse 2s infinite, bellBlink 1.2s infinite alternate;
             }
-            
+
+            /* Hiệu ứng rung nhẹ */
             @keyframes bellPulse {
-                0%, 100% { 
-                    transform: scale(1);
-                    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4);
+                0%, 100% {
+                    transform: rotate(0deg);
                 }
-                50% { 
-                    transform: scale(1.1);
-                    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.6);
+                25% {
+                    transform: rotate(10deg);
+                }
+                50% {
+                    transform: rotate(-10deg);
+                }
+                75% {
+                    transform: rotate(5deg);
                 }
             }
-            
-            .task-reminder-bell i {
-                animation: bellShake 0.5s ease-in-out infinite alternate;
+
+            /* Hiệu ứng nhấp nháy ánh sáng */
+            @keyframes bellBlink {
+                0% {
+                    box-shadow: 0 0 8px rgba(245, 158, 11, 0.6);
+                    filter: brightness(0.9);
+                }
+                50% {
+                    box-shadow: 0 0 16px rgba(245, 158, 11, 1);
+                    filter: brightness(1.2);
+                }
+                100% {
+                    box-shadow: 0 0 8px rgba(245, 158, 11, 0.6);
+                    filter: brightness(0.9);
+                }
             }
-            
-            @keyframes bellShake {
-                0% { transform: rotate(-10deg); }
-                100% { transform: rotate(10deg); }
-            }
-            
+
             /* Ẩn chuông khi task có class 'reminder-read' */
             .kanban-task.reminder-read .task-reminder-bell {
                 display: none;
@@ -362,7 +399,7 @@
                 overflow: hidden;
                 font-size: 0.95rem;
             }
-            
+
             .task-nav-tabs .nav-link:before {
                 content: '';
                 position: absolute;
@@ -373,18 +410,18 @@
                 background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
                 transition: left 0.5s;
             }
-            
+
             .task-nav-tabs .nav-link:hover:before {
                 left: 100%;
             }
-            
+
             .task-nav-tabs .nav-link:hover {
                 color: #0dcaf0;
                 border-color: rgba(13, 202, 240, 0.3);
                 background: rgba(13, 202, 240, 0.05);
                 transform: translateY(-2px);
             }
-            
+
             .task-nav-tabs .nav-link.active {
                 background: linear-gradient(135deg, #0dcaf0, #4f46e5);
                 border-color: #0dcaf0;
@@ -392,13 +429,13 @@
                 box-shadow: 0 4px 15px rgba(13, 202, 240, 0.4);
                 transform: translateY(-1px);
             }
-            
+
             .task-nav-tabs .nav-link.active:hover {
                 background: linear-gradient(135deg, #4f46e5, #0dcaf0);
                 transform: translateY(-3px);
                 box-shadow: 0 6px 20px rgba(13, 202, 240, 0.5);
             }
-            
+
             .task-nav-tabs .nav-link i {
                 font-size: 0.9rem;
             }
@@ -408,31 +445,31 @@
                 border-top: 5px solid #f59e0b !important;
                 background: linear-gradient(145deg, #fffbeb, #fef3c7);
             }
-            
+
             .deleted-col {
                 border-top-color: #ef4444 !important;
                 background: linear-gradient(145deg, #fef2f2, #fee2e2);
             }
-            
+
             .archived-col h5 {
                 color: #92400e;
             }
-            
+
             .deleted-col h5 {
                 color: #dc2626;
             }
-            
+
             .archived-task, .deleted-task {
                 background: white;
                 border-left-color: #f59e0b;
                 opacity: 0.85;
                 transition: all 0.2s ease;
             }
-            
+
             .deleted-task {
                 border-left-color: #ef4444;
             }
-            
+
             .archived-task:hover, .deleted-task:hover {
                 opacity: 1;
                 transform: translateY(-2px);
@@ -452,12 +489,12 @@
                     grid-template-columns: 1fr;
                     gap: 12px;
                 }
-                
+
                 .task-nav-tabs {
                     flex-wrap: wrap;
                     gap: 8px;
                 }
-                
+
                 .task-nav-tabs .nav-link {
                     padding: 6px 12px;
                     font-size: 0.9rem;
@@ -476,7 +513,7 @@
             <div class="main-box mb-3">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h3 class="mb-0"><i class="fa-solid fa-tasks me-2"></i>Công việc của tôi</h3>
-                    
+
                     <!-- Tab Navigation -->
                     <ul class="nav nav-pills task-nav-tabs" id="taskViewTabs" role="tablist">
                         <li class="nav-item" role="presentation">
@@ -553,17 +590,29 @@
                             <div class="kanban-col <%= columnClass %>">
                                 <% if ("Chưa bắt đầu".equals(status)) { %>
                                 <h5><i class="fa-solid fa-hourglass-start"></i> <%= trangThaiLabels.get(status) %></h5>
-                                    <% }else if("Đang thực hiện".equals(status)) { %>
+                                <% }else if("Đang thực hiện".equals(status)) { %>
                                 <h5><i class="fa-solid fa-spinner"></i> <%= trangThaiLabels.get(status) %></h5>
-                                    <% }else if("Đã hoàn thành".equals(status)) { %>
+                                <% }else if("Đã hoàn thành".equals(status)) { %>
                                 <h5><i class="fa-solid fa-check-circle"></i> <%= trangThaiLabels.get(status) %></h5> 
-                                    <% }else if("Trễ hạn".equals(status)) { %>
+                                <% }else if("Trễ hạn".equals(status)) { %>
                                 <h5><i class="fa-solid fa-exclamation-triangle"></i> <%= trangThaiLabels.get(status) %></h5>
-                                    <% } %>   
-                                    <% for (Map<String, Object> task : taskList) {
-                                           if (status.equals(task.get("trang_thai"))) {
-                                    %>
-                                <div class="kanban-task" data-bs-toggle="modal" data-bs-target="#modalTaskDetail"
+                                <% } %>   
+                                <% for (Map<String, Object> task : taskList) {
+                                       if (status.equals(task.get("trang_thai"))) {
+                                        // Kiểm tra xem task có được nhắc nhở hay không
+                                        Object nhacNho = task.get("nhac_viec");
+                                        boolean hasReminder = false;
+
+                                        if (nhacNho != null) {
+                                            try {
+                                                int value = Integer.parseInt(nhacNho.toString());
+                                                hasReminder = (value == 1);
+                                            } catch (NumberFormatException e) {
+                                                hasReminder = false;
+                                            }
+                                        }
+                                %>
+                                <div class="kanban-task <%= hasReminder ? "task--alert" : "" %>" data-bs-toggle="modal" data-bs-target="#modalTaskDetail"
                                      data-id="<%= task.get("id") %>"
                                      data-ten="<%= task.get("ten_cong_viec") %>"
                                      data-mo-ta="<%= task.get("mo_ta") %>"
@@ -575,15 +624,10 @@
                                      data-trang-thai="<%= task.get("trang_thai") %>"
                                      data-tai_lieu_cv="<%= task.get("tai_lieu_cv") %>"
                                      data-file_tai_lieu="<%= task.get("file_tai_lieu") %>">
-                                    <%
-                                        // Kiểm tra xem task có được nhắc nhở hay không
-                                        Object nhacNho = task.get("nhac_nho");
-                                        boolean hasReminder = nhacNho != null && (nhacNho.equals(1) || nhacNho.equals("1") || nhacNho.equals(true));
-                                    %>
                                     <% if (hasReminder) { %>
-                                        <div class="task-reminder-bell" title="Công việc đang được nhắc nhở">
-                                            <i class="fa-solid fa-bell"></i>
-                                        </div>
+                                    <div class="task-reminder-bell" title="Công việc đang được nhắc nhở">
+                                        <i class="fa-solid fa-bell"></i>
+                                    </div>
                                     <% } %>
                                     <div class="task-title"><%= task.get("ten_cong_viec") %></div>
                                     <div class="task-meta">Người giao: <b><%= task.get("nguoi_giao_id") %></b> <br>Người nhận: <b><%= task.get("nguoi_nhan_id") %></b></div>
@@ -613,7 +657,7 @@
                             <% } %>
                         </div>
                     </div>
-                    
+
                     <!-- Tab Công việc lưu trữ -->
                     <div class="tab-pane fade" id="archived-tasks" role="tabpanel">
                         <div class="archived-tasks-container">
@@ -649,7 +693,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Tab Thùng rác -->
                     <div class="tab-pane fade" id="deleted-tasks" role="tabpanel">
                         <div class="deleted-tasks-container">
@@ -812,7 +856,7 @@
                 }
                 document.getElementById('taskFileList').innerHTML = list || "Chưa có file nào được chọn";
             });
-            
+
             function showToast(type, message) {
                 var map = {
                     success: '#toastSuccess',
@@ -838,7 +882,7 @@
                 bsToast.show();
             }
         </script>
-        
+
         <script>
             document.addEventListener("DOMContentLoaded", function () {
                 const btnSave = document.getElementById('btnSaveTask');
@@ -1328,16 +1372,16 @@
 
         <script>
             // ====== XỬ LÝ NHẮC NHỞ CÔNG VIỆC ======
-            document.addEventListener('DOMContentLoaded', function() {
+            document.addEventListener('DOMContentLoaded', function () {
                 // Xử lý khi người dùng click vào task có chuông nhắc nhở
-                document.addEventListener('click', function(e) {
+                document.addEventListener('click', function (e) {
                     const taskCard = e.target.closest('.kanban-task');
                     if (taskCard && taskCard.querySelector('.task-reminder-bell')) {
                         const taskId = taskCard.getAttribute('data-id');
-                        
+
                         // Đánh dấu đã đọc nhắc nhở
                         markReminderAsRead(taskId);
-                        
+
                         // Ẩn chuông ngay lập tức để UX tốt hơn
                         const bell = taskCard.querySelector('.task-reminder-bell');
                         if (bell) {
@@ -1354,44 +1398,50 @@
             function markReminderAsRead(taskId) {
                 fetch('./suaCongviec', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: `task_id=${taskId}&nhac_nho=0&action=mark_reminder_read`
+                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                    body: new URLSearchParams({
+                        task_id: String(taskId),
+                        action: 'markRemind',
+                        nhac_viec: '0'
+                    })
                 })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        console.log('Đã đánh dấu nhắc nhở là đã đọc');
-                    }
-                })
-                .catch(err => {
-                    console.error('Lỗi khi đánh dấu nhắc nhở:', err);
-                });
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire('Đã đọc!', 'Đã tắt nhắc việc.', 'success');
+                                setTimeout(() => location.reload(), 1200);
+                            } else {
+                                Swal.fire('Lỗi!', data.message || 'Đọc thất bại.', 'error');
+                            }
+                        })
+                        .catch(err => {
+                            console.error(err);
+                            Swal.fire('Lỗi!', 'Không thể kết nối tới server.', 'error');
+                        });
             }
         </script>
 
         <script>
             // ====== TAB NAVIGATION ======
-            document.addEventListener('DOMContentLoaded', function() {
+            document.addEventListener('DOMContentLoaded', function () {
                 // Xử lý click tab để load dữ liệu
                 const archivedTab = document.getElementById('archived-tasks-tab');
                 const deletedTab = document.getElementById('deleted-tasks-tab');
-                
+
                 if (archivedTab) {
-                    archivedTab.addEventListener('shown.bs.tab', function() {
+                    archivedTab.addEventListener('shown.bs.tab', function () {
                         loadArchivedTasks();
                     });
                 }
-                
+
                 if (deletedTab) {
-                    deletedTab.addEventListener('shown.bs.tab', function() {
+                    deletedTab.addEventListener('shown.bs.tab', function () {
                         loadDeletedTasks();
                     });
                 }
-                
+
                 // Thêm keyboard navigation cho tabs
-                document.addEventListener('keydown', function(e) {
+                document.addEventListener('keydown', function (e) {
                     if (e.key === 'Tab' && e.target.classList.contains('nav-link')) {
                         e.preventDefault();
                     }
@@ -1402,7 +1452,7 @@
             function loadArchivedTasks() {
                 const container = document.querySelector('.archived-tasks-container');
                 const kanbanBoard = container.querySelector('.kanban-board');
-                
+
                 // Hiển thị loading
                 kanbanBoard.querySelectorAll('.kanban-col').forEach(col => {
                     const placeholder = col.querySelector('.text-center');
@@ -1410,7 +1460,7 @@
                         placeholder.innerHTML = '<i class="fa-solid fa-spinner fa-spin fa-2x mb-2"></i><p>Đang tải...</p>';
                     }
                 });
-                
+
                 fetch('./locCongviec', {
                     method: 'POST',
                     headers: {
@@ -1418,30 +1468,30 @@
                     },
                     body: 'trang_thai=Lưu trữ&view=archived'
                 })
-                .then(res => res.text())
-                .then(html => {
-                    if (html.trim()) {
-                        renderArchivedTasks(html);
-                    } else {
-                        resetArchivedPlaceholders();
-                    }
-                })
-                .catch(err => {
-                    console.error(err);
-                    kanbanBoard.querySelectorAll('.kanban-col').forEach(col => {
-                        const placeholder = col.querySelector('.text-center');
-                        if (placeholder) {
-                            placeholder.innerHTML = '<i class="fa-solid fa-exclamation-triangle fa-2x mb-2 text-danger"></i><p class="text-danger">Lỗi khi tải dữ liệu</p>';
-                        }
-                    });
-                });
+                        .then(res => res.text())
+                        .then(html => {
+                            if (html.trim()) {
+                                renderArchivedTasks(html);
+                            } else {
+                                resetArchivedPlaceholders();
+                            }
+                        })
+                        .catch(err => {
+                            console.error(err);
+                            kanbanBoard.querySelectorAll('.kanban-col').forEach(col => {
+                                const placeholder = col.querySelector('.text-center');
+                                if (placeholder) {
+                                    placeholder.innerHTML = '<i class="fa-solid fa-exclamation-triangle fa-2x mb-2 text-danger"></i><p class="text-danger">Lỗi khi tải dữ liệu</p>';
+                                }
+                            });
+                        });
             }
 
             // ====== LOAD DELETED TASKS ======
             function loadDeletedTasks() {
                 const container = document.querySelector('.deleted-tasks-container');
                 const kanbanBoard = container.querySelector('.kanban-board');
-                
+
                 // Hiển thị loading
                 kanbanBoard.querySelectorAll('.kanban-col').forEach(col => {
                     const placeholder = col.querySelector('.text-center');
@@ -1449,7 +1499,7 @@
                         placeholder.innerHTML = '<i class="fa-solid fa-spinner fa-spin fa-2x mb-2"></i><p>Đang tải...</p>';
                     }
                 });
-                
+
                 fetch('./locCongviec', {
                     method: 'POST',
                     headers: {
@@ -1457,23 +1507,23 @@
                     },
                     body: 'trang_thai=Đã xóa&view=deleted'
                 })
-                .then(res => res.text())
-                .then(html => {
-                    if (html.trim()) {
-                        renderDeletedTasks(html);
-                    } else {
-                        resetDeletedPlaceholders();
-                    }
-                })
-                .catch(err => {
-                    console.error(err);
-                    kanbanBoard.querySelectorAll('.kanban-col').forEach(col => {
-                        const placeholder = col.querySelector('.text-center');
-                        if (placeholder) {
-                            placeholder.innerHTML = '<i class="fa-solid fa-exclamation-triangle fa-2x mb-2 text-danger"></i><p class="text-danger">Lỗi khi tải dữ liệu</p>';
-                        }
-                    });
-                });
+                        .then(res => res.text())
+                        .then(html => {
+                            if (html.trim()) {
+                                renderDeletedTasks(html);
+                            } else {
+                                resetDeletedPlaceholders();
+                            }
+                        })
+                        .catch(err => {
+                            console.error(err);
+                            kanbanBoard.querySelectorAll('.kanban-col').forEach(col => {
+                                const placeholder = col.querySelector('.text-center');
+                                if (placeholder) {
+                                    placeholder.innerHTML = '<i class="fa-solid fa-exclamation-triangle fa-2x mb-2 text-danger"></i><p class="text-danger">Lỗi khi tải dữ liệu</p>';
+                                }
+                            });
+                        });
             }
 
             // ====== RENDER ARCHIVED TASKS ======
