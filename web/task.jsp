@@ -565,6 +565,49 @@
                 border-radius: 6px;
             }
 
+            /* Khi task đang được nhắc nhở */
+            .kanban-task.task--alert {
+                border-left-color: #dc3545;                 /* đỏ */
+                animation: taskBlink 1.1s ease-in-out infinite;
+            }
+
+            /* Không đổi sang xanh khi hover nếu đang alert */
+            .kanban-task.task--alert:hover {
+                border-color: #dc3545;
+            }
+
+            /* Hiệu ứng nhấp nháy đỏ (viền + glow + chút nền) */
+            @keyframes taskBlink {
+                0%, 100% {
+                    box-shadow: 0 1px 8px #0001, 0 0 0 0 rgba(220,53,69,0);
+                    background-image: none;
+                }
+                50% {
+                    box-shadow: 0 1px 8px #0001, 0 0 0 4px rgba(220,53,69,0.18),
+                        0 6px 18px rgba(220,53,69,0.35);
+                    background-image: linear-gradient(0deg, rgba(220,53,69,0.06), rgba(220,53,69,0));
+                }
+            }
+
+            .task-reminder-bell {
+                position: absolute;
+                top: 6px;
+                right: 50px;
+                background: linear-gradient(135deg, #f59e0b, #fbbf24);
+                color: white;
+                border-radius: 50%;
+                width: 30px;
+                height: 30px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 0.75rem;
+                box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4);
+                z-index: 5;
+                opacity: 0.95;
+                animation: bellPulse 2s infinite, bellBlink 1.2s infinite alternate;
+            }
+
             /* ANIMATIONS */
             @keyframes fadeIn {
                 from {
@@ -575,6 +618,43 @@
                     opacity: 1;
                     transform: translateY(0);
                 }
+            }
+
+            /* Hiệu ứng rung nhẹ */
+            @keyframes bellPulse {
+                0%, 100% {
+                    transform: rotate(0deg);
+                }
+                25% {
+                    transform: rotate(10deg);
+                }
+                50% {
+                    transform: rotate(-10deg);
+                }
+                75% {
+                    transform: rotate(5deg);
+                }
+            }
+
+            /* Hiệu ứng nhấp nháy ánh sáng */
+            @keyframes bellBlink {
+                0% {
+                    box-shadow: 0 0 8px rgba(245, 158, 11, 0.6);
+                    filter: brightness(0.9);
+                }
+                50% {
+                    box-shadow: 0 0 16px rgba(245, 158, 11, 1);
+                    filter: brightness(1.2);
+                }
+                100% {
+                    box-shadow: 0 0 8px rgba(245, 158, 11, 0.6);
+                    filter: brightness(0.9);
+                }
+            }
+
+            /* Ẩn chuông khi task có class 'reminder-read' */
+            .kanban-task.reminder-read .task-reminder-bell {
+                display: none;
             }
 
             @keyframes slideUp {
@@ -877,11 +957,24 @@
                                     <% } %>
                                     <% for (Map<String, Object> task : taskList) {
                                            if (status.equals(task.get("trang_thai"))) {
+                                           // Kiểm tra xem task có được nhắc nhở hay không
+                                        Object nhacNho = task.get("nhac_viec");
+                                        boolean hasReminder = false;
+
+                                        if (nhacNho != null) {
+                                            try {
+                                                int value = Integer.parseInt(nhacNho.toString());
+                                                hasReminder = (value == 1);
+                                            } catch (NumberFormatException e) {
+                                                hasReminder = false;
+                                            }
+                                        }
                                     %>
-                                    <div class="kanban-task" data-task-id="<%= task.get("id") %>">
+                                    <div class="kanban-task <%= hasReminder ? "task--alert" : "" %>" data-task-id="<%= task.get("id") %>">
                                         <div class="task-content" 
                                              data-bs-toggle="modal" 
                                              data-bs-target="#modalTaskDetail"
+
                                              data-id="<%= task.get("id") %>"
                                              data-ten="<%= task.get("ten_cong_viec") %>"
                                              data-mo-ta="<%= task.get("mo_ta") %>"
@@ -893,8 +986,11 @@
                                              data-trang-thai="<%= task.get("trang_thai") %>"
                                              data-tai_lieu_cv="<%= task.get("tai_lieu_cv") %>"
                                              data-file_tai_lieu="<%= task.get("file_tai_lieu") %>">
-
-                                            <!-- Nội dung công việc -->
+                                            <% if (hasReminder) { %>
+                                            <div class="task-reminder-bell" title="Công việc đang được nhắc nhở">
+                                                <i class="fa-solid fa-bell"></i>
+                                            </div>
+                                            <% } %>
                                             <div class="task-title"><%= task.get("ten_cong_viec") %></div>
                                             <div class="task-meta">Người giao: <b><%= task.get("nguoi_giao_id") %></b><br>Người nhận: <b><%= task.get("nguoi_nhan_ten") %></b></div>
                                             <span class="task-priority badge <%= priorityBadge.getOrDefault(task.get("muc_do_uu_tien"), "bg-secondary") %>"><%= task.get("muc_do_uu_tien") %></span>
@@ -2904,7 +3000,58 @@
                     if (!e.target.closest('.task-actions-dropdown')) {
                         document.querySelectorAll('.task-actions-dropdown.show').forEach(d => d.classList.remove('show'));
                     }
-                }, true); // 🔥 thêm "true" để bắt ở capture phase (trước Bootstrap)
+                }, true);
+            </script>
+
+            <script>
+                // ====== XỬ LÝ NHẮC NHỞ CÔNG VIỆC ======
+                document.addEventListener('DOMContentLoaded', function () {
+                    // Xử lý khi người dùng click vào task có chuông nhắc nhở
+                    document.addEventListener('click', function (e) {
+                        const taskCard = e.target.closest('.kanban-task');
+                        if (taskCard && taskCard.querySelector('.task-reminder-bell')) {
+                            const taskId = taskCard.getAttribute('data-task-id');
+
+                            // Đánh dấu đã đọc nhắc nhở
+                            markReminderAsRead(taskId);
+
+                            // Ẩn chuông ngay lập tức để UX tốt hơn
+                            const bell = taskCard.querySelector('.task-reminder-bell');
+                            if (bell) {
+                                bell.style.opacity = '0';
+                                bell.style.transform = 'scale(0)';
+                                setTimeout(() => {
+                                    bell.style.display = 'none';
+                                }, 200);
+                            }
+                        }
+                    });
+                });
+
+                function markReminderAsRead(taskId) {
+                    fetch('./suaCongviec', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                        body: new URLSearchParams({
+                            task_id: String(taskId),
+                            action: 'markRemind',
+                            nhac_viec: '0'
+                        })
+                    })
+                            .then(res => res.json())
+                            .then(data => {
+                                if (data.success) {
+                                    Swal.fire('Đã đọc!', 'Đã tắt nhắc việc.', 'success');
+                                    setTimeout(() => location.reload(), 1200);
+                                } else {
+                                    Swal.fire('Lỗi!', data.message || 'Đọc thất bại.', 'error');
+                                }
+                            })
+                            .catch(err => {
+                                console.error(err);
+                                Swal.fire('Lỗi!', 'Không thể kết nối tới server.', 'error');
+                            });
+                }
             </script>
     </body>
 </html>

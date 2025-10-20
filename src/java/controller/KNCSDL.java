@@ -347,83 +347,6 @@ public class KNCSDL {
         return danhSach;
     }
 
-    public List<Map<String, Object>> getAllTasks(String email) throws SQLException {
-        List<Map<String, Object>> tasks = new ArrayList<>();
-
-        if (email == null || email.trim().isEmpty()) {
-            return tasks;
-        }
-
-        // Truy vấn vai trò và phòng ban từ email
-        String getInfoSql = "SELECT vai_tro, phong_ban_id, id FROM nhanvien WHERE email = ?";
-        String vaiTro = null;
-        int phongBanId = -1;
-        int userId = -1;
-
-        try (PreparedStatement infoStmt = cn.prepareStatement(getInfoSql)) {
-            infoStmt.setString(1, email);
-            try (ResultSet rs = infoStmt.executeQuery()) {
-                if (rs.next()) {
-                    vaiTro = rs.getString("vai_tro");
-                    phongBanId = rs.getInt("phong_ban_id");
-                    userId = rs.getInt("id");
-                } else {
-                    return tasks;
-                }
-            }
-        }
-
-        // Truy vấn chính
-        StringBuilder sql = new StringBuilder();
-        sql.append("SELECT cv.id, cv.ten_cong_viec, cv.mo_ta, cv.muc_do_uu_tien, cv.trang_thai, ")
-                .append("cv.tai_lieu_cv, cv.file_tai_lieu, cv.han_hoan_thanh, ")
-                .append("ng1.ho_ten AS nguoi_giao_ten, ")
-                .append("GROUP_CONCAT(DISTINCT ng2.ho_ten ORDER BY ng2.ho_ten SEPARATOR ', ') AS nguoi_nhan_ten, ")
-                .append("MAX(td.phan_tram) AS phan_tram, ")
-                .append("pb.ten_phong AS ten_phong ")
-                .append("FROM cong_viec cv ")
-                .append("LEFT JOIN nhanvien ng1 ON cv.nguoi_giao_id = ng1.id ")
-                .append("LEFT JOIN cong_viec_nguoi_nhan cvnn ON cv.id = cvnn.cong_viec_id ")
-                .append("LEFT JOIN nhanvien ng2 ON cvnn.nhan_vien_id = ng2.id ")
-                .append("LEFT JOIN cong_viec_tien_do td ON cv.id = td.cong_viec_id ")
-                .append("LEFT JOIN phong_ban pb ON cv.phong_ban_id = pb.id ");
-
-        boolean isAdmin = "Admin".equalsIgnoreCase(vaiTro);
-
-        if (!isAdmin) {
-            sql.append("WHERE cv.phong_ban_id = ? OR cvnn.nhan_vien_id = ? ");
-        }
-
-        sql.append("GROUP BY cv.id");
-
-        try (PreparedStatement stmt = cn.prepareStatement(sql.toString())) {
-            if (!isAdmin) {
-                stmt.setInt(1, phongBanId);
-                stmt.setInt(2, userId);
-            }
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    Map<String, Object> task = new HashMap<>();
-                    task.put("id", rs.getInt("id"));
-                    task.put("ten_cong_viec", rs.getString("ten_cong_viec"));
-                    task.put("mo_ta", rs.getString("mo_ta"));
-                    task.put("nguoi_giao_id", rs.getString("nguoi_giao_ten"));
-                    task.put("nguoi_nhan_ten", rs.getString("nguoi_nhan_ten")); // nhiều người nhận, ngăn cách bởi ,
-                    task.put("phan_tram", rs.getString("phan_tram"));
-                    task.put("phong_ban_id", rs.getString("ten_phong"));
-                    task.put("muc_do_uu_tien", rs.getString("muc_do_uu_tien"));
-                    task.put("trang_thai", rs.getString("trang_thai"));
-                    task.put("tai_lieu_cv", rs.getString("tai_lieu_cv"));
-                    task.put("file_tai_lieu", rs.getString("file_tai_lieu"));
-                    task.put("han_hoan_thanh", rs.getDate("han_hoan_thanh"));
-                    tasks.add(task);
-                }
-            }
-        }
-        return tasks;
-    }
-
     public List<Map<String, Object>> getAllTasksNV(String email) throws SQLException {
         List<Map<String, Object>> tasks = new ArrayList<>();
 
@@ -3227,7 +3150,7 @@ public class KNCSDL {
         // Truy vấn chính
         StringBuilder sql = new StringBuilder();
         sql.append("SELECT cv.id, cv.du_an_id, cv.ten_cong_viec, cv.mo_ta, cv.muc_do_uu_tien, cv.trang_thai, ")
-                .append("cv.tai_lieu_cv, cv.file_tai_lieu, cv.han_hoan_thanh, ")
+                .append("cv.tai_lieu_cv, cv.file_tai_lieu, cv.han_hoan_thanh, cv.nhac_viec, ")
                 .append("ng1.ho_ten AS nguoi_giao_ten, ")
                 .append("GROUP_CONCAT(DISTINCT ng2.ho_ten ORDER BY ng2.ho_ten SEPARATOR ', ') AS nguoi_nhan_ten, ")
                 .append("MAX(td.phan_tram) AS phan_tram, ")
@@ -3277,6 +3200,7 @@ public class KNCSDL {
                     task.put("tai_lieu_cv", rs.getString("tai_lieu_cv"));
                     task.put("file_tai_lieu", rs.getString("file_tai_lieu"));
                     task.put("han_hoan_thanh", rs.getDate("han_hoan_thanh"));
+                    task.put("nhac_viec", rs.getString("nhac_viec"));
                     tasks.add(task);
                 }
             }

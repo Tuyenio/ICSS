@@ -28,8 +28,6 @@ public class dsCongviec extends HttpServlet {
             String trangThai = request.getParameter("trangThai");   // trạng_thái công việc (đang thực hiện/hoàn thành/…)
             String tinhTrang = request.getParameter("tinhTrang");   // tình_trạng (archived/active/…)
 
-            System.out.println("🟢 [DEBUG] TrangThai: " + trangThai + " | TinhTrang: " + tinhTrang);
-
             // 🟢 Lấy danh sách công việc
             List<Map<String, Object>> taskList;
             List<Map<String, Object>> archivedTaskList;
