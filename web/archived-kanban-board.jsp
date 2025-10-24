@@ -40,7 +40,7 @@
         <% }else if("Trễ hạn".equals(status)) { %>
         <h5><i class="fa-solid fa-archive"></i> <%= trangThaiLabels.get(status) %> (Lưu trữ)</h5>
         <% } %>   
-        
+
         <% 
         boolean hasAny = false;
         for (Map<String, Object> task : taskList) {
@@ -60,7 +60,7 @@
              data-trang-thai="<%= task.get("trang_thai") %>"
              data-tai_lieu_cv="<%= task.get("tai_lieu_cv") %>"
              data-file_tai_lieu="<%= task.get("file_tai_lieu") %>">
-            
+
             <!-- Task content với action buttons -->
             <div class="task-content">
                 <div class="task-title"><%= task.get("ten_cong_viec") %></div>
@@ -69,10 +69,10 @@
                 <span class="task-priority badge <%= priorityBadge.getOrDefault(task.get("muc_do_uu_tien"), "bg-secondary") %>">
                     <%= task.get("muc_do_uu_tien") %>
                 </span>
-                
+
                 <!-- Gắn nhãn Lưu trữ -->
                 <span class="task-status badge bg-secondary">Lưu trữ</span>
-                
+
                 <%
                     Object p = task.get("phan_tram");
                     int percent = 0;
@@ -109,40 +109,40 @@
         
         if (!hasAny) {
         %>
-            <div class="empty-column">
-                <i class="fa-solid fa-archive fa-2x text-muted mb-2"></i>
-                <p class="text-muted">Chưa có công việc lưu trữ</p>
-            </div>
-        <% } %> %>
+        <div class="empty-column">
+            <i class="fa-solid fa-archive fa-2x text-muted mb-2"></i>
+            <p class="text-muted">Chưa có công việc lưu trữ</p>
+        </div>
+        <% } %>
     </div>
     <% } %>
 </div>
 
 <style>
-.archived-board .archived-col {
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-    border: 2px solid #6c757d;
-    border-radius: 12px;
-}
+    .archived-board .archived-col {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border: 2px solid #6c757d;
+        border-radius: 12px;
+    }
 
-.archived-board .archived-col h5 {
-    color: #6c757d;
-    font-weight: 600;
-    background: rgba(108, 117, 125, 0.1);
-    padding: 8px 12px;
-    border-radius: 8px;
-    margin-bottom: 15px;
-}
+    .archived-board .archived-col h5 {
+        color: #6c757d;
+        font-weight: 600;
+        background: rgba(108, 117, 125, 0.1);
+        padding: 8px 12px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+    }
 
-.archived-board .archived-task {
-    opacity: 0.8;
-    border-left: 4px solid #6c757d;
-    background: rgba(248, 249, 250, 0.9);
-}
+    .archived-board .archived-task {
+        opacity: 0.8;
+        border-left: 4px solid #6c757d;
+        background: rgba(248, 249, 250, 0.9);
+    }
 
-.archived-board .archived-task:hover {
-    opacity: 1;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
+    .archived-board .archived-task:hover {
+        opacity: 1;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
 </style>
