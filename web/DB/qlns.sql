@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Máy chủ: 127.0.0.1
--- Thời gian đã tạo: Th9 26, 2025 lúc 12:19 PM
+-- Thời gian đã tạo: Th10 24, 2025 lúc 08:25 AM
 -- Phiên bản máy phục vụ: 10.4.32-MariaDB
 -- Phiên bản PHP: 8.0.30
 
@@ -77,10 +77,23 @@ CREATE TABLE `cong_viec` (
   `trang_thai` enum('Chưa bắt đầu','Đang thực hiện','Đã hoàn thành','Trễ hạn') DEFAULT 'Chưa bắt đầu',
   `tai_lieu_cv` varchar(255) DEFAULT NULL,
   `file_tai_lieu` varchar(255) DEFAULT NULL,
+  `nhac_viec` int(11) DEFAULT NULL,
+  `tinh_trang` varchar(50) DEFAULT NULL,
   `ngay_tao` timestamp NOT NULL DEFAULT current_timestamp(),
   `ngay_bat_dau` date DEFAULT NULL,
   `ngay_hoan_thanh` date DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Đang đổ dữ liệu cho bảng `cong_viec`
+--
+
+INSERT INTO `cong_viec` (`id`, `du_an_id`, `ten_cong_viec`, `mo_ta`, `han_hoan_thanh`, `muc_do_uu_tien`, `nguoi_giao_id`, `phong_ban_id`, `trang_thai`, `tai_lieu_cv`, `file_tai_lieu`, `nhac_viec`, `tinh_trang`, `ngay_tao`, `ngay_bat_dau`, `ngay_hoan_thanh`) VALUES
+(134, 32, '1233', '1', '2025-09-29', 'Thấp', 1, 6, 'Trễ hạn', '11', '', 0, NULL, '2025-10-02 08:00:53', NULL, NULL),
+(136, 1, '1', '13132', '2025-10-31', 'Cao', 11, 6, 'Đã hoàn thành', '11', '', 0, NULL, '2025-10-15 04:17:44', '2025-10-22', '2025-10-22'),
+(137, 1, 'á chà ơi ú òa', '21312353453', '2025-10-25', 'Cao', 4, 1, 'Chưa bắt đầu', 'null', '', NULL, 'Đã xóa', '2025-10-22 08:17:33', '2025-10-22', NULL),
+(138, 1, '21412', '1', '2025-10-24', 'Thấp', 11, 1, 'Chưa bắt đầu', 'có nhé', 'D:/uploads/Bảng điểm.docx', NULL, NULL, '2025-10-23 02:16:40', NULL, NULL),
+(140, 32, '21412', '11', '2025-10-24', 'Thấp', 11, 1, 'Chưa bắt đầu', NULL, '', NULL, NULL, '2025-10-23 04:40:03', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -96,6 +109,13 @@ CREATE TABLE `cong_viec_danh_gia` (
   `thoi_gian` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Đang đổ dữ liệu cho bảng `cong_viec_danh_gia`
+--
+
+INSERT INTO `cong_viec_danh_gia` (`id`, `cong_viec_id`, `nguoi_danh_gia_id`, `nhan_xet`, `thoi_gian`) VALUES
+(7, 137, 11, 'ổn rồi em', '2025-10-23 02:14:06');
+
 -- --------------------------------------------------------
 
 --
@@ -110,6 +130,17 @@ CREATE TABLE `cong_viec_lich_su` (
   `thoi_gian` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Đang đổ dữ liệu cho bảng `cong_viec_lich_su`
+--
+
+INSERT INTO `cong_viec_lich_su` (`id`, `cong_viec_id`, `nguoi_thay_doi_id`, `mo_ta_thay_doi`, `thoi_gian`) VALUES
+(77, 138, 18, 'Lưu trữ công việc', '2025-10-23 09:49:50'),
+(78, 138, 18, 'Khôi phục công việc', '2025-10-23 09:57:06'),
+(79, 137, 18, 'Lưu trữ công việc', '2025-10-24 03:04:36'),
+(80, 137, 18, 'Khôi phục công việc', '2025-10-24 04:24:48'),
+(81, 137, 18, 'Xóa công việc', '2025-10-24 04:24:58');
+
 -- --------------------------------------------------------
 
 --
@@ -121,6 +152,24 @@ CREATE TABLE `cong_viec_nguoi_nhan` (
   `cong_viec_id` int(11) NOT NULL,
   `nhan_vien_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Đang đổ dữ liệu cho bảng `cong_viec_nguoi_nhan`
+--
+
+INSERT INTO `cong_viec_nguoi_nhan` (`id`, `cong_viec_id`, `nhan_vien_id`) VALUES
+(239, 136, 11),
+(240, 136, 18),
+(241, 136, 2),
+(242, 136, 1),
+(243, 136, 13),
+(269, 138, 9),
+(272, 137, 10),
+(273, 137, 3),
+(275, 134, 17),
+(276, 134, 14),
+(277, 134, 8),
+(278, 140, 17);
 
 -- --------------------------------------------------------
 
@@ -139,6 +188,13 @@ CREATE TABLE `cong_viec_quy_trinh` (
   `ngay_tao` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Đang đổ dữ liệu cho bảng `cong_viec_quy_trinh`
+--
+
+INSERT INTO `cong_viec_quy_trinh` (`id`, `cong_viec_id`, `ten_buoc`, `mo_ta`, `trang_thai`, `ngay_bat_dau`, `ngay_ket_thuc`, `ngay_tao`) VALUES
+(162, 137, 'ok đấy ba chấm', 'á à', 'Chưa bắt đầu', '2025-10-23', '2025-10-24', '2025-10-22 09:50:41');
+
 -- --------------------------------------------------------
 
 --
@@ -151,6 +207,17 @@ CREATE TABLE `cong_viec_tien_do` (
   `phan_tram` int(11) DEFAULT NULL,
   `thoi_gian_cap_nhat` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Đang đổ dữ liệu cho bảng `cong_viec_tien_do`
+--
+
+INSERT INTO `cong_viec_tien_do` (`id`, `cong_viec_id`, `phan_tram`, `thoi_gian_cap_nhat`) VALUES
+(74, 136, 0, '2025-10-23 08:57:13'),
+(75, 137, 0, '2025-10-23 08:56:19'),
+(76, 138, 0, '2025-10-23 02:48:04'),
+(77, 134, 0, '2025-10-23 04:45:52'),
+(78, 140, 0, '2025-10-23 04:45:52');
 
 -- --------------------------------------------------------
 
@@ -172,7 +239,8 @@ CREATE TABLE `du_an` (
 --
 
 INSERT INTO `du_an` (`id`, `ten_du_an`, `mo_ta`, `ngay_bat_dau`, `ngay_ket_thuc`, `ngay_tao`) VALUES
-(1, 'Công việc chung', 'Công việc riêng', '2025-09-17', '2035-10-31', '2025-09-17 09:03:49');
+(1, 'Công việc chung', 'Công việc riêng', '2025-09-17', '2035-10-31', '2025-09-17 09:03:49'),
+(32, '222', '123', '2025-10-02', '2025-10-11', '2025-10-02 07:41:05');
 
 -- --------------------------------------------------------
 
@@ -203,13 +271,6 @@ CREATE TABLE `lich_trinh` (
   `mo_ta` text DEFAULT NULL,
   `ngay_tao` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Đang đổ dữ liệu cho bảng `lich_trinh`
---
-
-INSERT INTO `lich_trinh` (`id`, `tieu_de`, `ngay_bat_dau`, `ngay_ket_thuc`, `mo_ta`, `ngay_tao`) VALUES
-(6, '1321', '2025-09-23', '2025-09-24', '12321', '2025-09-23 04:57:55');
 
 -- --------------------------------------------------------
 
@@ -296,7 +357,7 @@ CREATE TABLE `nhanvien` (
 --
 
 INSERT INTO `nhanvien` (`id`, `ho_ten`, `email`, `mat_khau`, `so_dien_thoai`, `gioi_tinh`, `ngay_sinh`, `phong_ban_id`, `chuc_vu`, `luong_co_ban`, `trang_thai_lam_viec`, `vai_tro`, `ngay_vao_lam`, `avatar_url`, `ngay_tao`) VALUES
-(1, 'Phạm Minh Thắng', 'minhthang@gmail.com', '12345678', '0834035090', 'Nam', '2003-11-23', 6, 'Nhân viên', 20000000.00, 'Đang làm', 'Nhân viên', '2025-09-03', 'https://i.postimg.cc/C5Z5RWgt/z5863399686673-df5230e1f84835bf20b88f032388d49d.jpg', '2025-09-03 03:26:57'),
+(1, 'Phạm Minh Thắng', 'minhthang@gmail.com', '12345678', '0834035090', 'Nam', '2003-11-23', 6, 'Nhân viên', 20000000.00, 'Đang làm', 'Nhân viên', '2025-09-03', 'https://i.postimg.cc/x1mhwnFR/IMG-8032.jpg', '2025-09-03 03:26:57'),
 (2, 'Nguyễn Ngọc Tuyền', 'tt98tuyen@gmail.com', 'tuyendz321', '0399045920', 'Nam', '2003-03-11', 6, 'Nhân viên', 0.00, 'Đang làm', 'Nhân viên', '2025-07-20', 'https://i.postimg.cc/q7nxs24X/z6976269052999-e22e9cb5e367830aede3a369c5f977b6.jpg', '2025-09-04 03:59:59'),
 (3, 'Nguyễn Tấn Dũng', 'jindonguyen2015@gmail.com', '12345678', '0943924816', 'Nam', '2002-08-24', 6, 'Nhân viên', 0.00, 'Đang làm', 'Nhân viên', '2025-05-05', 'https://i.postimg.cc/CLrmzggp/z6913446856097-ac16f34c6ba3cb76c40d753bb051e0a6-Nguyen-Dung.jpg', '2025-09-04 04:03:30'),
 (4, 'Võ Trung Âu', 'dr.votrungau@gmail.com', '12345678', '0931487231', 'Nam', '1989-03-03', 1, 'Giám đốc', 0.00, 'Đang làm', 'Admin', '2024-08-01', 'https://i.postimg.cc/QCX0WNCh/IMG-9548-Vo-Au.jpg', '2025-09-04 04:03:44'),
@@ -313,7 +374,7 @@ INSERT INTO `nhanvien` (`id`, `ho_ten`, `email`, `mat_khau`, `so_dien_thoai`, `g
 (15, 'Đặng Thu Hồng', 'dangthuhong1101@gmail.com', '12345678', '0363631856', 'Nữ', '2004-12-02', 7, 'Thực tập sinh', 0.00, 'Đang làm', 'Nhân viên', '2025-07-01', 'https://i.postimg.cc/x1mhwnFR/IMG-8032.jpg', '2025-09-04 06:32:20'),
 (16, 'Phan Tuấn Linh', 'linhphan227366@gmail.com', '12345678', '0911162004', 'Nam', '2004-06-11', 6, 'Nhân viên', 0.00, 'Đang làm', 'Nhân viên', '2025-03-21', 'https://i.postimg.cc/xTSQT8mh/IMG-1142-linh-phan.avif', '2025-09-04 06:50:11'),
 (17, 'Nguyễn Huy Hoàng', 'huyhoangnguyen20704@gmail.com', '12345678   ', '0395491415', 'Nam', '2004-07-20', 6, 'Thực tập sinh', 0.00, 'Đang làm', 'Nhân viên', '2025-07-02', 'https://i.postimg.cc/x1mhwnFR/IMG-8032.jpg', '2025-09-04 07:02:17'),
-(18, 'Admin', 'admin@gmail.com', '12345678', 'Admin', 'Nam', '2025-09-04', 6, 'Giám đốc', 0.00, 'Đang làm', 'Admin', '2025-09-13', 'https://i.postimg.cc/x1mhwnFR/IMG-8032.jpg', '2025-09-04 07:43:56');
+(18, 'xAdmin', 'admin@gmail.com', '12345678', 'Admin', 'Nam', '2025-09-04', 6, 'Giám đốc', 0.00, 'Đang làm', 'Admin', '2025-09-13', 'https://i.postimg.cc/x1mhwnFR/IMG-8032.jpg', '2025-09-04 07:43:56');
 
 -- --------------------------------------------------------
 
@@ -390,73 +451,107 @@ CREATE TABLE `thong_bao` (
 --
 
 INSERT INTO `thong_bao` (`id`, `tieu_de`, `noi_dung`, `nguoi_nhan_id`, `loai_thong_bao`, `da_doc`, `ngay_doc`, `ngay_tao`) VALUES
-(245, 'Công việc mới', 'Bạn được giao công việc: 1. Hạn: 2025-09-25.', 1, 'Công việc mới', 0, '2025-09-23 07:05:42', '2025-09-23 07:05:42'),
-(246, 'Công việc mới', 'Bạn được giao công việc: 1. Hạn: 2025-09-26.', 2, 'Công việc mới', 0, '2025-09-23 09:00:58', '2025-09-23 09:00:58'),
-(247, 'Công việc mới', 'Bạn được giao công việc: 1. Hạn: 2025-09-26.', 5, 'Công việc mới', 0, '2025-09-23 09:00:58', '2025-09-23 09:00:58'),
-(248, 'Công việc mới', 'Bạn được giao công việc: 1. Hạn: 2025-09-26.', 8, 'Công việc mới', 0, '2025-09-23 09:00:58', '2025-09-23 09:00:58'),
-(249, 'Công việc mới', 'Bạn được giao công việc: 1. Hạn: 2025-09-27.', 11, 'Công việc mới', 0, '2025-09-23 09:18:38', '2025-09-23 09:18:38'),
-(250, 'Công việc mới', 'Bạn được giao công việc: 1. Hạn: 2025-09-27.', 14, 'Công việc mới', 0, '2025-09-23 09:18:38', '2025-09-23 09:18:38'),
-(251, 'Công việc mới', 'Bạn được giao công việc: 1. Hạn: 2025-09-27.', 17, 'Công việc mới', 0, '2025-09-23 09:18:38', '2025-09-23 09:18:38'),
-(252, 'Công việc mới', 'Bạn được giao công việc: 1231. Hạn: 2025-09-20.', 2, 'Công việc mới', 0, '2025-09-23 09:38:19', '2025-09-23 09:38:19'),
-(253, 'Công việc mới', 'Bạn được giao công việc: 1231. Hạn: 2025-09-20.', 5, 'Công việc mới', 0, '2025-09-23 09:38:19', '2025-09-23 09:38:19'),
-(254, 'Công việc mới', 'Bạn được giao công việc: 1231. Hạn: 2025-09-20.', 8, 'Công việc mới', 0, '2025-09-23 09:38:19', '2025-09-23 09:38:19'),
-(255, 'Công việc mới', 'Bạn được giao công việc: 1231. Hạn: 2025-09-20.', 11, 'Công việc mới', 0, '2025-09-23 09:38:19', '2025-09-23 09:38:19'),
-(256, 'Công việc mới', 'Bạn được giao công việc: 1231. Hạn: 2025-09-20.', 14, 'Công việc mới', 0, '2025-09-23 09:38:19', '2025-09-23 09:38:19'),
-(257, 'Công việc mới', 'Bạn được giao công việc: 22211. Hạn: 2025-09-21.', 3, 'Công việc mới', 0, '2025-09-23 09:38:35', '2025-09-23 09:38:35'),
-(258, 'Công việc mới', 'Bạn được giao công việc: 22211. Hạn: 2025-09-21.', 6, 'Công việc mới', 0, '2025-09-23 09:38:35', '2025-09-23 09:38:35'),
-(259, 'Công việc mới', 'Bạn được giao công việc: 22211. Hạn: 2025-09-21.', 9, 'Công việc mới', 0, '2025-09-23 09:38:35', '2025-09-23 09:38:35'),
-(260, 'Công việc mới', 'Bạn được giao công việc: 22211. Hạn: 2025-09-21.', 12, 'Công việc mới', 0, '2025-09-23 09:38:35', '2025-09-23 09:38:35'),
-(261, 'Công việc mới', 'Bạn được giao công việc: 22211. Hạn: 2025-09-21.', 15, 'Công việc mới', 0, '2025-09-23 09:38:35', '2025-09-23 09:38:35'),
-(262, 'Cập nhật công việc', 'Công việc: 1231 vừa được cập nhật mới', 11, 'Cập nhật', 0, '2025-09-23 09:38:42', '2025-09-23 09:38:42'),
-(263, 'Cập nhật công việc', 'Công việc: 1231 vừa được cập nhật mới', 14, 'Cập nhật', 0, '2025-09-23 09:38:42', '2025-09-23 09:38:42'),
-(264, 'Cập nhật công việc', 'Công việc: 1231 vừa được cập nhật mới', 2, 'Cập nhật', 0, '2025-09-23 09:38:42', '2025-09-23 09:38:42'),
-(265, 'Cập nhật công việc', 'Công việc: 1231 vừa được cập nhật mới', 8, 'Cập nhật', 0, '2025-09-23 09:38:42', '2025-09-23 09:38:42'),
-(266, 'Cập nhật công việc', 'Công việc: 1231 vừa được cập nhật mới', 5, 'Cập nhật', 0, '2025-09-23 09:38:42', '2025-09-23 09:38:42'),
-(267, 'Cập nhật công việc', 'Công việc: 22211 vừa được cập nhật mới', 15, 'Cập nhật', 0, '2025-09-23 09:38:51', '2025-09-23 09:38:51'),
-(268, 'Cập nhật công việc', 'Công việc: 22211 vừa được cập nhật mới', 3, 'Cập nhật', 0, '2025-09-23 09:38:51', '2025-09-23 09:38:51'),
-(269, 'Cập nhật công việc', 'Công việc: 22211 vừa được cập nhật mới', 9, 'Cập nhật', 0, '2025-09-23 09:38:51', '2025-09-23 09:38:51'),
-(270, 'Cập nhật công việc', 'Công việc: 22211 vừa được cập nhật mới', 6, 'Cập nhật', 0, '2025-09-23 09:38:51', '2025-09-23 09:38:51'),
-(271, 'Cập nhật công việc', 'Công việc: 22211 vừa được cập nhật mới', 12, 'Cập nhật', 0, '2025-09-23 09:38:51', '2025-09-23 09:38:51'),
-(272, 'Công việc mới', 'Bạn được giao công việc: 22211. Hạn: 2025-09-21.', 2, 'Công việc mới', 0, '2025-09-23 09:55:39', '2025-09-23 09:55:39'),
-(273, 'Công việc mới', 'Bạn được giao công việc: 22211. Hạn: 2025-09-21.', 5, 'Công việc mới', 0, '2025-09-23 09:55:39', '2025-09-23 09:55:39'),
-(274, 'Công việc mới', 'Bạn được giao công việc: 22211. Hạn: 2025-09-21.', 8, 'Công việc mới', 0, '2025-09-23 09:55:39', '2025-09-23 09:55:39'),
-(275, 'Cập nhật công việc', 'Công việc: 22211 vừa được cập nhật mới', 2, 'Cập nhật', 0, '2025-09-23 09:56:09', '2025-09-23 09:56:09'),
-(276, 'Cập nhật công việc', 'Công việc: 22211 vừa được cập nhật mới', 5, 'Cập nhật', 0, '2025-09-23 09:56:09', '2025-09-23 09:56:09'),
-(277, 'Cập nhật công việc', 'Công việc: 22211 vừa được cập nhật mới', 8, 'Cập nhật', 0, '2025-09-23 09:56:09', '2025-09-23 09:56:09'),
-(278, 'Cập nhật công việc', 'Công việc: 22211 vừa được cập nhật mới', 11, 'Cập nhật', 0, '2025-09-23 09:56:09', '2025-09-23 09:56:09'),
-(279, 'Cập nhật công việc', 'Công việc: 22211 vừa được cập nhật mới', 14, 'Cập nhật', 0, '2025-09-23 09:56:09', '2025-09-23 09:56:09'),
-(280, 'Công việc mới', 'Bạn được giao công việc: 111. Hạn: 2025-09-28.', 8, 'Công việc mới', 0, '2025-09-23 09:57:05', '2025-09-23 09:57:05'),
-(281, 'Công việc mới', 'Bạn được giao công việc: 111. Hạn: 2025-09-28.', 11, 'Công việc mới', 0, '2025-09-23 09:57:05', '2025-09-23 09:57:05'),
-(282, 'Công việc mới', 'Bạn được giao công việc: 111. Hạn: 2025-09-28.', 14, 'Công việc mới', 0, '2025-09-23 09:57:05', '2025-09-23 09:57:05'),
-(283, 'Công việc mới', 'Bạn được giao công việc: 111. Hạn: 2025-09-28.', 9, 'Công việc mới', 0, '2025-09-23 09:57:30', '2025-09-23 09:57:30'),
-(284, 'Công việc mới', 'Bạn được giao công việc: 111. Hạn: 2025-09-28.', 12, 'Công việc mới', 0, '2025-09-23 09:57:30', '2025-09-23 09:57:30'),
-(285, 'Công việc mới', 'Bạn được giao công việc: 111. Hạn: 2025-09-28.', 15, 'Công việc mới', 0, '2025-09-23 09:57:30', '2025-09-23 09:57:30'),
-(286, 'Cập nhật công việc', 'Công việc: 111 vừa được cập nhật mới', 8, 'Cập nhật', 0, '2025-09-23 09:57:43', '2025-09-23 09:57:43'),
-(287, 'Cập nhật công việc', 'Công việc: 111 vừa được cập nhật mới', 11, 'Cập nhật', 0, '2025-09-23 09:57:43', '2025-09-23 09:57:43'),
-(288, 'Cập nhật công việc', 'Công việc: 111 vừa được cập nhật mới', 14, 'Cập nhật', 0, '2025-09-23 09:57:43', '2025-09-23 09:57:43'),
-(289, 'Cập nhật công việc', 'Công việc: 111 vừa được cập nhật mới', 17, 'Cập nhật', 0, '2025-09-23 09:57:43', '2025-09-23 09:57:43'),
-(290, 'Công việc mới', 'Bạn được giao công việc: 132131. Hạn: 2025-10-05.', 15, 'Công việc mới', 0, '2025-09-23 09:58:14', '2025-09-23 09:58:14'),
-(291, 'Cập nhật công việc', 'Công việc: 111 vừa được cập nhật mới', 15, 'Cập nhật', 0, '2025-09-23 09:59:03', '2025-09-23 09:59:03'),
-(292, 'Cập nhật công việc', 'Công việc: 22211 vừa được cập nhật mới', 2, 'Cập nhật', 0, '2025-09-23 10:01:00', '2025-09-23 10:01:00'),
-(293, 'Cập nhật công việc', 'Công việc: 22211 vừa được cập nhật mới', 5, 'Cập nhật', 0, '2025-09-23 10:01:00', '2025-09-23 10:01:00'),
-(294, 'Cập nhật công việc', 'Công việc: 22211 vừa được cập nhật mới', 8, 'Cập nhật', 0, '2025-09-23 10:01:00', '2025-09-23 10:01:00'),
-(295, 'Cập nhật công việc', 'Công việc: 22211 vừa được cập nhật mới', 11, 'Cập nhật', 0, '2025-09-23 10:01:00', '2025-09-23 10:01:00'),
-(296, 'Cập nhật công việc', 'Công việc: 22211 vừa được cập nhật mới', 14, 'Cập nhật', 0, '2025-09-23 10:01:00', '2025-09-23 10:01:00'),
-(297, 'Cập nhật công việc', 'Công việc: 22211 vừa được cập nhật mới', 17, 'Cập nhật', 0, '2025-09-23 10:01:00', '2025-09-23 10:01:00'),
-(298, 'Cập nhật công việc', 'Công việc: 22211 vừa được cập nhật mới', 11, 'Cập nhật', 0, '2025-09-23 10:01:09', '2025-09-23 10:01:09'),
-(299, 'Cập nhật công việc', 'Công việc: 22211 vừa được cập nhật mới', 5, 'Cập nhật', 0, '2025-09-23 10:01:09', '2025-09-23 10:01:09'),
-(300, 'Công việc mới', 'Bạn được giao công việc: 132131. Hạn: 2025-10-05.', 2, 'Công việc mới', 0, '2025-09-23 10:24:28', '2025-09-23 10:24:28'),
-(301, 'Công việc mới', 'Bạn được giao công việc: 132131. Hạn: 2025-10-05.', 5, 'Công việc mới', 0, '2025-09-23 10:24:28', '2025-09-23 10:24:28'),
-(302, 'Công việc mới', 'Bạn được giao công việc: 132131. Hạn: 2025-10-05.', 8, 'Công việc mới', 0, '2025-09-23 10:24:28', '2025-09-23 10:24:28'),
-(303, 'Công việc mới', 'Bạn được giao công việc: 132131. Hạn: 2025-10-05.', 11, 'Công việc mới', 0, '2025-09-23 10:24:28', '2025-09-23 10:24:28'),
-(304, 'Cập nhật công việc', 'Công việc: 132131 vừa được cập nhật mới', 11, 'Cập nhật', 0, '2025-09-23 10:24:47', '2025-09-23 10:24:47'),
-(305, 'Cập nhật công việc', 'Công việc: 132131 vừa được cập nhật mới', 2, 'Cập nhật', 0, '2025-09-23 10:24:47', '2025-09-23 10:24:47'),
-(306, 'Cập nhật công việc', 'Công việc: 132131 vừa được cập nhật mới', 8, 'Cập nhật', 0, '2025-09-23 10:24:47', '2025-09-23 10:24:47'),
-(307, 'Công việc mới', 'Bạn được giao công việc: 6666. Hạn: 2025-09-30.', 1, 'Công việc mới', 0, '2025-09-23 10:25:08', '2025-09-23 10:25:08'),
-(308, 'Công việc mới', 'Bạn được giao công việc: 6666. Hạn: 2025-09-30.', 4, 'Công việc mới', 0, '2025-09-23 10:25:08', '2025-09-23 10:25:08'),
-(309, 'Công việc mới', 'Bạn được giao công việc: 6666. Hạn: 2025-09-30.', 7, 'Công việc mới', 0, '2025-09-23 10:25:08', '2025-09-23 10:25:08'),
-(310, 'Công việc mới', 'Bạn được giao công việc: 1. Hạn: 2025-09-28.', 14, 'Công việc mới', 0, '2025-09-26 08:09:38', '2025-09-26 08:09:38'),
-(311, 'Công việc mới', 'Bạn được giao công việc: 1. Hạn: 2025-09-28.', 17, 'Công việc mới', 0, '2025-09-26 08:09:38', '2025-09-26 08:09:38');
+(314, 'Công việc mới', 'Bạn được giao công việc: 1. Hạn: 2025-09-29.', 1, 'Công việc mới', 0, '2025-09-30 02:15:38', '2025-09-30 02:15:38'),
+(315, 'Cập nhật công việc', 'Công việc: 1 vừa được cập nhật mới', 1, 'Cập nhật', 0, '2025-09-30 02:18:33', '2025-09-30 02:18:33'),
+(316, 'Cập nhật công việc', 'Công việc: 1 vừa được cập nhật mới', 1, 'Cập nhật', 0, '2025-09-30 02:18:38', '2025-09-30 02:18:38'),
+(317, 'Cập nhật công việc', 'Công việc: 1 vừa được cập nhật mới', 1, 'Cập nhật', 0, '2025-09-30 02:42:24', '2025-09-30 02:42:24'),
+(318, 'Cập nhật công việc', 'Công việc: 1 vừa được cập nhật mới', 1, 'Cập nhật', 0, '2025-09-30 02:42:59', '2025-09-30 02:42:59'),
+(319, 'Cập nhật công việc', 'Công việc: 1 vừa được cập nhật mới', 1, 'Cập nhật', 0, '2025-09-30 02:43:11', '2025-09-30 02:43:11'),
+(320, 'Công việc mới', 'Bạn được giao công việc: 1. Hạn: 2025-09-29.', 8, 'Công việc mới', 0, '2025-10-02 08:00:53', '2025-10-02 08:00:53'),
+(321, 'Công việc mới', 'Bạn được giao công việc: 1. Hạn: 2025-09-29.', 14, 'Công việc mới', 0, '2025-10-02 08:00:53', '2025-10-02 08:00:53'),
+(322, 'Công việc mới', 'Bạn được giao công việc: 1. Hạn: 2025-09-29.', 17, 'Công việc mới', 0, '2025-10-02 08:00:53', '2025-10-02 08:00:53'),
+(323, 'Công việc mới', 'Bạn được giao công việc: 1. Hạn: 2025-10-05.', 2, 'Công việc mới', 0, '2025-10-02 08:01:12', '2025-10-02 08:01:12'),
+(324, 'Công việc mới', 'Bạn được giao công việc: 1. Hạn: 2025-10-05.', 14, 'Công việc mới', 0, '2025-10-02 08:01:12', '2025-10-02 08:01:12'),
+(325, 'Công việc mới', 'Bạn được giao công việc: 1. Hạn: 2025-10-05.', 17, 'Công việc mới', 0, '2025-10-02 08:01:12', '2025-10-02 08:01:12'),
+(326, 'Công việc mới', 'Bạn được giao công việc: 1. Hạn: 2025-10-31.', 3, 'Công việc mới', 0, '2025-10-15 04:17:44', '2025-10-15 04:17:44'),
+(327, 'Công việc mới', 'Bạn được giao công việc: 1. Hạn: 2025-10-31.', 16, 'Công việc mới', 0, '2025-10-15 04:17:44', '2025-10-15 04:17:44'),
+(328, 'Cập nhật công việc', 'Công việc: 1 vừa được cập nhật mới', 3, 'Cập nhật', 0, '2025-10-15 08:37:29', '2025-10-15 08:37:29'),
+(329, 'Cập nhật công việc', 'Công việc: 1 vừa được cập nhật mới', 1, 'Cập nhật', 0, '2025-10-15 08:37:29', '2025-10-15 08:37:29'),
+(330, 'Cập nhật công việc', 'Công việc: 1 vừa được cập nhật mới', 16, 'Cập nhật', 0, '2025-10-15 08:37:29', '2025-10-15 08:37:29'),
+(331, 'Cập nhật công việc', 'Công việc: 1 vừa được cập nhật mới', 11, 'Cập nhật', 0, '2025-10-15 08:44:42', '2025-10-15 08:44:42'),
+(332, 'Cập nhật công việc', 'Công việc: 1 vừa được cập nhật mới', 11, 'Cập nhật', 0, '2025-10-15 08:44:49', '2025-10-15 08:44:49'),
+(333, 'Cập nhật công việc', 'Công việc: 1 vừa được cập nhật mới', 11, 'Cập nhật', 0, '2025-10-15 08:45:32', '2025-10-15 08:45:32'),
+(334, 'Cập nhật công việc', 'Công việc: 1 vừa được cập nhật mới', 18, 'Cập nhật', 0, '2025-10-15 08:45:32', '2025-10-15 08:45:32'),
+(335, 'Cập nhật công việc', 'Công việc: 1 vừa được cập nhật mới', 11, 'Cập nhật', 0, '2025-10-15 09:29:24', '2025-10-15 09:29:24'),
+(336, 'Cập nhật công việc', 'Công việc: 1 vừa được cập nhật mới', 18, 'Cập nhật', 0, '2025-10-15 09:29:24', '2025-10-15 09:29:24'),
+(337, 'Thêm mới quy trình', 'Công việc: 1 vừa được thêm quy trình mới', 11, 'Cập nhật', 0, '2025-10-22 08:05:47', '2025-10-22 08:05:47'),
+(338, 'Thêm mới quy trình', 'Công việc: 1 vừa được thêm quy trình mới', 18, 'Cập nhật', 0, '2025-10-22 08:05:47', '2025-10-22 08:05:47'),
+(339, 'Cập nhật quy trình', 'Công việc: 1 vừa được cập nhật quy trình mới', 11, 'Cập nhật', 0, '2025-10-22 08:05:56', '2025-10-22 08:05:56'),
+(340, 'Cập nhật quy trình', 'Công việc: 1 vừa được cập nhật quy trình mới', 18, 'Cập nhật', 0, '2025-10-22 08:05:56', '2025-10-22 08:05:56'),
+(341, 'Cập nhật quy trình', 'Công việc: 1 vừa được cập nhật quy trình mới', 11, 'Cập nhật', 0, '2025-10-22 08:06:06', '2025-10-22 08:06:06'),
+(342, 'Cập nhật quy trình', 'Công việc: 1 vừa được cập nhật quy trình mới', 18, 'Cập nhật', 0, '2025-10-22 08:06:06', '2025-10-22 08:06:06'),
+(343, 'Cập nhật quy trình', 'Công việc: 1 vừa được cập nhật quy trình mới', 11, 'Cập nhật', 0, '2025-10-22 08:06:18', '2025-10-22 08:06:18'),
+(344, 'Cập nhật quy trình', 'Công việc: 1 vừa được cập nhật quy trình mới', 18, 'Cập nhật', 0, '2025-10-22 08:06:18', '2025-10-22 08:06:18'),
+(345, 'Cập nhật công việc', 'Công việc: 1 vừa được cập nhật mới', 11, 'Cập nhật', 0, '2025-10-22 08:06:27', '2025-10-22 08:06:27'),
+(346, 'Cập nhật công việc', 'Công việc: 1 vừa được cập nhật mới', 18, 'Cập nhật', 0, '2025-10-22 08:06:27', '2025-10-22 08:06:27'),
+(347, 'Xóa bỏ quy trình', 'Công việc: 1 vừa xóa bỏ một quy trình', 11, 'Cập nhật', 0, '2025-10-22 08:06:58', '2025-10-22 08:06:58'),
+(348, 'Xóa bỏ quy trình', 'Công việc: 1 vừa xóa bỏ một quy trình', 18, 'Cập nhật', 0, '2025-10-22 08:06:58', '2025-10-22 08:06:58'),
+(349, 'Cập nhật công việc', 'Công việc: 1 vừa được cập nhật mới', 11, 'Cập nhật', 0, '2025-10-22 08:09:53', '2025-10-22 08:09:53'),
+(350, 'Cập nhật công việc', 'Công việc: 1 vừa được cập nhật mới', 18, 'Cập nhật', 0, '2025-10-22 08:09:53', '2025-10-22 08:09:53'),
+(351, 'Cập nhật công việc', 'Công việc: 1 vừa được cập nhật mới', 11, 'Cập nhật', 0, '2025-10-22 08:10:03', '2025-10-22 08:10:03'),
+(352, 'Cập nhật công việc', 'Công việc: 1 vừa được cập nhật mới', 18, 'Cập nhật', 0, '2025-10-22 08:10:03', '2025-10-22 08:10:03'),
+(353, 'Công việc mới', 'Bạn được giao công việc: 21412. Hạn: 2025-10-22.', 10, 'Công việc mới', 0, '2025-10-22 08:17:33', '2025-10-22 08:17:33'),
+(354, 'Công việc mới', 'Bạn được giao công việc: 21412. Hạn: 2025-10-22.', 3, 'Công việc mới', 0, '2025-10-22 08:17:33', '2025-10-22 08:17:33'),
+(355, 'Cập nhật công việc', 'Công việc: 3333 vừa được cập nhật mới', 10, 'Cập nhật', 0, '2025-10-22 08:37:58', '2025-10-22 08:37:58'),
+(356, 'Cập nhật công việc', 'Công việc: 3333 vừa được cập nhật mới', 3, 'Cập nhật', 0, '2025-10-22 08:37:58', '2025-10-22 08:37:58'),
+(357, 'Cập nhật công việc', 'Công việc: 1 vừa được cập nhật mới', 11, 'Cập nhật', 0, '2025-10-22 08:48:39', '2025-10-22 08:48:39'),
+(358, 'Cập nhật công việc', 'Công việc: 1 vừa được cập nhật mới', 18, 'Cập nhật', 0, '2025-10-22 08:48:39', '2025-10-22 08:48:39'),
+(359, 'Cập nhật công việc', 'Công việc: 1 vừa được cập nhật mới', 2, 'Cập nhật', 0, '2025-10-22 08:48:39', '2025-10-22 08:48:39'),
+(360, 'Cập nhật công việc', 'Công việc: 1 vừa được cập nhật mới', 1, 'Cập nhật', 0, '2025-10-22 08:48:39', '2025-10-22 08:48:39'),
+(361, 'Cập nhật công việc', 'Công việc: 1 vừa được cập nhật mới', 13, 'Cập nhật', 0, '2025-10-22 08:48:39', '2025-10-22 08:48:39'),
+(362, 'Cập nhật công việc', 'Công việc: 3333 vừa được cập nhật mới', 10, 'Cập nhật', 0, '2025-10-22 08:52:08', '2025-10-22 08:52:08'),
+(363, 'Cập nhật công việc', 'Công việc: 3333 vừa được cập nhật mới', 3, 'Cập nhật', 0, '2025-10-22 08:52:08', '2025-10-22 08:52:08'),
+(364, 'Cập nhật công việc', 'Công việc: 333377 vừa được cập nhật mới', 10, 'Cập nhật', 0, '2025-10-22 09:28:28', '2025-10-22 09:28:28'),
+(365, 'Cập nhật công việc', 'Công việc: 333377 vừa được cập nhật mới', 3, 'Cập nhật', 0, '2025-10-22 09:28:28', '2025-10-22 09:28:28'),
+(366, 'Cập nhật công việc', 'Công việc: 33337711 vừa được cập nhật mới', 10, 'Cập nhật', 0, '2025-10-22 09:47:09', '2025-10-22 09:47:09'),
+(367, 'Cập nhật công việc', 'Công việc: 33337711 vừa được cập nhật mới', 3, 'Cập nhật', 0, '2025-10-22 09:47:09', '2025-10-22 09:47:09'),
+(368, 'Cập nhật công việc', 'Công việc: 33337 vừa được cập nhật mới', 10, 'Cập nhật', 0, '2025-10-22 09:47:37', '2025-10-22 09:47:37'),
+(369, 'Cập nhật công việc', 'Công việc: 33337 vừa được cập nhật mới', 3, 'Cập nhật', 0, '2025-10-22 09:47:37', '2025-10-22 09:47:37'),
+(370, 'Thêm mới quy trình', 'Công việc: 33337 vừa được thêm quy trình mới', 10, 'Cập nhật', 0, '2025-10-22 09:50:41', '2025-10-22 09:50:41'),
+(371, 'Thêm mới quy trình', 'Công việc: 33337 vừa được thêm quy trình mới', 3, 'Cập nhật', 0, '2025-10-22 09:50:41', '2025-10-22 09:50:41'),
+(372, 'Cập nhật công việc', 'Công việc: 333377 vừa được cập nhật mới', 10, 'Cập nhật', 0, '2025-10-22 09:55:01', '2025-10-22 09:55:01'),
+(373, 'Cập nhật công việc', 'Công việc: 333377 vừa được cập nhật mới', 3, 'Cập nhật', 0, '2025-10-22 09:55:01', '2025-10-22 09:55:01'),
+(374, 'Cập nhật công việc', 'Công việc: 33337711 vừa được cập nhật mới', 10, 'Cập nhật', 0, '2025-10-22 09:55:15', '2025-10-22 09:55:15'),
+(375, 'Cập nhật công việc', 'Công việc: 33337711 vừa được cập nhật mới', 3, 'Cập nhật', 0, '2025-10-22 09:55:15', '2025-10-22 09:55:15'),
+(376, 'Cập nhật công việc', 'Công việc: 33337711 vừa được cập nhật mới', 10, 'Cập nhật', 0, '2025-10-22 09:55:44', '2025-10-22 09:55:44'),
+(377, 'Cập nhật công việc', 'Công việc: 33337711 vừa được cập nhật mới', 3, 'Cập nhật', 0, '2025-10-22 09:55:44', '2025-10-22 09:55:44'),
+(378, 'Cập nhật quy trình', 'Công việc: 33337711 vừa được cập nhật quy trình mới', 10, 'Cập nhật', 0, '2025-10-22 09:56:22', '2025-10-22 09:56:22'),
+(379, 'Cập nhật quy trình', 'Công việc: 33337711 vừa được cập nhật quy trình mới', 3, 'Cập nhật', 0, '2025-10-22 09:56:22', '2025-10-22 09:56:22'),
+(380, 'Cập nhật công việc', 'Công việc: 33337711 vừa được cập nhật mới', 10, 'Cập nhật', 0, '2025-10-22 09:56:42', '2025-10-22 09:56:42'),
+(381, 'Cập nhật công việc', 'Công việc: 33337711 vừa được cập nhật mới', 3, 'Cập nhật', 0, '2025-10-22 09:56:42', '2025-10-22 09:56:42'),
+(382, 'Cập nhật công việc', 'Công việc: 33337711 vừa được cập nhật mới', 16, 'Cập nhật', 0, '2025-10-22 09:56:42', '2025-10-22 09:56:42'),
+(383, 'Cập nhật công việc', 'Công việc: úi zời vừa được cập nhật mới', 10, 'Cập nhật', 0, '2025-10-23 02:10:15', '2025-10-23 02:10:15'),
+(384, 'Cập nhật công việc', 'Công việc: úi zời vừa được cập nhật mới', 3, 'Cập nhật', 0, '2025-10-23 02:10:15', '2025-10-23 02:10:15'),
+(385, 'Cập nhật công việc', 'Công việc: úi zời vừa được cập nhật mới', 16, 'Cập nhật', 0, '2025-10-23 02:10:15', '2025-10-23 02:10:15'),
+(386, 'Cập nhật công việc', 'Công việc: úi zời vừa được cập nhật mới', 10, 'Cập nhật', 0, '2025-10-23 02:10:37', '2025-10-23 02:10:37'),
+(387, 'Cập nhật công việc', 'Công việc: úi zời vừa được cập nhật mới', 3, 'Cập nhật', 0, '2025-10-23 02:10:37', '2025-10-23 02:10:37'),
+(388, 'Cập nhật công việc', 'Công việc: úi zời vừa được cập nhật mới', 10, 'Cập nhật', 0, '2025-10-23 02:10:54', '2025-10-23 02:10:54'),
+(389, 'Cập nhật công việc', 'Công việc: úi zời vừa được cập nhật mới', 3, 'Cập nhật', 0, '2025-10-23 02:10:54', '2025-10-23 02:10:54'),
+(390, 'Cập nhật quy trình', 'Công việc: úi zời vừa được cập nhật quy trình mới', 10, 'Cập nhật', 0, '2025-10-23 02:11:31', '2025-10-23 02:11:31'),
+(391, 'Cập nhật quy trình', 'Công việc: úi zời vừa được cập nhật quy trình mới', 3, 'Cập nhật', 0, '2025-10-23 02:11:31', '2025-10-23 02:11:31'),
+(392, 'Cập nhật quy trình', 'Công việc: úi zời vừa được cập nhật quy trình mới', 10, 'Cập nhật', 0, '2025-10-23 02:12:16', '2025-10-23 02:12:16'),
+(393, 'Cập nhật quy trình', 'Công việc: úi zời vừa được cập nhật quy trình mới', 3, 'Cập nhật', 0, '2025-10-23 02:12:16', '2025-10-23 02:12:16'),
+(394, 'Đánh giá công việc mới', 'Bạn vừa có thêm đánh giá cho công việc.', 10, 'Đánh giá', 0, '2025-10-23 02:14:06', '2025-10-23 02:14:06'),
+(395, 'Đánh giá công việc mới', 'Bạn vừa có thêm đánh giá cho công việc.', 3, 'Đánh giá', 0, '2025-10-23 02:14:06', '2025-10-23 02:14:06'),
+(396, 'Công việc mới', 'Bạn được giao công việc: 21412. Hạn: 2025-10-24.', 9, 'Công việc mới', 0, '2025-10-23 02:16:40', '2025-10-23 02:16:40'),
+(397, 'Cập nhật công việc', 'Công việc: 21412 vừa được cập nhật mới', 9, 'Cập nhật', 0, '2025-10-23 02:17:44', '2025-10-23 02:17:44'),
+(398, 'Cập nhật công việc', 'Công việc: á chà ơi vừa được cập nhật mới', 10, 'Cập nhật', 0, '2025-10-23 02:23:08', '2025-10-23 02:23:08'),
+(399, 'Cập nhật công việc', 'Công việc: á chà ơi vừa được cập nhật mới', 3, 'Cập nhật', 0, '2025-10-23 02:23:08', '2025-10-23 02:23:08'),
+(400, 'Cập nhật quy trình', 'Công việc: á chà ơi vừa được cập nhật quy trình mới', 10, 'Cập nhật', 0, '2025-10-23 02:46:34', '2025-10-23 02:46:34'),
+(401, 'Cập nhật quy trình', 'Công việc: á chà ơi vừa được cập nhật quy trình mới', 3, 'Cập nhật', 0, '2025-10-23 02:46:34', '2025-10-23 02:46:34'),
+(402, 'Cập nhật quy trình', 'Công việc: á chà ơi vừa được cập nhật quy trình mới', 10, 'Cập nhật', 0, '2025-10-23 02:46:50', '2025-10-23 02:46:50'),
+(403, 'Cập nhật quy trình', 'Công việc: á chà ơi vừa được cập nhật quy trình mới', 3, 'Cập nhật', 0, '2025-10-23 02:46:50', '2025-10-23 02:46:50'),
+(404, 'Cập nhật quy trình', 'Công việc: á chà ơi vừa được cập nhật quy trình mới', 10, 'Cập nhật', 0, '2025-10-23 02:47:15', '2025-10-23 02:47:15'),
+(405, 'Cập nhật quy trình', 'Công việc: á chà ơi vừa được cập nhật quy trình mới', 3, 'Cập nhật', 0, '2025-10-23 02:47:15', '2025-10-23 02:47:15'),
+(406, 'Cập nhật quy trình', 'Công việc: á chà ơi vừa được cập nhật quy trình mới', 10, 'Cập nhật', 0, '2025-10-23 02:47:30', '2025-10-23 02:47:30'),
+(407, 'Cập nhật quy trình', 'Công việc: á chà ơi vừa được cập nhật quy trình mới', 3, 'Cập nhật', 0, '2025-10-23 02:47:30', '2025-10-23 02:47:30'),
+(408, 'Cập nhật công việc', 'Công việc: á chà ơi ú òa vừa được cập nhật mới', 10, 'Cập nhật', 0, '2025-10-23 02:51:15', '2025-10-23 02:51:15'),
+(409, 'Cập nhật công việc', 'Công việc: á chà ơi ú òa vừa được cập nhật mới', 3, 'Cập nhật', 0, '2025-10-23 02:51:15', '2025-10-23 02:51:15'),
+(410, 'Công việc mới', 'Bạn được giao công việc: 21412. Hạn: 2025-10-24.', 16, 'Công việc mới', 0, '2025-10-23 04:23:35', '2025-10-23 04:23:35'),
+(411, 'Cập nhật công việc', 'Công việc: 1233 vừa được cập nhật mới', 17, 'Cập nhật', 0, '2025-10-23 04:24:32', '2025-10-23 04:24:32'),
+(412, 'Cập nhật công việc', 'Công việc: 1233 vừa được cập nhật mới', 14, 'Cập nhật', 0, '2025-10-23 04:24:32', '2025-10-23 04:24:32'),
+(413, 'Cập nhật công việc', 'Công việc: 1233 vừa được cập nhật mới', 8, 'Cập nhật', 0, '2025-10-23 04:24:32', '2025-10-23 04:24:32'),
+(414, 'Công việc mới', 'Bạn được giao công việc: 21412. Hạn: 2025-10-24.', 17, 'Công việc mới', 0, '2025-10-23 04:40:03', '2025-10-23 04:40:03');
 
 --
 -- Chỉ mục cho các bảng đã đổ
@@ -618,43 +713,43 @@ ALTER TABLE `cham_cong`
 -- AUTO_INCREMENT cho bảng `cong_viec`
 --
 ALTER TABLE `cong_viec`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=131;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=141;
 
 --
 -- AUTO_INCREMENT cho bảng `cong_viec_danh_gia`
 --
 ALTER TABLE `cong_viec_danh_gia`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT cho bảng `cong_viec_lich_su`
 --
 ALTER TABLE `cong_viec_lich_su`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=82;
 
 --
 -- AUTO_INCREMENT cho bảng `cong_viec_nguoi_nhan`
 --
 ALTER TABLE `cong_viec_nguoi_nhan`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=200;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=279;
 
 --
 -- AUTO_INCREMENT cho bảng `cong_viec_quy_trinh`
 --
 ALTER TABLE `cong_viec_quy_trinh`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=161;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=163;
 
 --
 -- AUTO_INCREMENT cho bảng `cong_viec_tien_do`
 --
 ALTER TABLE `cong_viec_tien_do`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=73;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=79;
 
 --
 -- AUTO_INCREMENT cho bảng `du_an`
 --
 ALTER TABLE `du_an`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
 
 --
 -- AUTO_INCREMENT cho bảng `file_dinh_kem`
@@ -714,7 +809,7 @@ ALTER TABLE `phong_ban`
 -- AUTO_INCREMENT cho bảng `thong_bao`
 --
 ALTER TABLE `thong_bao`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=312;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=415;
 
 --
 -- Các ràng buộc cho các bảng đã đổ
