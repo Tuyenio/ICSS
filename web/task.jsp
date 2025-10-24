@@ -323,6 +323,16 @@
                 font-size: 0.85rem;
             }
 
+            .task-action-item.restore:hover {
+                background-color: #28a745 !important;
+                color: white !important;
+            }
+
+            .task-action-item.delete-permanent:hover {
+                background-color: #dc3545 !important;
+                color: white !important;
+            }
+
             /* TASK NAVIGATION TABS */
             .task-nav-tabs .nav-link {
                 background: transparent;
@@ -1315,6 +1325,123 @@
                 margin: 0;
                 font-size: 0.95rem;
             }
+
+            /* ===== PREMIUM CLEAR FILTER BUTTON STYLING ===== */
+            .filter-actions {
+                position: relative;
+            }
+
+            .clear-filter-btn {
+                min-width: 42px;
+                height: 42px;
+                padding: 0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+                border: 1px solid #f87171;
+                color: #dc2626;
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                position: relative;
+                overflow: hidden;
+                box-shadow: 0 2px 8px rgba(248, 113, 113, 0.15);
+            }
+
+            .clear-filter-btn:hover {
+                background: linear-gradient(135deg, #fecaca 0%, #f87171 100%);
+                border-color: #dc2626;
+                color: #fff;
+                transform: translateY(-1px);
+                box-shadow: 0 4px 16px rgba(248, 113, 113, 0.3);
+            }
+
+            .clear-filter-btn:active {
+                transform: translateY(0);
+                box-shadow: 0 2px 4px rgba(248, 113, 113, 0.2);
+            }
+
+            .clear-filter-btn i {
+                font-size: 14px;
+                transition: transform 0.2s ease;
+            }
+
+            .clear-filter-btn:hover i {
+                transform: rotate(90deg);
+            }
+
+            /* Animation for show/hide */
+            .clear-filter-btn.show {
+                animation: slideInFade 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                display: flex !important;
+            }
+
+            .clear-filter-btn.hide {
+                animation: slideOutFade 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                animation-fill-mode: forwards;
+            }
+
+            @keyframes slideInFade {
+                0% {
+                    opacity: 0;
+                    transform: translateX(10px) scale(0.9);
+                }
+                100% {
+                    opacity: 1;
+                    transform: translateX(0) scale(1);
+                }
+            }
+
+            @keyframes slideOutFade {
+                0% {
+                    opacity: 1;
+                    transform: translateX(0) scale(1);
+                }
+                100% {
+                    opacity: 0;
+                    transform: translateX(10px) scale(0.9);
+                    display: none;
+                }
+            }
+
+            /* Enhanced filter button styling */
+            .filter-btn {
+                position: relative;
+                overflow: hidden;
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+
+            .filter-btn:hover {
+                transform: translateY(-1px);
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            }
+
+            .filter-btn.filtering {
+                background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+                border-color: #1d4ed8;
+                color: white;
+            }
+
+            .filter-btn.filtering i {
+                animation: spin 1s linear infinite;
+            }
+
+            @keyframes spin {
+                from { transform: rotate(0deg); }
+                to { transform: rotate(360deg); }
+            }
+
+            /* Responsive adjustments */
+            @media (max-width: 768px) {
+                .filter-actions {
+                    flex-direction: column;
+                    gap: 8px;
+                }
+                
+                .clear-filter-btn {
+                    width: 100%;
+                    min-width: auto;
+                }
+            }
         </style>
     </head>
 
@@ -1406,8 +1533,15 @@
                                 </select>
                             </div>
                             <div class="col-md-3">
-                                <button class="btn btn-outline-secondary w-100 rounded-pill" id="btnFilter"><i
-                                        class="fa-solid fa-filter"></i> Lọc</button>
+                                <div class="filter-actions d-flex align-items-center gap-2">
+                                    <button class="btn btn-outline-secondary flex-grow-1 rounded-pill filter-btn" id="btnFilter">
+                                        <i class="fa-solid fa-filter me-1"></i> Lọc
+                                    </button>
+                                    <button class="btn btn-outline-danger rounded-pill clear-filter-btn" id="btnClearFilter" 
+                                            style="display: none;" title="Hủy bộ lọc">
+                                        <i class="fa-solid fa-times"></i>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -2133,6 +2267,23 @@
             </div>
 
             <script>
+                // ====== BIẾN GLOBAL THEO DÕI TAB HIỆN TẠI ======
+                var currentTabState = 'active'; // 'active', 'archived', 'deleted'
+                
+                // Hàm helper để lấy trạng thái tab hiện tại
+                function getCurrentTabState() {
+                    return currentTabState;
+                }
+                
+                // Hàm helper để debug trạng thái tab
+                function debugTabState() {
+                    console.log('Tab hiện tại:', currentTabState);
+                    console.log('Tab name mapping:');
+                    console.log('- active: Công việc');
+                    console.log('- archived: Lưu trữ');  
+                    console.log('- deleted: Thùng rác');
+                }
+                
                 // Hiển thị danh sách file ngay khi chọn
                 document.getElementById('taskFiles').addEventListener('change', function () {
                     let files = this.files;
@@ -2623,6 +2774,9 @@
                     var trangThai = $('select[name="trangThai"]').val() || '';
                     var projectId = $('input[name="du_an_id"]').val() || '';
 
+                    // Debug: hiển thị trạng thái tab hiện tại
+                    console.log('Lọc với tabState:', currentTabState);
+
                     $.ajax({
                         url: './locCongviec',
                         type: 'POST',
@@ -2631,6 +2785,7 @@
                             phong_ban: phongBan,
                             trang_thai: trangThai,
                             projectId: projectId,
+                            tabState: currentTabState, // Thêm biến tab hiện tại
                             returnJson: (currentView === 'list' || currentView === 'calendar') ? 'true' : 'false'
                         },
                         dataType: (currentView === 'list' || currentView === 'calendar') ? 'json' : 'html',
@@ -2639,12 +2794,25 @@
                         },
                         success: function (response) {
                             if (currentView === 'kanban') {
-                                // Kanban view - nhận HTML
+                                // Kanban view - nhận HTML và update đúng container theo tab
                                 if (response && $.trim(response).length > 0) {
-                                    $('.kanban-board').replaceWith(response);
+                                    if (currentTabState === 'active') {
+                                        $('#active-tasks .kanban-board').replaceWith(response);
+                                    } else if (currentTabState === 'archived') {
+                                        $('#archived-tasks .kanban-board').replaceWith(response);
+                                    } else if (currentTabState === 'deleted') {
+                                        $('#deleted-tasks .kanban-board').replaceWith(response);
+                                    }
                                     showToast('success', 'Đã áp dụng bộ lọc.');
                                 } else {
-                                    $('.kanban-board').html('<div class="text-center text-muted p-3">Không có dữ liệu phù hợp</div>');
+                                    var emptyMsg = '<div class="text-center text-muted p-3">Không có dữ liệu phù hợp</div>';
+                                    if (currentTabState === 'active') {
+                                        $('#active-tasks .kanban-board').html(emptyMsg);
+                                    } else if (currentTabState === 'archived') {
+                                        $('#archived-tasks .kanban-board').html(emptyMsg);
+                                    } else if (currentTabState === 'deleted') {
+                                        $('#deleted-tasks .kanban-board').html(emptyMsg);
+                                    }
                                     showToast('info', 'Không tìm thấy kết quả phù hợp.');
                                 }
                             } else if (currentView === 'list') {
@@ -2655,6 +2823,12 @@
                                 // Calendar view - nhận JSON và render
                                 renderCalendarViewFromJson(response);
                                 showToast('success', 'Đã áp dụng bộ lọc cho lịch.');
+                            }
+                            
+                            // Show clear filter button with premium animation
+                            var $clearBtn = $('#btnClearFilter');
+                            if ($clearBtn.length && !$clearBtn.hasClass('show')) {
+                                $clearBtn.removeClass('hide').addClass('show').css('display', 'flex');
                             }
                         },
                         error: function () {
@@ -2667,6 +2841,24 @@
                             $btn.prop('disabled', false).html($btn.data('orig-text') || '<i class="fa-solid fa-filter"></i> Lọc');
                         }
                     });
+                });
+
+                // ====== CLEAR FILTER BUTTON HANDLER ======
+                $('#btnClearFilter').on('click', function (e) {
+                    e.preventDefault();
+                    
+                    var $clearBtn = $(this);
+                    
+                    // Add loading animation
+                    $clearBtn.addClass('filtering').html('<i class="fa fa-spinner fa-spin"></i>');
+                    
+                    // Show toast notification
+                    showToast('info', 'Đang hủy bộ lọc...');
+                    
+                    // Reload page to return to initial state (this preserves all tabs and data)
+                    setTimeout(function() {
+                        window.location.reload();
+                    }, 500);
                 });
 
                 // ====== RENDER LIST VIEW TỪ JSON ======
@@ -3164,18 +3356,33 @@
             <script>
                 // ====== TAB NAVIGATION ======
                 document.addEventListener('DOMContentLoaded', function () {
-                    // Xử lý click tab để load dữ liệu
+                    // Xử lý click tab để load dữ liệu và cập nhật currentTabState
+                    const activeTab = document.getElementById('active-tasks-tab');
                     const archivedTab = document.getElementById('archived-tasks-tab');
                     const deletedTab = document.getElementById('deleted-tasks-tab');
 
+                    // Tab Công việc (active)
+                    if (activeTab) {
+                        activeTab.addEventListener('shown.bs.tab', function () {
+                            currentTabState = 'active';
+                            console.log('Đang ở tab: Công việc (active)');
+                        });
+                    }
+
+                    // Tab Lưu trữ (archived)
                     if (archivedTab) {
                         archivedTab.addEventListener('shown.bs.tab', function () {
+                            currentTabState = 'archived';
+                            console.log('Đang ở tab: Lưu trữ (archived)');
                             loadArchivedTasks();
                         });
                     }
 
+                    // Tab Thùng rác (deleted)
                     if (deletedTab) {
                         deletedTab.addEventListener('shown.bs.tab', function () {
+                            currentTabState = 'deleted';
+                            console.log('Đang ở tab: Thùng rác (deleted)');
                             loadDeletedTasks();
                         });
                     }
@@ -3198,7 +3405,7 @@
                         headers: {
                             'Content-Type': 'application/x-www-form-urlencoded',
                         },
-                        body: 'tinh_trang=Lưu trữ&view=archived'
+                        body: 'tinh_trang=Lưu trữ&view=archived&tabState=archived'
                     })
                             .then(res => res.text())
                             .then(html => {
@@ -3224,7 +3431,7 @@
                         headers: {
                             'Content-Type': 'application/x-www-form-urlencoded',
                         },
-                        body: 'tinh_trang=Đã xóa&view=deleted'
+                        body: 'tinh_trang=Đã xóa&view=deleted&tabState=deleted'
                     })
                             .then(res => res.text())
                             .then(html => {
@@ -3595,7 +3802,7 @@
                         headers: {
                             'Content-Type': 'application/x-www-form-urlencoded',
                         },
-                        body: 'tinh_trang=Lưu trữ&view=archived'
+                        body: 'tinh_trang=Lưu trữ&view=archived&tabState=archived'
                     })
                             .then(res => res.text())
                             .then(html => {
@@ -3634,7 +3841,7 @@
                         headers: {
                             'Content-Type': 'application/x-www-form-urlencoded',
                         },
-                        body: 'tinh_trang=Đã xóa&view=deleted'
+                        body: 'tinh_trang=Đã xóa&view=deleted&tabState=deleted'
                     })
                             .then(res => res.text())
                             .then(html => {
@@ -3704,6 +3911,42 @@
                         document.querySelectorAll('.task-actions-dropdown.show').forEach(d => d.classList.remove('show'));
                     }
                 }, true);
+
+                // ====== XỬ LÝ TASK ACTIONS ======
+                document.addEventListener('click', function (e) {
+                    const actionBtn = e.target.closest('.task-action-item');
+                    if (actionBtn) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        
+                        const taskId = actionBtn.dataset.taskId;
+                        const action = actionBtn.dataset.action;
+                        
+                        // Ẩn dropdown sau khi click
+                        document.querySelectorAll('.task-actions-dropdown.show').forEach(d => d.classList.remove('show'));
+                        
+                        // Xử lý các actions
+                        switch(action) {
+                            case 'restore':
+                                restoreTask(taskId);
+                                break;
+                            case 'permanent-delete':
+                                permanentDeleteTask(taskId);
+                                break;
+                            case 'archive':
+                                archiveTask(taskId);
+                                break;
+                            case 'remind':
+                                remindTask(taskId);
+                                break;
+                            case 'delete':
+                                deleteTask(taskId);
+                                break;
+                            default:
+                                console.log('Unknown action:', action);
+                        }
+                    }
+                });
             </script>
 
             <script>

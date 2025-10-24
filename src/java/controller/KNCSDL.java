@@ -821,12 +821,12 @@ public class KNCSDL {
         }
     }
 
-    public List<Map<String, Object>> locCongViec(String keyword, String phongBan, String trangThai, Integer projectId) throws SQLException {
+    public List<Map<String, Object>> locCongViec(String keyword, String tinhtrang, String phongBan, String trangThai, Integer projectId) throws SQLException {
         List<Map<String, Object>> danhSach = new ArrayList<>();
 
         StringBuilder sql = new StringBuilder();
         sql.append("SELECT cv.id, cv.du_an_id, cv.ten_cong_viec, cv.mo_ta, cv.muc_do_uu_tien, cv.trang_thai, ")
-                .append("cv.tai_lieu_cv, cv.file_tai_lieu, cv.han_hoan_thanh, ")
+                .append("cv.tai_lieu_cv, cv.file_tai_lieu, cv.han_hoan_thanh, cv.tinh_trang, ")
                 .append("ng1.ho_ten AS nguoi_giao_ten, ")
                 .append("GROUP_CONCAT(DISTINCT ng2.ho_ten ORDER BY ng2.ho_ten SEPARATOR ', ') AS nguoi_nhan_ten, ")
                 .append("MAX(td.phan_tram) AS phan_tram, ")
@@ -860,6 +860,14 @@ public class KNCSDL {
             sql.append(" AND cv.trang_thai = ? ");
             params.add(trangThai);
         }
+        
+        if (tinhtrang != null && !tinhtrang.isEmpty()) {
+            sql.append(" AND cv.tinh_trang = ? ");
+            params.add(tinhtrang);
+        } else {
+            // Nếu không có tinhtrang cụ thể, chỉ lấy task có tinh_trang IS NULL (active tasks)
+            sql.append(" AND (cv.tinh_trang IS NULL OR cv.tinh_trang = '') ");
+        }
 
         sql.append(" GROUP BY cv.id ");
 
@@ -883,6 +891,7 @@ public class KNCSDL {
                     task.put("trang_thai", rs.getString("trang_thai"));
                     task.put("tai_lieu_cv", rs.getString("tai_lieu_cv"));
                     task.put("file_tai_lieu", rs.getString("file_tai_lieu"));
+                    task.put("tinh_trang", rs.getString("tinh_trang"));
                     task.put("han_hoan_thanh", rs.getDate("han_hoan_thanh"));
                     danhSach.add(task);
                 }
@@ -891,12 +900,12 @@ public class KNCSDL {
         return danhSach;
     }
 
-    public List<Map<String, Object>> locCongViecNV(String keyword, String trangThai, String emailNhanVien, Integer projectId) throws SQLException {
+    public List<Map<String, Object>> locCongViecNV(String keyword, String tinhtrang, String trangThai, String emailNhanVien, Integer projectId) throws SQLException {
         List<Map<String, Object>> danhSach = new ArrayList<>();
 
         StringBuilder sql = new StringBuilder();
         sql.append("SELECT cv.id, cv.du_an_id, cv.ten_cong_viec, cv.mo_ta, cv.muc_do_uu_tien, cv.trang_thai, ")
-                .append("cv.tai_lieu_cv, cv.file_tai_lieu, cv.han_hoan_thanh, ")
+                .append("cv.tai_lieu_cv, cv.file_tai_lieu, cv.han_hoan_thanh, cv.tinh_trang, ")
                 .append("ng1.ho_ten AS nguoi_giao_ten, ")
                 .append("GROUP_CONCAT(DISTINCT ng2.ho_ten ORDER BY ng2.ho_ten SEPARATOR ', ') AS nguoi_nhan_ten, ")
                 .append("MAX(td.phan_tram) AS phan_tram, ")
@@ -930,6 +939,14 @@ public class KNCSDL {
             sql.append(" AND ng2.email = ? ");
             params.add(emailNhanVien.trim());
         }
+        
+        if (tinhtrang != null && !tinhtrang.isEmpty()) {
+            sql.append(" AND cv.tinh_trang = ? ");
+            params.add(tinhtrang);
+        } else {
+            // Nếu không có tinhtrang cụ thể, chỉ lấy task có tinh_trang IS NULL (active tasks)
+            sql.append(" AND (cv.tinh_trang IS NULL OR cv.tinh_trang = '') ");
+        }
 
         sql.append(" GROUP BY cv.id ");
 
@@ -953,6 +970,7 @@ public class KNCSDL {
                     task.put("trang_thai", rs.getString("trang_thai"));
                     task.put("tai_lieu_cv", rs.getString("tai_lieu_cv"));
                     task.put("file_tai_lieu", rs.getString("file_tai_lieu"));
+                    task.put("tinh_trang", rs.getString("tinh_trang"));
                     task.put("han_hoan_thanh", rs.getDate("han_hoan_thanh"));
                     danhSach.add(task);
                 }
@@ -961,7 +979,7 @@ public class KNCSDL {
         return danhSach;
     }
 
-    public List<Map<String, Object>> locCongViecQL(String keyword, String trangThai, String emailQL, Integer projectId) throws SQLException {
+    public List<Map<String, Object>> locCongViecQL(String keyword, String tinhtrang, String trangThai, String emailQL, Integer projectId) throws SQLException {
         List<Map<String, Object>> danhSach = new ArrayList<>();
 
         // Lấy thông tin trưởng phòng
@@ -983,7 +1001,7 @@ public class KNCSDL {
 
         StringBuilder sql = new StringBuilder();
         sql.append("SELECT cv.id, cv.du_an_id, cv.ten_cong_viec, cv.mo_ta, cv.muc_do_uu_tien, cv.trang_thai, ")
-                .append("cv.tai_lieu_cv, cv.file_tai_lieu, cv.han_hoan_thanh, ")
+                .append("cv.tai_lieu_cv, cv.file_tai_lieu, cv.han_hoan_thanh, cv.tinh_trang, ")
                 .append("ng1.ho_ten AS nguoi_giao_ten, ")
                 .append("GROUP_CONCAT(DISTINCT ng2.ho_ten ORDER BY ng2.ho_ten SEPARATOR ', ') AS nguoi_nhan_ten, ")
                 .append("MAX(td.phan_tram) AS phan_tram, ")
@@ -1014,6 +1032,14 @@ public class KNCSDL {
             sql.append(" AND cv.trang_thai = ? ");
             params.add(trangThai.trim());
         }
+        
+        if (tinhtrang != null && !tinhtrang.isEmpty()) {
+            sql.append(" AND cv.tinh_trang = ? ");
+            params.add(tinhtrang);
+        } else {
+            // Nếu không có tinhtrang cụ thể, chỉ lấy task có tinh_trang IS NULL (active tasks)
+            sql.append(" AND (cv.tinh_trang IS NULL OR cv.tinh_trang = '') ");
+        }
 
         sql.append(" GROUP BY cv.id ");
 
@@ -1037,6 +1063,7 @@ public class KNCSDL {
                     task.put("trang_thai", rs.getString("trang_thai"));
                     task.put("tai_lieu_cv", rs.getString("tai_lieu_cv"));
                     task.put("file_tai_lieu", rs.getString("file_tai_lieu"));
+                    task.put("tinh_trang", rs.getString("tinh_trang"));
                     task.put("han_hoan_thanh", rs.getDate("han_hoan_thanh"));
                     danhSach.add(task);
                 }

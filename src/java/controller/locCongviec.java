@@ -10,17 +10,42 @@ import java.util.Map;
 
 public class locCongviec extends HttpServlet {
 
+    /**
+     *
+     * @param request
+     * @param response
+     * @throws ServletException
+     * @throws IOException
+     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String keyword = request.getParameter("keyword");
         String trangThai = request.getParameter("trang_thai");
+        String tinhtrang = request.getParameter("tinh_trang");
         String projectIdStr = request.getParameter("projectId");
         String returnJson = request.getParameter("returnJson"); // "true" nếu cần JSON
+        String tabState = request.getParameter("tabState"); // "active", "archived", "deleted"
         
         Integer projectId = null;
         if (projectIdStr != null && !projectIdStr.trim().isEmpty()) {
             projectId = Integer.parseInt(projectIdStr);
+        }
+        
+        // Xử lý tabState để ánh xạ thành trạng thái tương ứng
+        if (tabState != null && !tabState.trim().isEmpty()) {
+            switch (tabState.toLowerCase()) {
+                case "archived":
+                    tinhtrang = "Lưu trữ";
+                    break;
+                case "deleted":
+                    tinhtrang = "Đã xóa";
+                    break;
+                case "active":
+                default:
+                    tinhtrang = null;
+                    break;
+            }
         }
 
         try {
@@ -41,13 +66,14 @@ public class locCongviec extends HttpServlet {
                     phongban = db.getPhongNameById(idphong);
                 }
 
-                taskList = db.locCongViec(keyword, phongban, trangThai, projectId);
+                // Sửa thứ tự tham số: keyword, tinhtrang, phongban, trangThai, projectId
+                taskList = db.locCongViec(keyword, tinhtrang, phongban, trangThai, projectId);
 
             } else if ("Quản lý".equalsIgnoreCase(vaiTro)) {
-                taskList = db.locCongViecQL(keyword, trangThai, email, projectId);
+                taskList = db.locCongViecQL(keyword, tinhtrang, trangThai, email, projectId);
 
             } else {
-                taskList = db.locCongViecNV(keyword, trangThai, email, projectId);
+                taskList = db.locCongViecNV(keyword, tinhtrang, trangThai, email, projectId);
             }
 
             // Kiểm tra xem cần trả về JSON hay HTML
@@ -58,16 +84,28 @@ public class locCongviec extends HttpServlet {
                 out.print(convertToJson(taskList));
                 out.flush();
             } else {
-                // Trả về HTML cho Kanban View (giữ nguyên logic cũ)
+                // Trả về HTML cho Kanban View theo tabState
                 request.setAttribute("taskList", taskList);
+                request.setAttribute("tabState", tabState); // Thêm tabState để JSP biết
                 
-                if ("Admin".equalsIgnoreCase(vaiTro) || "Quản lý".equalsIgnoreCase(vaiTro)) {
-                    RequestDispatcher dispatcher = request.getRequestDispatcher("kanban-board.jsp");
-                    dispatcher.forward(request, response);
+                String targetJSP;
+                
+                // Chọn JSP phù hợp theo tabState
+                if ("archived".equalsIgnoreCase(tabState)) {
+                    targetJSP = "archived-kanban-board.jsp";
+                } else if ("deleted".equalsIgnoreCase(tabState)) {
+                    targetJSP = "deleted-kanban-board.jsp";
                 } else {
-                    RequestDispatcher dispatcher = request.getRequestDispatcher("kanban-board-nv.jsp");
-                    dispatcher.forward(request, response);
+                    // Default active tab
+                    if ("Admin".equalsIgnoreCase(vaiTro) || "Quản lý".equalsIgnoreCase(vaiTro)) {
+                        targetJSP = "kanban-board.jsp";
+                    } else {
+                        targetJSP = "kanban-board-nv.jsp";
+                    }
                 }
+                
+                RequestDispatcher dispatcher = request.getRequestDispatcher(targetJSP);
+                dispatcher.forward(request, response);
             }
 
         } catch (Exception e) {
