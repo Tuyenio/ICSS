@@ -12,7 +12,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.util.List;
+import java.util.*;
 
 /**
  *
@@ -96,6 +96,10 @@ public class apiTaskSteps extends HttpServlet {
             int stepId = Integer.parseInt(stepIdStr);
 
             KNCSDL db = new KNCSDL();
+            
+            // Lấy thông tin tiến độ cũ để so sánh
+            Map<String, Object> stepCu = db.getStepById(stepId);
+            
             boolean success = db.updateStepById(stepId, name, desc, status, start, end);
 
             if (success) {
@@ -109,6 +113,55 @@ public class apiTaskSteps extends HttpServlet {
 
                 for (int nhanId : danhSachNguoiNhan) {
                     db.insertThongBao(nhanId, tieuDeTB, noiDungTB, "Cập nhật");
+                }
+                
+                // Ghi log lịch sử CHI TIẾT từng trường
+                jakarta.servlet.http.HttpSession session = request.getSession(false);
+                int userId = 0;
+                if (session != null && session.getAttribute("userId") != null) {
+                    try {
+                        userId = Integer.parseInt(session.getAttribute("userId").toString());
+                    } catch (Exception e) {}
+                }
+                
+                if (userId > 0 && stepCu != null) {
+                    java.util.List<String> thayDoiList = new java.util.ArrayList<>();
+                    
+                    // So sánh tên tiến độ
+                    String tenCu = (String) stepCu.get("ten_buoc");
+                    if (!safeStringEquals(tenCu, name)) {
+                        thayDoiList.add("📝 Đổi tên tiến độ: '" + (tenCu != null ? tenCu : "(trống)") + "' → '" + name + "'");
+                    }
+                    
+                    // So sánh mô tả
+                    String moTaCu = (String) stepCu.get("mo_ta");
+                    if (!safeStringEquals(moTaCu, desc)) {
+                        thayDoiList.add("� Cập nhật mô tả tiến độ");
+                    }
+                    
+                    // So sánh trạng thái
+                    String trangThaiCu = (String) stepCu.get("trang_thai");
+                    if (!safeStringEquals(trangThaiCu, status)) {
+                        thayDoiList.add("🔄 Đổi trạng thái tiến độ: '" + (trangThaiCu != null ? trangThaiCu : "?") + "' → '" + status + "'");
+                    }
+                    
+                    // So sánh ngày bắt đầu
+                    String ngayBDCu = (String) stepCu.get("ngay_bat_dau");
+                    if (!safeStringEquals(ngayBDCu, start)) {
+                        thayDoiList.add("📅 Đổi ngày bắt đầu: '" + (ngayBDCu != null ? ngayBDCu : "(chưa có)") + "' → '" + (start != null && !start.isEmpty() ? start : "(chưa có)") + "'");
+                    }
+                    
+                    // So sánh ngày kết thúc
+                    String ngayKTCu = (String) stepCu.get("ngay_ket_thuc");
+                    if (!safeStringEquals(ngayKTCu, end)) {
+                        thayDoiList.add("📅 Đổi deadline tiến độ: '" + (ngayKTCu != null ? ngayKTCu : "(chưa có)") + "' → '" + (end != null && !end.isEmpty() ? end : "(chưa có)") + "'");
+                    }
+                    
+                    // Ghi log nếu có thay đổi
+                    if (!thayDoiList.isEmpty()) {
+                        String logMsg = "🔧 [Tiến độ: " + name + "] " + String.join(" | ", thayDoiList);
+                        db.themLichSuCongViec(congviecId, userId, logMsg);
+                    }
                 }
 
                 response.setStatus(HttpServletResponse.SC_OK);
@@ -133,6 +186,13 @@ public class apiTaskSteps extends HttpServlet {
         return value.replace("\"", "\\\"")
                 .replace("\n", "")
                 .replace("\r", "");
+    }
+    
+    // Helper method để so sánh an toàn 2 chuỗi
+    private boolean safeStringEquals(String a, String b) {
+        if (a == null && b == null) return true;
+        if (a == null || b == null) return false;
+        return a.trim().equals(b.trim());
     }
 
     @Override

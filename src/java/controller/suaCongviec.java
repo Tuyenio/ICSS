@@ -38,24 +38,38 @@ public class suaCongviec extends HttpServlet {
             int taskId = Integer.parseInt(id);
             KNCSDL db = new KNCSDL();
 
+            // Lấy thông tin user từ session
+            HttpSession session = request.getSession(false);
+            int userId = 0;
+            if (session != null && session.getAttribute("userId") != null) {
+                try {
+                    userId = Integer.parseInt(session.getAttribute("userId").toString());
+                } catch (Exception e) {
+                    // Nếu không lấy được userId, để mặc định là 0
+                }
+            }
+
             // =========================
             // [A] NHÁNH XỬ LÝ HÀNH ĐỘNG NHANH (KHÔNG ĐỤNG TỚI UPLOAD)
             // =========================
             if (action != null && !action.trim().isEmpty()) {
                 boolean ok = false;
                 String msg = "Thao tác không hợp lệ";
+                String lichSuMoTa = "";
 
                 switch (action.toLowerCase()) {
                     case "archive": {
                         // tinh_trang = 'Lưu trữ'
                         ok = db.updateTinhTrang(taskId, "Lưu trữ");
                         msg = ok ? "Đã lưu trữ" : "Lưu trữ thất bại";
+                        lichSuMoTa = "Lưu trữ công việc";
                         break;
                     }
                     case "delete": {
                         // tinh_trang = 'Đã xóa'
                         ok = db.updateTinhTrang(taskId, "Đã xóa");
                         msg = ok ? "Đã chuyển vào thùng rác" : "Xóa thất bại";
+                        lichSuMoTa = "Xóa công việc";
                         break;
                     }
                     case "restore": {
@@ -69,21 +83,51 @@ public class suaCongviec extends HttpServlet {
                             }
                         }
                         msg = ok ? "Đã khôi phục" : "Khôi phục thất bại";
+                        lichSuMoTa = "Khôi phục công việc";
                         break;
                     }
                     case "remind": {
                         boolean okRemind = db.updateNhacViec(taskId, 1);
                         ok = okRemind;
                         msg = ok ? "Đã bật nhắc việc cho công việc này" : "Bật nhắc việc thất bại";
+                        lichSuMoTa = "Bật nhắc việc";
+                        if (ok && userId > 0) {
+                            db.themLichSuCongViec(taskId, userId, lichSuMoTa);
+                        }
                         out.print("{\"success\":" + ok + ",\"message\":\"" + msg + "\"}");
                         return;
                     }
                     case "markremind": {
                         ok = db.updateNhacViec(taskId, 0);
                         msg = ok ? "Đã tắt nhắc việc cho công việc này" : "Tắt nhắc việc thất bại";
+                        lichSuMoTa = "Tắt nhắc việc";
+                        if (ok && userId > 0) {
+                            db.themLichSuCongViec(taskId, userId, lichSuMoTa);
+                        }
                         out.print("{\"success\":" + ok + ",\"message\":\"" + msg + "\"}");
                         return;
                     }
+                    case "updatedeadline": {
+                        String newDeadline = request.getParameter("han_hoan_thanh");
+                        if (newDeadline != null && !newDeadline.trim().isEmpty()) {
+                            ok = db.updateDeadline(taskId, newDeadline);
+                            msg = ok ? "Đã cập nhật deadline" : "Cập nhật deadline thất bại";
+                            lichSuMoTa = "Cập nhật deadline thành: " + newDeadline;
+                        } else {
+                            ok = false;
+                            msg = "Deadline không hợp lệ";
+                        }
+                        if (ok && userId > 0) {
+                            db.themLichSuCongViec(taskId, userId, lichSuMoTa);
+                        }
+                        out.print("{\"success\":" + ok + ",\"message\":\"" + msg + "\"}");
+                        return;
+                    }
+                }
+
+                // Ghi log lịch sử cho các action khác (archive, delete, restore)
+                if (ok && userId > 0 && !lichSuMoTa.isEmpty()) {
+                    db.themLichSuCongViec(taskId, userId, lichSuMoTa);
                 }
 
                 out.print("{\"success\":" + ok + ",\"message\":\"" + msg + "\"}");
@@ -138,7 +182,19 @@ public class suaCongviec extends HttpServlet {
 
             if (chiUploadFile) {
                 db.updateFileCongViec(taskId, fileFinal);
+                // Ghi log upload file
+                if (userId > 0 && !filePaths.isEmpty()) {
+                    String fileNames = filePaths.stream()
+                        .map(p -> p.substring(p.lastIndexOf("/") + 1))
+                        .reduce((a, b) -> a + ", " + b)
+                        .orElse("");
+                    db.themLichSuCongViec(taskId, userId, "Tải lên tài liệu: " + fileNames);
+                }
             } else {
+                // Lấy thông tin công việc cũ để so sánh
+                Map<String, Object> taskCu = db.getCongViecById(taskId);
+                String nguoiNhanCu = db.getDanhSachNguoiNhan(taskId);
+                
                 String ten = getValue(request, "ten_cong_viec");
                 String moTa = getValue(request, "mo_ta");
                 String han = getValue(request, "han_hoan_thanh");
@@ -166,6 +222,81 @@ public class suaCongviec extends HttpServlet {
                     String noiDungTB = "Công việc: " + ten + " vừa được cập nhật mới";
                     db.insertThongBao(nhanId, tieuDeTB, noiDungTB, "Cập nhật");
                 }
+                
+                // 5: Ghi lịch sử thay đổi CHI TIẾT từng trường
+                if (userId > 0 && taskCu != null) {
+                    List<String> thayDoiList = new ArrayList<>();
+                    
+                    // So sánh tên công việc
+                    String tenCu = (String) taskCu.get("ten_cong_viec");
+                    if (!safeStringEquals(tenCu, ten)) {
+                        thayDoiList.add("📝 Đổi tên: '" + (tenCu != null ? tenCu : "(trống)") + "' → '" + ten + "'");
+                    }
+                    
+                    // So sánh mô tả
+                    String moTaCu = (String) taskCu.get("mo_ta");
+                    if (!safeStringEquals(moTaCu, moTa)) {
+                        thayDoiList.add("📄 Cập nhật mô tả công việc");
+                    }
+                    
+                    // So sánh hạn hoàn thành
+                    String hanCu = (String) taskCu.get("han_hoan_thanh");
+                    if (!safeStringEquals(hanCu, han)) {
+                        thayDoiList.add("📅 Đổi deadline: '" + (hanCu != null ? hanCu : "(chưa có)") + "' → '" + han + "'");
+                    }
+                    
+                    // So sánh mức độ ưu tiên
+                    String uuTienCu = (String) taskCu.get("muc_do_uu_tien");
+                    if (!safeStringEquals(uuTienCu, uuTien)) {
+                        thayDoiList.add("⚡ Đổi độ ưu tiên: '" + (uuTienCu != null ? uuTienCu : "Không") + "' → '" + uuTien + "'");
+                    }
+                    
+                    // So sánh người giao
+                    int giaoIdCu = taskCu.get("nguoi_giao_id") != null ? (Integer) taskCu.get("nguoi_giao_id") : 0;
+                    if (giaoIdCu != giaoId) {
+                        String tenGiaoCu = (String) taskCu.get("ten_nguoi_giao");
+                        thayDoiList.add("👤 Đổi người giao: '" + (tenGiaoCu != null ? tenGiaoCu : "?") + "' → '" + tenNguoiGiao + "'");
+                    }
+                    
+                    // So sánh phòng ban
+                    int phongIdCu = taskCu.get("phong_ban_id") != null ? (Integer) taskCu.get("phong_ban_id") : 0;
+                    if (phongIdCu != phongId) {
+                        String phongCu = (String) taskCu.get("ten_phong_ban");
+                        thayDoiList.add("🏢 Đổi phòng ban: '" + (phongCu != null ? phongCu : "?") + "' → '" + tenPhong + "'");
+                    }
+                    
+                    // So sánh trạng thái
+                    String trangThaiCu = (String) taskCu.get("trang_thai");
+                    if (!safeStringEquals(trangThaiCu, trangThai)) {
+                        thayDoiList.add("🔄 Đổi trạng thái: '" + (trangThaiCu != null ? trangThaiCu : "?") + "' → '" + trangThai + "'");
+                    }
+                    
+                    // So sánh người nhận
+                    if (!safeStringEquals(nguoiNhanCu, dsTenNguoiNhan)) {
+                        thayDoiList.add("👥 Đổi người nhận: '" + (nguoiNhanCu != null && !nguoiNhanCu.isEmpty() ? nguoiNhanCu : "(chưa có)") + "' → '" + dsTenNguoiNhan + "'");
+                    }
+                    
+                    // So sánh tài liệu
+                    String tailieuCu = (String) taskCu.get("tai_lieu_cv");
+                    if (!safeStringEquals(tailieuCu, tailieu)) {
+                        thayDoiList.add("📎 Cập nhật link tài liệu");
+                    }
+                    
+                    // Ghi log nếu có thay đổi
+                    if (!thayDoiList.isEmpty()) {
+                        String moTaLichSu = String.join(" | ", thayDoiList);
+                        db.themLichSuCongViec(taskId, userId, moTaLichSu);
+                    }
+                    
+                    // Ghi log upload file mới
+                    if (!filePaths.isEmpty()) {
+                        String fileNames = filePaths.stream()
+                            .map(p -> p.substring(p.lastIndexOf("/") + 1))
+                            .reduce((a, b) -> a + ", " + b)
+                            .orElse("");
+                        db.themLichSuCongViec(taskId, userId, "📁 Tải lên file: " + fileNames);
+                    }
+                }
             }
 
             out.print("{\"success\": true}");
@@ -180,5 +311,12 @@ public class suaCongviec extends HttpServlet {
             return new String(request.getPart(fieldName).getInputStream().readAllBytes(), "UTF-8");
         }
         return null;
+    }
+    
+    // Helper method để so sánh an toàn 2 chuỗi
+    private boolean safeStringEquals(String a, String b) {
+        if (a == null && b == null) return true;
+        if (a == null || b == null) return false;
+        return a.trim().equals(b.trim());
     }
 }

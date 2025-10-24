@@ -203,6 +203,10 @@
         <servlet-name>UploadExcelServlet</servlet-name>
         <servlet-class>controller.UploadExcelServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>apiLichSuCongViec</servlet-name>
+        <servlet-class>controller.apiLichSuCongViec</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>dsnhanvien</servlet-name>
         <url-pattern>/dsnhanvien</url-pattern>
@@ -402,6 +406,10 @@
     <servlet-mapping>
         <servlet-name>UploadExcelServlet</servlet-name>
         <url-pattern>/UploadExcelServlet</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>apiLichSuCongViec</servlet-name>
+        <url-pattern>/apiLichSuCongViec</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>

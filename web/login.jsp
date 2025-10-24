@@ -48,6 +48,10 @@
         <title>Đăng nhập - ICS</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
         <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+        <link rel="manifest" href="manifest.json">
+        <meta name="theme-color" content="#1a73e8">
+        <link rel="icon" href="icons/logoics.png">
+   
         <style>
             body {
                 background: linear-gradient(135deg, #1e293b, #0f172a);
@@ -245,6 +249,13 @@
                 }
             }
         </style>
+        <script>
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('sw.js')
+                        .then(() => console.log('✅ Service Worker registered'))
+                        .catch(err => console.error('❌ Service Worker registration failed:', err));
+            }
+        </script>
         <script>
             function togglePassword() {
                 const passwordField = document.getElementById('password');

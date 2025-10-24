@@ -25,38 +25,57 @@ public class dsCongviecDuan extends HttpServlet {
             String email = (String) session.getAttribute("userEmail");
             String chucVu = (String) session.getAttribute("chucVu");
             String projectIdStr = req.getParameter("projectId");
+            String trangThai = req.getParameter("trangThai");
+            String tinhTrang = req.getParameter("tinhTrang");
 
             if (projectIdStr == null) {
-                resp.sendRedirect("dsDuan"); // quay lại danh sách nếu không có id
+                resp.sendRedirect("dsDuan"); // không có ID thì quay lại danh sách dự án
                 return;
             }
 
             int projectId = Integer.parseInt(projectIdStr);
             String tenDuan = kn.getTenDuanById(projectId);
 
-            // 1. Lấy danh sách công việc theo dự án
-            List<Map<String, Object>> tasks = kn.getAllTasksByProject(email, projectId);
+            // 🟢 Danh sách công việc chính
+            List<Map<String, Object>> taskList;
 
-            // 2. Cập nhật trạng thái từng công việc trước khi render
-            for (Map<String, Object> task : tasks) {
-                int congViecId = (int) task.get("id");
-                kn.capNhatTrangThaiTuTienDo(congViecId);
+            if (trangThai != null && !trangThai.trim().isEmpty()) {
+                taskList = kn.getTasksByStatus(email, projectId, trangThai);
+            } else {
+                taskList = kn.getAllTasksByProject(email, projectId);
             }
 
-            // 3. Map giữ nhãn trạng thái để JSP hiển thị có trật tự
+            // 🟢 Các danh sách phụ: archived, deleted
+            List<Map<String, Object>> archivedTaskList = kn.getTasksByTinhTrang(email, projectId, "Lưu trữ");
+            List<Map<String, Object>> deletedTaskList = kn.getTasksByTinhTrang(email, projectId, "Đã xóa");
+
+            // 🟢 Cập nhật trạng thái từ tiến độ
+            for (Map<String, Object> task : taskList) {
+                String tt = (String) task.get("tinh_trang");
+                if (tt == null || !tt.equalsIgnoreCase("Lưu trữ")) {
+                    int congViecId = (int) task.get("id");
+                    kn.capNhatTrangThaiTuTienDo(congViecId);
+                }
+            }
+
+            // 🟢 Nhãn trạng thái
             LinkedHashMap<String, String> trangThaiLabels = new LinkedHashMap<>();
             trangThaiLabels.put("Chưa bắt đầu", "Chưa bắt đầu");
             trangThaiLabels.put("Đang thực hiện", "Đang thực hiện");
             trangThaiLabels.put("Đã hoàn thành", "Đã hoàn thành");
             trangThaiLabels.put("Trễ hạn", "Trễ hạn");
 
-            // 4. Gửi dữ liệu sang JSP
-            req.setAttribute("taskList", tasks);
+            // 🟢 Gửi dữ liệu sang JSP
+            req.setAttribute("taskList", taskList);
             req.setAttribute("tenDuan", tenDuan);
             req.setAttribute("projectId", projectId);
             req.setAttribute("trangThaiLabels", trangThaiLabels);
+            req.setAttribute("archivedTaskList", archivedTaskList);
+            req.setAttribute("deletedTaskList", deletedTaskList);
+            req.setAttribute("selectedTrangThai", trangThai);
+            req.setAttribute("selectedTinhTrang", tinhTrang);
 
-            // 5. Chuyển hướng theo chức vụ
+            // 🟢 Forward theo chức vụ
             if ("Nhân viên".equalsIgnoreCase(chucVu)) {
                 req.getRequestDispatcher("project_tasknv.jsp").forward(req, resp);
             } else {
@@ -74,6 +93,6 @@ public class dsCongviecDuan extends HttpServlet {
 
     @Override
     public String getServletInfo() {
-        return "Hiển thị danh sách công việc theo dự án kèm trạng thái (theo chức vụ)";
+        return "Hiển thị danh sách công việc theo dự án, cho phép lọc trạng thái và tình trạng";
     }
 }

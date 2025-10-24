@@ -550,6 +550,34 @@ public class KNCSDL {
         return ps.executeQuery();
     }
 
+    /**
+     * Lấy thông tin chi tiết tiến độ theo ID
+     * @param stepId ID của tiến độ
+     * @return Map chứa thông tin tiến độ
+     */
+    public Map<String, Object> getStepById(int stepId) throws SQLException {
+        String sql = "SELECT id, cong_viec_id, ten_buoc, mo_ta, trang_thai, ngay_bat_dau, ngay_ket_thuc " +
+                     "FROM cong_viec_quy_trinh WHERE id = ?";
+        
+        try (PreparedStatement ps = cn.prepareStatement(sql)) {
+            ps.setInt(1, stepId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Map<String, Object> step = new LinkedHashMap<>();
+                    step.put("id", rs.getInt("id"));
+                    step.put("cong_viec_id", rs.getInt("cong_viec_id"));
+                    step.put("ten_buoc", rs.getString("ten_buoc"));
+                    step.put("mo_ta", rs.getString("mo_ta"));
+                    step.put("trang_thai", rs.getString("trang_thai"));
+                    step.put("ngay_bat_dau", rs.getString("ngay_bat_dau"));
+                    step.put("ngay_ket_thuc", rs.getString("ngay_ket_thuc"));
+                    return step;
+                }
+            }
+        }
+        return null;
+    }
+    
     public boolean updateStepById(int stepId, String name, String desc,
             String status, String start, String end) throws SQLException {
         String sql = "UPDATE cong_viec_quy_trinh SET ten_buoc = ?, mo_ta = ?, trang_thai = ?, ngay_bat_dau = ?, ngay_ket_thuc = ? WHERE id = ?";
@@ -3791,15 +3819,25 @@ public class KNCSDL {
             return ps.executeUpdate() > 0;
         }
     }
-    
-   public boolean updateNhacViec(int taskId, int nhacViec) throws SQLException {
-    final String sql = "UPDATE cong_viec SET nhac_viec = ? WHERE id = ?";
-    try (PreparedStatement ps = cn.prepareStatement(sql)) {
-        ps.setInt(1, nhacViec); // 1 = đã bật nhắc việc, 0 = tắt
-        ps.setInt(2, taskId);
-        return ps.executeUpdate() > 0;
+
+    public boolean updateNhacViec(int taskId, int nhacViec) throws SQLException {
+        final String sql = "UPDATE cong_viec SET nhac_viec = ? WHERE id = ?";
+        try (PreparedStatement ps = cn.prepareStatement(sql)) {
+            ps.setInt(1, nhacViec); // 1 = đã bật nhắc việc, 0 = tắt
+            ps.setInt(2, taskId);
+            return ps.executeUpdate() > 0;
+        }
     }
-}
+
+// Cập nhật deadline
+    public boolean updateDeadline(int taskId, String newDeadline) throws SQLException {
+        final String sql = "UPDATE cong_viec SET han_hoan_thanh = ? WHERE id = ?";
+        try (PreparedStatement ps = cn.prepareStatement(sql)) {
+            ps.setString(1, newDeadline);
+            ps.setInt(2, taskId);
+            return ps.executeUpdate() > 0;
+        }
+    }
 
 // tuỳ chọn: khi khôi phục muốn reset trạng_thái nghiệp vụ
     public boolean updateTrangThai(int taskId, String trangThai) throws SQLException {
@@ -3827,6 +3865,125 @@ public class KNCSDL {
             ok = updateTrangThai(taskId, defaultTrangThai);
         }
         return ok;
+    }
+
+    /**
+     * Lấy thông tin chi tiết công việc theo ID
+     *
+     * @param taskId ID của công việc
+     * @return Map chứa thông tin công việc
+     */
+    public Map<String, Object> getCongViecById(int taskId) throws SQLException {
+        String sql = "SELECT cv.*, "
+                + "ng.ho_ten as ten_nguoi_giao, "
+                + "pb.ten_phong "
+                + "FROM cong_viec cv "
+                + "LEFT JOIN nhanvien ng ON cv.nguoi_giao_id = ng.id "
+                + "LEFT JOIN phong_ban pb ON cv.phong_ban_id = pb.id "
+                + "WHERE cv.id = ?";
+
+        try (PreparedStatement ps = cn.prepareStatement(sql)) {
+            ps.setInt(1, taskId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Map<String, Object> task = new LinkedHashMap<>();
+                    task.put("id", rs.getInt("id"));
+                    task.put("ten_cong_viec", rs.getString("ten_cong_viec"));
+                    task.put("mo_ta", rs.getString("mo_ta"));
+                    task.put("han_hoan_thanh", rs.getString("han_hoan_thanh"));
+                    task.put("muc_do_uu_tien", rs.getString("muc_do_uu_tien"));
+                    task.put("nguoi_giao_id", rs.getInt("nguoi_giao_id"));
+                    task.put("ten_nguoi_giao", rs.getString("ten_nguoi_giao"));
+                    task.put("phong_ban_id", rs.getInt("phong_ban_id"));
+                    task.put("ten_phong_ban", rs.getString("ten_phong"));
+                    task.put("trang_thai", rs.getString("trang_thai"));
+                    task.put("tai_lieu_cv", rs.getString("tai_lieu_cv"));
+                    task.put("file_tai_lieu", rs.getString("file_tai_lieu"));
+                    task.put("tinh_trang", rs.getString("tinh_trang"));
+                    task.put("nhac_viec", rs.getInt("nhac_viec"));
+                    return task;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Lấy danh sách người nhận của công việc
+     *
+     * @param taskId ID của công việc
+     * @return Danh sách tên người nhận, ngăn cách bởi dấu phẩy
+     */
+    public String getDanhSachNguoiNhan(int taskId) throws SQLException {
+        String sql = "SELECT GROUP_CONCAT(nv.ho_ten SEPARATOR ', ') AS danh_sach "
+                + "FROM cong_viec_nguoi_nhan cn "
+                + "JOIN nhanvien nv ON cn.nhan_vien_id = nv.id "
+                + "WHERE cn.cong_viec_id = ?";
+
+        try (PreparedStatement ps = cn.prepareStatement(sql)) {
+            ps.setInt(1, taskId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("danh_sach");
+                }
+            }
+        }
+        return "";
+    }
+
+    /**
+     * Lấy danh sách lịch sử thay đổi của công việc
+     *
+     * @param congViecId ID của công việc
+     * @return List các Map chứa thông tin lịch sử
+     */
+    public List<Map<String, Object>> getLichSuCongViec(int congViecId) throws SQLException {
+        List<Map<String, Object>> result = new ArrayList<>();
+        String sql = "SELECT ls.id, ls.cong_viec_id, ls.nguoi_thay_doi_id, "
+                + "ls.mo_ta_thay_doi, ls.thoi_gian, "
+                + "nv.ho_ten, nv.avatar_url "
+                + "FROM cong_viec_lich_su ls "
+                + "LEFT JOIN nhanvien nv ON ls.nguoi_thay_doi_id = nv.id "
+                + "WHERE ls.cong_viec_id = ? "
+                + "ORDER BY ls.thoi_gian DESC";
+
+        try (PreparedStatement ps = cn.prepareStatement(sql)) {
+            ps.setInt(1, congViecId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> row = new LinkedHashMap<>();
+                    row.put("id", rs.getInt("id"));
+                    row.put("cong_viec_id", rs.getInt("cong_viec_id"));
+                    row.put("nguoi_thay_doi_id", rs.getInt("nguoi_thay_doi_id"));
+                    row.put("mo_ta_thay_doi", rs.getString("mo_ta_thay_doi"));
+                    row.put("thoi_gian", rs.getTimestamp("thoi_gian"));
+                    row.put("ten_nhan_vien", rs.getString("ho_ten"));
+                    row.put("anh_dai_dien", rs.getString("avatar_url"));
+                    result.add(row);
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Thêm một bản ghi lịch sử công việc
+     *
+     * @param congViecId ID của công việc
+     * @param nguoiThayDoiId ID của người thực hiện thay đổi
+     * @param moTaThayDoi Mô tả chi tiết thay đổi
+     * @return true nếu thêm thành công
+     */
+    public boolean themLichSuCongViec(int congViecId, int nguoiThayDoiId, String moTaThayDoi) throws SQLException {
+        String sql = "INSERT INTO cong_viec_lich_su (cong_viec_id, nguoi_thay_doi_id, mo_ta_thay_doi, thoi_gian) "
+                + "VALUES (?, ?, ?, NOW())";
+
+        try (PreparedStatement ps = cn.prepareStatement(sql)) {
+            ps.setInt(1, congViecId);
+            ps.setInt(2, nguoiThayDoiId);
+            ps.setString(3, moTaThayDoi);
+            return ps.executeUpdate() > 0;
+        }
     }
 
     public void close() throws SQLException {

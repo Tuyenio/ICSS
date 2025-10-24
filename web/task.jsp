@@ -10,9 +10,13 @@
         <title>Quản lý Công việc</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
         <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+        <!-- FullCalendar CSS -->
+        <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet">
         <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
         <script src="https://cdn.ckeditor.com/4.22.1/standard/ckeditor.js"></script>
+        <!-- FullCalendar JS -->
+        <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
         <script>
             var PAGE_TITLE = '<i class="fa-solid fa-tasks me-2"></i>Quản lý Công việc';
         </script>
@@ -330,6 +334,292 @@
                 transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
                 position: relative;
                 overflow: hidden;
+            }
+
+            /* VIEW MODE TOGGLE BUTTONS */
+            .view-mode-toggle .btn {
+                border-radius: 12px;
+                font-weight: 600;
+                padding: 8px 16px;
+                transition: all 0.3s ease;
+                border: 2px solid #0dcaf0;
+            }
+
+            .view-mode-toggle .btn:not(.active) {
+                background: transparent;
+                color: #0dcaf0;
+            }
+
+            .view-mode-toggle .btn.active {
+                background: linear-gradient(135deg, #0dcaf0, #4f46e5);
+                color: white;
+                box-shadow: 0 4px 15px rgba(13, 202, 240, 0.4);
+            }
+
+            .view-mode-toggle .btn:hover:not(.active) {
+                background: rgba(13, 202, 240, 0.1);
+                transform: translateY(-2px);
+            }
+
+            .view-mode-toggle .btn i {
+                font-size: 0.9rem;
+            }
+
+            /* LIST VIEW STYLES */
+            .list-view-container {
+                display: none;
+                animation: fadeIn 0.5s ease;
+            }
+
+            .list-view-container.active {
+                display: block;
+            }
+
+            .task-table {
+                background: white;
+                border-radius: 16px;
+                overflow: hidden;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            }
+
+            .task-table table {
+                margin-bottom: 0;
+            }
+
+            .task-table thead {
+                background: linear-gradient(135deg, #0dcaf0, #4f46e5);
+                color: white;
+            }
+
+            .task-table thead th {
+                padding: 16px 12px;
+                font-weight: 600;
+                border: none;
+                vertical-align: middle;
+                cursor: pointer;
+                user-select: none;
+                position: relative;
+            }
+
+            .task-table thead th:hover {
+                background: rgba(255, 255, 255, 0.1);
+            }
+
+            .task-table thead th.sortable::after {
+                content: '\f0dc';
+                font-family: 'Font Awesome 6 Free';
+                font-weight: 900;
+                margin-left: 8px;
+                opacity: 0.5;
+                font-size: 0.8em;
+            }
+
+            .task-table thead th.sort-asc::after {
+                content: '\f0de';
+                opacity: 1;
+            }
+
+            .task-table thead th.sort-desc::after {
+                content: '\f0dd';
+                opacity: 1;
+            }
+
+            .task-table tbody tr {
+                border-bottom: 1px solid #f1f5f9;
+                transition: all 0.2s ease;
+            }
+
+            .task-table tbody tr:hover {
+                background: linear-gradient(90deg, rgba(13, 202, 240, 0.05), rgba(79, 70, 229, 0.05));
+                transform: translateX(4px);
+                cursor: pointer;
+            }
+
+            .task-table tbody td {
+                padding: 14px 12px;
+                vertical-align: middle;
+            }
+
+            .task-table .task-name {
+                font-weight: 600;
+                color: #1e293b;
+            }
+
+            .task-table .badge {
+                padding: 6px 12px;
+                border-radius: 8px;
+                font-weight: 500;
+                font-size: 0.85rem;
+            }
+
+            .task-table .badge.priority-high {
+                background: linear-gradient(135deg, #ef4444, #dc2626);
+            }
+
+            .task-table .badge.priority-medium {
+                background: linear-gradient(135deg, #f59e0b, #d97706);
+            }
+
+            .task-table .badge.priority-low {
+                background: linear-gradient(135deg, #10b981, #059669);
+            }
+
+            .task-table .badge.status-not-started {
+                background: #94a3b8;
+            }
+
+            .task-table .badge.status-in-progress {
+                background: #facc15;
+                color: #78350f;
+            }
+
+            .task-table .badge.status-completed {
+                background: #22c55e;
+            }
+
+            .task-table .badge.status-late {
+                background: #ef4444;
+            }
+
+            .task-table .action-btns {
+                display: flex;
+                gap: 8px;
+                justify-content: center;
+            }
+
+            .task-table .action-btns .btn {
+                padding: 6px 10px;
+                border-radius: 8px;
+                transition: all 0.2s ease;
+            }
+
+            .task-table .action-btns .btn:hover {
+                transform: translateY(-2px);
+            }
+
+            /* Hiệu ứng nhấp nháy đỏ cho task có nhắc nhở trong List View */
+            .task-table tbody tr.task-row--alert {
+                animation: rowBlink 1.1s ease-in-out infinite;
+                position: relative;
+            }
+
+            .task-table tbody tr.task-row--alert::before {
+                content: '🔔';
+                position: absolute;
+                left: 8px;
+                top: 50%;
+                transform: translateY(-50%);
+                font-size: 1rem;
+                animation: bellPulse 2s infinite;
+                z-index: 1;
+            }
+
+            .task-table tbody tr.task-row--alert td:first-child {
+                padding-left: 35px;
+            }
+
+            @keyframes rowBlink {
+                0%, 100% {
+                    background: rgba(220, 53, 69, 0.05);
+                    box-shadow: inset 0 0 0 1px rgba(220, 53, 69, 0);
+                }
+                50% {
+                    background: rgba(220, 53, 69, 0.12);
+                    box-shadow: inset 0 0 0 2px rgba(220, 53, 69, 0.3),
+                        0 4px 12px rgba(220, 53, 69, 0.2);
+                }
+            }
+
+            /* CALENDAR VIEW STYLES */
+            .calendar-view-container {
+                display: none;
+                animation: fadeIn 0.5s ease;
+            }
+
+            .calendar-view-container.active {
+                display: block;
+            }
+
+            #taskCalendar {
+                background: white;
+                border-radius: 16px;
+                padding: 20px;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+                min-height: 600px;
+            }
+
+            /* FullCalendar custom styling */
+            .fc {
+                font-family: 'Segoe UI', Roboto, sans-serif;
+            }
+
+            .fc .fc-button {
+                background: linear-gradient(135deg, #0dcaf0, #4f46e5);
+                border: none;
+                border-radius: 10px;
+                padding: 8px 16px;
+                font-weight: 600;
+                transition: all 0.3s ease;
+            }
+
+            .fc .fc-button:hover {
+                background: linear-gradient(135deg, #4f46e5, #0dcaf0);
+                transform: translateY(-2px);
+            }
+
+            .fc .fc-button:disabled {
+                opacity: 0.5;
+            }
+
+            .fc .fc-toolbar-title {
+                font-size: 1.5rem;
+                font-weight: 700;
+                background: linear-gradient(135deg, #0dcaf0, #4f46e5);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+            }
+
+            .fc-event {
+                border-radius: 8px;
+                padding: 4px 8px;
+                border: none;
+                cursor: pointer;
+                transition: all 0.2s ease;
+            }
+
+            .fc-event:hover {
+                transform: scale(1.05);
+                box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            }
+
+            .fc-event.event-not-started {
+                background: #94a3b8;
+            }
+
+            .fc-event.event-in-progress {
+                background: #facc15;
+                color: #78350f;
+            }
+
+            .fc-event.event-completed {
+                background: #22c55e;
+            }
+
+            .fc-event.event-late {
+                background: #ef4444;
+            }
+
+            .kanban-view-container {
+                display: block;
+            }
+
+            .kanban-view-container.active {
+                display: block;
+            }
+
+            .kanban-view-container:not(.active) {
+                display: none;
             }
 
             .task-nav-tabs .nav-link:before {
@@ -825,6 +1115,206 @@
                 padding: 4px 8px;
                 border-radius: 8px;
             }
+
+            /* ========== LỊCH SỬ CÔNG VIỆC TIMELINE ========== */
+            .history-timeline {
+                position: relative;
+                padding: 20px 0;
+                max-height: 500px;
+                overflow-y: auto;
+            }
+
+            .history-timeline::-webkit-scrollbar {
+                width: 6px;
+            }
+
+            .history-timeline::-webkit-scrollbar-track {
+                background: #f1f5f9;
+                border-radius: 10px;
+            }
+
+            .history-timeline::-webkit-scrollbar-thumb {
+                background: linear-gradient(135deg, #0dcaf0, #4f46e5);
+                border-radius: 10px;
+            }
+
+            .history-timeline::before {
+                content: '';
+                position: absolute;
+                left: 40px;
+                top: 0;
+                bottom: 0;
+                width: 3px;
+                background: linear-gradient(180deg, #0dcaf0, #4f46e5);
+                border-radius: 2px;
+            }
+
+            .history-item {
+                position: relative;
+                padding-left: 80px;
+                margin-bottom: 24px;
+                animation: slideInLeft 0.5s ease;
+            }
+
+            @keyframes slideInLeft {
+                from {
+                    opacity: 0;
+                    transform: translateX(-20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateX(0);
+                }
+            }
+
+            .history-item:last-child {
+                margin-bottom: 0;
+            }
+
+            .history-number {
+                position: absolute;
+                left: 0;
+                top: 5px;
+                width: 32px;
+                height: 32px;
+                background: linear-gradient(135deg, #0dcaf0, #4f46e5);
+                color: white;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 700;
+                font-size: 0.85rem;
+                box-shadow: 0 3px 10px rgba(13, 202, 240, 0.3);
+                z-index: 2;
+            }
+
+            .history-avatar {
+                position: absolute;
+                left: 58px;
+                top: 0;
+                width: 45px;
+                height: 45px;
+                border-radius: 50%;
+                overflow: hidden;
+                border: 3px solid white;
+                box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+                background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 2;
+            }
+
+            .history-avatar img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+
+            .history-avatar-placeholder {
+                width: 100%;
+                height: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: linear-gradient(135deg, #0dcaf0, #4f46e5);
+                color: white;
+                font-weight: 700;
+                font-size: 1.1rem;
+            }
+
+            .history-content {
+                background: white;
+                border: 1px solid #e2e8f0;
+                border-radius: 12px;
+                padding: 16px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+                transition: all 0.3s ease;
+                position: relative;
+            }
+
+            .history-content:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 15px rgba(13, 202, 240, 0.2);
+                border-color: #0dcaf0;
+            }
+
+            .history-content::before {
+                content: '';
+                position: absolute;
+                left: -8px;
+                top: 20px;
+                width: 0;
+                height: 0;
+                border-top: 8px solid transparent;
+                border-bottom: 8px solid transparent;
+                border-right: 8px solid #e2e8f0;
+            }
+
+            .history-content::after {
+                content: '';
+                position: absolute;
+                left: -7px;
+                top: 20px;
+                width: 0;
+                height: 0;
+                border-top: 8px solid transparent;
+                border-bottom: 8px solid transparent;
+                border-right: 8px solid white;
+            }
+
+            .history-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 10px;
+            }
+
+            .history-user {
+                font-weight: 600;
+                color: #1e293b;
+                font-size: 0.95rem;
+            }
+
+            .history-time {
+                color: #64748b;
+                font-size: 0.85rem;
+                display: flex;
+                align-items: center;
+                gap: 4px;
+            }
+
+            .history-time i {
+                font-size: 0.75rem;
+            }
+
+            .history-description {
+                color: #475569;
+                font-size: 0.9rem;
+                line-height: 1.6;
+                padding: 8px 12px;
+                background: #f8fafc;
+                border-radius: 8px;
+                border-left: 3px solid #0dcaf0;
+            }
+
+            .history-empty {
+                text-align: center;
+                padding: 40px 20px;
+                color: #94a3b8;
+            }
+
+            .history-empty i {
+                font-size: 3rem;
+                margin-bottom: 12px;
+                opacity: 0.5;
+            }
+
+            .history-empty p {
+                margin: 0;
+                font-size: 0.95rem;
+            }
         </style>
     </head>
 
@@ -864,7 +1354,23 @@
                                 </ul>
                             </div>
 
-                            <div class="d-flex gap-2">
+                            <div class="d-flex gap-2 align-items-center">
+                                <!-- Toggle View Mode -->
+                                <div class="btn-group view-mode-toggle" role="group">
+                                    <button type="button" class="btn btn-outline-primary active" id="viewKanban" 
+                                            onclick="switchView('kanban')" title="Xem dạng bảng">
+                                        <i class="fa-solid fa-grip-vertical"></i> Kanban
+                                    </button>
+                                    <button type="button" class="btn btn-outline-primary" id="viewList" 
+                                            onclick="switchView('list')" title="Xem dạng danh sách">
+                                        <i class="fa-solid fa-list"></i> Danh sách
+                                    </button>
+                                    <button type="button" class="btn btn-outline-primary" id="viewCalendar" 
+                                            onclick="switchView('calendar')" title="Xem dạng lịch">
+                                        <i class="fa-solid fa-calendar"></i> Lịch
+                                    </button>
+                                </div>
+
                                 <!-- Nút thêm từ Excel -->
                                 <button class="btn btn-success rounded-pill px-3" data-bs-toggle="modal"
                                         data-bs-target="#modalExcel">
@@ -1029,6 +1535,89 @@
                                 </div>
                                 <% } %>
                             </div>
+
+                            <!-- ==================== LIST VIEW ==================== -->
+                            <div class="list-view-container" id="listView">
+                                <div class="task-table">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th class="sortable" data-sort="ten_cong_viec">Tên công việc</th>
+                                                <th class="sortable" data-sort="nguoi_giao_id">Người giao</th>
+                                                <th class="sortable" data-sort="nguoi_nhan_ten">Người nhận</th>
+                                                <th class="sortable" data-sort="phong_ban_id">Phòng ban</th>
+                                                <th class="sortable" data-sort="han_hoan_thanh">Hạn hoàn thành</th>
+                                                <th class="sortable" data-sort="muc_do_uu_tien">Ưu tiên</th>
+                                                <th class="sortable" data-sort="trang_thai">Trạng thái</th>
+                                                <th style="min-width: 120px;">Hành động</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="taskListTableBody">
+                                            <% for (Map<String, Object> task : taskList) { 
+                                                String priorityClass = "priority-low";
+                                                if ("Cao".equals(task.get("muc_do_uu_tien"))) priorityClass = "priority-high";
+                                                else if ("Trung bình".equals(task.get("muc_do_uu_tien"))) priorityClass = "priority-medium";
+                                                
+                                                String statusClass = "status-not-started";
+                                                if ("Đang thực hiện".equals(task.get("trang_thai"))) statusClass = "status-in-progress";
+                                                else if ("Đã hoàn thành".equals(task.get("trang_thai"))) statusClass = "status-completed";
+                                                else if ("Trễ hạn".equals(task.get("trang_thai"))) statusClass = "status-late";
+                                                
+                                                // Kiểm tra xem task có được nhắc nhở hay không
+                                                Object nhacNho = task.get("nhac_viec");
+                                                boolean hasReminder = false;
+                                                if (nhacNho != null) {
+                                                    try {
+                                                        int value = Integer.parseInt(nhacNho.toString());
+                                                        hasReminder = (value == 1);
+                                                    } catch (NumberFormatException e) {
+                                                        hasReminder = false;
+                                                    }
+                                                }
+                                            %>
+                                            <tr class="task-row <%= hasReminder ? "task-row--alert" : "" %>" data-bs-toggle="modal" data-bs-target="#modalTaskDetail"
+                                                data-id="<%= task.get("id") %>"
+                                                data-ten="<%= task.get("ten_cong_viec") %>"
+                                                data-mo-ta="<%= task.get("mo_ta") %>"
+                                                data-han="<%= task.get("han_hoan_thanh") %>"
+                                                data-uu-tien="<%= task.get("muc_do_uu_tien") %>"
+                                                data-ten_nguoi_giao="<%= task.get("nguoi_giao_id") %>"
+                                                data-ten_nguoi_nhan="<%= task.get("nguoi_nhan_ten") %>"
+                                                data-ten_phong_ban="<%= task.get("phong_ban_id") %>"
+                                                data-trang-thai="<%= task.get("trang_thai") %>"
+                                                data-tai_lieu_cv="<%= task.get("tai_lieu_cv") %>"
+                                                data-file_tai_lieu="<%= task.get("file_tai_lieu") %>">
+                                                <td class="task-name"><%= task.get("ten_cong_viec") %></td>
+                                                <td><%= task.get("nguoi_giao_id") %></td>
+                                                <td><%= task.get("nguoi_nhan_ten") %></td>
+                                                <td><%= task.get("phong_ban_id") %></td>
+                                                <td><%= task.get("han_hoan_thanh") %></td>
+                                                <td><span class="badge <%= priorityClass %>"><%= task.get("muc_do_uu_tien") %></span></td>
+                                                <td><span class="badge <%= statusClass %>"><%= task.get("trang_thai") %></span></td>
+                                                <td>
+                                                    <div class="action-btns" onclick="event.stopPropagation();">
+                                                        <button class="btn btn-sm btn-warning" title="Lưu trữ" onclick="archiveTask('<%= task.get("id") %>')">
+                                                            <i class="fa-solid fa-archive"></i>
+                                                        </button>
+                                                        <button class="btn btn-sm btn-info" title="Nhắc việc" onclick="remindTask('<%= task.get("id") %>')">
+                                                            <i class="fa-solid fa-bell"></i>
+                                                        </button>
+                                                        <button class="btn btn-sm btn-danger" title="Xóa" onclick="deleteTask('<%= task.get("id") %>')">
+                                                            <i class="fa-solid fa-trash"></i>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <% } %>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- ==================== CALENDAR VIEW ==================== -->
+                            <div class="calendar-view-container" id="calendarView">
+                                <div id="taskCalendar"></div>
+                            </div>
                         </div>
 
                         <!-- Tab Lưu trữ -->
@@ -1129,8 +1718,6 @@
                             </div>
                         </div>
 
-
-                        <!-- Tab Thùng rác -->
                         <!-- Tab Thùng rác -->
                         <div class="tab-pane fade" id="deleted-tasks" role="tabpanel">
                             <%
@@ -1416,10 +2003,13 @@
                                             </div>
 
                                             <div class="tab-pane fade" id="tabTaskHistory" role="tabpanel">
-                                                <ul id="taskHistoryList">
-                                                    <li>09/06/2024: Tạo công việc</li>
-                                                    <li>10/06/2024: Cập nhật tiến độ 50%</li>
-                                                </ul>
+                                                <div class="history-timeline" id="taskHistoryTimeline">
+                                                    <!-- Lịch sử sẽ được load qua AJAX -->
+                                                    <div class="history-empty">
+                                                        <i class="fa-solid fa-clock-rotate-left"></i>
+                                                        <p>Đang tải lịch sử công việc...</p>
+                                                    </div>
+                                                </div>
                                             </div>
 
                                             <div class="tab-pane fade" id="tabTaskReview" role="tabpanel">
@@ -1543,23 +2133,23 @@
             </div>
 
             <script>
-            // Hiển thị danh sách file ngay khi chọn
-            document.getElementById('taskFiles').addEventListener('change', function () {
-                let files = this.files;
-                let list = "";
-                for (let i = 0; i < files.length; i++) {
-                    list += "📄 " + files[i].name + "<br>";
-                }
-                document.getElementById('taskFileList').innerHTML = list || "Chưa có file nào được chọn";
-            });
-            document.getElementById('taskFiles2').addEventListener('change', function () {
-                let files = this.files;
-                let list = "";
-                for (let i = 0; i < files.length; i++) {
-                    list += "📄 " + files[i].name + "<br>";
-                }
-                document.getElementById('taskFileList2').innerHTML = list || "Chưa có file nào được chọn";
-            });
+                // Hiển thị danh sách file ngay khi chọn
+                document.getElementById('taskFiles').addEventListener('change', function () {
+                    let files = this.files;
+                    let list = "";
+                    for (let i = 0; i < files.length; i++) {
+                        list += "📄 " + files[i].name + "<br>";
+                    }
+                    document.getElementById('taskFileList').innerHTML = list || "Chưa có file nào được chọn";
+                });
+                document.getElementById('taskFiles2').addEventListener('change', function () {
+                    let files = this.files;
+                    let list = "";
+                    for (let i = 0; i < files.length; i++) {
+                        list += "📄 " + files[i].name + "<br>";
+                    }
+                    document.getElementById('taskFileList2').innerHTML = list || "Chưa có file nào được chọn";
+                });
             </script>
             <script>
 
@@ -2040,30 +2630,143 @@
                             keyword: keyword,
                             phong_ban: phongBan,
                             trang_thai: trangThai,
-                            projectId: projectId
+                            projectId: projectId,
+                            returnJson: (currentView === 'list' || currentView === 'calendar') ? 'true' : 'false'
                         },
-                        dataType: 'html',
+                        dataType: (currentView === 'list' || currentView === 'calendar') ? 'json' : 'html',
                         beforeSend: function () {
-                            $btn.prop('disabled', true).data('orig-text', $btn.html()).html('Đang lọc...');
+                            $btn.prop('disabled', true).data('orig-text', $btn.html()).html('<i class="fa fa-spinner fa-spin"></i> Đang lọc...');
                         },
-                        success: function (html) {
-                            if (html && $.trim(html).length > 0) {
-                                $('.kanban-board').replaceWith(html);
-                                showToast('success', 'Đã áp dụng bộ lọc.');
-                            } else {
-                                $('.kanban-board').html('<div class="text-center text-muted p-3">Không có dữ liệu phù hợp</div>');
-                                showToast('info', 'Không tìm thấy kết quả phù hợp.');
+                        success: function (response) {
+                            if (currentView === 'kanban') {
+                                // Kanban view - nhận HTML
+                                if (response && $.trim(response).length > 0) {
+                                    $('.kanban-board').replaceWith(response);
+                                    showToast('success', 'Đã áp dụng bộ lọc.');
+                                } else {
+                                    $('.kanban-board').html('<div class="text-center text-muted p-3">Không có dữ liệu phù hợp</div>');
+                                    showToast('info', 'Không tìm thấy kết quả phù hợp.');
+                                }
+                            } else if (currentView === 'list') {
+                                // List view - nhận JSON và render
+                                renderListViewFromJson(response);
+                                showToast('success', 'Đã áp dụng bộ lọc cho danh sách.');
+                            } else if (currentView === 'calendar') {
+                                // Calendar view - nhận JSON và render
+                                renderCalendarViewFromJson(response);
+                                showToast('success', 'Đã áp dụng bộ lọc cho lịch.');
                             }
                         },
                         error: function () {
-                            $('.kanban-board').html('<div class="text-danger text-center p-3">Lỗi khi lọc công việc</div>');
+                            if (currentView === 'kanban') {
+                                $('.kanban-board').html('<div class="text-danger text-center p-3">Lỗi khi lọc công việc</div>');
+                            }
                             showToast('error', 'Lỗi khi lọc công việc.');
                         },
                         complete: function () {
-                            $btn.prop('disabled', false).html($btn.data('orig-text') || 'Lọc');
+                            $btn.prop('disabled', false).html($btn.data('orig-text') || '<i class="fa-solid fa-filter"></i> Lọc');
                         }
                     });
                 });
+
+                // ====== RENDER LIST VIEW TỪ JSON ======
+                function renderListViewFromJson(tasks) {
+                    var tbody = $('#taskListTableBody');
+                    tbody.empty();
+
+                    if (!tasks || tasks.length === 0) {
+                        tbody.html('<tr><td colspan="8" class="text-center text-muted py-4">Không tìm thấy công việc phù hợp</td></tr>');
+                        return;
+                    }
+
+                    tasks.forEach(function (task) {
+                        var priorityClass = (task.muc_do_uu_tien === 'Cao') ? 'priority-high' :
+                                (task.muc_do_uu_tien === 'Trung bình') ? 'priority-medium' : 'priority-low';
+
+                        var statusClass = (task.trang_thai === 'Đang thực hiện') ? 'status-in-progress' :
+                                (task.trang_thai === 'Đã hoàn thành') ? 'status-completed' :
+                                (task.trang_thai === 'Trễ hạn') ? 'status-late' : 'status-not-started';
+
+                        var hasReminder = (task.nhac_viec == 1);
+                        var alertClass = hasReminder ? 'task-row--alert' : '';
+
+                        var row = ''
+                                + '<tr class="task-row ' + alertClass + '" data-bs-toggle="modal" data-bs-target="#modalTaskDetail"'
+                                + ' data-id="' + (task.id || '') + '"'
+                                + ' data-ten="' + (task.ten_cong_viec || '') + '"'
+                                + ' data-mo-ta="' + (task.mo_ta || '') + '"'
+                                + ' data-han="' + (task.han_hoan_thanh || '') + '"'
+                                + ' data-uu-tien="' + (task.muc_do_uu_tien || '') + '"'
+                                + ' data-ten_nguoi_giao="' + (task.nguoi_giao_id || '') + '"'
+                                + ' data-ten_nguoi_nhan="' + (task.nguoi_nhan_ten || '') + '"'
+                                + ' data-ten_phong_ban="' + (task.phong_ban_id || '') + '"'
+                                + ' data-trang-thai="' + (task.trang_thai || '') + '"'
+                                + ' data-tai_lieu_cv="' + (task.tai_lieu_cv || '') + '"'
+                                + ' data-file_tai_lieu="' + (task.file_tai_lieu || '') + '">'
+                                + '    <td class="task-name">' + (task.ten_cong_viec || '') + '</td>'
+                                + '    <td>' + (task.nguoi_giao_id || '') + '</td>'
+                                + '    <td>' + (task.nguoi_nhan_ten || '') + '</td>'
+                                + '    <td>' + (task.phong_ban_id || '') + '</td>'
+                                + '    <td>' + (task.han_hoan_thanh || '') + '</td>'
+                                + '    <td><span class="badge ' + priorityClass + '">' + (task.muc_do_uu_tien || '') + '</span></td>'
+                                + '    <td><span class="badge ' + statusClass + '">' + (task.trang_thai || '') + '</span></td>'
+                                + '    <td>'
+                                + '        <div class="action-btns" onclick="event.stopPropagation();">'
+                                + '            <button class="btn btn-sm btn-warning" title="Lưu trữ" onclick="archiveTask(' + "'" + task.id + "'" + ')">'
+                                + '                <i class="fa-solid fa-archive"></i>'
+                                + '            </button>'
+                                + '            <button class="btn btn-sm btn-info" title="Nhắc việc" onclick="remindTask(' + "'" + task.id + "'" + ')">'
+                                + '                <i class="fa-solid fa-bell"></i>'
+                                + '            </button>'
+                                + '            <button class="btn btn-sm btn-danger" title="Xóa" onclick="deleteTask(' + "'" + task.id + "'" + ')">'
+                                + '                <i class="fa-solid fa-trash"></i>'
+                                + '            </button>'
+                                + '        </div>'
+                                + '    </td>'
+                                + '</tr>';
+
+                        tbody.append(row);
+                    });
+                }
+
+                // ====== RENDER CALENDAR VIEW TỪ JSON ======
+                function renderCalendarViewFromJson(tasks) {
+                    if (!calendar) {
+                        initCalendar();
+                    }
+
+                    // Xóa tất cả events hiện tại
+                    calendar.removeAllEvents();
+
+                    if (!tasks || tasks.length === 0) {
+                        showToast('info', 'Không tìm thấy công việc phù hợp');
+                        return;
+                    }
+
+                    // Thêm events mới từ kết quả lọc
+                    tasks.forEach(function (task) {
+                        const eventClass = task.trang_thai === 'Đang thực hiện' ? 'event-in-progress' :
+                                task.trang_thai === 'Đã hoàn thành' ? 'event-completed' :
+                                task.trang_thai === 'Trễ hạn' ? 'event-late' : 'event-not-started';
+
+                        calendar.addEvent({
+                            id: task.id,
+                            title: task.ten_cong_viec || '',
+                            start: task.han_hoan_thanh,
+                            className: eventClass,
+                            extendedProps: {
+                                nguoiGiao: task.nguoi_giao_id || '',
+                                nguoiNhan: task.nguoi_nhan_ten || '',
+                                phongBan: task.phong_ban_id || '',
+                                uuTien: task.muc_do_uu_tien || '',
+                                trangThai: task.trang_thai || '',
+                                moTa: task.mo_ta || '',
+                                taiLieu: task.tai_lieu_cv || '',
+                                fileTaiLieu: task.file_tai_lieu || ''
+                            }
+                        });
+                    });
+                }
 
                 // ====== HÀM TOAST DÙNG CHUNG ======
                 function showToast(type, message) {
@@ -3051,6 +3754,321 @@
                                 console.error(err);
                                 Swal.fire('Lỗi!', 'Không thể kết nối tới server.', 'error');
                             });
+                }
+            </script>
+
+            <script>
+                // ====== VIEW SWITCHING (KANBAN / LIST / CALENDAR) ======
+                let currentView = 'kanban';
+                let calendar = null;
+
+                function switchView(viewType) {
+                    currentView = viewType;
+
+                    // Update button states
+                    document.querySelectorAll('.view-mode-toggle .btn').forEach(btn => btn.classList.remove('active'));
+
+                    if (viewType === 'kanban') {
+                        document.getElementById('viewKanban').classList.add('active');
+                        document.querySelector('.kanban-board').style.display = 'grid';
+                        document.getElementById('listView').classList.remove('active');
+                        document.getElementById('calendarView').classList.remove('active');
+                    } else if (viewType === 'list') {
+                        document.getElementById('viewList').classList.add('active');
+                        document.querySelector('.kanban-board').style.display = 'none';
+                        document.getElementById('listView').classList.add('active');
+                        document.getElementById('calendarView').classList.remove('active');
+                        initTableSorting();
+                    } else if (viewType === 'calendar') {
+                        document.getElementById('viewCalendar').classList.add('active');
+                        document.querySelector('.kanban-board').style.display = 'none';
+                        document.getElementById('listView').classList.remove('active');
+                        document.getElementById('calendarView').classList.add('active');
+                        initCalendar();
+                    }
+                }
+
+                // ====== TABLE SORTING ======
+                function initTableSorting() {
+                    const headers = document.querySelectorAll('.task-table thead th.sortable');
+                    headers.forEach(header => {
+                        header.addEventListener('click', function () {
+                            const sortField = this.dataset.sort;
+                            const currentSort = this.classList.contains('sort-asc') ? 'asc' :
+                                    this.classList.contains('sort-desc') ? 'desc' : 'none';
+
+                            // Remove sort classes from all headers
+                            headers.forEach(h => h.classList.remove('sort-asc', 'sort-desc'));
+
+                            // Apply new sort
+                            let newSort = currentSort === 'none' ? 'asc' : currentSort === 'asc' ? 'desc' : 'asc';
+                            this.classList.add('sort-' + newSort);
+
+                            sortTable(sortField, newSort);
+                        });
+                    });
+                }
+
+                function sortTable(field, order) {
+                    const tbody = document.getElementById('taskListTableBody');
+                    const rows = Array.from(tbody.querySelectorAll('tr'));
+
+                    rows.sort((a, b) => {
+                        let aVal = a.dataset[field.replace(/_/g, '')] || '';
+                        let bVal = b.dataset[field.replace(/_/g, '')] || '';
+
+                        // Handle dates
+                        if (field === 'han_hoan_thanh') {
+                            aVal = new Date(aVal);
+                            bVal = new Date(bVal);
+                        }
+
+                        if (aVal < bVal)
+                            return order === 'asc' ? -1 : 1;
+                        if (aVal > bVal)
+                            return order === 'asc' ? 1 : -1;
+                        return 0;
+                    });
+
+                    rows.forEach(row => tbody.appendChild(row));
+                }
+
+                // ====== FULLCALENDAR INITIALIZATION ======
+                function initCalendar() {
+                    if (calendar) {
+                        calendar.render();
+                        return;
+                    }
+
+                    const calendarEl = document.getElementById('taskCalendar');
+
+                    // Prepare events from task list
+                    const events = [];
+                <% for (Map<String, Object> task : taskList) { 
+                        String eventClass = "event-not-started";
+                        if ("Đang thực hiện".equals(task.get("trang_thai"))) eventClass = "event-in-progress";
+                        else if ("Đã hoàn thành".equals(task.get("trang_thai"))) eventClass = "event-completed";
+                        else if ("Trễ hạn".equals(task.get("trang_thai"))) eventClass = "event-late";
+                %>
+                    events.push({
+                        id: '<%= task.get("id") %>',
+                        title: '<%= task.get("ten_cong_viec") != null ? task.get("ten_cong_viec").toString().replace("'", "\\'") : "" %>',
+                        start: '<%= task.get("han_hoan_thanh") %>',
+                        className: '<%= eventClass %>',
+                        extendedProps: {
+                            nguoiGiao: '<%= task.get("nguoi_giao_id") %>',
+                            nguoiNhan: '<%= task.get("nguoi_nhan_ten") %>',
+                            phongBan: '<%= task.get("phong_ban_id") %>',
+                            uuTien: '<%= task.get("muc_do_uu_tien") %>',
+                            trangThai: '<%= task.get("trang_thai") %>',
+                            moTa: '<%= task.get("mo_ta") != null ? task.get("mo_ta").toString().replace("'", "\\'").replace("\n", " ") : "" %>',
+                            taiLieu: '<%= task.get("tai_lieu_cv") %>',
+                            fileTaiLieu: '<%= task.get("file_tai_lieu") %>'
+                        }
+                    });
+                <% } %>
+
+                    calendar = new FullCalendar.Calendar(calendarEl, {
+                        initialView: 'dayGridMonth',
+                        headerToolbar: {
+                            left: 'prev,next today',
+                            center: 'title',
+                            right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                        },
+                        locale: 'vi',
+                        buttonText: {
+                            today: 'Hôm nay',
+                            month: 'Tháng',
+                            week: 'Tuần',
+                            day: 'Ngày'
+                        },
+                        events: events,
+                        editable: true,
+                        eventClick: function (info) {
+                            // Open task detail modal
+                            const event = info.event;
+                            const props = event.extendedProps;
+
+                            const modal = document.getElementById('modalTaskDetail');
+                            const button = document.createElement('button');
+                            button.setAttribute('data-id', event.id);
+                            button.setAttribute('data-ten', event.title);
+                            button.setAttribute('data-mo-ta', props.moTa);
+                            button.setAttribute('data-han', event.startStr);
+                            button.setAttribute('data-uu-tien', props.uuTien);
+                            button.setAttribute('data-ten_nguoi_giao', props.nguoiGiao);
+                            button.setAttribute('data-ten_nguoi_nhan', props.nguoiNhan);
+                            button.setAttribute('data-ten_phong_ban', props.phongBan);
+                            button.setAttribute('data-trang-thai', props.trangThai);
+                            button.setAttribute('data-tai_lieu_cv', props.taiLieu);
+                            button.setAttribute('data-file_tai_lieu', props.fileTaiLieu);
+
+                            const modalEvent = new Event('show.bs.modal');
+                            modalEvent.relatedTarget = button;
+                            modal.dispatchEvent(modalEvent);
+
+                            new bootstrap.Modal(modal).show();
+                        },
+                        eventDrop: function (info) {
+                            // Update deadline when event is dragged
+                            const newDate = info.event.start.toISOString().split('T')[0];
+                            updateTaskDeadline(info.event.id, newDate);
+                        },
+                        eventResize: function (info) {
+                            const newDate = info.event.end ? info.event.end.toISOString().split('T')[0] :
+                                    info.event.start.toISOString().split('T')[0];
+                            updateTaskDeadline(info.event.id, newDate);
+                        }
+                    });
+
+                    calendar.render();
+                }
+
+                function updateTaskDeadline(taskId, newDeadline) {
+                    fetch('./suaCongviec', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                        body: new URLSearchParams({
+                            task_id: taskId,
+                            han_hoan_thanh: newDeadline,
+                            action: 'updateDeadline'
+                        })
+                    })
+                            .then(res => res.json())
+                            .then(data => {
+                                if (data.success) {
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Đã cập nhật!',
+                                        text: 'Deadline đã được thay đổi',
+                                        timer: 1500,
+                                        showConfirmButton: false
+                                    });
+                                } else {
+                                    Swal.fire('Lỗi!', data.message || 'Cập nhật thất bại', 'error');
+                                    calendar.refetchEvents();
+                                }
+                            })
+                            .catch(err => {
+                                console.error(err);
+                                Swal.fire('Lỗi!', 'Không thể kết nối server', 'error');
+                                calendar.refetchEvents();
+                            });
+                }
+
+                // Initialize default view on page load
+                document.addEventListener('DOMContentLoaded', function () {
+                    switchView('kanban');
+                });
+
+                // ====== XỬ LÝ LOAD LỊCH SỬ CÔNG VIỆC ======
+                let currentTaskIdForHistory = null;
+                let historyLoaded = false;
+
+                // Lắng nghe sự kiện mở modal để lấy task ID
+                document.addEventListener('click', function (e) {
+                    const taskContent = e.target.closest('.task-content');
+                    if (taskContent) {
+                        currentTaskIdForHistory = taskContent.dataset.id;
+                        historyLoaded = false; // Reset khi mở modal mới
+                    }
+                });
+
+                // Lắng nghe sự kiện click vào tab Lịch sử
+                document.addEventListener('click', function (e) {
+                    const historyTab = e.target.closest('[data-bs-target="#tabTaskHistory"]');
+                    if (historyTab && !historyLoaded && currentTaskIdForHistory) {
+                        loadTaskHistory(currentTaskIdForHistory);
+                    }
+                });
+
+                // Hàm load lịch sử công việc
+                function loadTaskHistory(taskId) {
+                    const timeline = document.getElementById('taskHistoryTimeline');
+                    if (!timeline)
+                        return;
+
+                    // Hiển thị loading
+                    timeline.innerHTML = `
+            <div class="history-empty">
+                <i class="fa-solid fa-spinner fa-spin"></i>
+                <p>Đang tải lịch sử công việc...</p>
+            </div>
+        `;
+
+                    // Gọi API
+                    fetch('./apiLichSuCongViec?taskId=' + taskId)
+                            .then(res => res.json())
+                            .then(data => {
+                                historyLoaded = true;
+                                renderTaskHistory(data);
+                            })
+                            .catch(err => {
+                                console.error('Lỗi khi tải lịch sử:', err);
+                                timeline.innerHTML = `
+                <div class="history-empty">
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                    <p>Không thể tải lịch sử công việc. Vui lòng thử lại.</p>
+                </div>
+            `;
+                            });
+                }
+
+                // Hàm render lịch sử công việc
+                function renderTaskHistory(historyData) {
+                    const timeline = document.getElementById('taskHistoryTimeline');
+                    if (!timeline)
+                        return;
+
+                    // Nếu không có dữ liệu
+                    if (!historyData || historyData.length === 0) {
+                        timeline.innerHTML = `
+            <div class="history-empty">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+                <p>Chưa có lịch sử thay đổi nào</p>
+            </div>
+        `;
+                        return;
+                    }
+
+                    // Render danh sách lịch sử
+                    let html = '';
+                    historyData.forEach((item, index) => {
+                        // Xử lý avatar
+                        const avatarSrc = item.anh_dai_dien && item.anh_dai_dien.trim() !== ''
+                                ? item.anh_dai_dien
+                                : 'https://ui-avatars.com/api/?name=' + encodeURIComponent(item.ten_nhan_vien || 'User') + '&background=007bff&color=fff';
+
+                        // Format thời gian
+                        let timeStr = '';
+                        if (item.thoi_gian) {
+                            const date = new Date(item.thoi_gian);
+                            const day = String(date.getDate()).padStart(2, '0');
+                            const month = String(date.getMonth() + 1).padStart(2, '0');
+                            const year = date.getFullYear();
+                            const hours = String(date.getHours()).padStart(2, '0');
+                            const minutes = String(date.getMinutes()).padStart(2, '0');
+                            timeStr = day + '/' + month + '/' + year + ' ' + hours + ':' + minutes;
+                        }
+
+                        html += `
+            <div class="history-item" style="animation-delay: ` + (index * 0.1) + `s">
+                <div class="history-number">` + (index + 1) + `</div>
+                <div class="history-avatar">
+                    <img src="` + avatarSrc + `" alt="Avatar" onerror="this.src='https://ui-avatars.com/api/?name=User&background=007bff&color=fff'">
+                </div>
+                <div class="history-content">
+                    <div class="history-user">` + (item.ten_nhan_vien || 'Không rõ') + `</div>
+                    <div class="history-description">` + (item.mo_ta_thay_doi || '') + `</div>
+                    <div class="history-time">
+                        <i class="fa-solid fa-clock"></i> ` + timeStr + `
+                    </div>
+                </div>
+            </div>
+        `;
+                    });
+
+                    timeline.innerHTML = html;
                 }
             </script>
     </body>

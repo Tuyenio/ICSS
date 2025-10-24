@@ -12,6 +12,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -29,6 +30,11 @@ public class xoaQuytrinh extends HttpServlet {
             try {
                 KNCSDL db = new KNCSDL();
                 int stepId = Integer.parseInt(stepIdStr);
+                
+                // Lấy thông tin tiến độ trước khi xóa
+                Map<String, Object> stepInfo = db.getStepById(stepId);
+                String tenBuoc = stepInfo != null ? (String) stepInfo.get("ten_buoc") : "Tiến độ";
+                
                 int congViecId = db.getCongViecIdByBuocId(stepId);
                 String tencv = db.getTenCongViecById(congViecId);
                 List<Integer> danhSachIdNhan = db.getDanhSachNguoiNhanId(congViecId);
@@ -40,6 +46,20 @@ public class xoaQuytrinh extends HttpServlet {
                     for (int nhanId : danhSachIdNhan) {
                         db.insertThongBao(nhanId, tieuDeTB, noiDungTB, "Cập nhật");
                     }
+                    
+                    // Ghi log lịch sử CHI TIẾT
+                    jakarta.servlet.http.HttpSession session = request.getSession(false);
+                    int userId = 0;
+                    if (session != null && session.getAttribute("userId") != null) {
+                        try {
+                            userId = Integer.parseInt(session.getAttribute("userId").toString());
+                        } catch (Exception e) {}
+                    }
+                    if (userId > 0) {
+                        String logMsg = "🗑️ Xóa tiến độ: '" + tenBuoc + "'";
+                        db.themLichSuCongViec(congViecId, userId, logMsg);
+                    }
+                    
                     response.setStatus(HttpServletResponse.SC_OK);
                 } else {
                     response.setStatus(HttpServletResponse.SC_NOT_FOUND); // Không tìm thấy để xóa
@@ -72,6 +92,31 @@ public class xoaQuytrinh extends HttpServlet {
                     for (int nhanId : danhSachIdNhan) {
                         db.insertThongBao(nhanId, tieuDeTB, noiDungTB, "Cập nhật");
                     }
+                    
+                    // Ghi log lịch sử CHI TIẾT
+                    jakarta.servlet.http.HttpSession session = request.getSession(false);
+                    int userId = 0;
+                    if (session != null && session.getAttribute("userId") != null) {
+                        try {
+                            userId = Integer.parseInt(session.getAttribute("userId").toString());
+                        } catch (Exception e) {}
+                    }
+                    if (userId > 0) {
+                        StringBuilder logMsg = new StringBuilder("➕ Thêm tiến độ mới: '" + tenBuoc + "'");
+                        logMsg.append(" | Trạng thái: ").append(trangThai);
+                        if (ngayBatDau != null && !ngayBatDau.isEmpty()) {
+                            logMsg.append(" | Ngày bắt đầu: ").append(ngayBatDau);
+                        }
+                        if (ngayKetThuc != null && !ngayKetThuc.isEmpty()) {
+                            logMsg.append(" | Deadline: ").append(ngayKetThuc);
+                        }
+                        if (moTa != null && !moTa.isEmpty()) {
+                            String moTaShort = moTa.length() > 50 ? moTa.substring(0, 50) + "..." : moTa;
+                            logMsg.append(" | Mô tả: \"").append(moTaShort).append("\"");
+                        }
+                        db.themLichSuCongViec(congViecId, userId, logMsg.toString());
+                    }
+                    
                     response.setStatus(HttpServletResponse.SC_OK);
                     db.close();
                 } else {

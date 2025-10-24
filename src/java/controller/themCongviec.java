@@ -94,6 +94,22 @@ public class themCongviec extends HttpServlet {
                     }
                 }
             }
+            
+            // === 4. Ghi log lịch sử tạo công việc ===
+            HttpSession session = request.getSession(false);
+            int userId = 0;
+            if (session != null && session.getAttribute("userId") != null) {
+                try {
+                    userId = Integer.parseInt(session.getAttribute("userId").toString());
+                } catch (Exception e) {}
+            }
+            if (userId > 0) {
+                String logMsg = "🆕 Tạo mới công việc: '" + ten + "' | Deadline: " + han + " | Độ ưu tiên: " + uuTien;
+                if (dsNguoiNhan != null && !dsNguoiNhan.trim().isEmpty()) {
+                    logMsg += " | Người nhận: " + dsNguoiNhan;
+                }
+                db.themLichSuCongViec(taskId, userId, logMsg);
+            }
 
             out.print("{\"success\": true}");
         } catch (Exception e) {

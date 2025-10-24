@@ -80,6 +80,21 @@ public class apiDanhgiaCV extends HttpServlet {
                 for (int nhanId : danhSachNguoiNhan) {
                     db.insertThongBao(nhanId, tieuDeTB, noiDungTB, "Đánh giá");
                 }
+                
+                // Ghi log lịch sử
+                HttpSession session = req.getSession(false);
+                int userId = 0;
+                if (session != null && session.getAttribute("userId") != null) {
+                    try {
+                        userId = Integer.parseInt(session.getAttribute("userId").toString());
+                    } catch (Exception e) {}
+                }
+                if (userId > 0) {
+                    // Rút gọn nhận xét nếu quá dài
+                    String nhanXetShort = nhanXet.length() > 50 ? nhanXet.substring(0, 50) + "..." : nhanXet;
+                    String logMsg = "⭐ Thêm đánh giá: \"" + nhanXetShort + "\"";
+                    db.themLichSuCongViec(congViecId, userId, logMsg);
+                }
 
                 out.print("{\"success\":true}");
             } else {
