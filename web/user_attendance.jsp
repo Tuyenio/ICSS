@@ -43,8 +43,8 @@
         namHienTai = String.valueOf(namInt);
     }
 %>
-    <!DOCTYPE html>
-    <html lang="vi">
+<!DOCTYPE html>
+<html lang="vi">
 
     <head>
         <meta charset="UTF-8">
@@ -229,8 +229,12 @@
             }
 
             @keyframes spin {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
+                0% {
+                    transform: rotate(0deg);
+                }
+                100% {
+                    transform: rotate(360deg);
+                }
             }
 
             /* Responsive cho mobile */
@@ -239,7 +243,7 @@
                     font-size: 0.9rem;
                     padding: 8px 16px;
                 }
-                
+
                 .badge {
                     font-size: 0.75rem;
                     padding: 4px 8px;
@@ -303,302 +307,153 @@
         </div>
         <%@ include file="sidebarnv.jsp" %>
         <%@ include file="user_header.jsp" %>
-            <div class="main-content">
-                <!-- Thống kê tổng quan -->
-                <div class="row mb-4">
-                    <div class="col-md-3">
-                        <div class="stat-card">
-                            <h5><%=thongKeChamCong.get("tong_ngay_cham") != null ? thongKeChamCong.get("tong_ngay_cham") : 0%></h5>
-                            <p>Ngày đã chấm công</p>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-                            <h5><%=thongKeChamCong.get("ngay_di_tre") != null ? thongKeChamCong.get("ngay_di_tre") : 0%></h5>
-                            <p>Ngày đi trễ</p>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
-                            <h5><%=thongKeChamCong.get("tong_gio_lam") != null ? String.format("%.1f", thongKeChamCong.get("tong_gio_lam")) : "0.0"%></h5>
-                            <p>Tổng giờ làm việc</p>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="stat-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
-                            <h5><%=thongKeChamCong.get("ngay_du_cong") != null ? thongKeChamCong.get("ngay_du_cong") : 0%></h5>
-                            <p>Ngày đủ công</p>
-                        </div>
+        <div class="main-content">
+            <!-- Thống kê tổng quan -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <h5><%=thongKeChamCong.get("tong_ngay_cham") != null ? thongKeChamCong.get("tong_ngay_cham") : 0%></h5>
+                        <p>Ngày đã chấm công</p>
                     </div>
                 </div>
-
-                <div class="main-box mb-3">
-                    <h3 class="mb-4"><i class="fa-solid fa-calendar-check me-2"></i>Chấm công tháng <%=thangHienTai%>/<%=namHienTai%></h3>
-                    
-                    <!-- Nút chấm công và trạng thái -->
-                    <div class="row mb-4">
-                        <div class="col-md-6">
-                            <div class="d-flex align-items-center">
-                                <button class="btn btn-success me-2" id="btnCheckIn" 
-                                        <%=chamCongHomNay.get("da_check_in") != null && (Boolean)chamCongHomNay.get("da_check_in") ? "disabled" : ""%>>
-                                    <i class="fa-solid fa-sign-in-alt"></i> Check-in
-                                </button>
-                                <button class="btn btn-danger me-3" id="btnCheckOut"
-                                        <%=chamCongHomNay.get("da_check_out") != null && (Boolean)chamCongHomNay.get("da_check_out") ? "disabled" : ""%>>
-                                    <i class="fa-solid fa-sign-out-alt"></i> Check-out
-                                </button>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <!-- Hiển thị trạng thái hôm nay -->
-                            <div class="d-flex align-items-center justify-content-end">
-                                <div class="me-3">
-                                    <strong>Trạng thái hôm nay:</strong>
-                                </div>
-                                <div>
-                                    <% if (chamCongHomNay.get("check_in") != null) { %>
-                                        <span class="badge bg-success me-2">
-                                            <i class="fa-solid fa-clock"></i> Check-in: <%=chamCongHomNay.get("check_in")%>
-                                        </span>
-                                    <% } else { %>
-                                        <span class="badge bg-secondary me-2">
-                                            <i class="fa-solid fa-clock"></i> Chưa check-in
-                                        </span>
-                                    <% } %>
-                                    
-                                    <% if (chamCongHomNay.get("check_out") != null) { %>
-                                        <span class="badge bg-danger">
-                                            <i class="fa-solid fa-clock"></i> Check-out: <%=chamCongHomNay.get("check_out")%>
-                                        </span>
-                                    <% } else { %>
-                                        <span class="badge bg-secondary">
-                                            <i class="fa-solid fa-clock"></i> Chưa check-out
-                                        </span>
-                                    <% } %>
-                                </div>
-                            </div>
-                        </div>
+                <div class="col-md-3">
+                    <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                        <h5><%=thongKeChamCong.get("ngay_di_tre") != null ? thongKeChamCong.get("ngay_di_tre") : 0%></h5>
+                        <p>Ngày đi trễ</p>
                     </div>
-
-                    <!-- Filter tháng/năm -->
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <div class="d-flex gap-2">
-                                <select class="form-select" id="filterThang" style="width: 120px;">
-                                    <% for(int i = 1; i <= 12; i++) { %>
-                                        <option value="<%=i%>" <%=i == thangInt ? "selected" : ""%>>Tháng <%=i%></option>
-                                    <% } %>
-                                </select>
-                                <select class="form-select" id="filterNam" style="width: 120px;">
-                                    <% 
-                                        int currentYear = Calendar.getInstance().get(Calendar.YEAR);
-                                        for(int year = currentYear - 2; year <= currentYear + 1; year++) { 
-                                    %>
-                                        <option value="<%=year%>" <%=year == namInt ? "selected" : ""%>><%=year%></option>
-                                    <% } %>
-                                </select>
-                                <button class="btn btn-primary" onclick="filterByMonth()">
-                                    <i class="fa-solid fa-filter"></i> Lọc
-                                </button>
-                            </div>
-                        </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                        <h5><%=thongKeChamCong.get("tong_gio_lam") != null ? String.format("%.1f", thongKeChamCong.get("tong_gio_lam")) : "0.0"%></h5>
+                        <p>Tổng giờ làm việc</p>
                     </div>
-                    
-                    <div class="table-responsive">
-                        <table class="table table-bordered align-middle table-hover">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Ngày</th>
-                                    <th>Check-in</th>
-                                    <th>Check-out</th>
-                                    <th>Số giờ</th>
-                                    <th>Trạng thái</th>
-                                </tr>
-                            </thead>
-                            <tbody id="attendanceTableBody">
-                                <% if (lichSuChamCong != null && !lichSuChamCong.isEmpty()) { %>
-                                    <% for (Map<String, Object> record : lichSuChamCong) { %>
-                                        <tr>
-                                            <td><%=record.get("ngay")%></td>
-                                            <td><%=record.get("check_in") != null ? record.get("check_in") : "-"%></td>
-                                            <td><%=record.get("check_out") != null ? record.get("check_out") : "-"%></td>
-                                            <td><%=record.get("so_gio_lam") != null ? String.format("%.1f", record.get("so_gio_lam")) : "0"%> giờ</td>
-                                            <td>
-                                                <% 
-                                                    String trangThai = (String) record.get("trang_thai");
-                                                    String badgeClass = "bg-secondary";
-                                                    if ("Đủ công".equals(trangThai) || "Đúng giờ".equals(trangThai)) badgeClass = "bg-success";
-                                                    else if ("Đi trễ".equals(trangThai)) badgeClass = "bg-warning";
-                                                    else if ("Vắng mặt".equals(trangThai)) badgeClass = "bg-danger";
-                                                    else if ("Thiếu giờ".equals(trangThai)) badgeClass = "bg-info";
-                                                %>
-                                                <span class="badge <%=badgeClass%>"><%=trangThai%></span>
-                                            </td>
-                                        </tr>
-                                    <% } %>
-                                <% } else { %>
-                                    <tr>
-                                        <td colspan="5" class="text-center text-muted">
-                                            <i class="fa-solid fa-inbox"></i> Chưa có dữ liệu chấm công tháng này
-                                        </td>
-                                    </tr>
-                                <% } %>
-                            </tbody>
-                        </table>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                        <h5><%=thongKeChamCong.get("ngay_du_cong") != null ? thongKeChamCong.get("ngay_du_cong") : 0%></h5>
+                        <p>Ngày đủ công</p>
                     </div>
                 </div>
             </div>
 
-            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-            <script>
-                $(document).ready(function() {
-                    // Xử lý check-in
-                    $('#btnCheckIn').click(function() {
-                        Swal.fire({
-                            title: 'Xác nhận check-in?',
-                            text: 'Bạn có chắc chắn muốn check-in không?',
-                            icon: 'question',
-                            showCancelButton: true,
-                            confirmButtonColor: '#3085d6',
-                            cancelButtonColor: '#d33',
-                            confirmButtonText: 'Có, check-in!',
-                            cancelButtonText: 'Hủy'
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                performCheckIn();
-                            }
-                        });
-                    });
+            <div class="main-box mb-3">
+                <h3 class="mb-4"><i class="fa-solid fa-calendar-check me-2"></i>Chấm công tháng <%=thangHienTai%>/<%=namHienTai%></h3>
 
-                    // Xử lý check-out
-                    $('#btnCheckOut').click(function() {
-                        Swal.fire({
-                            title: 'Xác nhận check-out?',
-                            text: 'Bạn có chắc chắn muốn check-out không?',
-                            icon: 'question',
-                            showCancelButton: true,
-                            confirmButtonColor: '#3085d6',
-                            cancelButtonColor: '#d33',
-                            confirmButtonText: 'Có, check-out!',
-                            cancelButtonText: 'Hủy'
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                performCheckOut();
-                            }
-                        });
-                    });
-                });
+                <!-- Nút chấm công và trạng thái -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center">
+                            <button class="btn btn-success me-2" id="btnCheckIn" 
+                                    <%=chamCongHomNay.get("da_check_in") != null && (Boolean)chamCongHomNay.get("da_check_in") ? "disabled" : ""%>>
+                                <i class="fa-solid fa-sign-in-alt"></i> Check-in
+                            </button>
+                            <button class="btn btn-danger me-3" id="btnCheckOut"
+                                    <%=chamCongHomNay.get("da_check_out") != null && (Boolean)chamCongHomNay.get("da_check_out") ? "disabled" : ""%>>
+                                <i class="fa-solid fa-sign-out-alt"></i> Check-out
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <!-- Hiển thị trạng thái hôm nay -->
+                        <div class="d-flex align-items-center justify-content-end">
+                            <div class="me-3">
+                                <strong>Trạng thái hôm nay:</strong>
+                            </div>
+                            <div>
+                                <% if (chamCongHomNay.get("check_in") != null) { %>
+                                <span class="badge bg-success me-2">
+                                    <i class="fa-solid fa-clock"></i> Check-in: <%=chamCongHomNay.get("check_in")%>
+                                </span>
+                                <% } else { %>
+                                <span class="badge bg-secondary me-2">
+                                    <i class="fa-solid fa-clock"></i> Chưa check-in
+                                </span>
+                                <% } %>
 
-                function performCheckIn() {
-                    // Hiển thị loading
-                    showLoading();
-                    
-                    // Disable nút để tránh click nhiều lần
-                    $('#btnCheckIn').prop('disabled', true);
-                    
-                    $.ajax({
-                        url: './userChamCong',
-                        type: 'POST',
-                        data: {action: 'checkin'},
-                        dataType: 'json',
-                        success: function(response) {
-                            hideLoading();
-                            if (response.success) {
-                                Swal.fire({
-                                    icon: 'success',
-                                    title: 'Check-in thành công!',
-                                    text: response.message,
-                                    showConfirmButton: false,
-                                    timer: 2000
-                                }).then(() => {
-                                    // Reload trang để cập nhật dữ liệu mới
-                                    location.reload();
-                                });
-                            } else {
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Lỗi check-in!',
-                                    text: response.message
-                                });
-                                $('#btnCheckIn').prop('disabled', false);
-                            }
-                        },
-                        error: function(xhr, status, error) {
-                            hideLoading();
-                            console.error('Error:', error);
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Lỗi kết nối!',
-                                text: 'Không thể kết nối đến server. Vui lòng thử lại!'
-                            });
-                            $('#btnCheckIn').prop('disabled', false);
-                        }
-                    });
-                }
+                                <% if (chamCongHomNay.get("check_out") != null) { %>
+                                <span class="badge bg-danger">
+                                    <i class="fa-solid fa-clock"></i> Check-out: <%=chamCongHomNay.get("check_out")%>
+                                </span>
+                                <% } else { %>
+                                <span class="badge bg-secondary">
+                                    <i class="fa-solid fa-clock"></i> Chưa check-out
+                                </span>
+                                <% } %>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-                function performCheckOut() {
-                    // Hiển thị loading
-                    showLoading();
-                    
-                    // Disable nút để tránh click nhiều lần
-                    $('#btnCheckOut').prop('disabled', true);
-                    
-                    $.ajax({
-                        url: './userChamCong',
-                        type: 'POST',
-                        data: {action: 'checkout'},
-                        dataType: 'json',
-                        success: function(response) {
-                            hideLoading();
-                            if (response.success) {
-                                Swal.fire({
-                                    icon: 'success',
-                                    title: 'Check-out thành công!',
-                                    text: response.message,
-                                    showConfirmButton: false,
-                                    timer: 2000
-                                }).then(() => {
-                                    // Reload trang để cập nhật dữ liệu mới
-                                    location.reload();
-                                });
-                            } else {
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Lỗi check-out!',
-                                    text: response.message
-                                });
-                                $('#btnCheckOut').prop('disabled', false);
-                            }
-                        },
-                        error: function(xhr, status, error) {
-                            hideLoading();
-                            console.error('Error:', error);
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Lỗi kết nối!',
-                                text: 'Không thể kết nối đến server. Vui lòng thử lại!'
-                            });
-                            $('#btnCheckOut').prop('disabled', false);
-                        }
-                    });
-                }
+                <!-- Filter tháng/năm -->
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="d-flex gap-2">
+                            <select class="form-select" id="filterThang" style="width: 120px;">
+                                <% for(int i = 1; i <= 12; i++) { %>
+                                <option value="<%=i%>" <%=i == thangInt ? "selected" : ""%>>Tháng <%=i%></option>
+                                <% } %>
+                            </select>
+                            <select class="form-select" id="filterNam" style="width: 120px;">
+                                <% 
+                                    int currentYear = Calendar.getInstance().get(Calendar.YEAR);
+                                    for(int year = currentYear - 2; year <= currentYear + 1; year++) { 
+                                %>
+                                <option value="<%=year%>" <%=year == namInt ? "selected" : ""%>><%=year%></option>
+                                <% } %>
+                            </select>
+                            <button class="btn btn-primary" onclick="filterByMonth()">
+                                <i class="fa-solid fa-filter"></i> Lọc
+                            </button>
+                        </div>
+                    </div>
+                </div>
 
-                // Hàm hiển thị/ẩn loading
-                function showLoading() {
-                    $('#loadingOverlay').show();
-                }
+                <div class="table-responsive">
+                    <table class="table table-bordered align-middle table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Ngày</th>
+                                <th>Check-in</th>
+                                <th>Check-out</th>
+                                <th>Số giờ</th>
+                                <th>Trạng thái</th>
+                            </tr>
+                        </thead>
+                        <tbody id="attendanceTableBody">
+                            <% if (lichSuChamCong != null && !lichSuChamCong.isEmpty()) { %>
+                            <% for (Map<String, Object> record : lichSuChamCong) { %>
+                            <tr>
+                                <td><%=record.get("ngay")%></td>
+                                <td><%=record.get("check_in") != null ? record.get("check_in") : "-"%></td>
+                                <td><%=record.get("check_out") != null ? record.get("check_out") : "-"%></td>
+                                <td><%=record.get("so_gio_lam") != null ? String.format("%.1f", record.get("so_gio_lam")) : "0"%> giờ</td>
+                                <td>
+                                    <% 
+                                        String trangThai = (String) record.get("trang_thai");
+                                        String badgeClass = "bg-secondary";
+                                        if ("Đủ công".equals(trangThai) || "Đúng giờ".equals(trangThai)) badgeClass = "bg-success";
+                                        else if ("Đi trễ".equals(trangThai)) badgeClass = "bg-warning";
+                                        else if ("Vắng mặt".equals(trangThai)) badgeClass = "bg-danger";
+                                        else if ("Thiếu giờ".equals(trangThai)) badgeClass = "bg-info";
+                                    %>
+                                    <span class="badge <%=badgeClass%>"><%=trangThai%></span>
+                                </td>
+                            </tr>
+                            <% } %>
+                            <% } else { %>
+                            <tr>
+                                <td colspan="5" class="text-center text-muted">
+                                    <i class="fa-solid fa-inbox"></i> Chưa có dữ liệu chấm công tháng này
+                                </td>
+                            </tr>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
 
-                function hideLoading() {
-                    $('#loadingOverlay').hide();
-                }
-
-                // Hàm lọc theo tháng
-                function filterByMonth() {
-                    const thang = document.getElementById('filterThang').value;
-                    const nam = document.getElementById('filterNam').value;
-                    window.location.href = './userChamCong?thang=' + thang + '&nam=' + nam;
-                }
-            </script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="<%= request.getContextPath() %>/scripts/user_attendance.obf.js?v=20251105"></script>
     </body>
-
-    </html>
+</html>
