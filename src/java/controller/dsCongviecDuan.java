@@ -76,7 +76,7 @@ public class dsCongviecDuan extends HttpServlet {
             req.setAttribute("selectedTinhTrang", tinhTrang);
 
             // 🟢 Forward theo chức vụ
-            if ("Nhân viên".equalsIgnoreCase(chucVu)) {
+            if ("Nhân viên".equalsIgnoreCase(chucVu) || "Thực tập sinh".equalsIgnoreCase(chucVu)) {
                 req.getRequestDispatcher("project_tasknv.jsp").forward(req, resp);
             } else {
                 req.getRequestDispatcher("project_task.jsp").forward(req, resp);

@@ -1,49 +1,49 @@
 {
-    "name": "ICSS Smart Dashboard",
-    "short_name": "ICSS",
-    "description": "Nền tảng quản lý công việc, dự án và nhân sự nội bộ ICSS.",
-    "start_url": "/ICSS/login.jsp",
-    "scope": "/ICSS/",
-    "display": "standalone",
-    "orientation": "portrait",
-    "background_color": "#ffffff",
-    "theme_color": "#1a73e8",
-    "icons": [
+  "name": "ICSS Smart Dashboard",
+  "short_name": "ICSS",
+  "description": "Nền tảng quản lý công việc, dự án và nhân sự nội bộ ICSS.",
+  "start_url": "/ICSS/",
+  "scope": "/ICSS/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#ffffff",
+  "theme_color": "#1a73e8",
+  "icons": [
+    {
+      "src": "icons/logo192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/logo512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Đăng nhập ICSS",
+      "short_name": "Login",
+      "url": "/ICSS/login.jsp",
+      "icons": [
         {
-            "src": "icons/logo192.png",
-            "sizes": "192x192",
-            "type": "image/png"
-        },
-        {
-            "src": "icons/logo512.png",
-            "sizes": "512x512",
-            "type": "image/png"
+          "src": "icons/logo192.png",
+          "sizes": "192x192",
+          "type": "image/png"
         }
-    ],
-    "shortcuts": [
+      ]
+    },
+    {
+      "name": "Bảng điều khiển",
+      "short_name": "Dashboard",
+      "url": "/ICSS/index.jsp",
+      "icons": [
         {
-            "name": "Đăng nhập ICSS",
-            "short_name": "Login",
-            "url": "/ICSS/login.jsp",
-            "icons": [
-                {
-                    "src": "icons/logo192.png",
-                    "sizes": "192x192",
-                    "type": "image/png"
-                }
-            ]
-        },
-        {
-            "name": "Bảng điều khiển",
-            "short_name": "Dashboard",
-            "url": "/ICSS/index.jsp",
-            "icons": [
-                {
-                    "src": "icons/logo512.png",
-                    "sizes": "512x512",
-                    "type": "image/png"
-                }
-            ]
+          "src": "icons/logo512.png",
+          "sizes": "512x512",
+          "type": "image/png"
         }
-    ]
+      ]
+    }
+  ]
 }

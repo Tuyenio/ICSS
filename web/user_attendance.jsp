@@ -427,7 +427,7 @@
                                                 <% 
                                                     String trangThai = (String) record.get("trang_thai");
                                                     String badgeClass = "bg-secondary";
-                                                    if ("Đủ công".equals(trangThai)) badgeClass = "bg-success";
+                                                    if ("Đủ công".equals(trangThai) || "Đúng giờ".equals(trangThai)) badgeClass = "bg-success";
                                                     else if ("Đi trễ".equals(trangThai)) badgeClass = "bg-warning";
                                                     else if ("Vắng mặt".equals(trangThai)) badgeClass = "bg-danger";
                                                     else if ("Thiếu giờ".equals(trangThai)) badgeClass = "bg-info";

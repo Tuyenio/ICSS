@@ -384,7 +384,7 @@
                                             String badgeClass = "bg-secondary";
                                             if ("Đi trễ".equals(trangThai)) badgeClass = "bg-warning text-dark";
                                             else if ("Vắng".equals(trangThai)) badgeClass = "bg-danger";
-                                            else if ("Đủ công".equals(trangThai)) badgeClass = "bg-success";
+                                            else if ("Đủ công".equals(trangThai) || "Đúng giờ".equals(trangThai) ) badgeClass = "bg-success";
                                             %>
                                             <span class="badge <%= badgeClass %> badge-status"><%= trangThai %></span>
                                         </td>

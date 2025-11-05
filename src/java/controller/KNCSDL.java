@@ -552,13 +552,14 @@ public class KNCSDL {
 
     /**
      * Lấy thông tin chi tiết tiến độ theo ID
+     *
      * @param stepId ID của tiến độ
      * @return Map chứa thông tin tiến độ
      */
     public Map<String, Object> getStepById(int stepId) throws SQLException {
-        String sql = "SELECT id, cong_viec_id, ten_buoc, mo_ta, trang_thai, ngay_bat_dau, ngay_ket_thuc " +
-                     "FROM cong_viec_quy_trinh WHERE id = ?";
-        
+        String sql = "SELECT id, cong_viec_id, ten_buoc, mo_ta, trang_thai, ngay_bat_dau, ngay_ket_thuc "
+                + "FROM cong_viec_quy_trinh WHERE id = ?";
+
         try (PreparedStatement ps = cn.prepareStatement(sql)) {
             ps.setInt(1, stepId);
             try (ResultSet rs = ps.executeQuery()) {
@@ -577,7 +578,7 @@ public class KNCSDL {
         }
         return null;
     }
-    
+
     public boolean updateStepById(int stepId, String name, String desc,
             String status, String start, String end) throws SQLException {
         String sql = "UPDATE cong_viec_quy_trinh SET ten_buoc = ?, mo_ta = ?, trang_thai = ?, ngay_bat_dau = ?, ngay_ket_thuc = ? WHERE id = ?";
@@ -860,7 +861,7 @@ public class KNCSDL {
             sql.append(" AND cv.trang_thai = ? ");
             params.add(trangThai);
         }
-        
+
         if (tinhtrang != null && !tinhtrang.isEmpty()) {
             sql.append(" AND cv.tinh_trang = ? ");
             params.add(tinhtrang);
@@ -939,7 +940,7 @@ public class KNCSDL {
             sql.append(" AND ng2.email = ? ");
             params.add(emailNhanVien.trim());
         }
-        
+
         if (tinhtrang != null && !tinhtrang.isEmpty()) {
             sql.append(" AND cv.tinh_trang = ? ");
             params.add(tinhtrang);
@@ -1032,7 +1033,7 @@ public class KNCSDL {
             sql.append(" AND cv.trang_thai = ? ");
             params.add(trangThai.trim());
         }
-        
+
         if (tinhtrang != null && !tinhtrang.isEmpty()) {
             sql.append(" AND cv.tinh_trang = ? ");
             params.add(tinhtrang);
@@ -1703,20 +1704,32 @@ public class KNCSDL {
     public List<Map<String, Object>> getDanhSachChamCong(String thang, String nam, String phongBan, String keyword, String employeeId) throws SQLException {
         List<Map<String, Object>> danhSach = new ArrayList<>();
         StringBuilder sql = new StringBuilder();
+
         sql.append("SELECT cc.id, cc.nhan_vien_id, cc.ngay, cc.check_in, cc.check_out, ");
         sql.append("nv.ho_ten, nv.avatar_url, nv.ngay_vao_lam, nv.luong_co_ban, ");
         sql.append("pb.ten_phong, ");
+
+        // 🧮 Tính số giờ làm chính xác theo phút (giờ.lẻ)
         sql.append("CASE ");
-        sql.append("  WHEN cc.check_in IS NULL THEN 0 ");
-        sql.append("  WHEN cc.check_out IS NULL THEN 0 ");
-        sql.append("  ELSE TIMESTAMPDIFF(HOUR, cc.check_in, cc.check_out) ");
-        sql.append("END as so_gio_lam, ");
+        sql.append("  WHEN cc.check_in IS NULL OR cc.check_out IS NULL THEN 0 ");
+        sql.append("  ELSE ROUND(TIMESTAMPDIFF(MINUTE, cc.check_in, cc.check_out) / 60, 2) ");
+        sql.append("END AS so_gio_lam, ");
+
+        // 🧠 Phân loại trạng thái chi tiết hơn
         sql.append("CASE ");
         sql.append("  WHEN cc.check_in IS NULL THEN 'Vắng' ");
-        sql.append("  WHEN cc.check_in > '08:45:00' THEN 'Đi trễ' ");
-        sql.append("  WHEN TIMESTAMPDIFF(HOUR, cc.check_in, cc.check_out) >= 7.5 THEN 'Đủ công' ");
-        sql.append("  ELSE 'Thiếu giờ' ");
-        sql.append("END as trang_thai ");
+        // ✅ Nếu có check_in trước hoặc bằng 8h05 mà chưa check_out → Đúng giờ
+        sql.append("  WHEN TIME(cc.check_in) <= '08:05:59' AND cc.check_out IS NULL THEN 'Đúng giờ' ");
+        // ✅ Nếu check_in sau 8h05 mà chưa check_out → Đi trễ
+        sql.append("  WHEN TIME(cc.check_in) > '08:05:59' AND cc.check_out IS NULL THEN 'Đi trễ' ");
+        // ✅ Các trường hợp có đủ check_in và check_out
+        sql.append("  WHEN TIME(cc.check_in) <= '08:05:59' AND TIME(cc.check_out) >= '17:00:00' THEN 'Đủ công' ");
+        sql.append("  WHEN TIME(cc.check_in) <= '08:05:59' AND TIME(cc.check_out) < '17:00:00' THEN 'Thiếu giờ' ");
+        sql.append("  WHEN TIME(cc.check_in) > '08:05:59' AND TIME(cc.check_out) >= '17:00:00' THEN 'Đi trễ' ");
+        sql.append("  WHEN TIME(cc.check_in) > '08:05:59' AND TIME(cc.check_out) < '17:00:00' THEN 'Thiếu giờ' ");
+        sql.append("  ELSE 'Thiếu dữ liệu' ");
+        sql.append("END AS trang_thai ");
+
         sql.append("FROM cham_cong cc ");
         sql.append("LEFT JOIN nhanvien nv ON cc.nhan_vien_id = nv.id ");
         sql.append("LEFT JOIN phong_ban pb ON nv.phong_ban_id = pb.id ");
@@ -1724,25 +1737,27 @@ public class KNCSDL {
 
         List<Object> params = new ArrayList<>();
 
+        // 🗓️ Lọc theo tháng - năm
         if (thang != null && !thang.isEmpty() && nam != null && !nam.isEmpty()) {
             sql.append("AND MONTH(cc.ngay) = ? AND YEAR(cc.ngay) = ? ");
             params.add(Integer.parseInt(thang));
             params.add(Integer.parseInt(nam));
         }
 
+        // 🏢 Lọc theo phòng ban
         if (phongBan != null && !phongBan.isEmpty()) {
             sql.append("AND pb.ten_phong = ? ");
             params.add(phongBan);
         }
 
-        // keyword dùng cho tìm kiếm giao diện
+        // 🔍 Lọc theo keyword (tìm tên hoặc email)
         if (keyword != null && !keyword.trim().isEmpty()) {
             sql.append("AND (nv.ho_ten LIKE ? OR nv.email LIKE ?) ");
             params.add("%" + keyword + "%");
             params.add("%" + keyword + "%");
         }
 
-        // ID dùng cho xuất file
+        // 👤 Lọc theo ID nhân viên (nếu xuất file)
         if (employeeId != null && !employeeId.equals("all")) {
             sql.append("AND nv.id = ? ");
             params.add(Integer.parseInt(employeeId));
@@ -1771,11 +1786,11 @@ public class KNCSDL {
                     record.put("trang_thai", rs.getString("trang_thai"));
                     record.put("luong_co_ban", rs.getDouble("luong_co_ban"));
 
-                    // Tính lương ngày
+                    // 💰 Tính lương theo số giờ làm
                     double luongCoBan = rs.getDouble("luong_co_ban");
                     double soGioLam = rs.getDouble("so_gio_lam");
                     double luongNgay = (luongCoBan / 22) * (soGioLam / 8);
-                    record.put("luong_ngay", luongNgay);
+                    record.put("luong_ngay", Math.round(luongNgay * 100.0) / 100.0);
 
                     danhSach.add(record);
                 }
@@ -1788,13 +1803,16 @@ public class KNCSDL {
     // Lấy lịch sử chấm công của nhân viên
     public List<Map<String, Object>> getLichSuChamCong(int nhanVienId, int thang, int nam) throws SQLException {
         List<Map<String, Object>> lichSu = new ArrayList<>();
+
         String sql = "SELECT ngay, check_in, check_out, "
                 + "CASE "
                 + "  WHEN check_in IS NULL THEN 'Vắng' "
-                + "  WHEN check_in > '08:30:00' THEN 'Đi trễ' "
-                + "  WHEN TIMESTAMPDIFF(HOUR, check_in, check_out) >= 8 THEN 'Đủ công' "
-                + "  ELSE 'Thiếu giờ' "
-                + "END as trang_thai "
+                + "  WHEN TIME(check_in) <= '08:05:59' AND TIME(check_out) >= '17:00:00' THEN 'Đủ công' "
+                + "  WHEN TIME(check_in) <= '08:05:59' AND TIME(check_out) < '17:00:00' THEN 'Thiếu giờ' "
+                + "  WHEN TIME(check_in) > '08:05:59' AND TIME(check_out) >= '17:00:00' THEN 'Đi trễ' "
+                + "  WHEN TIME(check_in) > '08:05:59' AND TIME(check_out) < '17:00:00' THEN 'Thiếu giờ' "
+                + "  ELSE 'Thiếu dữ liệu' "
+                + "END AS trang_thai "
                 + "FROM cham_cong "
                 + "WHERE nhan_vien_id = ? AND MONTH(ngay) = ? AND YEAR(ngay) = ? "
                 + "ORDER BY ngay DESC";
@@ -1815,6 +1833,7 @@ public class KNCSDL {
                 }
             }
         }
+
         return lichSu;
     }
 
@@ -2119,18 +2138,24 @@ public class KNCSDL {
     // Lấy lịch sử chấm công của user
     public List<Map<String, Object>> getLichSuChamCongUser(int nhanVienId, int thang, int nam) throws SQLException {
         List<Map<String, Object>> lichSu = new ArrayList<>();
+
         String sql = "SELECT ngay, check_in, check_out, "
                 + "CASE "
-                + "  WHEN check_in IS NULL THEN 0 "
-                + "  WHEN check_out IS NULL THEN 0 "
-                + "  ELSE TIMESTAMPDIFF(HOUR, check_in, check_out) "
-                + "END as so_gio_lam, "
+                + "  WHEN check_in IS NULL OR check_out IS NULL THEN 0 "
+                + "  ELSE ROUND(TIMESTAMPDIFF(MINUTE, check_in, check_out) / 60, 2) "
+                + "END AS so_gio_lam, "
                 + "CASE "
                 + "  WHEN check_in IS NULL THEN 'Vắng mặt' "
-                + "  WHEN check_in > '08:30:00' THEN 'Đi trễ' "
-                + "  WHEN TIMESTAMPDIFF(HOUR, check_in, check_out) >= 8 THEN 'Đủ công' "
-                + "  ELSE 'Thiếu giờ' "
-                + "END as trang_thai "
+                // ✅ Bổ sung logic khi chưa có check_out
+                + "  WHEN TIME(check_in) <= '08:05:59' AND check_out IS NULL THEN 'Đúng giờ' "
+                + "  WHEN TIME(check_in) > '08:05:59' AND check_out IS NULL THEN 'Đi trễ' "
+                // ✅ Logic khi có đủ check_in và check_out
+                + "  WHEN TIME(check_in) <= '08:05:59' AND TIME(check_out) >= '17:00:00' THEN 'Đủ công' "
+                + "  WHEN TIME(check_in) <= '08:05:59' AND TIME(check_out) < '17:00:00' THEN 'Thiếu giờ' "
+                + "  WHEN TIME(check_in) > '08:05:59' AND TIME(check_out) >= '17:00:00' THEN 'Đi trễ' "
+                + "  WHEN TIME(check_in) > '08:05:59' AND TIME(check_out) < '17:00:00' THEN 'Thiếu giờ' "
+                + "  ELSE 'Thiếu dữ liệu' "
+                + "END AS trang_thai "
                 + "FROM cham_cong "
                 + "WHERE nhan_vien_id = ? AND MONTH(ngay) = ? AND YEAR(ngay) = ? "
                 + "ORDER BY ngay DESC";
@@ -2152,6 +2177,7 @@ public class KNCSDL {
                 }
             }
         }
+
         return lichSu;
     }
 

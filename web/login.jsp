@@ -51,7 +51,7 @@
         <link rel="manifest" href="manifest.json">
         <meta name="theme-color" content="#1a73e8">
         <link rel="icon" href="icons/logoics.png">
-   
+
         <style>
             body {
                 background: linear-gradient(135deg, #1e293b, #0f172a);
@@ -251,7 +251,7 @@
         </style>
         <script>
             if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('sw.js')
+                navigator.serviceWorker.register('sw.js', {scope: '/ICSS/'})
                         .then(() => console.log('✅ Service Worker registered'))
                         .catch(err => console.error('❌ Service Worker registration failed:', err));
             }
