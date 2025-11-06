@@ -37,7 +37,6 @@ public class AuthFilter implements Filter {
             "/dsChamCong",
             "/xoaNhanvien",
             "/dsLichtrinh",
-            "/suaCongviec",
             "/luuLichTrinh",
             "/suaDuan",
             "/svBaocao",

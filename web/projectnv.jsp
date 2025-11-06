@@ -164,7 +164,7 @@
     </head>
     <body>
         <%@ include file="sidebarnv.jsp" %>
-        <%@ include file="header.jsp" %>
+        <%@ include file="user_header.jsp" %>
         <div class="main-content">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h3 class="mb-0"><i class="fa-solid fa-diagram-project me-2"></i>Quản lý Dự án</h3>

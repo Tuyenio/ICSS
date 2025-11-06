@@ -151,7 +151,7 @@
         <div class="d-flex">
             <%@ include file="sidebarnv.jsp" %>
             <div class="flex-grow-1">
-                <%@ include file="header.jsp" %>
+                <%@ include file="user_header.jsp" %>
                 <div class="main-content">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h3 class="mb-0"><i class="fa-solid fa-calendar-days me-2"></i>Lịch trình công tác</h3>

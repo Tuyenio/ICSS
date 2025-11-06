@@ -87,5 +87,7 @@
         </div>
     </div>
 </div>
-
-<script src="<%= request.getContextPath() %>/scripts/header.obf.js?v=20251105"></script>
+<script>
+    window.contextPath = '<%= request.getContextPath() %>';
+</script>
+<script src="<%= request.getContextPath() %>/scripts/header.js?v=20251105"></script>

@@ -1,4 +1,3 @@
-
     // PREMIUM HEADER ANIMATIONS
     document.addEventListener('DOMContentLoaded', function() {
         // Pulse animation for notification badge
@@ -79,7 +78,7 @@
 
         function fetchUnreadCount() {
             var xhr = new XMLHttpRequest();
-            xhr.open('GET', '<%= request.getContextPath() %>/ApiThongbaoUnreadCount', true);
+            xhr.open('GET', window.contextPath + '/ApiThongbaoUnreadCount', true);
             xhr.onreadystatechange = function () {
                 if (xhr.readyState === 4) {
                     if (xhr.status === 200) {

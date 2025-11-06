@@ -44,13 +44,13 @@ const style = document.createElement('style');
             }
         `;
         document.head.appendChild(style);
-        });
+});
         // Đặt tiêu đề động cho từng trang
         if (typeof PAGE_TITLE !== 'undefined') {
 var pageTitleEl = document.getElementById('pageTitle');
         if (pageTitleEl)
         pageTitleEl.innerHTML = PAGE_TITLE;
-        }
+}
 
 // Nhảy sang trang thông báo khi bấm chuông
 (function () {
@@ -58,8 +58,8 @@ var bell = document.getElementById('notificationBell');
         if (bell) {
 bell.onclick = function () {
 window.location.href = './apiThongbao';
-        };
-        }
+};
+}
 })();
         // ====== CẬP NHẬT SỐ THÔNG BÁO CHƯA ĐỌC TRÊN CHUÔNG ======
                 (function () {
@@ -75,7 +75,7 @@ window.location.href = './apiThongbao';
 
                 function fetchUnreadCount() {
                 var xhr = new XMLHttpRequest();
-                        xhr.open('GET', '<%= request.getContextPath() %>/ApiThongbaoUnreadCount', true);
+                        xhr.open('GET', contextPath + '/ApiThongbaoUnreadCount', true);
                         xhr.onreadystatechange = function () {
                         if (xhr.readyState === 4) {
                         if (xhr.status === 200) {
