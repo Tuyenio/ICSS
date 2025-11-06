@@ -59,14 +59,6 @@
                 // (Removed personnel composition chart)
                 // Chuyển dữ liệu chấm công theo ngày sang data-* để tránh lỗi JSP parser
                 const attHolder = document.createElement('div');
-                attHolder.id = 'attDataHolder';
-                attHolder.dataset.days = "<%= daysStr.toString() %>";
-                attHolder.dataset.du = "<%= jsDuCong.toString() %>";
-                attHolder.dataset.muon = "<%= jsDiMuon.toString() %>";
-                attHolder.dataset.thieu = "<%= jsThieuGio.toString() %>";
-                attHolder.dataset.vang = "<%= jsVang.toString() %>";
-                attHolder.dataset.ot = "<%= jsLamThem.toString() %>";
-                document.body.appendChild(attHolder);
                 const ctxCCongNgay = document.getElementById('chartChamCongNgay');
                 if (ctxCCongNgay) {
                     const h2 = document.getElementById('attDataHolder');

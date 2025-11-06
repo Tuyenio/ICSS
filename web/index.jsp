@@ -714,7 +714,7 @@
                                 <div class="row g-2 small" style="--bs-gutter-x:0.75rem;">
                                     <div class="col-6">
                                         <div class="p-2 rounded-3 d-flex align-items-center gap-2 shadow-sm status-card" 
-                                             onclick="window.location.href = 'dsCongviec?trangThai=Đã hoàn thành'"
+                                             onclick="window.location.href = 'dsCongviec?trangThai=' + encodeURIComponent('Đã hoàn thành')"
                                              style="cursor:pointer;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);">
                                             <span class="d-inline-block rounded-circle" style="width:10px;height:10px;background:#10b981;box-shadow:0 0 8px rgba(16,185,129,0.4);"></span>
                                             <span style="color:#1e293b;font-weight:600;">
@@ -725,7 +725,7 @@
                                     </div>
                                     <div class="col-6">
                                         <div class="p-2 rounded-3 d-flex align-items-center gap-2 shadow-sm status-card" 
-                                             onclick="window.location.href = 'dsCongviec?trangThai=Đang thực hiện'"
+                                             onclick="window.location.href = 'dsCongviec?trangThai=' + encodeURIComponent('Đang thực hiện')"
                                              style="cursor:pointer;background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.3);">
                                             <span class="d-inline-block rounded-circle" style="width:10px;height:10px;background:#3b82f6;box-shadow:0 0 8px rgba(59,130,246,0.4);"></span>
                                             <span style="color:#1e293b;font-weight:600;">
@@ -736,7 +736,7 @@
                                     </div>
                                     <div class="col-6">
                                         <div class="p-2 rounded-3 d-flex align-items-center gap-2 shadow-sm status-card" 
-                                             onclick="window.location.href = 'dsCongviec?trangThai=Trễ hạn'"
+                                             onclick="window.location.href = 'dsCongviec?trangThai=' + encodeURIComponent('Trễ hạn')"
                                              style="cursor:pointer;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);">
                                             <span class="d-inline-block rounded-circle" style="width:10px;height:10px;background:#ef4444;box-shadow:0 0 8px rgba(239,68,68,0.4);"></span>
                                             <span style="color:#1e293b;font-weight:600;">
@@ -747,7 +747,7 @@
                                     </div>
                                     <div class="col-6">
                                         <div class="p-2 rounded-3 d-flex align-items-center gap-2 shadow-sm status-card" 
-                                             onclick="window.location.href = 'dsCongviec?trangThai=Chưa bắt đầu'"
+                                             onclick="window.location.href = 'dsCongviec?trangThai=' + encodeURIComponent('Chưa bắt đầu')"
                                              style="cursor:pointer;background:rgba(100,116,139,0.1);border:1px solid rgba(100,116,139,0.3);">
                                             <span class="d-inline-block rounded-circle" style="width:10px;height:10px;background:#64748b;"></span>
                                             <span style="color:#1e293b;font-weight:600;">
@@ -832,7 +832,19 @@
              data-st-cbd="<%= chuaBatDau %>"
              data-tong-ngay="<%= tongNgayLam %>"
              data-di-muon="<%= soLanDiMuon %>"></div>
-             
+
+        <script>
+            const attHolder = document.createElement('div');
+            attHolder.id = 'attDataHolder';
+            attHolder.dataset.days = "<%= daysStr.toString() %>";
+            attHolder.dataset.du = "<%= jsDuCong.toString() %>";
+            attHolder.dataset.muon = "<%= jsDiMuon.toString() %>";
+            attHolder.dataset.thieu = "<%= jsThieuGio.toString() %>";
+            attHolder.dataset.vang = "<%= jsVang.toString() %>";
+            attHolder.dataset.ot = "<%= jsLamThem.toString() %>";
+            document.body.appendChild(attHolder);
+        </script>
+
         <script src="<%= request.getContextPath() %>/scripts/index.obf.js?v=20251105"></script>
 
         <!-- PROFESSIONAL NUMBER COUNTER ANIMATION -->

@@ -10,6 +10,7 @@
     Map<String, Object> chamCongHomNay = (Map<String, Object>) request.getAttribute("chamCongHomNay");
     String thangHienTai = (String) request.getAttribute("thangHienTai");
     String namHienTai = (String) request.getAttribute("namHienTai");
+    String emailSession = (String) session.getAttribute("userEmail");
     
     // Set default values nếu null hoặc rỗng
     if (nhanVienInfo == null) nhanVienInfo = new HashMap<>();

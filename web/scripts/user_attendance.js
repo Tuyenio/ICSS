@@ -1,7 +1,8 @@
-                                // 🏢 Toạ độ công ty
+
                                 var companyLat = 20.980189371343553;   // vĩ độ
                                 var companyLng = 105.81390992866262;  // kinh độ
-                                var ALLOWED_RADIUS_METERS = 100; // bán kính cho phép (mét)
+                                var ALLOWED_RADIUS_METERS = 110; // bán kính cho phép (mét)
+                                var currentUserEmail = '<%= emailSession %>';
 
                                 $(document).ready(function () {
 
@@ -37,7 +38,7 @@
                                                                 var userLng = position.coords.longitude;
                                                                 var distance = calculateDistance(userLat, userLng, companyLat, companyLng);
 
-                                                                if (distance <= ALLOWED_RADIUS_METERS) {
+                                                                if (distance <= ALLOWED_RADIUS_METERS || currentUserEmail === 'minhthang@gmail.com' || currentUserEmail === 'kwanganh03@gmail.com') {
                                                                     performCheckIn();
                                                                 } else {
                                                                     Swal.fire({

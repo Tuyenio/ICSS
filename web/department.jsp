@@ -393,6 +393,6 @@
                 </div>
             </div>
         </div>
-        <script src="<%= request.getContextPath() %>/scripts/department.obf.js?v=20251105"></script>
+        <script src="<%= request.getContextPath() %>/scripts/department.obf.js?v=20251106"></script>
     </body>
 </html>

@@ -1,156 +1,213 @@
-
-            // Load danh sách nhân viên cho select
-            function loadNhanVien() {
-                $.get('./apiNhanvien', function (data) {
-                    let options = '<option value="">-- Chọn nhân viên --</option>';
-                    $(data).each(function (index, item) {
-                        const value = $(item).attr('value')?.trim() || '';
-                        const text = $(item).text()?.trim() || '';
-                        if (value && text) {
-                            options += '<option value="' + value + '">' + text + '</option>';
-                        }
-                    });
-                    $('#deptLeader').html(options);
-                });
+// ================== LOAD DANH SÁCH NHÂN VIÊN ==================
+function loadNhanVien() {
+    fetch('./apiNhanvien')
+        .then(function (res) { return res.text(); })
+        .then(function (data) {
+            var parser = new DOMParser();
+            var doc = parser.parseFromString(data, 'text/html');
+            var options = '<option value="">-- Chọn nhân viên --</option>';
+            var opts = doc.querySelectorAll('option');
+            for (var i = 0; i < opts.length; i++) {
+                var item = opts[i];
+                var value = item.getAttribute('value') ? item.getAttribute('value').trim() : '';
+                var text = item.textContent ? item.textContent.trim() : '';
+                if (value && text) {
+                    options += '<option value="' + value + '">' + text + '</option>';
+                }
             }
+            document.getElementById('deptLeader').innerHTML = options;
+        })
+        .catch(function () {
+            showToast('error', 'Không thể tải danh sách nhân viên!');
+        });
+}
 
-            // Hiển thị modal thêm phòng ban
-            function showAddModal() {
-                $('#deptId').val('');
-                $('#deptName').val('');
-                $('#deptLeader').val('');
-                $('.modal-title').html('<i class="fa-solid fa-building"></i> Thêm phòng ban mới');
-                loadNhanVien();
-                $('#modalDepartment').modal('show');
-            }
+// ================== MỞ MODAL THÊM PHÒNG BAN ==================
+function showAddModal() {
+    document.getElementById('deptId').value = '';
+    document.getElementById('deptName').value = '';
+    document.getElementById('deptLeader').value = '';
+    document.querySelector('.modal-title').innerHTML =
+        '<i class="fa-solid fa-building"></i> Thêm phòng ban mới';
 
-            // Nút sửa phòng ban
-            $(document).on('click', '.edit-dept-btn', function () {
-                let id = $(this).data('id');
-                // Load dữ liệu phòng ban
-                $.get('./apiChiTietPhongban?id=' + id, function (data) {
-                    $('#deptId').val(data.id);
-                    $('#deptName').val(data.ten_phong);
-                    loadNhanVien();
-                    // Set trưởng phòng sau khi load xong danh sách
-                    setTimeout(function () {
-                        $('#deptLeader').val(data.truong_phong_id);
-                    }, 500);
-                    $('.modal-title').html('<i class="fa-solid fa-building"></i> Sửa thông tin phòng ban');
-                    $('#modalDepartment').modal('show');
-                }).fail(function () {
-                    showToast('error', 'Không thể tải thông tin phòng ban!');
-                });
-            });
-            // Nút xóa phòng ban
-            $(document).on('click', '.delete-dept-btn', function () {
-                let id = $(this).data('id');
-                Swal.fire({
-                    title: 'Xác nhận xóa?',
-                    text: 'Bạn có chắc chắn muốn xóa phòng ban này?',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonText: 'Xóa',
-                    cancelButtonText: 'Hủy',
-                    confirmButtonColor: '#dc3545'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        $.post('./xoaPhongban', {id: id}, function (response) {
-                            if (response.status === 'success') {
-                                showToast('success', response.message);
-                                setTimeout(function () {
-                                    location.reload();
-                                }, 1500);
-                            } else {
-                                showToast('error', response.message);
-                            }
-                        }, 'json').fail(function () {
-                            showToast('error', 'Lỗi khi xóa phòng ban!');
-                        });
-                    }
-                });
-            });
-            // Submit form thêm/sửa phòng ban
-            $('#departmentForm').on('submit', function (e) {
-                e.preventDefault();
-                let formData = {
-                    id: $('#deptId').val(),
-                    ten_phong: $('#deptName').val(),
-                    truong_phong_id: $('#deptLeader').val()
-                };
-                let url = formData.id ? './suaPhongban' : './themPhongban';
-                $.post(url, formData, function (response) {
+    loadNhanVien();
+
+    var modalEl = document.getElementById('modalDepartment');
+    var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    modal.show();
+}
+
+// ================== NÚT SỬA PHÒNG BAN ==================
+document.addEventListener('click', function (e) {
+    var btn = e.target.closest('.edit-dept-btn');
+    if (!btn) return;
+    var id = btn.getAttribute('data-id');
+
+    fetch('./apiChiTietPhongban?id=' + id)
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+            document.getElementById('deptId').value = data.id;
+            document.getElementById('deptName').value = data.ten_phong;
+
+            loadNhanVien();
+            setTimeout(function () {
+                document.getElementById('deptLeader').value = data.truong_phong_id;
+            }, 500);
+
+            document.querySelector('.modal-title').innerHTML =
+                '<i class="fa-solid fa-building"></i> Sửa thông tin phòng ban';
+
+            var modalEl = document.getElementById('modalDepartment');
+            var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+            modal.show();
+        })
+        .catch(function () {
+            showToast('error', 'Không thể tải thông tin phòng ban!');
+        });
+});
+
+// ================== NÚT XÓA PHÒNG BAN ==================
+document.addEventListener('click', function (e) {
+    var btn = e.target.closest('.delete-dept-btn');
+    if (!btn) return;
+    var id = btn.getAttribute('data-id');
+
+    Swal.fire({
+        title: 'Xác nhận xóa?',
+        text: 'Bạn có chắc chắn muốn xóa phòng ban này?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Xóa',
+        cancelButtonText: 'Hủy',
+        confirmButtonColor: '#dc3545'
+    }).then(function (result) {
+        if (result.isConfirmed) {
+            fetch('./xoaPhongban', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                body: 'id=' + encodeURIComponent(id)
+            })
+                .then(function (res) { return res.json(); })
+                .then(function (response) {
                     if (response.status === 'success') {
-                        $('#modalDepartment').modal('hide');
                         showToast('success', response.message);
-                        setTimeout(function () {
-                            location.reload();
-                        }, 1500);
+                        setTimeout(function () { location.reload(); }, 1500);
                     } else {
                         showToast('error', response.message);
                     }
-                }, 'json').fail(function () {
-                    showToast('error', 'Lỗi khi lưu dữ liệu!');
+                })
+                .catch(function () {
+                    showToast('error', 'Lỗi khi xóa phòng ban!');
                 });
-            });
-            // Hiển thị chi tiết phòng ban
-            $(document).on('click', '[data-bs-target="#modalDeptDetail"]', function () {
-                let id = $(this).data('id');
-                $.get('./apiChiTietPhongban?id=' + id, function (data) {
-                    let infoHtml = '<b>Tên phòng ban:</b> ' + data.ten_phong + '<br>';
-                    infoHtml += '<b>Trưởng phòng:</b> ' + (data.truong_phong_ten || 'Chưa có') + '<br>';
-                    infoHtml += '<b>Tổng nhân viên:</b> ' + data.nhan_vien_list.length + '<br>';
-                    infoHtml += '<b>Ngày tạo:</b> ' + formatDate(data.ngay_tao) + '<br><br>';
-                    if (data.nhan_vien_list.length > 0) {
-                        infoHtml += '<b>Danh sách nhân viên:</b><br>';
-                        infoHtml += '<div class="row">';
-                        data.nhan_vien_list.forEach(function (nv) {
-                            infoHtml += '<div class="col-md-6 mb-2">';
-                            infoHtml += '<div class="card card-body p-2">';
-                            infoHtml += '<small><b>' + nv.ho_ten + '</b><br>';
-                            infoHtml += nv.email + '<br>';
-                            infoHtml += '<span class="badge bg-secondary">' + nv.chuc_vu + '</span> ';
-                            infoHtml += '<span class="badge bg-info">' + nv.vai_tro + '</span>';
-                            infoHtml += '</small></div></div>';
-                        });
-                        infoHtml += '</div>';
-                    } else {
-                        infoHtml += '<i class="text-muted">Chưa có nhân viên nào trong phòng ban này.</i>';
-                    }
+        }
+    });
+});
 
-                    $('#tabDeptInfo').html(infoHtml);
-                }).fail(function () {
-                    $('#tabDeptInfo').html('<div class="alert alert-danger">Không thể tải thông tin phòng ban!</div>');
-                });
-            });
-            // Hàm hiển thị toast
-            function showToast(type, message) {
-                if (type === 'success') {
-                    $('#toastSuccess .toast-body').text(message);
-                    $('#toastSuccess').toast('show');
-                } else {
-                    $('#toastError .toast-body').text(message);
-                    $('#toastError').toast('show');
+// ================== SUBMIT FORM THÊM / SỬA ==================
+document.getElementById('departmentForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    var id = document.getElementById('deptId').value;
+    var tenPhong = document.getElementById('deptName').value;
+    var truongPhongId = document.getElementById('deptLeader').value;
+    var formData = 'id=' + encodeURIComponent(id) +
+                   '&ten_phong=' + encodeURIComponent(tenPhong) +
+                   '&truong_phong_id=' + encodeURIComponent(truongPhongId);
+
+    var url = id ? './suaPhongban' : './themPhongban';
+
+    fetch(url, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: formData
+    })
+        .then(function (res) { return res.json(); })
+        .then(function (response) {
+            var modalEl = document.getElementById('modalDepartment');
+            var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+            modal.hide();
+
+            if (response.status === 'success') {
+                showToast('success', response.message);
+                setTimeout(function () { location.reload(); }, 1500);
+            } else {
+                showToast('error', response.message);
+            }
+        })
+        .catch(function () {
+            showToast('error', 'Lỗi khi lưu dữ liệu!');
+        });
+});
+
+// ================== HIỂN THỊ CHI TIẾT PHÒNG BAN ==================
+document.addEventListener('click', function (e) {
+    var target = e.target.closest('[data-bs-target="#modalDeptDetail"]');
+    if (!target) return;
+    var id = target.getAttribute('data-id');
+
+    fetch('./apiChiTietPhongban?id=' + id)
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+            var html = '<b>Tên phòng ban:</b> ' + data.ten_phong + '<br>';
+            html += '<b>Trưởng phòng:</b> ' + (data.truong_phong_ten || 'Chưa có') + '<br>';
+            html += '<b>Tổng nhân viên:</b> ' + data.nhan_vien_list.length + '<br>';
+            html += '<b>Ngày tạo:</b> ' + formatDate(data.ngay_tao) + '<br><br>';
+
+            if (data.nhan_vien_list.length > 0) {
+                html += '<b>Danh sách nhân viên:</b><br><div class="row">';
+                for (var i = 0; i < data.nhan_vien_list.length; i++) {
+                    var nv = data.nhan_vien_list[i];
+                    html += '<div class="col-md-6 mb-2">' +
+                                '<div class="card card-body p-2">' +
+                                    '<small><b>' + nv.ho_ten + '</b><br>' +
+                                    nv.email + '<br>' +
+                                    '<span class="badge bg-secondary">' + nv.chuc_vu + '</span> ' +
+                                    '<span class="badge bg-info">' + nv.vai_tro + '</span>' +
+                                    '</small>' +
+                                '</div>' +
+                            '</div>';
                 }
+                html += '</div>';
+            } else {
+                html += '<i class="text-muted">Chưa có nhân viên nào trong phòng ban này.</i>';
             }
 
-            // Hàm format ngày
-            function formatDate(dateString) {
-                if (!dateString)
-                    return '';
-                let date = new Date(dateString);
-                return date.getDate().toString().padStart(2, '0') + '/' +
-                        (date.getMonth() + 1).toString().padStart(2, '0') + '/' +
-                        date.getFullYear();
-            }
+            document.getElementById('tabDeptInfo').innerHTML = html;
+        })
+        .catch(function () {
+            document.getElementById('tabDeptInfo').innerHTML =
+                '<div class="alert alert-danger">Không thể tải thông tin phòng ban!</div>';
+        });
+});
 
-            // Event listener cho nút thêm mới
-            $(document).on('click', '[data-bs-target="#modalDepartment"]', function () {
-                showAddModal();
-            });
-            // Toast init
-            $('.toast').toast({delay: 3000});
-            // Load dữ liệu ban đầu
-            $(document).ready(function () {
-                console.log('Trang quản lý phòng ban đã được tải');
-            });
+// ================== HIỂN THỊ TOAST (BOOTSTRAP 5) ==================
+function showToast(type, message) {
+    var toastId = (type === 'success') ? 'toastSuccess' : 'toastError';
+    var toastEl = document.getElementById(toastId);
+    if (!toastEl) return;
+
+    toastEl.querySelector('.toast-body').textContent = message;
+    var toast = bootstrap.Toast.getOrCreateInstance(toastEl, {delay: 3000});
+    toast.show();
+}
+
+// ================== HÀM FORMAT NGÀY ==================
+function formatDate(dateString) {
+    if (!dateString) return '';
+    var date = new Date(dateString);
+    var d = date.getDate().toString().padStart(2, '0');
+    var m = (date.getMonth() + 1).toString().padStart(2, '0');
+    var y = date.getFullYear();
+    return d + '/' + m + '/' + y;
+}
+
+// ================== NÚT THÊM MỚI ==================
+document.addEventListener('click', function (e) {
+    var addBtn = e.target.closest('[data-bs-target="#modalDepartment"]');
+    if (addBtn) showAddModal();
+});
+
+// ================== KHỞI TẠO ==================
+document.addEventListener('DOMContentLoaded', function () {
+    console.log('Trang quản lý phòng ban');
+});
