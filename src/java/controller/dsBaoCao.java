@@ -1,47 +1,53 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
- */
 package controller;
 
 import jakarta.servlet.http.HttpSession;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.sql.SQLException;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
-/**
- *
- * @author Admin
- */
 public class dsBaoCao {
 
-    // Phương thức để lấy dữ liệu báo cáo tổng hợp
     public static void layDuLieuBaoCao(
-            jakarta.servlet.http.HttpServletRequest request, 
+            jakarta.servlet.http.HttpServletRequest request,
             jakarta.servlet.http.HttpServletResponse response) {
+
         HttpSession session = request.getSession();
         try {
-            // Lấy tham số từ request
+            // Lấy tham số lọc
             String thangParam = request.getParameter("thang");
             String namParam = request.getParameter("nam");
+            String tuNgayParam = request.getParameter("tu_ngay");
+            String denNgayParam = request.getParameter("den_ngay");
             String phongBanParam = request.getParameter("phong_ban");
-            
-            // Nếu không có tham số, sử dụng tháng hiện tại
-            if (thangParam == null || thangParam.isEmpty()) {
-                Calendar cal = Calendar.getInstance();
-                thangParam = String.valueOf(cal.get(Calendar.MONTH) + 1);
-                namParam = String.valueOf(cal.get(Calendar.YEAR));
+
+            List<Map<String, Object>> baoCaoNhanVien;
+            Map<String, Object> pieChartData;
+            Map<String, Object> barChartData;
+
+            // ✅ Nếu có khoảng thời gian
+            if (tuNgayParam != null && !tuNgayParam.isEmpty()
+                    && denNgayParam != null && !denNgayParam.isEmpty()) {
+
+                baoCaoNhanVien = apiBaoCao.getBaoCaoNhanVienByDateRange(tuNgayParam, denNgayParam, phongBanParam);
+                pieChartData = apiBaoCao.getDataForPieChart(tuNgayParam, denNgayParam, phongBanParam);
+                barChartData = apiBaoCao.getDataForBarChart(session, tuNgayParam, denNgayParam, phongBanParam);
+
+            } else {
+                // Không có khoảng thời gian → mặc định theo tháng
+                if (thangParam == null || thangParam.isEmpty()) {
+                    Calendar cal = Calendar.getInstance();
+                    thangParam = String.valueOf(cal.get(Calendar.MONTH) + 1);
+                    namParam = String.valueOf(cal.get(Calendar.YEAR));
+                }
+                baoCaoNhanVien = apiBaoCao.getBaoCaoNhanVien(thangParam, namParam, phongBanParam);
+
+                java.time.YearMonth ym = java.time.YearMonth.of(Integer.parseInt(namParam), Integer.parseInt(thangParam));
+                String start = ym.atDay(1).toString();
+                String end = ym.atEndOfMonth().toString();
+
+                pieChartData = apiBaoCao.getDataForPieChart(start, end, phongBanParam);
+                barChartData = apiBaoCao.getDataForBarChart(session, start, end, phongBanParam);
             }
-            
-            // Lấy dữ liệu báo cáo
-            List<Map<String, Object>> baoCaoNhanVien = apiBaoCao.getBaoCaoNhanVien(thangParam, namParam, phongBanParam);
-            Map<String, Object> pieChartData = apiBaoCao.getDataForPieChart();
-            Map<String, Object> barChartData = apiBaoCao.getDataForBarChart(session);
-            
-            // Lấy danh sách phòng ban cho filter
+
+            // Lấy danh sách phòng ban
             List<Map<String, Object>> danhSachPhongBan = new ArrayList<>();
             try {
                 KNCSDL kn = new KNCSDL();
@@ -49,8 +55,8 @@ public class dsBaoCao {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            
-            // Gửi dữ liệu đến JSP
+
+            // Đưa dữ liệu sang JSP
             request.setAttribute("baoCaoNhanVien", baoCaoNhanVien);
             request.setAttribute("pieChartData", pieChartData);
             request.setAttribute("barChartData", barChartData);
@@ -58,7 +64,7 @@ public class dsBaoCao {
             request.setAttribute("thangHienTai", thangParam);
             request.setAttribute("namHienTai", namParam);
             request.setAttribute("phongBanDaChon", phongBanParam);
-            
+
         } catch (Exception e) {
             e.printStackTrace();
         }

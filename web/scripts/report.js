@@ -38,37 +38,133 @@ function showToast(type, message) {
     new bootstrap.Toast($(id)[0], {delay: 2500, autohide: true}).show();
 }
 
-// Debug dữ liệu ddoanj 2222222
+// Debug dữ liệu
 console.log('Pie Chart Data:', pieChartData);
 console.log('Bar Chart Data:', barChartData);
+
+// Khởi tạo Date Range Picker
+$(function () {
+    var tuNgay = $('#tuNgayHidden').val();
+    var denNgay = $('#denNgayHidden').val();
+
+    var startDate = tuNgay ? moment(tuNgay) : moment().startOf('month');
+    var endDate = denNgay ? moment(denNgay) : moment().endOf('month');
+
+    $('#dateRangeFilter').daterangepicker({
+        startDate: startDate,
+        endDate: endDate,
+        locale: {
+            format: 'DD/MM/YYYY',
+            separator: ' - ',
+            applyLabel: 'Áp dụng',
+            cancelLabel: 'Hủy',
+            fromLabel: 'Từ',
+            toLabel: 'Đến',
+            customRangeLabel: 'Tùy chọn',
+            weekLabel: 'T',
+            daysOfWeek: ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'],
+            monthNames: ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6',
+                'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'],
+            firstDay: 1
+        },
+        ranges: {
+            'Hôm nay': [moment(), moment()],
+            'Hôm qua': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+            '7 ngày qua': [moment().subtract(6, 'days'), moment()],
+            '30 ngày qua': [moment().subtract(29, 'days'), moment()],
+            'Tháng này': [moment().startOf('month'), moment().endOf('month')],
+            'Tháng trước': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+        },
+        alwaysShowCalendars: true,
+        autoApply: false
+    }, function (start, end, label) {
+        console.log('Date range selected:', start.format('YYYY-MM-DD'), 'to', end.format('YYYY-MM-DD'));
+    });
+
+    // Xử lý khi chọn khoảng thời gian
+    $('#dateRangeFilter').on('apply.daterangepicker', function (ev, picker) {
+        var tuNgay = picker.startDate.format('YYYY-MM-DD');
+        var denNgay = picker.endDate.format('YYYY-MM-DD');
+        var phongBan = $('#phongBanFilter').val();
+
+        // Cập nhật URL và reload trang
+        var url = window.location.pathname + '?tu_ngay=' + tuNgay + '&den_ngay=' + denNgay;
+        if (phongBan) {
+            url += '&phong_ban=' + encodeURIComponent(phongBan);
+        }
+        window.location.href = url;
+    });
+
+    // Xóa bộ lọc date range
+    $('#clearDateRange').click(function () {
+        var phongBan = $('#phongBanFilter').val();
+        var url = window.location.pathname;
+
+        // Quay về chế độ lọc theo tháng hiện tại
+        var now = new Date();
+        var thang = now.getMonth() + 1;
+        var nam = now.getFullYear();
+
+        url += '?thang=' + thang + '&nam=' + nam;
+        if (phongBan) {
+            url += '&phong_ban=' + encodeURIComponent(phongBan);
+        }
+        window.location.href = url;
+    });
+});
 
 // Chart.js implementation
 $(function () {
     // Pie Chart - Trạng thái công việc
+    // Pie Chart - Trạng thái công việc
     if (pieChartData && pieChartData.labels && pieChartData.labels.length > 0) {
+        console.log("Pie labels raw:", pieChartData.labels);
+
+        // Map màu tương ứng chính xác với nhãn tiếng Việt
+        const colorMap = {
+            'Chưa bắt đầu': '#b0b0b0', // Xám
+            'Đang thực hiện': '#facc15', // Vàng
+            'Đã hoàn thành': '#22c55e', // Xanh lá
+            'Trễ hạn': '#ef4444'         // Đỏ
+        };
+
+        // Duyệt qua từng label để lấy đúng màu theo tên
+        const colors = pieChartData.labels.map(label => {
+            const cleanLabel = label.trim(); // loại bỏ khoảng trắng thừa
+            return colorMap[cleanLabel] || '#6b7280'; // nếu label lạ => xám nhạt
+        });
+
+        // Khởi tạo biểu đồ
         new Chart(document.getElementById('pieChart'), {
             type: 'pie',
             data: {
                 labels: pieChartData.labels,
                 datasets: [{
                         data: pieChartData.data,
-                        backgroundColor: ['#198754', '#ffc107', '#dc3545', '#0d6efd']
+                        backgroundColor: colors
                     }]
             },
             options: {
                 responsive: true,
                 plugins: {
-                    legend: {
-                        position: 'bottom'
+                    legend: {position: 'bottom'},
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                const label = context.label || '';
+                                const value = context.parsed || 0;
+                                return `${label}: ${value}`;
+                            }
+                        }
                     }
                 }
             }
         });
     } else {
-        // Hiển thị thông báo khi không có dữ liệu
         document.getElementById('pieChart').parentElement.innerHTML =
                 '<div class="text-center p-4"><i class="fa-solid fa-chart-pie fa-3x text-muted mb-3"></i><br><span class="text-muted">Không có dữ liệu để hiển thị</span></div>';
     }
+
 
     // Bar Chart - Tiến độ phòng ban
     if (barChartData && barChartData.labels && barChartData.labels.length > 0) {
@@ -108,18 +204,29 @@ $(function () {
 });
 
 // Filter functionality
-$('#thangFilter, #phongBanFilter').change(function () {
-    var thang = $('#thangFilter').val();
-    var phongBan = $('#phongBanFilter').val();
+$('#phongBanFilter').change(function () {
+    var phongBan = $(this).val();
+    var tuNgay = $('#tuNgayHidden').val();
+    var denNgay = $('#denNgayHidden').val();
 
-    if (thang) {
-        var parts = thang.split('-');
-        var url = window.location.pathname + '?nam=' + parts[0] + '&thang=' + parseInt(parts[1]);
-        if (phongBan) {
-            url += '&phong_ban=' + encodeURIComponent(phongBan);
-        }
-        window.location.href = url;
+    var url = window.location.pathname;
+
+    // Kiểm tra xem đang dùng date range hay tháng/năm
+    if (tuNgay && denNgay) {
+        url += '?tu_ngay=' + tuNgay + '&den_ngay=' + denNgay;
+    } else {
+        // Sử dụng tháng/năm hiện tại
+        var now = new Date();
+        var thang = now.getMonth() + 1;
+        var nam = now.getFullYear();
+        url += '?thang=' + thang + '&nam=' + nam;
     }
+
+    if (phongBan) {
+        url += '&phong_ban=' + encodeURIComponent(phongBan);
+    }
+
+    window.location.href = url;
 });
 
 // Refresh button functionality

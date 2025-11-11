@@ -3,24 +3,60 @@
 <%@ page import="controller.apiBaoCao" %>
 <%@ page import="controller.KNCSDL" %>
 <%@ page import="jakarta.servlet.http.HttpSession" %>
+<%@ page import="java.time.LocalDate" %>
+<%@ page import="java.time.format.DateTimeFormatter" %>
 <%
     HttpSession ssis = request.getSession();
+    
     // Lấy tham số từ request
+    String tuNgayParam = request.getParameter("tu_ngay");
+    String denNgayParam = request.getParameter("den_ngay");
     String thangParam = request.getParameter("thang");
     String namParam = request.getParameter("nam");
     String phongBanParam = request.getParameter("phong_ban");
     
-    // Nếu không có tham số, sử dụng tháng hiện tại
-    if (thangParam == null || thangParam.isEmpty()) {
-        Calendar cal = Calendar.getInstance();
-        thangParam = String.valueOf(cal.get(Calendar.MONTH) + 1);
-        namParam = String.valueOf(cal.get(Calendar.YEAR));
+    List<Map<String, Object>> baoCaoNhanVien = null;
+    String displayDateRange = "";
+    
+    // Xác định kiểu lọc: date range hoặc tháng/năm
+    if (tuNgayParam != null && denNgayParam != null && !tuNgayParam.isEmpty() && !denNgayParam.isEmpty()) {
+        // Lọc theo khoảng thời gian
+        baoCaoNhanVien = apiBaoCao.getBaoCaoNhanVienByDateRange(tuNgayParam, denNgayParam, phongBanParam);
+        
+        // Format hiển thị đẹp
+        DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        LocalDate tuNgay = LocalDate.parse(tuNgayParam, inputFormatter);
+        LocalDate denNgay = LocalDate.parse(denNgayParam, inputFormatter);
+        displayDateRange = tuNgay.format(outputFormatter) + " - " + denNgay.format(outputFormatter);
+    } else {
+        // Lọc theo tháng/năm (mặc định)
+        if (thangParam == null || thangParam.isEmpty()) {
+            Calendar cal = Calendar.getInstance();
+            thangParam = String.valueOf(cal.get(Calendar.MONTH) + 1);
+            namParam = String.valueOf(cal.get(Calendar.YEAR));
+        }
+        baoCaoNhanVien = apiBaoCao.getBaoCaoNhanVien(thangParam, namParam, phongBanParam);
+        displayDateRange = "Tháng " + thangParam + "/" + namParam;
     }
     
-    // Lấy dữ liệu báo cáo
-    List<Map<String, Object>> baoCaoNhanVien = apiBaoCao.getBaoCaoNhanVien(thangParam, namParam, phongBanParam);
-    Map<String, Object> pieChartData = apiBaoCao.getDataForPieChart();
-    Map<String, Object> barChartData = apiBaoCao.getDataForBarChart(ssis);
+    // Lấy dữ liệu biểu đồ
+    Map<String, Object> pieChartData;
+    Map<String, Object> barChartData;
+
+    if (tuNgayParam != null && !tuNgayParam.isEmpty() && denNgayParam != null && !denNgayParam.isEmpty()) {
+        // Khi người dùng chọn khoảng thời gian
+        pieChartData = apiBaoCao.getDataForPieChart(tuNgayParam, denNgayParam, phongBanParam);
+        barChartData = apiBaoCao.getDataForBarChart(ssis, tuNgayParam, denNgayParam, phongBanParam);
+    } else {
+        // Khi không chọn khoảng thời gian, dùng tháng/năm
+        java.time.YearMonth ym = java.time.YearMonth.of(Integer.parseInt(namParam), Integer.parseInt(thangParam));
+        String startOfMonth = ym.atDay(1).toString();
+        String endOfMonth = ym.atEndOfMonth().toString();
+
+        pieChartData = apiBaoCao.getDataForPieChart(startOfMonth, endOfMonth, phongBanParam);
+        barChartData = apiBaoCao.getDataForBarChart(ssis, startOfMonth, endOfMonth, phongBanParam);
+    }
     
     // Lấy danh sách phòng ban cho filter
     List<Map<String, Object>> danhSachPhongBan = new ArrayList<>();
@@ -44,10 +80,13 @@
         <title>Báo cáo tổng hợp</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
         <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+        <link href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" rel="stylesheet">
         <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
         <style>
             /* ==== GLOBAL ==== */
             body {
@@ -153,6 +192,50 @@
                 }
             }
 
+            /* ==== DATE RANGE PICKER ==== */
+            #dateRangeFilter {
+                cursor: pointer;
+                background-color: #fff;
+            }
+
+            .daterangepicker {
+                border-radius: 12px !important;
+                box-shadow: 0 6px 20px rgba(0,0,0,0.15) !important;
+            }
+
+            .daterangepicker .calendar-table {
+                border-radius: 8px;
+            }
+
+            .daterangepicker td.active,
+            .daterangepicker td.active:hover {
+                background-color: #0d6efd !important;
+            }
+
+            .daterangepicker td.in-range {
+                background-color: rgba(13, 110, 253, 0.1) !important;
+            }
+
+            .daterangepicker .ranges li:hover {
+                background-color: #f8f9fa;
+            }
+
+            .daterangepicker .ranges li.active {
+                background-color: #0d6efd;
+                color: white;
+            }
+
+            /* ==== Clear Button ==== */
+            #clearDateRange {
+                transition: all 0.2s ease;
+            }
+
+            #clearDateRange:hover {
+                background-color: #dc3545;
+                color: white;
+                border-color: #dc3545;
+            }
+
         </style>
         <script>
             var PAGE_TITLE = '<i class="fa-solid fa-tasks me-2"></i>Báo cáo tổng hợp';
@@ -189,21 +272,32 @@
                             <div class="col-md-3">
                                 <select class="form-select" id="phongBanFilter">
                                     <option value="">Tất cả phòng ban</option>
-                                    <% 
-                                    for (Map<String, Object> pb : danhSachPhongBan) {
-                                        String tenPhong = (String) pb.get("ten_phong");
-                                        String selected = "";
-                                        if (phongBanParam != null && phongBanParam.equals(tenPhong)) {
-                                            selected = "selected";
+                                    <%
+                                        for (Map<String, Object> pb : danhSachPhongBan) {
+                                            String id = String.valueOf(pb.get("id"));
+                                            String tenPhong = (String) pb.get("ten_phong");
+                                            String selected = "";
+                                            if (phongBanParam != null && phongBanParam.equals(id)) {
+                                                selected = "selected";
+                                            }
+                                    %>
+                                    <option value="<%= id %>" <%= selected %>><%= tenPhong %></option>
+                                    <%
                                         }
                                     %>
-                                    <option value="<%= tenPhong %>" <%= selected %>><%= tenPhong %></option>
-                                    <% } %>
                                 </select>
                             </div>
-                            <div class="col-md-3">
-                                <input type="month" class="form-control" id="thangFilter" 
-                                       value="<%= namParam %>-<%= String.format("%02d", Integer.parseInt(thangParam)) %>">
+                            <div class="col-md-4">
+                                <input type="text" class="form-control" id="dateRangeFilter" 
+                                       placeholder="Chọn khoảng thời gian" 
+                                       value="<%= displayDateRange %>" readonly>
+                                <input type="hidden" id="tuNgayHidden" value="<%= tuNgayParam != null ? tuNgayParam : "" %>">
+                                <input type="hidden" id="denNgayHidden" value="<%= denNgayParam != null ? denNgayParam : "" %>">
+                            </div>
+                            <div class="col-md-2">
+                                <button class="btn btn-outline-secondary w-100" id="clearDateRange">
+                                    <i class="fa-solid fa-times me-1"></i> Xóa lọc
+                                </button>
                             </div>
                         </div>
                         <div class="row g-4">
@@ -226,8 +320,8 @@
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <h5><i class="fa-solid fa-table me-2"></i>Chi tiết báo cáo nhân viên</h5>
                                 <small class="text-muted">
-                                    Hiển thị <%= baoCaoNhanVien != null ? baoCaoNhanVien.size() : 0 %> nhân viên
-                                    <%= thangParam != null ? "- Tháng " + thangParam + "/" + namParam : "" %>
+                                    Hiển thị <strong><%= baoCaoNhanVien != null ? baoCaoNhanVien.size() : 0 %></strong> nhân viên
+                                    - <%= displayDateRange %>
                                 </small>
                             </div>
                             <table class="table table-bordered align-middle table-hover">
@@ -240,6 +334,7 @@
                                         <th style="width: 12%">Đã hoàn thành</th>
                                         <th style="width: 12%">Đang thực hiện</th>
                                         <th style="width: 10%">Trễ hạn</th>
+                                        <th style="width: 10%">Chưa bắt đầu</th>
                                     </tr>
                                 </thead>
                                 <tbody id="reportTableBody">
@@ -283,13 +378,16 @@
                                         <td class="text-center">
                                             <span class="badge bg-danger"><%= treHan %></span>
                                         </td>
+                                        <td class="text-center">
+                                            <span class="badge bg-secondary"><%= nv.get("chua_bat_dau") != null ? nv.get("chua_bat_dau") : 0 %></span>
+                                        </td>
                                     </tr>
                                     <%
                                         }
                                     } else {
                                     %>
                                     <tr>
-                                        <td colspan="8" class="text-center py-5">
+                                        <td colspan="9" class="text-center py-5">
                                             <i class="fa-solid fa-inbox fa-3x text-muted mb-3"></i>
                                             <br>
                                             <span class="text-muted">Không có dữ liệu báo cáo cho thời gian đã chọn</span>
@@ -354,6 +452,6 @@
             out.println("var barChartData = " + barChartJson + ";");
             %>
         </script>       
-        <script src="<%= request.getContextPath() %>/scripts/report.obf.js?v=20251105"></script>
+        <script src="<%= request.getContextPath() %>/scripts/report.js?v=<%= System.currentTimeMillis() %>"></script>
     </body>
 </html>

@@ -1622,6 +1622,7 @@
                                              data-id="<%= task.get("id") %>"
                                              data-ten="<%= task.get("ten_cong_viec") %>"
                                              data-mo-ta="<%= task.get("mo_ta") %>"
+                                             data-ngay-bat-dau="<%= task.get("ngay_bat_dau") %>"
                                              data-han="<%= task.get("han_hoan_thanh") %>"
                                              data-uu-tien="<%= task.get("muc_do_uu_tien") %>"
                                              data-ten_nguoi_giao="<%= task.get("nguoi_giao_id") %>"
@@ -1684,6 +1685,7 @@
                                                 <th class="sortable" data-sort="nguoi_giao_id">Người giao</th>
                                                 <th class="sortable" data-sort="nguoi_nhan_ten">Người nhận</th>
                                                 <th class="sortable" data-sort="phong_ban_id">Phòng ban</th>
+                                                <th class="sortable" data-sort="ngay_bat_dau">Ngày bắt đầu</th>
                                                 <th class="sortable" data-sort="han_hoan_thanh">Hạn hoàn thành</th>
                                                 <th class="sortable" data-sort="muc_do_uu_tien">Ưu tiên</th>
                                                 <th class="sortable" data-sort="trang_thai">Trạng thái</th>
@@ -1717,6 +1719,7 @@
                                                 data-id="<%= task.get("id") %>"
                                                 data-ten="<%= task.get("ten_cong_viec") %>"
                                                 data-mo-ta="<%= task.get("mo_ta") %>"
+                                                data-ngay-bat-dau="<%= task.get("ngay_bat_dau") %>"
                                                 data-han="<%= task.get("han_hoan_thanh") %>"
                                                 data-uu-tien="<%= task.get("muc_do_uu_tien") %>"
                                                 data-ten_nguoi_giao="<%= task.get("nguoi_giao_id") %>"
@@ -1729,6 +1732,7 @@
                                                 <td><%= task.get("nguoi_giao_id") %></td>
                                                 <td><%= task.get("nguoi_nhan_ten") %></td>
                                                 <td><%= task.get("phong_ban_id") %></td>
+                                                <td><%= task.get("ngay_bat_dau") %></td>
                                                 <td><%= task.get("han_hoan_thanh") %></td>
                                                 <td><span class="badge <%= priorityClass %>"><%= task.get("muc_do_uu_tien") %></span></td>
                                                 <td><span class="badge <%= statusClass %>"><%= task.get("trang_thai") %></span></td>
@@ -1797,6 +1801,7 @@
                                          data-id="<%= task.get("id") %>"
                                          data-ten="<%= task.get("ten_cong_viec") %>"
                                          data-mo-ta="<%= task.get("mo_ta") %>"
+                                         data-ngay-bat-dau="<%= task.get("ngay_bat_dau") %>"
                                          data-han="<%= task.get("han_hoan_thanh") %>"
                                          data-uu-tien="<%= task.get("muc_do_uu_tien") %>"
                                          data-ten_nguoi_giao="<%= task.get("nguoi_giao_id") %>"
@@ -1895,6 +1900,7 @@
                                          data-id="<%= task.get("id") %>"
                                          data-ten="<%= task.get("ten_cong_viec") %>"
                                          data-mo-ta="<%= task.get("mo_ta") %>"
+                                         data-ngay-bat-dau="<%= task.get("ngay_bat_dau") %>"
                                          data-han="<%= task.get("han_hoan_thanh") %>"
                                          data-uu-tien="<%= task.get("muc_do_uu_tien") %>"
                                          data-ten_nguoi_giao="<%= task.get("nguoi_giao_id") %>"
@@ -1974,6 +1980,10 @@
                                         <div class="mb-3">
                                             <label class="form-label"><b>Mô tả</b></label>
                                             <textarea class="form-control" name="mo_ta" id="taskMoTa"></textarea>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label"><b>Ngày bắt đầu</b></label>
+                                            <input type="date" class="form-control" name="ngay_bat_dau">
                                         </div>
                                         <div class="mb-3">
                                             <label class="form-label"><b>Hạn hoàn thành</b></label>
@@ -2067,6 +2077,10 @@
                                                     <div class="mb-2">
                                                         <label class="form-label"><b>Mô tả</b></label>
                                                         <textarea class="form-control" rows="3" name="mo_ta"></textarea>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label class="form-label"><b>Ngày bắt đầu</b></label>
+                                                        <input type="date" class="form-control" name="ngay_bat_dau">
                                                     </div>
                                                     <div class="mb-2">
                                                         <label class="form-label"><b>Hạn hoàn thành</b></label>
@@ -2270,100 +2284,101 @@
                 </div>
             </div>
 
-            <script src="<%= request.getContextPath() %>/scripts/task.obf.js?v=20251105"></script>
+            <script src="<%= request.getContextPath() %>/scripts/task.js?v=<%= System.currentTimeMillis() %>"></script>
             <script>
 
-                // ====== FULLCALENDAR INITIALIZATION ======
-                function initCalendar() {
-                    if (calendar) {
-                        calendar.render();
-                        return;
-                    }
+                                                            // ====== FULLCALENDAR INITIALIZATION ======
+                                                            function initCalendar() {
+                                                                if (calendar) {
+                                                                    calendar.render();
+                                                                    return;
+                                                                }
 
-                    const calendarEl = document.getElementById('taskCalendar');
+                                                                const calendarEl = document.getElementById('taskCalendar');
 
-                    // Prepare events from task list
-                    const events = [];
-                <% for (Map<String, Object> task : taskList) { 
-        String eventClass = "event-not-started";
-        if ("Đang thực hiện".equals(task.get("trang_thai"))) eventClass = "event-in-progress";
-        else if ("Đã hoàn thành".equals(task.get("trang_thai"))) eventClass = "event-completed";
-        else if ("Trễ hạn".equals(task.get("trang_thai"))) eventClass = "event-late";
-                %>
-                    events.push({
-                                        id: '<%= task.get("id") %>',
-                                        title: '<%= task.get("ten_cong_viec") != null ? task.get("ten_cong_viec").toString().replace("'", "\\'") : "" %>',
-                                        start: '<%= task.get("han_hoan_thanh") %>',
-                                        className: '<%= eventClass %>',
-                        extendedProps: {
-                                            nguoiGiao: '<%= task.get("nguoi_giao_id") %>',
-                                            nguoiNhan: '<%= task.get("nguoi_nhan_ten") %>',
-                                            phongBan: '<%= task.get("phong_ban_id") %>',
-                                            uuTien: '<%= task.get("muc_do_uu_tien") %>',
-                                            trangThai: '<%= task.get("trang_thai") %>',
-                                            moTa: '<%= task.get("mo_ta") != null ? task.get("mo_ta").toString().replace("'", "\\'").replace("\n", " ") : "" %>',
-                                            taiLieu: '<%= task.get("tai_lieu_cv") %>',
-                                            fileTaiLieu: '<%= task.get("file_tai_lieu") %>'
-                        }
-                    });
+                                                                // Prepare events from task list
+                                                                const events = [];
+                                                                        <% for (Map<String, Object> task : taskList) { 
+                                                                String eventClass = "event-not-started";
+                                                                if ("Đang thực hiện".equals(task.get("trang_thai"))) eventClass = "event-in-progress";
+                                                                else if ("Đã hoàn thành".equals(task.get("trang_thai"))) eventClass = "event-completed";
+                                                                else if ("Trễ hạn".equals(task.get("trang_thai"))) eventClass = "event-late";
+                                                                        %>
+                                                                events.push({
+                                                                    id: '<%= task.get("id") %>',
+                                                                    title: '<%= task.get("ten_cong_viec") != null ? task.get("ten_cong_viec").toString().replace("'", "\\'") : "" %>',
+                                                                    start: '<%= task.get("ngay_bat_dau") %>',
+                                                                    end: '<%= task.get("han_hoan_thanh") %>',
+                                                                    className: '<%= eventClass %>',
+                                                                    extendedProps: {
+                                                                        nguoiGiao: '<%= task.get("nguoi_giao_id") %>',
+                                                                        nguoiNhan: '<%= task.get("nguoi_nhan_ten") %>',
+                                                                        phongBan: '<%= task.get("phong_ban_id") %>',
+                                                                        uuTien: '<%= task.get("muc_do_uu_tien") %>',
+                                                                        trangThai: '<%= task.get("trang_thai") %>',
+                                                                        moTa: '<%= task.get("mo_ta") != null ? task.get("mo_ta").toString().replace("'", "\\'").replace("\n", " ") : "" %>',
+                                                                        taiLieu: '<%= task.get("tai_lieu_cv") %>',
+                                                                        fileTaiLieu: '<%= task.get("file_tai_lieu") %>'
+                                                                    }
+                                                                });
                 <% } %>
 
-                    calendar = new FullCalendar.Calendar(calendarEl, {
-                        initialView: 'dayGridMonth',
-                        headerToolbar: {
-                            left: 'prev,next today',
-                            center: 'title',
-                            right: 'dayGridMonth,timeGridWeek,timeGridDay'
-                        },
-                        locale: 'vi',
-                        buttonText: {
-                            today: 'Hôm nay',
-                            month: 'Tháng',
-                            week: 'Tuần',
-                            day: 'Ngày'
-                        },
-                        events: events,
-                        editable: true,
-                        eventClick: function (info) {
-                            // Open task detail modal
-                            const event = info.event;
-                            const props = event.extendedProps;
+                                                                calendar = new FullCalendar.Calendar(calendarEl, {
+                                                                    initialView: 'dayGridMonth',
+                                                                    headerToolbar: {
+                                                                        left: 'prev,next today',
+                                                                        center: 'title',
+                                                                        right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                                                                    },
+                                                                    locale: 'vi',
+                                                                    buttonText: {
+                                                                        today: 'Hôm nay',
+                                                                        month: 'Tháng',
+                                                                        week: 'Tuần',
+                                                                        day: 'Ngày'
+                                                                    },
+                                                                    events: events,
+                                                                    editable: true,
+                                                                    eventClick: function (info) {
+                                                                        // Open task detail modal
+                                                                        const event = info.event;
+                                                                        const props = event.extendedProps;
 
-                            const modal = document.getElementById('modalTaskDetail');
-                            const button = document.createElement('button');
-                            button.setAttribute('data-id', event.id);
-                            button.setAttribute('data-ten', event.title);
-                            button.setAttribute('data-mo-ta', props.moTa);
-                            button.setAttribute('data-han', event.startStr);
-                            button.setAttribute('data-uu-tien', props.uuTien);
-                            button.setAttribute('data-ten_nguoi_giao', props.nguoiGiao);
-                            button.setAttribute('data-ten_nguoi_nhan', props.nguoiNhan);
-                            button.setAttribute('data-ten_phong_ban', props.phongBan);
-                            button.setAttribute('data-trang-thai', props.trangThai);
-                            button.setAttribute('data-tai_lieu_cv', props.taiLieu);
-                            button.setAttribute('data-file_tai_lieu', props.fileTaiLieu);
+                                                                        const modal = document.getElementById('modalTaskDetail');
+                                                                        const button = document.createElement('button');
+                                                                        button.setAttribute('data-id', event.id);
+                                                                        button.setAttribute('data-ten', event.title);
+                                                                        button.setAttribute('data-mo-ta', props.moTa);
+                                                                        button.setAttribute('data-ngay-bat-dau', event.startStr);
+                                                                        button.setAttribute('data-han', event.endStr);
+                                                                        button.setAttribute('data-uu-tien', props.uuTien);
+                                                                        button.setAttribute('data-ten_nguoi_giao', props.nguoiGiao);
+                                                                        button.setAttribute('data-ten_nguoi_nhan', props.nguoiNhan);
+                                                                        button.setAttribute('data-ten_phong_ban', props.phongBan);
+                                                                        button.setAttribute('data-trang-thai', props.trangThai);
+                                                                        button.setAttribute('data-tai_lieu_cv', props.taiLieu);
+                                                                        button.setAttribute('data-file_tai_lieu', props.fileTaiLieu);
 
-                            const modalEvent = new Event('show.bs.modal');
-                            modalEvent.relatedTarget = button;
-                            modal.dispatchEvent(modalEvent);
+                                                                        const modalEvent = new Event('show.bs.modal');
+                                                                        modalEvent.relatedTarget = button;
+                                                                        modal.dispatchEvent(modalEvent);
 
-                            new bootstrap.Modal(modal).show();
-                        },
-                        eventDrop: function (info) {
-                            // Update deadline when event is dragged
-                            const newDate = info.event.start.toISOString().split('T')[0];
-                            updateTaskDeadline(info.event.id, newDate);
-                        },
-                        eventResize: function (info) {
-                            const newDate = info.event.end ? info.event.end.toISOString().split('T')[0] :
-                                    info.event.start.toISOString().split('T')[0];
-                            updateTaskDeadline(info.event.id, newDate);
-                        }
-                    });
+                                                                        new bootstrap.Modal(modal).show();
+                                                                    },
+                                                                    eventDrop: function (info) {
+                                                                        // Update deadline when event is dragged
+                                                                        const newDate = info.event.start.toISOString().split('T')[0];
+                                                                        updateTaskDeadline(info.event.id, newDate);
+                                                                    },
+                                                                    eventResize: function (info) {
+                                                                        const newDate = info.event.end ? info.event.end.toISOString().split('T')[0] :
+                                                                                info.event.start.toISOString().split('T')[0];
+                                                                        updateTaskDeadline(info.event.id, newDate);
+                                                                    }
+                                                                });
 
-                    calendar.render();
-                }
+                                                                calendar.render();
+                                                            }
             </script>
-            
     </body>
 </html>

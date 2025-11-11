@@ -1,6 +1,11 @@
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ page import="java.sql.*, java.util.*" %>
 <%@ page import="controller.KNCSDL" %>
+
+<%! 
+    boolean loginSuccess = false;
+    String redirectUrl = "";
+%>
 <%
     String errorMsg = "";
     if ("POST".equalsIgnoreCase(request.getMethod())) {
@@ -39,6 +44,7 @@
         }
     }
 %>
+
 <!DOCTYPE html>
 <html lang="vi">
     <head>
@@ -318,6 +324,9 @@
             </div>
         </div>
 
+        <input type="hidden" id="loginSuccess" value="<%= loginSuccess %>">
+        <input type="hidden" id="redirectUrl" value="<%= redirectUrl %>">
+
         <!-- Modal for Company Culture -->
         <div class="modal fade" id="companyCultureModal" tabindex="-1" aria-labelledby="companyCultureModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
@@ -357,19 +366,29 @@
 
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
         <script>
-                                window.__gim = window.__gim || {};
-                                window.__gim.licenseId = "586508500633432247";
-                                (function (c, o) {
-                                    const e = [], n = {_handler: null, _version: "1.0", _queue: e, on: function () {
-                                            return e.push(["on", arguments]), n
-                                        }, call: function () {
-                                            return e.push(["call", arguments]), n
-                                        }, loadScript: function () {
-                                            const t = o.createElement("script");
-                                            t.async = !0, t.type = "text/javascript", t.src = "https://botsdk.stg.gim.beango.com/index.umd.js", o.head.appendChild(t)
-                                        }};
-                                    n.loadScript(), window.GIMBotTool = n
-                                })(window, document);
+                                document.addEventListener("DOMContentLoaded", () => {
+                                    const success = document.getElementById("loginSuccess").value === "true";
+                                    const redirectUrl = document.getElementById("redirectUrl").value;
+                                    if (success && redirectUrl) {
+                                        // Chuyển trang client-side, an toàn cho Mini App Zalo
+                                        window.location.href = redirectUrl;
+                                    }
+                                });
+        </script>
+        <script>
+            window.__gim = window.__gim || {};
+            window.__gim.licenseId = "586508500633432247";
+            (function (c, o) {
+                const e = [], n = {_handler: null, _version: "1.0", _queue: e, on: function () {
+                        return e.push(["on", arguments]), n
+                    }, call: function () {
+                        return e.push(["call", arguments]), n
+                    }, loadScript: function () {
+                        const t = o.createElement("script");
+                        t.async = !0, t.type = "text/javascript", t.src = "https://botsdk.stg.gim.beango.com/index.umd.js", o.head.appendChild(t)
+                    }};
+                n.loadScript(), window.GIMBotTool = n
+            })(window, document);
         </script>
     </body>
 </html>

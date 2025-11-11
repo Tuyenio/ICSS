@@ -21,7 +21,7 @@
         kn = new KNCSDL();
         thongKeTongQuan = kn.getThongKeTongQuan(sess); // {tong_nhan_vien, tong_phong_ban, tong_cong_viec, ty_le_hoan_thanh}
     thongKeTrangThai = kn.getThongKeCongViecTheoTrangThai(sess); // Map trạng thái
-    barTienDoPhongBan = kn.getDataForBarChart(sess);
+    barTienDoPhongBan = kn.getDataForBarChart2(sess);
     // Thống kê chấm công tháng hiện tại (dùng lại getThongKeChamCong)
     Calendar cal = Calendar.getInstance();
     int thangNow = cal.get(Calendar.MONTH) + 1;
@@ -845,7 +845,7 @@
             document.body.appendChild(attHolder);
         </script>
 
-        <script src="<%= request.getContextPath() %>/scripts/index.obf.js?v=20251105"></script>
+        <script src="<%= request.getContextPath() %>/scripts/index.js?v=<%= System.currentTimeMillis() %>"></script>
 
         <!-- PROFESSIONAL NUMBER COUNTER ANIMATION -->
         <script>

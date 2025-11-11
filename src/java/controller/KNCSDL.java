@@ -28,8 +28,8 @@ public class KNCSDL {
 
     public KNCSDL() throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
-        //this.cn = DriverManager.getConnection(path, "root", "");
-        this.cn = DriverManager.getConnection(path, "icssapp", "StrongPass!2025");
+        this.cn = DriverManager.getConnection(path, "root", "");
+        //this.cn = DriverManager.getConnection(path, "icssapp", "StrongPass!2025");
     }
 
     public ResultSet laydl(String email) throws SQLException {
@@ -1438,57 +1438,100 @@ public class KNCSDL {
         return thongKe;
     }
 
+    // Phương thức lấy báo cáo theo tháng/năm (giữ nguyên để tương thích)
     public List<Map<String, Object>> getBaoCaoTongHopNhanVien(String thang, String nam, String phongBan) throws SQLException {
-        List<Map<String, Object>> baoCao = new ArrayList<>();
-        StringBuilder sql = new StringBuilder();
-
-        sql.append("SELECT nv.id, nv.avatar_url, nv.ho_ten, pb.ten_phong, ");
-        sql.append("COUNT(cv.id) AS so_task, ");
-        sql.append("SUM(CASE WHEN cv.ngay_hoan_thanh IS NOT NULL AND cv.ngay_hoan_thanh <= ? THEN 1 ELSE 0 END) AS da_hoan_thanh, ");
-        sql.append("SUM(CASE WHEN cv.ngay_bat_dau <= ? AND cv.ngay_hoan_thanh IS NULL AND (cv.han_hoan_thanh IS NULL OR cv.han_hoan_thanh >= ?) THEN 1 ELSE 0 END) AS dang_thuc_hien, ");
-        sql.append("SUM(CASE WHEN cv.han_hoan_thanh < ? AND cv.ngay_hoan_thanh IS NULL THEN 1 ELSE 0 END) AS tre_han, ");
-        sql.append("SUM(CASE WHEN cv.ngay_bat_dau > ? THEN 1 ELSE 0 END) AS chua_bat_dau ");
-        sql.append("FROM nhanvien nv ");
-        sql.append("LEFT JOIN phong_ban pb ON nv.phong_ban_id = pb.id ");
-        sql.append("LEFT JOIN cong_viec_nguoi_nhan cvr ON nv.id = cvr.nhan_vien_id ");
-        sql.append("LEFT JOIN cong_viec cv ON cvr.cong_viec_id = cv.id ");
-
-        List<Object> params = new ArrayList<>();
-        List<String> whereConditions = new ArrayList<>();
-
         // Xác định ngày đầu và cuối tháng
         int thangInt = Integer.parseInt(thang);
         int namInt = Integer.parseInt(nam);
         YearMonth ym = YearMonth.of(namInt, thangInt);
         LocalDate ngayDauThang = ym.atDay(1);
         LocalDate ngayCuoiThang = ym.atEndOfMonth();
-        java.sql.Date sqlNgayDauThang = java.sql.Date.valueOf(ngayDauThang);
-        java.sql.Date sqlNgayCuoiThang = java.sql.Date.valueOf(ngayCuoiThang);
 
-        // Thêm ngày cuối tháng 5 lần cho biểu thức CASE
-        for (int i = 0; i < 5; i++) {
-            params.add(sqlNgayCuoiThang);
-        }
+        // Gọi phương thức mới với khoảng thời gian
+        return getBaoCaoTongHopNhanVienByDateRange(
+                java.sql.Date.valueOf(ngayDauThang).toString(),
+                java.sql.Date.valueOf(ngayCuoiThang).toString(),
+                phongBan
+        );
+    }
 
-        // Thêm điều kiện lọc theo tháng/năm của công việc
-        whereConditions.add("(cv.ngay_bat_dau <= ? AND (cv.ngay_hoan_thanh IS NULL OR cv.ngay_hoan_thanh >= ?))");
-        params.add(sqlNgayCuoiThang); // cv.ngay_bat_dau <= ?
-        params.add(sqlNgayDauThang);  // cv.ngay_hoan_thanh >= ?
+    // Phương thức mới: lấy báo cáo theo khoảng thời gian
+    public List<Map<String, Object>> getBaoCaoTongHopNhanVienByDateRange(String tuNgay, String denNgay, String phongBan) throws SQLException {
+        List<Map<String, Object>> baoCao = new ArrayList<>();
 
-        // Lọc phòng ban nếu có
+        StringBuilder sql = new StringBuilder();
+        sql.append("""
+        SELECT 
+            nv.id,
+            nv.avatar_url,
+            nv.ho_ten,
+            pb.ten_phong,
+
+            COUNT(cv.id) AS so_task,
+
+            -- Đã hoàn thành: có ngày hoàn thành trong khoảng
+            SUM(CASE 
+                WHEN cv.ngay_hoan_thanh IS NOT NULL
+                     AND cv.ngay_hoan_thanh BETWEEN ? AND ?
+                THEN 1 ELSE 0 END
+            ) AS da_hoan_thanh,
+
+            -- Đang thực hiện: chưa hoàn thành, đã bắt đầu, chưa trễ hạn
+            SUM(CASE 
+                WHEN cv.ngay_hoan_thanh IS NULL
+                     AND cv.ngay_bat_dau <= ?
+                     AND (cv.han_hoan_thanh IS NULL OR cv.han_hoan_thanh >= ?)
+                THEN 1 ELSE 0 END
+            ) AS dang_thuc_hien,
+
+            -- Trễ hạn: chưa hoàn thành và quá hạn
+            SUM(CASE 
+                WHEN cv.ngay_hoan_thanh IS NULL
+                     AND cv.han_hoan_thanh IS NOT NULL
+                     AND cv.han_hoan_thanh < ?
+                THEN 1 ELSE 0 END
+            ) AS tre_han,
+
+            -- Chưa bắt đầu: ngày bắt đầu sau thời điểm kết thúc
+            SUM(CASE 
+                WHEN cv.ngay_bat_dau > ?
+                THEN 1 ELSE 0 END
+            ) AS chua_bat_dau
+
+        FROM nhanvien nv
+        LEFT JOIN phong_ban pb ON nv.phong_ban_id = pb.id
+        LEFT JOIN cong_viec_nguoi_nhan cvr ON nv.id = cvr.nhan_vien_id
+        LEFT JOIN cong_viec cv ON cvr.cong_viec_id = cv.id
+        WHERE 
+            (cv.ngay_bat_dau <= ? AND (cv.ngay_hoan_thanh IS NULL OR cv.ngay_hoan_thanh >= ?))
+    """);
+
+        // Danh sách tham số
+        List<Object> params = new ArrayList<>();
+
+        java.sql.Date sqlTuNgay = java.sql.Date.valueOf(tuNgay);
+        java.sql.Date sqlDenNgay = java.sql.Date.valueOf(denNgay);
+
+        // Gán đúng thứ tự các tham số ? trong SQL
+        params.add(sqlTuNgay);   // 1 - BETWEEN start
+        params.add(sqlDenNgay);  // 2 - BETWEEN end
+        params.add(sqlDenNgay);  // 3 - đang thực hiện: ngày bắt đầu <= ?
+        params.add(sqlTuNgay);   // 4 - đang thực hiện: hạn >= ?
+        params.add(sqlDenNgay);  // 5 - trễ hạn: hạn < ?
+        params.add(sqlDenNgay);  // 6 - chưa bắt đầu: ngày bắt đầu > ?
+        params.add(sqlDenNgay);  // 7 - WHERE cv.ngay_bat_dau <= ?
+        params.add(sqlTuNgay);   // 8 - WHERE cv.ngay_hoan_thanh >= ?
+
+        // Lọc theo phòng ban nếu có
         if (phongBan != null && !phongBan.trim().isEmpty()) {
-            whereConditions.add("pb.ten_phong = ?");
-            params.add(phongBan.trim());
-        }
-
-        if (!whereConditions.isEmpty()) {
-            sql.append(" WHERE ");
-            sql.append(String.join(" AND ", whereConditions));
+            sql.append(" AND pb.id = ? ");
+            params.add(Integer.parseInt(phongBan.trim()));
         }
 
         sql.append(" GROUP BY nv.id, nv.ho_ten, pb.ten_phong ");
-        sql.append(" ORDER BY nv.ho_ten");
+        sql.append(" ORDER BY nv.ho_ten ");
 
+        // Thực thi
         try (PreparedStatement stmt = cn.prepareStatement(sql.toString())) {
             for (int i = 0; i < params.size(); i++) {
                 stmt.setObject(i + 1, params.get(i));
@@ -1515,7 +1558,7 @@ public class KNCSDL {
     }
 
     // Lấy dữ liệu cho chart pie về trạng thái công việc
-    public Map<String, Object> getDataForPieChart() throws SQLException {
+    public Map<String, Object> getDataForPieChart2() throws SQLException {
         Map<String, Object> data = new HashMap<>();
         List<String> labels = new ArrayList<>();
         List<Integer> values = new ArrayList<>();
@@ -1535,8 +1578,145 @@ public class KNCSDL {
         return data;
     }
 
+    public Map<String, Object> getDataForPieChart(String tuNgay, String denNgay, String phongBan) throws SQLException {
+        Map<String, Object> data = new HashMap<>();
+        List<String> labels = new ArrayList<>();
+        List<Integer> values = new ArrayList<>();
+
+        StringBuilder sql = new StringBuilder("""
+        SELECT cv.trang_thai, COUNT(*) AS so_luong
+        FROM cong_viec cv
+        WHERE 1=1
+    """);
+
+        List<Object> params = new ArrayList<>();
+
+        // Lọc theo khoảng ngày
+        if (tuNgay != null && !tuNgay.isEmpty() && denNgay != null && !denNgay.isEmpty()) {
+            sql.append(" AND (cv.ngay_bat_dau BETWEEN ? AND ? OR cv.ngay_hoan_thanh BETWEEN ? AND ?) ");
+            params.add(java.sql.Date.valueOf(tuNgay));
+            params.add(java.sql.Date.valueOf(denNgay));
+            params.add(java.sql.Date.valueOf(tuNgay));
+            params.add(java.sql.Date.valueOf(denNgay));
+        }
+
+        // Lọc theo phòng ban (nếu có)
+        if (phongBan != null && !phongBan.isEmpty()) {
+            sql.append(" AND cv.phong_ban_id = ? ");
+            params.add(Integer.parseInt(phongBan));
+        }
+
+        sql.append(" GROUP BY cv.trang_thai ORDER BY cv.trang_thai ");
+
+        try (PreparedStatement stmt = cn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                stmt.setObject(i + 1, params.get(i));
+            }
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    labels.add(rs.getString("trang_thai"));
+                    values.add(rs.getInt("so_luong"));
+                }
+            }
+        }
+
+        data.put("labels", labels);
+        data.put("data", values);
+        return data;
+    }
+
+    public Map<String, Object> getDataForBarChart(HttpSession session, String tuNgay, String denNgay, String phongBan) throws SQLException {
+        Map<String, Object> data = new HashMap<>();
+        List<String> labels = new ArrayList<>();
+        List<Double> values = new ArrayList<>();
+
+        String vaiTro = (String) session.getAttribute("vaiTro");
+        Integer userId = null;
+        try {
+            userId = Integer.parseInt(session.getAttribute("userId").toString());
+        } catch (Exception e) {
+        }
+
+        StringBuilder sql = new StringBuilder();
+        List<Object> params = new ArrayList<>();
+
+        if ("Quản lý".equalsIgnoreCase(vaiTro) && userId != null) {
+            // Trưởng phòng: tiến độ trung bình theo nhân viên trong phòng
+            sql.append("""
+            SELECT nv.ho_ten AS ten_nhan_vien,
+                   ROUND(AVG(COALESCE(cv.tinh_trang, 0)), 2) AS tien_do
+            FROM cong_viec cv
+            JOIN nhanvien nv ON cv.nguoi_giao_id = nv.id
+            JOIN phong_ban pb ON nv.phong_ban_id = pb.id
+            WHERE pb.truong_phong_id = ?
+        """);
+            params.add(userId);
+
+            // Lọc theo ngày bắt đầu & hoàn thành
+            if (tuNgay != null && !tuNgay.isEmpty() && denNgay != null && !denNgay.isEmpty()) {
+                sql.append(" AND (cv.ngay_bat_dau BETWEEN ? AND ? OR cv.ngay_hoan_thanh BETWEEN ? AND ?) ");
+                params.add(java.sql.Date.valueOf(tuNgay));
+                params.add(java.sql.Date.valueOf(denNgay));
+                params.add(java.sql.Date.valueOf(tuNgay));
+                params.add(java.sql.Date.valueOf(denNgay));
+            }
+
+            // Lọc theo phòng ban
+            if (phongBan != null && !phongBan.isEmpty()) {
+                sql.append(" AND cv.phong_ban_id = ? ");
+                params.add(Integer.parseInt(phongBan));
+            }
+
+            sql.append(" GROUP BY nv.id, nv.ho_ten ORDER BY nv.ho_ten ");
+        } else {
+            // Admin: tiến độ trung bình theo phòng ban
+            sql.append("""
+                SELECT pb.ten_phong,
+                       ROUND(100 * SUM(CASE WHEN cv.trang_thai = 'Đã hoàn thành' THEN 1 ELSE 0 END) / COUNT(cv.id), 2) AS tien_do
+                FROM cong_viec cv
+                JOIN phong_ban pb ON cv.phong_ban_id = pb.id
+                WHERE 1=1
+            """);
+
+            if (tuNgay != null && !tuNgay.isEmpty() && denNgay != null && !denNgay.isEmpty()) {
+                sql.append(" AND (cv.ngay_bat_dau BETWEEN ? AND ? OR cv.ngay_hoan_thanh BETWEEN ? AND ?) ");
+                params.add(java.sql.Date.valueOf(tuNgay));
+                params.add(java.sql.Date.valueOf(denNgay));
+                params.add(java.sql.Date.valueOf(tuNgay));
+                params.add(java.sql.Date.valueOf(denNgay));
+            }
+
+            if (phongBan != null && !phongBan.isEmpty()) {
+                sql.append(" AND cv.phong_ban_id = ? ");
+                params.add(Integer.parseInt(phongBan));
+            }
+
+            sql.append(" GROUP BY pb.id, pb.ten_phong ORDER BY pb.ten_phong ");
+        }
+
+        try (PreparedStatement stmt = cn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                stmt.setObject(i + 1, params.get(i));
+            }
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    if ("Quản lý".equalsIgnoreCase(vaiTro)) {
+                        labels.add(rs.getString("ten_nhan_vien"));
+                    } else {
+                        labels.add(rs.getString("ten_phong"));
+                    }
+                    values.add(rs.getDouble("tien_do"));
+                }
+            }
+        }
+
+        data.put("labels", labels);
+        data.put("data", values);
+        return data;
+    }
+
     // Lấy dữ liệu cho chart bar về tiến độ phòng ban
-    public Map<String, Object> getDataForBarChart(HttpSession session) throws SQLException {
+    public Map<String, Object> getDataForBarChart2(HttpSession session) throws SQLException {
         Map<String, Object> data = new HashMap<>();
         List<String> labels = new ArrayList<>();
         List<Double> values = new ArrayList<>();
@@ -1549,48 +1729,62 @@ public class KNCSDL {
             userId = null;
         }
 
-        String sql;
-        if ("Quản lý".equalsIgnoreCase(vaiTro) && userId != null) {
-            // Trưởng phòng: thống kê tiến độ trung bình theo nhân viên trong phòng
-            sql = """
-        SELECT nv.ho_ten, AVG(COALESCE(td.phan_tram, 0)) AS tien_do_trung_binh
-        FROM phong_ban pb
-        JOIN nhanvien nv ON pb.id = nv.phong_ban_id
-        LEFT JOIN cong_viec_nguoi_nhan cvr ON nv.id = cvr.nhan_vien_id
-        LEFT JOIN cong_viec cv ON cvr.cong_viec_id = cv.id
-        LEFT JOIN cong_viec_tien_do td ON cv.id = td.cong_viec_id
-        WHERE pb.truong_phong_id = ?
-        GROUP BY nv.id, nv.ho_ten
-        ORDER BY nv.ho_ten
-        """;
+        StringBuilder sql = new StringBuilder();
+        List<Object> params = new ArrayList<>();
 
-            try (PreparedStatement stmt = cn.prepareStatement(sql)) {
-                stmt.setInt(1, userId);
-                try (ResultSet rs = stmt.executeQuery()) {
-                    while (rs.next()) {
-                        labels.add(rs.getString("ho_ten"));
-                        values.add(Math.round(rs.getDouble("tien_do_trung_binh") * 100) / 100.0);
-                    }
-                }
-            }
+        if ("Quản lý".equalsIgnoreCase(vaiTro) && userId != null) {
+            // Trưởng phòng: tiến độ trung bình theo nhân viên trong phòng
+            sql.append("""
+                SELECT 
+                    nv.ho_ten AS ten_nhan_vien,
+                    ROUND(AVG(COALESCE(cv_tiendo.max_tiendo, 0)), 2) AS tien_do
+                FROM phong_ban pb
+                JOIN nhanvien nv ON pb.id = nv.phong_ban_id
+                LEFT JOIN cong_viec_nguoi_nhan cvr ON nv.id = cvr.nhan_vien_id
+                LEFT JOIN (
+                    SELECT cong_viec_id, MAX(phan_tram) AS max_tiendo
+                    FROM cong_viec_tien_do
+                    GROUP BY cong_viec_id
+                ) cv_tiendo ON cvr.cong_viec_id = cv_tiendo.cong_viec_id
+                WHERE pb.truong_phong_id = ?
+                GROUP BY nv.id, nv.ho_ten
+                ORDER BY nv.ho_ten
+            """);
+            params.add(userId);
 
         } else {
-            // Admin hoặc vai trò khác: thống kê theo phòng ban
-            sql = """
-        SELECT pb.ten_phong, AVG(COALESCE(td.phan_tram, 0)) AS tien_do_trung_binh
-        FROM phong_ban pb
-        LEFT JOIN nhanvien nv ON pb.id = nv.phong_ban_id
-        LEFT JOIN cong_viec_nguoi_nhan cvr ON nv.id = cvr.nhan_vien_id
-        LEFT JOIN cong_viec cv ON cvr.cong_viec_id = cv.id
-        LEFT JOIN cong_viec_tien_do td ON cv.id = td.cong_viec_id
-        GROUP BY pb.id, pb.ten_phong
-        ORDER BY pb.ten_phong
-        """;
+            // Admin hoặc vai trò khác: tiến độ trung bình theo phòng ban
+            sql.append("""
+                SELECT 
+                    pb.ten_phong,
+                    ROUND(AVG(cv_avg.max_tiendo), 2) AS tien_do
+                FROM phong_ban pb
+                LEFT JOIN (
+                    SELECT 
+                        cv.phong_ban_id,
+                        MAX(ctd.phan_tram) AS max_tiendo
+                    FROM cong_viec cv
+                    LEFT JOIN cong_viec_tien_do ctd ON cv.id = ctd.cong_viec_id
+                    GROUP BY cv.id, cv.phong_ban_id
+                ) cv_avg ON pb.id = cv_avg.phong_ban_id
+                GROUP BY pb.id, pb.ten_phong
+                ORDER BY pb.ten_phong
+            """);
+        }
 
-            try (PreparedStatement stmt = cn.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
+        try (PreparedStatement stmt = cn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                stmt.setObject(i + 1, params.get(i));
+            }
+
+            try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
-                    labels.add(rs.getString("ten_phong"));
-                    values.add(Math.round(rs.getDouble("tien_do_trung_binh") * 100) / 100.0);
+                    if ("Quản lý".equalsIgnoreCase(vaiTro)) {
+                        labels.add(rs.getString("ten_nhan_vien"));
+                    } else {
+                        labels.add(rs.getString("ten_phong"));
+                    }
+                    values.add(rs.getDouble("tien_do"));
                 }
             }
         }
@@ -3231,7 +3425,7 @@ public class KNCSDL {
         // Truy vấn chính
         StringBuilder sql = new StringBuilder();
         sql.append("SELECT cv.id, cv.du_an_id, cv.ten_cong_viec, cv.mo_ta, cv.muc_do_uu_tien, cv.trang_thai, ")
-                .append("cv.tai_lieu_cv, cv.file_tai_lieu, cv.han_hoan_thanh, cv.nhac_viec, ")
+                .append("cv.tai_lieu_cv, cv.file_tai_lieu, cv.han_hoan_thanh, cv.ngay_bat_dau, cv.nhac_viec, ")
                 .append("ng1.ho_ten AS nguoi_giao_ten, ")
                 .append("GROUP_CONCAT(DISTINCT ng2.ho_ten ORDER BY ng2.ho_ten SEPARATOR ', ') AS nguoi_nhan_ten, ")
                 .append("MAX(td.phan_tram) AS phan_tram, ")
@@ -3281,6 +3475,7 @@ public class KNCSDL {
                     task.put("tai_lieu_cv", rs.getString("tai_lieu_cv"));
                     task.put("file_tai_lieu", rs.getString("file_tai_lieu"));
                     task.put("han_hoan_thanh", rs.getDate("han_hoan_thanh"));
+                    task.put("ngay_bat_dau", rs.getDate("ngay_bat_dau"));
                     task.put("nhac_viec", rs.getString("nhac_viec"));
                     tasks.add(task);
                 }
@@ -3711,7 +3906,7 @@ public class KNCSDL {
 
         StringBuilder sql = new StringBuilder();
         sql.append("SELECT cv.id, cv.du_an_id, cv.ten_cong_viec, cv.mo_ta, cv.muc_do_uu_tien, cv.trang_thai, ")
-                .append("cv.tai_lieu_cv, cv.file_tai_lieu, cv.han_hoan_thanh, ")
+                .append("cv.tai_lieu_cv, cv.file_tai_lieu, cv.ngay_bat_dau, cv.han_hoan_thanh, ")
                 .append("ng1.ho_ten AS nguoi_giao_ten, ")
                 .append("GROUP_CONCAT(DISTINCT ng2.ho_ten ORDER BY ng2.ho_ten SEPARATOR ', ') AS nguoi_nhan_ten, ")
                 .append("MAX(td.phan_tram) AS phan_tram, ")
@@ -3763,6 +3958,7 @@ public class KNCSDL {
                     task.put("tai_lieu_cv", rs.getString("tai_lieu_cv"));
                     task.put("file_tai_lieu", rs.getString("file_tai_lieu"));
                     task.put("han_hoan_thanh", rs.getDate("han_hoan_thanh"));
+                    task.put("ngay_bat_dau", rs.getDate("ngay_bat_dau"));
                     tasks.add(task);
                 }
             }
@@ -3800,7 +3996,7 @@ public class KNCSDL {
         // 🔹 Xây dựng câu SQL chính
         StringBuilder sql = new StringBuilder();
         sql.append("SELECT cv.id, cv.du_an_id, cv.ten_cong_viec, cv.mo_ta, cv.muc_do_uu_tien, cv.trang_thai, cv.tinh_trang, ")
-                .append("cv.tai_lieu_cv, cv.file_tai_lieu, cv.han_hoan_thanh, ")
+                .append("cv.tai_lieu_cv, cv.file_tai_lieu, cv.ngay_bat_dau, cv.han_hoan_thanh, ")
                 .append("ng1.ho_ten AS nguoi_giao_ten, ")
                 .append("GROUP_CONCAT(DISTINCT ng2.ho_ten ORDER BY ng2.ho_ten SEPARATOR ', ') AS nguoi_nhan_ten, ")
                 .append("MAX(td.phan_tram) AS phan_tram, ")
@@ -3852,6 +4048,7 @@ public class KNCSDL {
                     task.put("tai_lieu_cv", rs.getString("tai_lieu_cv"));
                     task.put("file_tai_lieu", rs.getString("file_tai_lieu"));
                     task.put("han_hoan_thanh", rs.getDate("han_hoan_thanh"));
+                    task.put("ngay_bat_dau", rs.getDate("ngay_bat_dau"));
                     tasks.add(task);
                 }
             }

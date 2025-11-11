@@ -243,6 +243,7 @@
                         const id = button.getAttribute("data-id") || "";
                         const tenCV = button.getAttribute("data-ten") || "";
                         const moTa = button.getAttribute("data-mo-ta") || "";
+                        const ngay_bat_dau = button.getAttribute("data-ngay-bat-dau") || "";
                         const hanHT = button.getAttribute("data-han") || "";
                         const uuTien = button.getAttribute("data-uu-tien") || "";
                         const nguoiGiao = button.getAttribute("data-ten_nguoi_giao") || "";
@@ -255,6 +256,7 @@
                         modal.querySelector('[name="task_id"]').value = id;
                         modal.querySelector('[name="ten_cong_viec"]').value = tenCV;
                         modal.querySelector('[name="mo_ta"]').value = moTa;
+                        modal.querySelector('[name="ngay_bat_dau"]').value = ngay_bat_dau;
                         modal.querySelector('[name="han_hoan_thanh"]').value = hanHT;
                         selectOptionByText(modal.querySelector('[name="muc_do_uu_tien"]'), uuTien);
                         selectOptionByText(modal.querySelector('[name="ten_nguoi_giao"]'), nguoiGiao);
@@ -619,6 +621,7 @@
                                 + ' data-id="' + (task.id || '') + '"'
                                 + ' data-ten="' + (task.ten_cong_viec || '') + '"'
                                 + ' data-mo-ta="' + (task.mo_ta || '') + '"'
+                                + ' data-ngay-bat-dau="' + (task.ngay_bat_dau || '') + '"'
                                 + ' data-han="' + (task.han_hoan_thanh || '') + '"'
                                 + ' data-uu-tien="' + (task.muc_do_uu_tien || '') + '"'
                                 + ' data-ten_nguoi_giao="' + (task.nguoi_giao_id || '') + '"'
@@ -631,6 +634,7 @@
                                 + '    <td>' + (task.nguoi_giao_id || '') + '</td>'
                                 + '    <td>' + (task.nguoi_nhan_ten || '') + '</td>'
                                 + '    <td>' + (task.phong_ban_id || '') + '</td>'
+                                + '    <td>' + (task.ngay_bat_dau || '') + '</td>'
                                 + '    <td>' + (task.han_hoan_thanh || '') + '</td>'
                                 + '    <td><span class="badge ' + priorityClass + '">' + (task.muc_do_uu_tien || '') + '</span></td>'
                                 + '    <td><span class="badge ' + statusClass + '">' + (task.trang_thai || '') + '</span></td>'
@@ -676,7 +680,8 @@
                         calendar.addEvent({
                             id: task.id,
                             title: task.ten_cong_viec || '',
-                            start: task.han_hoan_thanh,
+                            start: task.ngay_bat_dau,
+                            end: task.han_hoan_thanh,
                             className: eventClass,
                             extendedProps: {
                                 nguoiGiao: task.nguoi_giao_id || '',
