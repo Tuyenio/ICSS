@@ -1901,7 +1901,7 @@ public class KNCSDL {
         List<Map<String, Object>> danhSach = new ArrayList<>();
         StringBuilder sql = new StringBuilder();
 
-        sql.append("SELECT cc.id, cc.nhan_vien_id, cc.ngay, cc.check_in, cc.check_out, ");
+        sql.append("SELECT cc.id, cc.nhan_vien_id, cc.ngay, cc.check_in, cc.check_out, cc.bao_cao, ");
         sql.append("nv.ho_ten, nv.avatar_url, nv.ngay_vao_lam, nv.luong_co_ban, ");
         sql.append("pb.ten_phong, ");
 
@@ -1981,6 +1981,7 @@ public class KNCSDL {
                     record.put("so_gio_lam", rs.getDouble("so_gio_lam"));
                     record.put("trang_thai", rs.getString("trang_thai"));
                     record.put("luong_co_ban", rs.getDouble("luong_co_ban"));
+                    record.put("bao_cao", rs.getString("bao_cao"));
 
                     // 💰 Tính lương theo số giờ làm
                     double luongCoBan = rs.getDouble("luong_co_ban");
@@ -2335,7 +2336,7 @@ public class KNCSDL {
     public List<Map<String, Object>> getLichSuChamCongUser(int nhanVienId, int thang, int nam) throws SQLException {
         List<Map<String, Object>> lichSu = new ArrayList<>();
 
-        String sql = "SELECT ngay, check_in, check_out, "
+        String sql = "SELECT id, ngay, check_in, check_out, bao_cao, "
                 + "CASE "
                 + "  WHEN check_in IS NULL OR check_out IS NULL THEN 0 "
                 + "  ELSE ROUND(TIMESTAMPDIFF(MINUTE, check_in, check_out) / 60, 2) "
@@ -2364,11 +2365,13 @@ public class KNCSDL {
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     Map<String, Object> record = new HashMap<>();
+                    record.put("id", rs.getInt("id"));
                     record.put("ngay", rs.getDate("ngay"));
                     record.put("check_in", rs.getTime("check_in"));
                     record.put("check_out", rs.getTime("check_out"));
                     record.put("so_gio_lam", rs.getDouble("so_gio_lam"));
                     record.put("trang_thai", rs.getString("trang_thai"));
+                    record.put("bao_cao", rs.getString("bao_cao"));
                     lichSu.add(record);
                 }
             }
@@ -4236,6 +4239,92 @@ public class KNCSDL {
             ps.setString(3, moTaThayDoi);
             return ps.executeUpdate() > 0;
         }
+    }
+
+    /**
+     * Gửi báo cáo cho bản ghi chấm công
+     * @param attendanceId ID của bản ghi chấm công
+     * @param reportContent Nội dung báo cáo
+     * @param nhanVienId ID nhân viên gửi báo cáo (để xác thực)
+     * @return true nếu thành công, false nếu thất bại
+     * @throws SQLException 
+     */
+    public boolean guiBaoCaoChamCong(int attendanceId, String reportContent, int nhanVienId) throws SQLException {
+        String sql = "UPDATE cham_cong SET bao_cao = ? WHERE id = ? AND nhan_vien_id = ?";
+        
+        try (PreparedStatement stmt = this.cn.prepareStatement(sql)) {
+            stmt.setString(1, reportContent);
+            stmt.setInt(2, attendanceId);
+            stmt.setInt(3, nhanVienId);
+            
+            int rowsUpdated = stmt.executeUpdate();
+            return rowsUpdated > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * Lấy danh sách báo cáo chấm công của nhân viên
+     * @param nhanVienId ID nhân viên
+     * @return List các báo cáo có nội dung
+     * @throws SQLException
+     */
+    public List<Map<String, Object>> getBaoCaoChamCongByNhanVien(int nhanVienId) throws SQLException {
+        List<Map<String, Object>> reports = new ArrayList<>();
+        
+        String sql = "SELECT ngay, bao_cao FROM cham_cong " +
+                    "WHERE nhan_vien_id = ? AND bao_cao IS NOT NULL AND bao_cao != '' " +
+                    "ORDER BY ngay DESC LIMIT 10";
+        
+        try (PreparedStatement stmt = this.cn.prepareStatement(sql)) {
+            stmt.setInt(1, nhanVienId);
+            
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> report = new HashMap<>();
+                    report.put("ngay", rs.getDate("ngay"));
+                    report.put("bao_cao", rs.getString("bao_cao"));
+                    reports.add(report);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        
+        return reports;
+    }
+
+    /**
+     * Lấy báo cáo chấm công theo ID chấm công cụ thể
+     * @param attendanceId ID chấm công
+     * @return Map chứa thông tin báo cáo hoặc null nếu không có
+     * @throws SQLException
+     */
+    public Map<String, Object> getBaoCaoChamCongByAttendanceId(int attendanceId) throws SQLException {
+        String sql = "SELECT cc.ngay, cc.bao_cao, nv.ho_ten " +
+                    "FROM cham_cong cc " +
+                    "LEFT JOIN nhanvien nv ON cc.nhan_vien_id = nv.id " +
+                    "WHERE cc.id = ?";
+        
+        try (PreparedStatement stmt = this.cn.prepareStatement(sql)) {
+            stmt.setInt(1, attendanceId);
+            
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    Map<String, Object> report = new HashMap<>();
+                    report.put("ngay", rs.getDate("ngay"));
+                    report.put("bao_cao", rs.getString("bao_cao"));
+                    report.put("ho_ten", rs.getString("ho_ten"));
+                    return report;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        
+        return null;
     }
 
     public void close() throws SQLException {

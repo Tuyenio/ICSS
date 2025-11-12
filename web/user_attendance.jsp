@@ -295,6 +295,95 @@
                     padding: 4px 8px;
                 }
             }
+
+            /* ==== MODAL STYLES ==== */
+            .modal-content {
+                border-radius: 8px;
+                border: 1px solid #dee2e6;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            }
+
+            .modal-header {
+                background: #fff;
+                border-bottom: 1px solid #dee2e6;
+            }
+
+            .modal-header .btn-close {
+                background: transparent;
+                border: none;
+                opacity: 0.6;
+            }
+
+            .modal-header .btn-close:hover {
+                opacity: 1;
+            }
+
+            .modal-body {
+                padding: 20px 24px;
+            }
+
+            .modal-footer {
+                background: #f8f9fa;
+                border-top: 1px solid #dee2e6;
+                padding: 16px 24px;
+            }
+
+            .form-control {
+                border: 1px solid #dee2e6;
+                border-radius: 4px;
+                padding: 8px 12px;
+                font-size: 14px;
+            }
+
+            .form-control:focus {
+                border-color: #0d6efd;
+                box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+            }
+
+            .btn {
+                border-radius: 4px;
+                font-size: 14px;
+                font-weight: 500;
+                padding: 8px 16px;
+            }
+
+            .btn-primary {
+                background-color: #0d6efd;
+                border-color: #0d6efd;
+            }
+
+            .btn-primary:hover {
+                background-color: #0b5ed7;
+                border-color: #0a58ca;
+            }
+
+            .btn-light {
+                background-color: #f8f9fa;
+                border-color: #f8f9fa;
+                color: #6c757d;
+            }
+
+            .btn-light:hover {
+                background-color: #e9ecef;
+                border-color: #dae0e5;
+                color: #6c757d;
+            }
+
+            /* Report button styles */
+            .btn-report {
+                background-color: #198754;
+                border-color: #198754;
+                color: #fff;
+                padding: 4px 8px;
+                font-size: 12px;
+                border-radius: 4px;
+            }
+
+            .btn-report:hover {
+                background-color: #157347;
+                border-color: #146c43;
+                color: #fff;
+            }
         </style>
         <script>
             var USER_PAGE_TITLE = '<i class="fa-solid fa-calendar-check me-2"></i>Chấm công';
@@ -418,6 +507,7 @@
                                 <th>Check-out</th>
                                 <th>Số giờ</th>
                                 <th>Trạng thái</th>
+                                <th>Báo cáo</th>
                             </tr>
                         </thead>
                         <tbody id="attendanceTableBody">
@@ -439,17 +529,75 @@
                                     %>
                                     <span class="badge <%=badgeClass%>"><%=trangThai%></span>
                                 </td>
+                                <td class="text-center">
+                                    <%
+                                        Integer attendanceId = (Integer) record.get("id");
+                                        String baoCao = (String) record.get("bao_cao");
+                                        if (baoCao != null && !baoCao.trim().isEmpty()) {
+                                    %>
+                                        <button type="button" class="btn btn-sm btn-success" disabled title="Đã gửi báo cáo">
+                                            <i class="fas fa-check me-1"></i> Đã gửi
+                                        </button>
+                                    <% } else { %>
+                                        <button type="button" class="btn btn-sm btn-primary btn-report" 
+                                                data-attendance-id="<%= attendanceId %>" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#modalSendReport"
+                                                title="Gửi báo cáo">
+                                            <i class="fas fa-paper-plane me-1"></i> Gửi báo cáo
+                                        </button>
+                                    <% } %>
+                                </td>
                             </tr>
                             <% } %>
                             <% } else { %>
                             <tr>
-                                <td colspan="5" class="text-center text-muted">
+                                <td colspan="6" class="text-center text-muted">
                                     <i class="fa-solid fa-inbox"></i> Chưa có dữ liệu chấm công tháng này
                                 </td>
                             </tr>
                             <% } %>
                         </tbody>
                     </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Gửi Báo cáo -->
+        <div class="modal fade" id="modalSendReport" tabindex="-1" aria-labelledby="modalSendReportLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header border-0 pb-0">
+                        <h5 class="modal-title fw-bold text-dark" id="modalSendReportLabel">
+                            <i class="fas fa-paper-plane me-2 text-primary" aria-hidden="true"></i>Gửi báo cáo
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form id="formSendReport">
+                        <div class="modal-body pt-2">
+                            <input type="hidden" id="reportAttendanceId" name="attendanceId">
+                            <div class="mb-4">
+                                <label for="reportContent" class="form-label text-secondary fw-medium">
+                                    Nội dung báo cáo
+                                </label>
+                                <textarea class="form-control border-1" id="reportContent" name="reportContent" 
+                                          rows="6" placeholder="Nhập nội dung báo cáo của bạn..." required
+                                          style="resize: none; border-color: #dee2e6;"></textarea>
+                                <div class="form-text text-muted">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Mô tả chi tiết tình huống hoặc lý do cần báo cáo
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer border-0 pt-0">
+                            <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">
+                                Đóng
+                            </button>
+                            <button type="submit" class="btn btn-primary px-4" id="btnSubmitReport">
+                                Gửi báo cáo
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>

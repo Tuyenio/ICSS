@@ -5,6 +5,102 @@
                                 var currentUserEmail = '<%= emailSession %>';
 
                                 $(document).ready(function () {
+                                    console.log('Document ready - jQuery version:', $.fn.jquery);
+                                    console.log('Form element:', $('#formSendReport').length);
+                                    console.log('Button element:', $('#btnSubmitReport').length);
+
+                                    // Xử lý modal gửi báo cáo
+                                    $('.btn-report').click(function() {
+                                        const attendanceId = $(this).data('attendance-id');
+                                        $('#reportAttendanceId').val(attendanceId);
+                                        $('#reportContent').val('');
+                                        console.log('Modal opened with attendance ID:', attendanceId); // Debug
+                                    });
+
+                                    // Xử lý gửi báo cáo - Form submit
+                                    $(document).on('submit', '#formSendReport', function(e) {
+                                        e.preventDefault();
+                                        console.log('Form submitted via document handler'); // Debug
+                                        submitReport();
+                                    });
+
+                                    // Xử lý gửi báo cáo - Button click backup
+                                    $(document).on('click', '#btnSubmitReport', function(e) {
+                                        e.preventDefault();
+                                        console.log('Button clicked via document handler'); // Debug
+                                        submitReport();
+                                    });
+
+                                    // Hàm gửi báo cáo
+                                    function submitReport() {
+                                        console.log('submitReport function called'); // Debug
+                                        
+                                        const attendanceId = $('#reportAttendanceId').val();
+                                        const reportContent = $('#reportContent').val().trim();
+                                        
+                                        console.log('Attendance ID:', attendanceId); // Debug
+                                        console.log('Report Content:', reportContent); // Debug
+                                        
+                                        if (!attendanceId || !reportContent) {
+                                            Swal.fire({
+                                                icon: 'warning',
+                                                title: 'Thiếu thông tin!',
+                                                text: 'Vui lòng nhập đầy đủ nội dung báo cáo.',
+                                                confirmButtonText: 'OK'
+                                            });
+                                            return;
+                                        }
+                                        
+                                        showLoading();
+                                        console.log('Sending AJAX request...'); // Debug
+                                        
+                                        $.ajax({
+                                            url: './userChamCong',
+                                            type: 'POST',
+                                            data: {
+                                                action: 'send_report',
+                                                attendanceId: attendanceId,
+                                                reportContent: reportContent
+                                            },
+                                            dataType: 'json',
+                                            success: function(response) {
+                                                console.log('AJAX Success:', response); // Debug
+                                                hideLoading();
+                                                if (response.success) {
+                                                    $('#modalSendReport').modal('hide');
+                                                    Swal.fire({
+                                                        icon: 'success',
+                                                        title: 'Gửi thành công!',
+                                                        text: response.message,
+                                                        confirmButtonText: 'OK',
+                                                        confirmButtonColor: '#198754'
+                                                    }).then(() => {
+                                                        location.reload();
+                                                    });
+                                                } else {
+                                                    Swal.fire({
+                                                        icon: 'error',
+                                                        title: 'Gửi thất bại!',
+                                                        text: response.message,
+                                                        confirmButtonText: 'OK',
+                                                        confirmButtonColor: '#dc3545'
+                                                    });
+                                                }
+                                            },
+                                            error: function(xhr, status, error) {
+                                                console.log('AJAX Error:', xhr, status, error); // Debug
+                                                console.log('Response Text:', xhr.responseText); // Debug
+                                                hideLoading();
+                                                Swal.fire({
+                                                    icon: 'error',
+                                                    title: 'Lỗi kết nối!',
+                                                    text: 'Không thể kết nối đến server. Chi tiết lỗi: ' + status,
+                                                    confirmButtonText: 'OK',
+                                                    confirmButtonColor: '#dc3545'
+                                                });
+                                            }
+                                        });
+                                    }
 
                                     // Hàm tính khoảng cách giữa 2 điểm (Haversine)
                                     function calculateDistance(lat1, lon1, lat2, lon2) {

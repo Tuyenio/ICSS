@@ -257,6 +257,18 @@
                 }
             }
 
+            /* ==== NOTIFICATION BADGE ==== */
+            .position-relative .badge {
+                animation: pulse 2s infinite;
+                box-shadow: 0 0 8px rgba(220, 53, 69, 0.4);
+            }
+
+            @keyframes pulse {
+                0% { transform: scale(1); }
+                50% { transform: scale(1.1); }
+                100% { transform: scale(1); }
+            }
+
             /* ==== RESPONSIVE ==== */
             @media (max-width: 992px) {
                 .main-content {
@@ -390,17 +402,30 @@
                                         </td>
                                         <td>
                                             <div class="action-buttons">
-                                                <button class="btn btn-sm btn-info rounded-circle"
+                                                <button class="btn btn-sm btn-info rounded-circle position-relative"
                                                         data-bs-toggle="modal" data-bs-target="#modalDetailAttendance"
-                                                        data-id="<%= item.get("nhan_vien_id") %>"><i
-                                                        class="fa-solid fa-eye"></i></button>
+                                                        data-id="<%= item.get("id") %>">
+                                                    <i class="fa-solid fa-eye"></i>
+                                                    <% 
+                                                        String baoCao = (String) item.get("bao_cao");
+                                                        if (baoCao != null && !baoCao.trim().isEmpty()) {
+                                                    %>
+                                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" 
+                                                          style="font-size: 0.6rem; padding: 0.2rem 0.4rem;">
+                                                        !
+                                                        <span class="visually-hidden">Có báo cáo mới</span>
+                                                    </span>
+                                                    <% } %>
+                                                </button>
                                                 <button class="btn btn-sm btn-warning rounded-circle"
                                                         data-bs-toggle="modal" data-bs-target="#modalEditAttendance"
-                                                        data-id="<%= item.get("id") %>"><i
-                                                        class="fa-solid fa-pen"></i></button>
+                                                        data-id="<%= item.get("id") %>">
+                                                    <i class="fa-solid fa-pen"></i>
+                                                </button>
                                                 <button class="btn btn-sm btn-danger rounded-circle"
-                                                        onclick="deleteAttendance('<%= item.get("id") %>');"><i
-                                                        class="fa-solid fa-trash"></i></button>
+                                                        onclick="deleteAttendance('<%= item.get("id") %>');">
+                                                    <i class="fa-solid fa-trash"></i>
+                                                </button>
                                             </div>
                                         </td>
                                     </tr>
@@ -422,61 +447,50 @@
                         <div class="modal-dialog">
                             <div class="modal-content">
                                 <div class="modal-header">
-                                    <h5 class="modal-title"><i class="fa-solid fa-calendar-day"></i> Chi tiết chấm
-                                        công</h5>
+                                    <h5 class="modal-title"><i class="fa-solid fa-calendar-day"></i> Chi tiết chấm công</h5>
                                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                 </div>
                                 <div class="modal-body">
                                     <ul class="nav nav-tabs mb-3" id="attendanceDetailTab" role="tablist">
                                         <li class="nav-item" role="presentation">
                                             <button class="nav-link active" id="tab-att-info" data-bs-toggle="tab"
-                                                    data-bs-target="#tabAttInfo" type="button" role="tab">Thông
-                                                tin</button>
+                                                    data-bs-target="#tabAttInfo" type="button" role="tab">Thông tin</button>
                                         </li>
                                         <li class="nav-item" role="presentation">
-                                            <button class="nav-link" id="tab-att-history" data-bs-toggle="tab"
-                                                    data-bs-target="#tabAttHistory" type="button" role="tab">Lịch sử
-                                                chấm công</button>
-                                        </li>
-                                        <li class="nav-item" role="presentation">
-                                            <button class="nav-link" id="tab-att-kpi" data-bs-toggle="tab"
-                                                    data-bs-target="#tabAttKPI" type="button" role="tab">Lương &
-                                                KPI</button>
+                                            <button class="nav-link" id="tab-att-report" data-bs-toggle="tab"
+                                                    data-bs-target="#tabAttReport" type="button" role="tab">Báo cáo</button>
                                         </li>
                                     </ul>
                                     <div class="tab-content" id="attendanceDetailTabContent">
                                         <div class="tab-pane fade show active" id="tabAttInfo" role="tabpanel">
                                             <div class="row">
-                                                <div class="col-md-3 text-center">
-                                                    <img src="https://i.pravatar.cc/100?img=1"
-                                                         class="rounded-circle mb-2" width="80">
-                                                    <div class="fw-bold">Nguyễn Văn A</div>
-                                                    <div class="text-muted small">Kỹ thuật</div>
+                                                <div class="col-md-4 text-center">
+                                                    <img id="modalEmployeeAvatar" src="" class="rounded-circle mb-2" width="80" alt="Avatar">
+                                                    <div class="fw-bold" id="modalEmployeeName">-</div>
+                                                    <div class="text-muted small" id="modalEmployeeDepartment">-</div>
                                                 </div>
-                                                <div class="col-md-9">
-                                                    <b>Ngày:</b> 10/06/2024<br>
-                                                    <b>Check-in:</b> 08:00<br>
-                                                    <b>Check-out:</b> 17:00<br>
-                                                    <b>Số giờ:</b> 8<br>
-                                                    <b>Trạng thái:</b> <span class="badge bg-success">Đủ
-                                                        công</span><br>
-                                                    <b>Lương ngày:</b> 350,000đ
+                                                <div class="col-md-8">
+                                                    <div class="mb-2"><b>Ngày:</b> <span id="modalAttendanceDate">-</span></div>
+                                                    <div class="mb-2"><b>Check-in:</b> <span id="modalCheckIn">-</span></div>
+                                                    <div class="mb-2"><b>Check-out:</b> <span id="modalCheckOut">-</span></div>
+                                                    <div class="mb-2"><b>Số giờ:</b> <span id="modalWorkingHours">-</span></div>
+                                                    <div class="mb-2"><b>Trạng thái:</b> <span id="modalAttendanceStatus" class="badge">-</span></div>
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="tab-pane fade" id="tabAttHistory" role="tabpanel">
-                                            <ul id="attendanceHistoryList">
-                                                <li>09/06/2024: Đủ công</li>
-                                                <li>10/06/2024: Đi trễ</li>
-                                                <!-- AJAX load từ bảng cham_cong -->
-                                            </ul>
-                                        </div>
-                                        <div class="tab-pane fade" id="tabAttKPI" role="tabpanel">
-                                            <ul id="attendanceSalaryKPI">
-                                                <li>Lương tháng 6: 7,800,000đ</li>
-                                                <li>KPI: 8.5</li>
-                                                <!-- AJAX load từ bảng luong và luu_kpi -->
-                                            </ul>
+                                        <div class="tab-pane fade" id="tabAttReport" role="tabpanel">
+                                            <div class="p-3">
+                                                <div class="d-flex align-items-center mb-3">
+                                                    <i class="fas fa-file-alt text-primary me-2"></i>
+                                                    <h6 class="mb-0">Báo cáo từ nhân viên</h6>
+                                                </div>
+                                                <div id="reportContent">
+                                                    <div class="alert alert-info d-flex align-items-center">
+                                                        <i class="fas fa-info-circle me-2"></i>
+                                                        <span>Chưa có báo cáo nào được gửi.</span>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

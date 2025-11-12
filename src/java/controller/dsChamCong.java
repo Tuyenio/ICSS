@@ -37,6 +37,18 @@ public class dsChamCong extends HttpServlet {
             return;
         }
 
+        if ("getReports".equals(action)) {
+            // Xử lý lấy báo cáo của nhân viên
+            handleGetReports(request, response);
+            return;
+        }
+
+        if ("getReportByAttendance".equals(action)) {
+            // Xử lý lấy báo cáo theo ID chấm công cụ thể
+            handleGetReportByAttendance(request, response);
+            return;
+        }
+
         try {
             KNCSDL kn = new KNCSDL();
 
@@ -169,6 +181,123 @@ public class dsChamCong extends HttpServlet {
         } catch (Exception e) {
             e.printStackTrace();
             resp.getWriter().println("<h3 style='color:red'>❌ Lỗi thêm chấm công: " + e.getMessage() + "</h3>");
+        }
+    }
+
+    private void handleGetReports(HttpServletRequest req, HttpServletResponse resp) 
+            throws IOException {
+        resp.setContentType("application/json;charset=UTF-8");
+        
+        try {
+            String nhanVienIdStr = req.getParameter("nhanVienId");
+            if (nhanVienIdStr == null || nhanVienIdStr.trim().isEmpty()) {
+                resp.getWriter().write("{\"success\": false, \"message\": \"Thiếu ID nhân viên\"}");
+                return;
+            }
+            
+            int nhanVienId = Integer.parseInt(nhanVienIdStr);
+            KNCSDL kn = new KNCSDL();
+            
+            // Lấy danh sách báo cáo của nhân viên
+            List<Map<String, Object>> reports = kn.getBaoCaoChamCongByNhanVien(nhanVienId);
+            
+            StringBuilder json = new StringBuilder();
+            json.append("{\"success\": true, \"reports\": [");
+            
+            for (int i = 0; i < reports.size(); i++) {
+                if (i > 0) json.append(",");
+                Map<String, Object> report = reports.get(i);
+                
+                // Format ngày
+                String ngayStr = "";
+                Object ngayObj = report.get("ngay");
+                if (ngayObj instanceof java.sql.Date) {
+                    java.sql.Date sqlDate = (java.sql.Date) ngayObj;
+                    java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy");
+                    ngayStr = sdf.format(sqlDate);
+                } else {
+                    ngayStr = ngayObj != null ? ngayObj.toString() : "";
+                }
+                
+                // Escape JSON
+                String baoCaoStr = report.get("bao_cao") != null ? report.get("bao_cao").toString() : "";
+                baoCaoStr = baoCaoStr.replace("\"", "\\\"").replace("\n", "\\n").replace("\r", "");
+                
+                json.append("{");
+                json.append("\"ngay\": \"").append(ngayStr).append("\",");
+                json.append("\"bao_cao\": \"").append(baoCaoStr).append("\"");
+                json.append("}");
+            }
+            
+            json.append("]}");
+            resp.getWriter().write(json.toString());
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            resp.getWriter().write("{\"success\": false, \"message\": \"Lỗi server: " + e.getMessage() + "\"}");
+        }
+    }
+
+    private void handleGetReportByAttendance(HttpServletRequest req, HttpServletResponse resp) 
+            throws IOException {
+        resp.setContentType("application/json;charset=UTF-8");
+        
+        try {
+            String attendanceIdStr = req.getParameter("attendanceId");
+            
+            if (attendanceIdStr == null || attendanceIdStr.trim().isEmpty()) {
+                resp.getWriter().write("{\"success\": false, \"message\": \"Thiếu ID chấm công\"}");
+                return;
+            }
+            
+            int attendanceId = Integer.parseInt(attendanceIdStr);
+            KNCSDL kn = new KNCSDL();
+            
+            // Lấy báo cáo của chấm công cụ thể
+            Map<String, Object> report = kn.getBaoCaoChamCongByAttendanceId(attendanceId);
+            
+            if (report != null) {
+                // Format ngày
+                String ngayStr = "";
+                Object ngayObj = report.get("ngay");
+                if (ngayObj instanceof java.sql.Date) {
+                    java.sql.Date sqlDate = (java.sql.Date) ngayObj;
+                    java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy");
+                    ngayStr = sdf.format(sqlDate);
+                } else {
+                    ngayStr = ngayObj != null ? ngayObj.toString() : "";
+                }
+                
+                // Escape JSON
+                String baoCaoStr = report.get("bao_cao") != null ? report.get("bao_cao").toString() : "";
+                
+                String hoTenStr = report.get("ho_ten") != null ? report.get("ho_ten").toString() : "";
+                hoTenStr = hoTenStr.replace("\"", "\\\"");
+                
+                StringBuilder json = new StringBuilder();
+                json.append("{\"success\": true, \"report\": {");
+                json.append("\"ngay\": \"").append(ngayStr).append("\",");
+                json.append("\"ho_ten\": \"").append(hoTenStr).append("\",");
+                
+                if (baoCaoStr != null && !baoCaoStr.trim().isEmpty()) {
+                    baoCaoStr = baoCaoStr.replace("\"", "\\\"").replace("\n", "\\n").replace("\r", "");
+                    json.append("\"bao_cao\": \"").append(baoCaoStr).append("\",");
+                    json.append("\"has_report\": true");
+                } else {
+                    json.append("\"bao_cao\": \"\",");
+                    json.append("\"has_report\": false");
+                }
+                
+                json.append("}}");
+                
+                resp.getWriter().write(json.toString());
+            } else {
+                resp.getWriter().write("{\"success\": false, \"message\": \"Không tìm thấy record chấm công này\"}");
+            }
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            resp.getWriter().write("{\"success\": false, \"message\": \"Lỗi server: " + e.getMessage() + "\"}");
         }
     }
 

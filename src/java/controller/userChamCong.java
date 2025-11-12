@@ -151,6 +151,33 @@ public class userChamCong extends HttpServlet {
                     response.getWriter().write("{\"success\": false, \"message\": \"Lỗi check-out, vui lòng thử lại!\"}");
                 }
 
+            } else if ("send_report".equals(action)) {
+                // Xử lý gửi báo cáo
+                String attendanceIdStr = request.getParameter("attendanceId");
+                String reportContent = request.getParameter("reportContent");
+                
+                if (attendanceIdStr == null || reportContent == null || reportContent.trim().isEmpty()) {
+                    response.getWriter().write("{\"success\": false, \"message\": \"Thiếu thông tin báo cáo\"}");
+                    return;
+                }
+                
+                try {
+                    int attendanceId = Integer.parseInt(attendanceIdStr);
+                    boolean success = kn.guiBaoCaoChamCong(attendanceId, reportContent.trim(), nhanVienId);
+                    
+                    if (success) {
+                        response.getWriter().write("{\"success\": true, \"message\": \"Gửi báo cáo thành công!\"}");
+                    } else {
+                        response.getWriter().write("{\"success\": false, \"message\": \"Không thể gửi báo cáo. Vui lòng thử lại!\"}");
+                    }
+                } catch (NumberFormatException e) {
+                    response.getWriter().write("{\"success\": false, \"message\": \"Dữ liệu không hợp lệ\"}");
+                }
+
+            } else if ("test".equals(action)) {
+                // Test action
+                response.getWriter().write("{\"success\": true, \"message\": \"Test thành công!\"}");
+
             } else {
                 response.getWriter().write("{\"success\": false, \"message\": \"Hành động không hợp lệ\"}");
             }
