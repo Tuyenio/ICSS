@@ -474,7 +474,7 @@
 
                     const taskId = $('#taskId').val(); // nếu có ID thì là sửa, không thì là thêm
                     const formData = new FormData(this); // lấy dữ liệu form bao gồm cả file
-                    const url = taskId ? './capNhatCongviec' : './themCongviec';
+                    const url = taskId ? './suaCongviec' : './themCongviec';
 
                     $.ajax({
                         url: url,

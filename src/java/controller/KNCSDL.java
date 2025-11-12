@@ -459,20 +459,21 @@ public class KNCSDL {
     }
 
     // Sửa insertTask trả về id mới
-    public int insertTask(int duanid, String ten, String moTa, String han, String uuTien,
+    public int insertTask(int duanid, String ten, String moTa, String ngaybd, String han, String uuTien,
             int giaoId, int phongId, String trangThai, String taiLieu, String file) throws SQLException {
-        String sql = "INSERT INTO cong_viec (du_an_id, ten_cong_viec, mo_ta, han_hoan_thanh, muc_do_uu_tien, nguoi_giao_id, phong_ban_id, trang_thai, tai_lieu_cv, file_tai_lieu) VALUES (?,?,?,?,?,?,?,?,?,?)";
+        String sql = "INSERT INTO cong_viec (du_an_id, ten_cong_viec, mo_ta, ngay_bat_dau, han_hoan_thanh, muc_do_uu_tien, nguoi_giao_id, phong_ban_id, trang_thai, tai_lieu_cv, file_tai_lieu) VALUES (?,?,?,?,?,?,?,?,?,?,?)";
         try (PreparedStatement ps = cn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, duanid);
             ps.setString(2, ten);
             ps.setString(3, moTa);
-            ps.setString(4, han);
-            ps.setString(5, uuTien);
-            ps.setInt(6, giaoId);
-            ps.setInt(7, phongId);
-            ps.setString(8, trangThai);
-            ps.setString(9, taiLieu);
-            ps.setString(10, file);
+            ps.setString(4, ngaybd);
+            ps.setString(5, han);
+            ps.setString(6, uuTien);
+            ps.setInt(7, giaoId);
+            ps.setInt(8, phongId);
+            ps.setString(9, trangThai);
+            ps.setString(10, taiLieu);
+            ps.setString(11, file);
             ps.executeUpdate();
             ResultSet rs = ps.getGeneratedKeys();
             if (rs.next()) {
@@ -482,22 +483,23 @@ public class KNCSDL {
         return -1;
     }
 
-    public void updateTask(int id, String ten, String moTa, String han, String uuTien,
+    public void updateTask(int id, String ten, String moTa,String ngaybd, String han, String uuTien,
             int giaoId, int phongBanId, String trangThai, String tailieu, String file) throws SQLException {
-        String sql = "UPDATE cong_viec SET ten_cong_viec=?, mo_ta=?, han_hoan_thanh=?, muc_do_uu_tien=?, "
+        String sql = "UPDATE cong_viec SET ten_cong_viec=?, mo_ta=?, ngay_bat_dau=?, han_hoan_thanh=?, muc_do_uu_tien=?, "
                 + "nguoi_giao_id=?, phong_ban_id=?, trang_thai=?, tai_lieu_cv=?, file_tai_lieu=? WHERE id=?";
 
         try (PreparedStatement stmt = cn.prepareStatement(sql)) {
             stmt.setString(1, ten);
             stmt.setString(2, moTa);
-            stmt.setDate(3, java.sql.Date.valueOf(han));
-            stmt.setString(4, uuTien);
-            stmt.setInt(5, giaoId);
-            stmt.setInt(6, phongBanId);
-            stmt.setString(7, trangThai);
-            stmt.setString(8, tailieu);
-            stmt.setString(9, file);
-            stmt.setInt(10, id);
+            stmt.setDate(3, java.sql.Date.valueOf(ngaybd));
+            stmt.setDate(4, java.sql.Date.valueOf(han));
+            stmt.setString(5, uuTien);
+            stmt.setInt(6, giaoId);
+            stmt.setInt(7, phongBanId);
+            stmt.setString(8, trangThai);
+            stmt.setString(9, tailieu);
+            stmt.setString(10, file);
+            stmt.setInt(11, id);
             stmt.executeUpdate();
         }
     }

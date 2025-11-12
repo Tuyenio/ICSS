@@ -21,6 +21,7 @@ public class themCongviec extends HttpServlet {
         String duan = getValue(request, "du_an_id");
         String ten = getValue(request, "ten_cong_viec");
         String moTa = getValue(request, "mo_ta");
+        String ngaybd = getValue(request, "ngay_bat_dau");
         String han = getValue(request, "han_hoan_thanh");
         String uuTien = getValue(request, "muc_do_uu_tien");
         String tenNguoiGiao = getValue(request, "ten_nguoi_giao"); 
@@ -73,7 +74,7 @@ public class themCongviec extends HttpServlet {
             String fileDinhKem = String.join(";", filePaths);
 
             // === 2. Thêm công việc mới (DB phải có thêm cột file_dinh_kem) ===
-            int taskId = db.insertTask(duanid,ten, moTa, han, uuTien, giaoId, phongId, trangThai, tailieu, fileDinhKem);
+            int taskId = db.insertTask(duanid,ten, moTa, ngaybd, han, uuTien, giaoId, phongId, trangThai, tailieu, fileDinhKem);
             if (taskId <= 0) {
                 out.print("{\"success\": false, \"message\": \"Không thể thêm công việc.\"}");
                 return;

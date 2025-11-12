@@ -197,6 +197,7 @@ public class suaCongviec extends HttpServlet {
                 
                 String ten = getValue(request, "ten_cong_viec");
                 String moTa = getValue(request, "mo_ta");
+                String ngaybd = getValue(request, "ngay_bat_dau");
                 String han = getValue(request, "han_hoan_thanh");
                 String uuTien = getValue(request, "muc_do_uu_tien");
                 String tenNguoiGiao = getValue(request, "ten_nguoi_giao");
@@ -210,7 +211,7 @@ public class suaCongviec extends HttpServlet {
                 int phongId = Integer.parseInt(tenPhong);
 
                 // 2: Cập nhật task
-                db.updateTask(taskId, ten, moTa, han, uuTien, giaoId, phongId, trangThai, tailieu, fileFinal);
+                db.updateTask(taskId, ten, moTa, ngaybd ,han, uuTien, giaoId, phongId, trangThai, tailieu, fileFinal);
 
                 // 3: Cập nhật người nhận
                 List<Integer> danhSachIdNhan = db.layIdTuDanhSachTen(dsTenNguoiNhan);
@@ -237,6 +238,11 @@ public class suaCongviec extends HttpServlet {
                     String moTaCu = (String) taskCu.get("mo_ta");
                     if (!safeStringEquals(moTaCu, moTa)) {
                         thayDoiList.add("📄 Cập nhật mô tả công việc");
+                    }
+                    
+                    String ngaybdCu = (String) taskCu.get("ngay_bat_dau");
+                    if (!safeStringEquals(ngaybdCu, ngaybd)) {
+                        thayDoiList.add("📅 Đổi ngày bắt đầu: '" + (ngaybdCu != null ? ngaybdCu : "(chưa có)") + "' → '" + ngaybd + "'");
                     }
                     
                     // So sánh hạn hoàn thành
