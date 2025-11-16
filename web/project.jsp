@@ -201,6 +201,45 @@
                                     </div>
                                 </div>
                                 <div class="project-desc mt-2 text-muted">Mô tả: <%= project.get("mo_ta") %></div>
+                                
+                                <%
+                                    // Tính phần trăm tiến độ dự án
+                                    Object tienDoObj = project.get("tien_do");
+                                    int tienDo = 0;
+                                    if (tienDoObj != null) {
+                                        try {
+                                            tienDo = Integer.parseInt(tienDoObj.toString());
+                                        } catch (NumberFormatException e) {
+                                            tienDo = 0;
+                                        }
+                                    }
+                                    
+                                    // Xác định class màu sắc dựa trên tiến độ
+                                    String progressClass = "";
+                                    if (tienDo < 30) {
+                                        progressClass = "bg-danger";
+                                    } else if (tienDo < 70) {
+                                        progressClass = "bg-warning";
+                                    } else {
+                                        progressClass = "bg-success";
+                                    }
+                                %>
+                                
+                                <div class="mt-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <small class="text-muted"><i class="fa-solid fa-tasks me-1"></i>Tiến độ dự án</small>
+                                        <small class="fw-bold text-primary"><%= tienDo %>%</small>
+                                    </div>
+                                    <div class="progress" style="height: 8px; border-radius: 10px;">
+                                        <div class="progress-bar <%= progressClass %>" 
+                                             role="progressbar" 
+                                             style="width: <%= tienDo %>%;" 
+                                             aria-valuenow="<%= tienDo %>" 
+                                             aria-valuemin="0" 
+                                             aria-valuemax="100">
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <%
@@ -313,6 +352,6 @@
                 </div>
             </div>
         </div>
-        <script src="<%= request.getContextPath() %>/scripts/project.obf.js?v=20251105"></script>
+        <script src="<%= request.getContextPath() %>/scripts/project.js?v=20251105"></script>
     </body>
 </html>

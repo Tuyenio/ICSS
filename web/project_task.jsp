@@ -8,17 +8,13 @@
         <meta charset="UTF-8">
         <link rel="icon" type="image/png" href="Img/logoics.png">
         <title>Quản lý Công việc</title>
+        <!-- Bootstrap CSS -->
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
         <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
         <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
         <script src="https://cdn.ckeditor.com/4.22.1/standard/ckeditor.js"></script>
-        <!-- FullCalendar CSS -->
         <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet">
-        <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-        <script src="https://cdn.ckeditor.com/4.22.1/standard/ckeditor.js"></script>
-        <!-- FullCalendar JS -->
         <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <script>
@@ -1519,6 +1515,165 @@
                 margin: 0;
                 font-size: 0.95rem;
             }
+
+            /* ========== PREMIUM CLEAR FILTER BUTTON STYLING ========== */
+            .filter-actions {
+                position: relative;
+            }
+
+            .clear-filter-btn {
+                min-width: 42px;
+                height: 42px;
+                padding: 0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+                border: 1px solid #f87171;
+                color: #dc2626;
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                position: relative;
+                overflow: hidden;
+                box-shadow: 0 2px 8px rgba(248, 113, 113, 0.15);
+            }
+
+            .clear-filter-btn:hover {
+                background: linear-gradient(135deg, #fecaca 0%, #f87171 100%);
+                border-color: #dc2626;
+                color: #fff;
+                transform: translateY(-1px);
+                box-shadow: 0 4px 16px rgba(248, 113, 113, 0.3);
+            }
+
+            .clear-filter-btn:active {
+                transform: translateY(0);
+                box-shadow: 0 2px 4px rgba(248, 113, 113, 0.2);
+            }
+
+            .clear-filter-btn i {
+                font-size: 14px;
+                transition: transform 0.2s ease;
+            }
+
+            .clear-filter-btn:hover i {
+                transform: rotate(90deg);
+            }
+
+            /* Animation for show/hide */
+            .clear-filter-btn.show {
+                animation: slideInFade 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                display: flex !important;
+            }
+
+            .clear-filter-btn.hide {
+                animation: slideOutFade 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                animation-fill-mode: forwards;
+            }
+
+            @keyframes slideInFade {
+                0% {
+                    opacity: 0;
+                    transform: translateX(10px) scale(0.9);
+                }
+                100% {
+                    opacity: 1;
+                    transform: translateX(0) scale(1);
+                }
+            }
+
+            @keyframes slideOutFade {
+                0% {
+                    opacity: 1;
+                    transform: translateX(0) scale(1);
+                }
+                100% {
+                    opacity: 0;
+                    transform: translateX(10px) scale(0.9);
+                    display: none;
+                }
+            }
+
+            /* Enhanced filter button styling */
+            .filter-btn {
+                position: relative;
+                overflow: hidden;
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+
+            .filter-btn:hover {
+                transform: translateY(-1px);
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            }
+
+            .filter-btn.filtering {
+                background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+                border-color: #1d4ed8;
+                color: white;
+            }
+
+            .filter-btn.filtering i {
+                animation: spin 1s linear infinite;
+            }
+
+            @keyframes spin {
+                from {
+                    transform: rotate(0deg);
+                }
+                to {
+                    transform: rotate(360deg);
+                }
+            }
+
+            /* ========== MODAL DETAIL SECTIONS ========== */
+            .task-section {
+                background: #f8fafc;
+                border-radius: 12px;
+                padding: 16px;
+                border-left: 4px solid #0dcaf0;
+            }
+
+            .task-section .section-title {
+                font-size: 1.1rem;
+                font-weight: 700;
+                margin-bottom: 16px;
+                color: #1e293b;
+            }
+
+            /* Badge trạng thái duyệt */
+            .badge-duyet {
+                padding: 8px 14px;
+                border-radius: 20px;
+                font-weight: 600;
+                font-size: 0.85rem;
+            }
+
+            .badge-chua-duyet {
+                background: linear-gradient(135deg, #fbbf24, #f59e0b);
+                color: #78350f;
+            }
+
+            .badge-da-duyet {
+                background: linear-gradient(135deg, #22c55e, #16a34a);
+                color: white;
+            }
+
+            .badge-tu-choi {
+                background: linear-gradient(135deg, #ef4444, #dc2626);
+                color: white;
+            }
+
+            /* Responsive adjustments */
+            @media (max-width: 768px) {
+                .filter-actions {
+                    flex-direction: column;
+                    gap: 8px;
+                }
+
+                .clear-filter-btn {
+                    width: 100%;
+                    min-width: auto;
+                }
+            }
         </style>
     </head>
 
@@ -1574,14 +1729,31 @@
                                         <i class="fa-solid fa-calendar"></i> Lịch
                                     </button>
                                 </div>
+
+                                <!-- Nút thêm từ Excel -->
+                                <!--                                <button class="btn btn-success rounded-pill px-3" data-bs-toggle="modal"
+                                                                        data-bs-target="#modalExcel">
+                                                                    <i class="fa-solid fa-file-excel"></i> Thêm việc từ Excel
+                                                                </button>-->
+                                <!-- Nút tạo công việc -->
+                                <button class="btn btn-primary rounded-pill px-3" data-bs-toggle="modal"
+                                        data-bs-target="#modalTask">
+                                    <i class="fa-solid fa-plus"></i> Tạo công việc
+                                </button>
+                                <!-- Nút quay lại -->
+                                <a href="./dsDuan" class="btn btn-secondary rounded-pill px-3">
+                                    <i class="fa-solid fa-arrow-left"></i> Quay lại dự án
+                                </a>
                             </div>
-                            <a href="./dsDuan" class="btn btn-secondary rounded-pill px-3"><i class="fa-solid fa-arrow-left"></i> Quay lại dự án</a>
                         </div>
                         <div class="row mb-2 g-2" id="phongban">
                             <div class="col-md-3">
                                 <input type="text" name="keyword" class="form-control" placeholder="Tìm kiếm tên công việc...">
                             </div>
-                            <% String vaiTro = (String) session.getAttribute("vaiTro"); %>
+                            <% 
+                                String vaiTro = (String) session.getAttribute("vaiTro");
+                                String selectedTrangThai = (String) request.getAttribute("selectedTrangThai");
+                            %>
                             <div class="col-md-3">
                                 <select class="form-select" name="ten_phong_ban" id="phongSelect"
                                         <%= !"Admin".equalsIgnoreCase(vaiTro) ? "disabled" : "" %>>
@@ -1589,16 +1761,23 @@
                             </div>
                             <div class="col-md-3">
                                 <select class="form-select" name="trangThai">
-                                    <option value="">Tất cả trạng thái</option>
-                                    <option value="Chưa bắt đầu">Chưa bắt đầu</option>
-                                    <option value="Đang thực hiện">Đang thực hiện</option>
-                                    <option value="Đã hoàn thành">Đã hoàn thành</option>
-                                    <option value="Trễ hạn">Trễ hạn</option>
+                                    <option value="" <%= (selectedTrangThai == null || selectedTrangThai.isEmpty()) ? "selected" : "" %>>Tất cả trạng thái</option>
+                                    <option value="Chưa bắt đầu" <%= "Chưa bắt đầu".equals(selectedTrangThai) ? "selected" : "" %>>Chưa bắt đầu</option>
+                                    <option value="Đang thực hiện" <%= "Đang thực hiện".equals(selectedTrangThai) ? "selected" : "" %>>Đang thực hiện</option>
+                                    <option value="Đã hoàn thành" <%= "Đã hoàn thành".equals(selectedTrangThai) ? "selected" : "" %>>Đã hoàn thành</option>
+                                    <option value="Trễ hạn" <%= "Trễ hạn".equals(selectedTrangThai) ? "selected" : "" %>>Trễ hạn</option>
                                 </select>
                             </div>
                             <div class="col-md-3">
-                                <button class="btn btn-outline-secondary w-100 rounded-pill" id="btnFilter"><i
-                                        class="fa-solid fa-filter"></i> Lọc</button>
+                                <div class="filter-actions d-flex align-items-center gap-2">
+                                    <button class="btn btn-outline-secondary flex-grow-1 rounded-pill filter-btn" id="btnFilter">
+                                        <i class="fa-solid fa-filter me-1"></i> Lọc
+                                    </button>
+                                    <button class="btn btn-outline-danger rounded-pill clear-filter-btn" id="btnClearFilter" 
+                                            style="display: none;" title="Hủy bộ lọc">
+                                        <i class="fa-solid fa-times"></i>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1666,21 +1845,29 @@
                                                 hasReminder = false;
                                             }
                                         }
+                                        
+                                        // Trạng thái duyệt
+                                        String trangThaiDuyet = task.get("trang_thai_duyet") != null ? task.get("trang_thai_duyet").toString() : "Chưa duyệt";
+                                        String duyetBadgeClass = "badge-chua-duyet";
+                                        if ("Đã duyệt".equals(trangThaiDuyet)) duyetBadgeClass = "badge-da-duyet";
+                                        else if ("Từ chối".equals(trangThaiDuyet)) duyetBadgeClass = "badge-tu-choi";
                                     %>
                                     <div class="kanban-task <%= hasReminder ? "task--alert" : "" %>" data-task-id="<%= task.get("id") %>">
                                         <div class="task-content" 
                                              data-bs-toggle="modal" 
                                              data-bs-target="#modalTaskDetail"
-
                                              data-id="<%= task.get("id") %>"
                                              data-ten="<%= task.get("ten_cong_viec") %>"
                                              data-mo-ta="<%= task.get("mo_ta") %>"
+                                             data-ngay-bat-dau="<%= task.get("ngay_bat_dau") %>"
                                              data-han="<%= task.get("han_hoan_thanh") %>"
+                                             data-ngay-gia-han="<%= task.get("ngay_gia_han") %>"
                                              data-uu-tien="<%= task.get("muc_do_uu_tien") %>"
                                              data-ten_nguoi_giao="<%= task.get("nguoi_giao_id") %>"
                                              data-ten_nguoi_nhan="<%= task.get("nguoi_nhan_ten") %>"
                                              data-ten_phong_ban="<%= task.get("phong_ban_id") %>"
                                              data-trang-thai="<%= task.get("trang_thai") %>"
+                                             data-trang-thai-duyet="<%= trangThaiDuyet %>"
                                              data-tai_lieu_cv="<%= task.get("tai_lieu_cv") %>"
                                              data-file_tai_lieu="<%= task.get("file_tai_lieu") %>">
                                             <% if (hasReminder) { %>
@@ -1692,6 +1879,7 @@
                                             <div class="task-meta">Người giao: <b><%= task.get("nguoi_giao_id") %></b><br>Người nhận: <b><%= task.get("nguoi_nhan_ten") %></b></div>
                                             <span class="task-priority badge <%= priorityBadge.getOrDefault(task.get("muc_do_uu_tien"), "bg-secondary") %>"><%= task.get("muc_do_uu_tien") %></span>
                                             <span class="task-status badge <%= badgeClass.getOrDefault(status, "bg-secondary") %>"><%= trangThaiLabels.get(status) %></span>
+                                            <span class="badge <%= duyetBadgeClass %> ms-1"><%= trangThaiDuyet %></span>
                                             <%
                                                 Object p = task.get("phan_tram");
                                                 int percent = 0;
@@ -1737,9 +1925,11 @@
                                                 <th class="sortable" data-sort="nguoi_giao_id">Người giao</th>
                                                 <th class="sortable" data-sort="nguoi_nhan_ten">Người nhận</th>
                                                 <th class="sortable" data-sort="phong_ban_id">Phòng ban</th>
+                                                <th class="sortable" data-sort="ngay_bat_dau">Ngày bắt đầu</th>
                                                 <th class="sortable" data-sort="han_hoan_thanh">Hạn hoàn thành</th>
                                                 <th class="sortable" data-sort="muc_do_uu_tien">Ưu tiên</th>
                                                 <th class="sortable" data-sort="trang_thai">Trạng thái</th>
+                                                <th class="sortable" data-sort="trang_thai_duyet">Trạng thái duyệt</th>
                                                 <th style="min-width: 120px;">Hành động</th>
                                             </tr>
                                         </thead>
@@ -1753,6 +1943,12 @@
                                                 if ("Đang thực hiện".equals(task.get("trang_thai"))) statusClass = "status-in-progress";
                                                 else if ("Đã hoàn thành".equals(task.get("trang_thai"))) statusClass = "status-completed";
                                                 else if ("Trễ hạn".equals(task.get("trang_thai"))) statusClass = "status-late";
+                                                
+                                                // Trạng thái duyệt
+                                                String trangThaiDuyet = task.get("trang_thai_duyet") != null ? task.get("trang_thai_duyet").toString() : "Chưa duyệt";
+                                                String duyetBadgeClass = "badge-chua-duyet";
+                                                if ("Đã duyệt".equals(trangThaiDuyet)) duyetBadgeClass = "badge-da-duyet";
+                                                else if ("Từ chối".equals(trangThaiDuyet)) duyetBadgeClass = "badge-tu-choi";
                                                 
                                                 // Kiểm tra xem task có được nhắc nhở hay không
                                                 Object nhacNho = task.get("nhac_viec");
@@ -1770,21 +1966,29 @@
                                                 data-id="<%= task.get("id") %>"
                                                 data-ten="<%= task.get("ten_cong_viec") %>"
                                                 data-mo-ta="<%= task.get("mo_ta") %>"
+                                                data-ngay-bat-dau="<%= task.get("ngay_bat_dau") %>"
                                                 data-han="<%= task.get("han_hoan_thanh") %>"
                                                 data-uu-tien="<%= task.get("muc_do_uu_tien") %>"
                                                 data-ten_nguoi_giao="<%= task.get("nguoi_giao_id") %>"
                                                 data-ten_nguoi_nhan="<%= task.get("nguoi_nhan_ten") %>"
                                                 data-ten_phong_ban="<%= task.get("phong_ban_id") %>"
                                                 data-trang-thai="<%= task.get("trang_thai") %>"
+                                                data-trang-thai-duyet="<%= trangThaiDuyet %>"
                                                 data-tai_lieu_cv="<%= task.get("tai_lieu_cv") %>"
                                                 data-file_tai_lieu="<%= task.get("file_tai_lieu") %>">
                                                 <td class="task-name"><%= task.get("ten_cong_viec") %></td>
                                                 <td><%= task.get("nguoi_giao_id") %></td>
                                                 <td><%= task.get("nguoi_nhan_ten") %></td>
                                                 <td><%= task.get("phong_ban_id") %></td>
+                                                <td><%= task.get("ngay_bat_dau") %></td>
                                                 <td><%= task.get("han_hoan_thanh") %></td>
                                                 <td><span class="badge <%= priorityClass %>"><%= task.get("muc_do_uu_tien") %></span></td>
-                                                <td><span class="badge <%= statusClass %>"><%= task.get("trang_thai") %></span></td>
+                                                <td>
+                                                    <span class="badge <%= statusClass %>"><%= task.get("trang_thai") %></span>
+                                                </td>
+                                                <td>
+                                                    <span class="badge <%= duyetBadgeClass %>"><%= trangThaiDuyet %></span>
+                                                </td>
                                                 <td>
                                                     <div class="action-btns" onclick="event.stopPropagation();">
                                                         <button class="btn btn-sm btn-warning" title="Lưu trữ" onclick="archiveTask('<%= task.get("id") %>')">
@@ -1850,7 +2054,9 @@
                                          data-id="<%= task.get("id") %>"
                                          data-ten="<%= task.get("ten_cong_viec") %>"
                                          data-mo-ta="<%= task.get("mo_ta") %>"
+                                         data-ngay-bat-dau="<%= task.get("ngay_bat_dau") %>"
                                          data-han="<%= task.get("han_hoan_thanh") %>"
+                                         data-ngay-gia-han="<%= task.get("ngay_gia_han") %>"
                                          data-uu-tien="<%= task.get("muc_do_uu_tien") %>"
                                          data-ten_nguoi_giao="<%= task.get("nguoi_giao_id") %>"
                                          data-ten_nguoi_nhan="<%= task.get("nguoi_nhan_ten") %>"
@@ -1948,7 +2154,9 @@
                                          data-id="<%= task.get("id") %>"
                                          data-ten="<%= task.get("ten_cong_viec") %>"
                                          data-mo-ta="<%= task.get("mo_ta") %>"
+                                         data-ngay-bat-dau="<%= task.get("ngay_bat_dau") %>"
                                          data-han="<%= task.get("han_hoan_thanh") %>"
+                                         data-ngay-gia-han="<%= task.get("ngay_gia_han") %>"
                                          data-uu-tien="<%= task.get("muc_do_uu_tien") %>"
                                          data-ten_nguoi_giao="<%= task.get("nguoi_giao_id") %>"
                                          data-ten_nguoi_nhan="<%= task.get("nguoi_nhan_ten") %>"
@@ -2019,6 +2227,7 @@
                                     </div>
                                     <div class="modal-body">
                                         <input type="hidden" name="id">
+                                        
                                         <div class="mb-3">
                                             <label class="form-label"><b>Tên công việc</b></label>
                                             <input type="text" class="form-control" name="ten_cong_viec" required>
@@ -2026,6 +2235,10 @@
                                         <div class="mb-3">
                                             <label class="form-label"><b>Mô tả</b></label>
                                             <textarea class="form-control" name="mo_ta" id="taskMoTa"></textarea>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label"><b>Ngày bắt đầu</b></label>
+                                            <input type="date" class="form-control" name="ngay_bat_dau">
                                         </div>
                                         <div class="mb-3">
                                             <label class="form-label"><b>Hạn hoàn thành</b></label>
@@ -2080,51 +2293,30 @@
                                 </form>
                             </div>
                         </div>
-                        <!-- Modal chi tiết task với tab -->
+                        <!-- Modal chi tiết task - Gộp tất cả thành 1 modal tổng -->
                         <div class="modal fade" id="modalTaskDetail" tabindex="-1">
-                            <div class="modal-dialog modal-lg">
+                            <div class="modal-dialog modal-xl">
                                 <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title"><i class="fa-solid fa-info-circle"></i> Chi tiết công việc</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    <div class="modal-header bg-gradient" style="background: linear-gradient(135deg, #e0f2fe, #c7d2fe);">
+                                        <h5 class="modal-title text-dark">
+                                            <i class="fa-solid fa-info-circle text-primary"></i> Chi tiết công việc
+                                        </h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                     </div>
-                                    <div class="modal-body">
-                                        <ul class="nav nav-tabs mb-3" id="taskDetailTab" role="tablist">
-                                            <li class="nav-item" role="presentation">
-                                                <button class="nav-link active" id="tab-task-info" data-bs-toggle="tab"
-                                                        data-bs-target="#tabTaskInfo" type="button" role="tab">Thông tin</button>
-                                            </li>
-                                            <li class="nav-item" role="presentation">
-                                                <button class="nav-link" id="tab-task-progress" data-bs-toggle="tab"
-                                                        data-bs-target="#tabTaskProgress" type="button" role="tab">Tiến độ</button>
-                                            </li>
-                                            <li class="nav-item" role="presentation">
-                                                <button class="nav-link" id="tab-task-history" data-bs-toggle="tab"
-                                                        data-bs-target="#tabTaskHistory" type="button" role="tab">Lịch sử</button>
-                                            </li>
-                                            <li class="nav-item" role="presentation">
-                                                <button class="nav-link" id="tab-task-review" data-bs-toggle="tab"
-                                                        data-bs-target="#tabTaskReview" type="button" role="tab">Đánh giá</button>
-                                            </li>
-                                        </ul>
-
-                                        <div class="tab-content" id="taskDetailTabContent">
-                                            <div class="tab-pane fade show active" id="tabTaskInfo" role="tabpanel">
-                                                <form id="formTaskDetail" enctype="multipart/form-data">
-                                                    <input type="hidden" name="task_id" id="taskId">
-                                                    <div class="mb-2">
+                                    <div class="modal-body" style="max-height: 80vh; overflow-y: auto;">
+                                        <!-- PHẦN 1: THÔNG TIN CÔNG VIỆC -->
+                                        <div class="task-section mb-4">
+                                            <h6 class="section-title">
+                                                <i class="fa-solid fa-info-circle text-primary"></i> Thông tin công việc
+                                            </h6>
+                                            <form id="formTaskDetail" enctype="multipart/form-data">
+                                                <input type="hidden" name="task_id" id="taskId">
+                                                <div class="row">
+                                                    <div class="col-md-6 mb-2">
                                                         <label class="form-label"><b>Tên công việc</b></label>
                                                         <input type="text" class="form-control" name="ten_cong_viec">
                                                     </div>
-                                                    <div class="mb-2">
-                                                        <label class="form-label"><b>Mô tả</b></label>
-                                                        <textarea class="form-control" rows="3" name="mo_ta"></textarea>
-                                                    </div>
-                                                    <div class="mb-2">
-                                                        <label class="form-label"><b>Hạn hoàn thành</b></label>
-                                                        <input type="date" class="form-control" name="han_hoan_thanh">
-                                                    </div>
-                                                    <div class="mb-2">
+                                                    <div class="col-md-6 mb-2">
                                                         <label class="form-label"><b>Mức độ ưu tiên</b></label>
                                                         <select class="form-select" name="muc_do_uu_tien">
                                                             <option>Cao</option>
@@ -2132,26 +2324,24 @@
                                                             <option>Thấp</option>
                                                         </select>
                                                     </div>
-                                                    <div class="mb-2">
-                                                        <label class="form-label"><b>Người giao</b></label>
-                                                        <select class="form-select" name="ten_nguoi_giao"></select>
+                                                </div>
+                                                <div class="mb-2">
+                                                    <label class="form-label"><b>Mô tả</b></label>
+                                                    <textarea class="form-control" rows="3" name="mo_ta"></textarea>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-md-4 mb-2">
+                                                        <label class="form-label"><b>Ngày bắt đầu</b></label>
+                                                        <input type="date" class="form-control" name="ngay_bat_dau">
                                                     </div>
-                                                    <div class="mb-3">
-                                                        <label class="form-label"><b>Người nhận</b></label>
-                                                        <button type="button" class="btn btn-outline-primary" id="btnOpenNguoiNhanDetail">
-                                                            <i class="fa-solid fa-user-plus"></i> Thêm người nhận
-                                                        </button>
-                                                        <div id="danhSachNguoiNhan" class="d-flex flex-wrap gap-2 mt-2">
-                                                            <!-- Tag tên người nhận sẽ hiển thị ở đây -->
-                                                        </div>
-                                                        <input type="hidden" name="ten_nguoi_nhan" id="nguoiNhanHidden">
+                                                    <div class="col-md-4 mb-2">
+                                                        <label class="form-label"><b>Hạn hoàn thành</b></label>
+                                                        <input type="date" class="form-control" name="han_hoan_thanh" id="hanHoanThanh">
+                                                        <!-- Dòng hiển thị thông tin gia hạn -->
+                                                        <small id="giaHanInfo" class="text-danger mt-1 d-block"></small>
                                                     </div>
-                                                    <div class="mb-2">
-                                                        <label class="form-label"><b>Phòng ban:</b></label>
-                                                        <select class="form-select" name="ten_phong_ban"></select>
-                                                    </div>
-                                                    <div class="mb-2">
-                                                        <label class="form-label"><b>Trạng thái:</b></label>
+                                                    <div class="col-md-4 mb-2">
+                                                        <label class="form-label"><b>Trạng thái</b></label>
                                                         <select class="form-select" name="trang_thai">
                                                             <option>Chưa bắt đầu</option>
                                                             <option>Đang thực hiện</option>
@@ -2159,73 +2349,165 @@
                                                             <option>Trễ hạn</option>
                                                         </select>
                                                     </div>
-                                                    <div class="mb-2">
-                                                        <label for="taskAttachment" class="form-label"><b>Tài liệu công việc (Link Driver)</b></label>
-                                                        <input type="text" class="form-control" name="tai_lieu_cv">
-                                                    </div>
-                                                    <div class="mb-3">
-                                                        <label class="form-label"><b>File công việc</b></label>
-                                                        <input class="form-control" type="file" name="files" id="taskFiles2" multiple>
-                                                        <div id="taskFileList2" class="form-text text-muted small mt-1">
+                                                </div>
+
+                                                <!-- Phần gia hạn công việc (hiển thị khi quá hạn) -->
+                                                <div id="extensionSection" class="alert alert-warning mb-2" style="display: none;">
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <div>
+                                                            <i class="fa-solid fa-exclamation-triangle"></i>
+                                                            <strong>Công việc đã quá hạn!</strong>
                                                         </div>
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                                                        <button type="button" class="btn btn-primary" id="btnSaveTask">
-                                                            <i class="fa-solid fa-save"></i> Lưu
+                                                        <button type="button" class="btn btn-sm btn-warning" id="btnGiaHan">
+                                                            <i class="fa-solid fa-clock"></i> Gia hạn công việc
                                                         </button>
                                                     </div>
-                                                </form>
-                                            </div>
-
-                                            <div class="tab-pane fade" id="tabTaskProgress" role="tabpanel">
-                                                <b>Tiến độ:</b>
-                                                <div class="progress my-1">
-                                                    <div class="progress-bar bg-warning" style="width: 0%" id="taskProgressBar"></div>
-                                                </div>
-                                                <button class="btn btn-outline-primary btn-sm mb-3" id="btnAddProcessStep">
-                                                    <i class="fa-solid fa-plus"></i> Thêm quy trình
-                                                </button>
-                                                <ul id="processStepList" class="list-group mb-2"></ul>
-                                                <div class="modal-footer">
-                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                                                </div>
-                                            </div>
-
-                                            <div class="tab-pane fade" id="tabTaskHistory" role="tabpanel">
-                                                <div class="history-timeline" id="taskHistoryTimeline">
-                                                    <!-- Lịch sử sẽ được load qua AJAX -->
-                                                    <div class="history-empty">
-                                                        <i class="fa-solid fa-clock-rotate-left"></i>
-                                                        <p>Đang tải lịch sử công việc...</p>
+                                                    <div id="giaHanForm" style="display: none;" class="mt-3">
+                                                        <label class="form-label"><b>Ngày gia hạn mới</b></label>
+                                                        <input type="date" class="form-control mb-2" id="ngayGiaHan">
+                                                        <button type="button" class="btn btn-sm btn-success" id="btnXacNhanGiaHan">
+                                                            <i class="fa-solid fa-check"></i> Xác nhận gia hạn
+                                                        </button>
                                                     </div>
                                                 </div>
-                                            </div>
 
-                                            <div class="tab-pane fade" id="tabTaskReview" role="tabpanel">
-                                                <form id="taskReviewForm" class="mb-3">
-                                                    <input type="hidden" id="taskId" name="task_id" value="">
-                                                    <div class="mb-2">
-                                                        <label for="reviewerName" class="form-label">Người đánh giá:</label>
-                                                        <select class="form-select" name="ten_nguoi_danh_gia"></select>
-                                                        <!--                                                    <input type="text" class="form-control" id="reviewerName"
-                                                                                                                   placeholder="Nhập tên người đánh giá">-->
+                                                <div class="row">
+                                                    <div class="col-md-4 mb-2">
+                                                        <label class="form-label"><b>Người giao</b></label>
+                                                        <select class="form-select" name="ten_nguoi_giao"></select>
                                                     </div>
-                                                    <div class="mb-2">
-                                                        <label for="reviewComment" class="form-label">Nhận xét:</label>
-                                                        <textarea class="form-control" id="reviewComment" rows="3"
-                                                                  placeholder="Nhập nhận xét..."></textarea>
+                                                    <div class="col-md-4 mb-2">
+                                                        <label class="form-label"><b>Phòng ban</b></label>
+                                                        <select class="form-select" name="ten_phong_ban"></select>
                                                     </div>
-                                                    <button type="button" class="btn btn-success" id="btnAddReview">
-                                                        <i class="fa-solid fa-plus"></i> Thêm đánh giá
+                                                    <div class="col-md-4 mb-2">
+                                                        <label class="form-label"><b>Trạng thái duyệt</b></label>
+                                                        <input type="text" class="form-control" name="trang_thai_duyet" id="trangThaiDuyet" readonly>
+                                                    </div>
+                                                </div>
+
+                                                <div class="mb-2">
+                                                    <label class="form-label"><b>Người nhận</b></label>
+                                                    <button type="button" class="btn btn-outline-primary btn-sm" id="btnOpenNguoiNhanDetail">
+                                                        <i class="fa-solid fa-user-plus"></i> Thêm người nhận
                                                     </button>
-                                                </form>
-                                                <ul id="taskReviewList" class="list-group mb-2"></ul>
-                                                <div class="modal-footer">
-                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                                                    <div id="danhSachNguoiNhan" class="d-flex flex-wrap gap-2 mt-2">
+                                                        <!-- Tag tên người nhận sẽ hiển thị ở đây -->
+                                                    </div>
+                                                    <input type="hidden" name="ten_nguoi_nhan" id="nguoiNhanHidden">
+                                                </div>
+
+                                                <div class="mb-2">
+                                                    <label class="form-label"><b>Tài liệu công việc (Link Driver)</b></label>
+                                                    <input type="text" class="form-control" name="tai_lieu_cv">
+                                                </div>
+                                                <div class="mb-2">
+                                                    <label class="form-label"><b>File công việc</b></label>
+                                                    <input class="form-control" type="file" name="files" id="taskFiles2" multiple>
+                                                    <div id="taskFileList2" class="form-text text-muted small mt-1"></div>
+                                                </div>
+                                            </form>
+                                        </div>
+
+                                        <hr>
+
+                                        <!-- PHẦN 2: TIẾN ĐỘ -->
+                                        <div class="task-section mb-4">
+                                            <h6 class="section-title">
+                                                <i class="fa-solid fa-chart-line text-success"></i> Tiến độ công việc
+                                            </h6>
+                                            <b>Tiến độ:</b>
+                                            <div class="progress my-2" style="height: 25px;">
+                                                <div class="progress-bar bg-success" style="width: 0%" id="taskProgressBar"></div>
+                                            </div>
+                                            <button class="btn btn-outline-primary btn-sm mb-2" id="btnAddProcessStep">
+                                                <i class="fa-solid fa-plus"></i> Thêm quy trình
+                                            </button>
+                                            <ul id="processStepList" class="list-group"></ul>
+                                        </div>
+
+                                        <hr>
+
+                                        <!-- PHẦN 3: LỊCH SỬ -->
+                                        <div class="task-section mb-4">
+                                            <h6 class="section-title">
+                                                <i class="fa-solid fa-clock-rotate-left text-info"></i> Lịch sử công việc
+                                            </h6>
+                                            <div class="history-timeline" id="taskHistoryTimeline" style="max-height: 300px;">
+                                                <div class="history-empty">
+                                                    <i class="fa-solid fa-clock-rotate-left"></i>
+                                                    <p>Đang tải lịch sử công việc...</p>
                                                 </div>
                                             </div>
                                         </div>
+
+                                        <hr>
+
+                                        <!-- PHẦN 4: ĐÁNH GIÁ -->
+                                        <div class="task-section mb-4">
+                                            <h6 class="section-title">
+                                                <i class="fa-solid fa-star text-warning"></i> Đánh giá công việc
+                                            </h6>
+                                            <form id="taskReviewForm" class="mb-3">
+                                                <input type="hidden" id="taskReviewId" name="task_id" value="">
+                                                <div class="row">
+                                                    <div class="col-md-6 mb-2">
+                                                        <label class="form-label">Người đánh giá:</label>
+                                                        <select class="form-select" name="ten_nguoi_danh_gia"></select>
+                                                    </div>
+                                                    <div class="col-md-12 mb-2">
+                                                        <label class="form-label">Nhận xét:</label>
+                                                        <textarea class="form-control" id="reviewComment" rows="2" placeholder="Nhập nhận xét..."></textarea>
+                                                    </div>
+                                                </div>
+                                                <button type="button" class="btn btn-success btn-sm" id="btnAddReview">
+                                                    <i class="fa-solid fa-plus"></i> Thêm đánh giá
+                                                </button>
+                                            </form>
+                                            <ul id="taskReviewList" class="list-group"></ul>
+                                        </div>
+                                    </div>
+
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-warning" id="btnXetDuyet">
+                                            <i class="fa-solid fa-check-circle"></i> Xét duyệt công việc
+                                        </button>
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                                        <button type="button" class="btn btn-primary" id="btnSaveTask">
+                                            <i class="fa-solid fa-save"></i> Lưu thay đổi
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Modal Xét duyệt công việc -->
+                        <div class="modal fade" id="modalXetDuyet" tabindex="-1">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title"><i class="fa-solid fa-gavel"></i> Xét duyệt công việc</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <input type="hidden" id="xetDuyetTaskId">
+                                        <div class="mb-3">
+                                            <label class="form-label"><b>Quyết định</b></label>
+                                            <select class="form-select" id="quyetDinhDuyet">
+                                                <option value="Đã duyệt">✅ Duyệt</option>
+                                                <option value="Từ chối">❌ Từ chối</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label"><b>Lý do / Ghi chú</b></label>
+                                            <textarea class="form-control" id="lyDoXetDuyet" rows="4" placeholder="Nhập lý do duyệt hoặc từ chối..."></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                        <button type="button" class="btn btn-success" id="btnXacNhanXetDuyet">
+                                            <i class="fa-solid fa-check"></i> Xác nhận
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -2322,98 +2604,117 @@
                 </div>
             </div>
         </div>
-        <script src="<%= request.getContextPath() %>/scripts/project_task.obf.js?v=20251105"></script>
+        <script src="<%= request.getContextPath() %>/scripts/project_task.js?v=<%= System.currentTimeMillis() %>"></script>
+        <script src="<%= request.getContextPath() %>/scripts/task-approval.js?v=<%= System.currentTimeMillis() %>"></script>
         <%--FULLCALENDAR INITIALIZATION--%>
         <script>
-            function initCalendar() {
-                if (calendar) {
-                    calendar.render();
-                    return;
-                }
 
-                const calendarEl = document.getElementById('taskCalendar');
+                                                            // ====== FULLCALENDAR INITIALIZATION ======
+                                                            function initCalendar() {
+                                                                if (calendar) {
+                                                                    calendar.render();
+                                                                    return;
+                                                                }
 
-                // Prepare events from task list
-                const events = [];
-            <% for (Map<String, Object> task : taskList) { 
-String eventClass = "event-not-started";
-if ("Đang thực hiện".equals(task.get("trang_thai"))) eventClass = "event-in-progress";
-else if ("Đã hoàn thành".equals(task.get("trang_thai"))) eventClass = "event-completed";
-else if ("Trễ hạn".equals(task.get("trang_thai"))) eventClass = "event-late";
-            %>
-                events.push({
-                                        id: '<%= task.get("id") %>',
-                                        title: '<%= task.get("ten_cong_viec") != null ? task.get("ten_cong_viec").toString().replace("'", "\\'") : "" %>',
-                                        start: '<%= task.get("han_hoan_thanh") %>',
-                                        className: '<%= eventClass %>',
-                    extendedProps: {
-                                            nguoiGiao: '<%= task.get("nguoi_giao_id") %>',
-                                            nguoiNhan: '<%= task.get("nguoi_nhan_ten") %>',
-                                            phongBan: '<%= task.get("phong_ban_id") %>',
-                                            uuTien: '<%= task.get("muc_do_uu_tien") %>',
-                                            trangThai: '<%= task.get("trang_thai") %>',
-                                            moTa: '<%= task.get("mo_ta") != null ? task.get("mo_ta").toString().replace("'", "\\'").replace("\n", " ") : "" %>',
-                                            taiLieu: '<%= task.get("tai_lieu_cv") %>',
-                                            fileTaiLieu: '<%= task.get("file_tai_lieu") %>'
-                    }
-                });
+                                                                const calendarEl = document.getElementById('taskCalendar');
+
+                                                                // Prepare events from task list
+                                                                const events = [];
+                                                                <% for (Map<String, Object> task : taskList) { 
+                                                                String eventClass = "event-not-started";
+                                                                if ("Đang thực hiện".equals(task.get("trang_thai"))) eventClass = "event-in-progress";
+                                                                else if ("Đã hoàn thành".equals(task.get("trang_thai"))) eventClass = "event-completed";
+                                                                else if ("Trễ hạn".equals(task.get("trang_thai"))) eventClass = "event-late";
+                                                                %>
+                                                                events.push({
+                                                                    id: '<%= task.get("id") %>',
+                                                                    title: '<%= task.get("ten_cong_viec") != null ? task.get("ten_cong_viec").toString().replace("'", "\\'") : "" %>',
+                                                                    start: '<%= task.get("ngay_bat_dau") %>',
+                                                                    end: '<%= task.get("han_hoan_thanh") %>',
+                                                                    className: '<%= eventClass %>',
+                                                                    extendedProps: {
+                                                                        nguoiGiao: '<%= task.get("nguoi_giao_id") %>',
+                                                                        nguoiNhan: '<%= task.get("nguoi_nhan_ten") %>',
+                                                                        phongBan: '<%= task.get("phong_ban_id") %>',
+                                                                        uuTien: '<%= task.get("muc_do_uu_tien") %>',
+                                                                        trangThai: '<%= task.get("trang_thai") %>',
+                                                                        trangThaiDuyet: '<%= task.get("trang_thai_duyet") != null ? task.get("trang_thai_duyet").toString() : "" %>',
+                                                                        lyDoDuyet: '<%= task.get("ly_do_duyet") != null ? task.get("ly_do_duyet").toString().replace("'", "\\'") : "" %>',
+                                                                        moTa: '<%= task.get("mo_ta") != null ? task.get("mo_ta").toString().replace("'", "\\'").replace("\n", " ") : "" %>',
+                                                                        taiLieu: '<%= task.get("tai_lieu_cv") %>',
+                                                                        fileTaiLieu: '<%= task.get("file_tai_lieu") %>'
+                                                                    }
+                                                                });
             <% } %>
 
-                calendar = new FullCalendar.Calendar(calendarEl, {
-                    initialView: 'dayGridMonth',
-                    headerToolbar: {
-                        left: 'prev,next today',
-                        center: 'title',
-                        right: 'dayGridMonth,timeGridWeek,timeGridDay'
-                    },
-                    locale: 'vi',
-                    buttonText: {
-                        today: 'Hôm nay',
-                        month: 'Tháng',
-                        week: 'Tuần',
-                        day: 'Ngày'
-                    },
-                    events: events,
-                    editable: true,
-                    eventClick: function (info) {
-                        // Open task detail modal
-                        const event = info.event;
-                        const props = event.extendedProps;
+                                                                calendar = new FullCalendar.Calendar(calendarEl, {
+                                                                    initialView: 'dayGridMonth',
+                                                                    headerToolbar: {
+                                                                        left: 'prev,next today',
+                                                                        center: 'title',
+                                                                        right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                                                                    },
+                                                                    locale: 'vi',
+                                                                    buttonText: {
+                                                                        today: 'Hôm nay',
+                                                                        month: 'Tháng',
+                                                                        week: 'Tuần',
+                                                                        day: 'Ngày'
+                                                                    },
+                                                                    events: events,
+                                                                    editable: true,
+                                                                    eventClick: function (info) {
+                                                                        const event = info.event;
+                                                                        const props = event.extendedProps;
 
-                        const modal = document.getElementById('modalTaskDetail');
-                        const button = document.createElement('button');
-                        button.setAttribute('data-id', event.id);
-                        button.setAttribute('data-ten', event.title);
-                        button.setAttribute('data-mo-ta', props.moTa);
-                        button.setAttribute('data-han', event.startStr);
-                        button.setAttribute('data-uu-tien', props.uuTien);
-                        button.setAttribute('data-ten_nguoi_giao', props.nguoiGiao);
-                        button.setAttribute('data-ten_nguoi_nhan', props.nguoiNhan);
-                        button.setAttribute('data-ten_phong_ban', props.phongBan);
-                        button.setAttribute('data-trang-thai', props.trangThai);
-                        button.setAttribute('data-tai_lieu_cv', props.taiLieu);
-                        button.setAttribute('data-file_tai_lieu', props.fileTaiLieu);
+                                                                        // 🔹 Tạo button tạm để bootstrap hiểu được trigger modal
+                                                                        const tempBtn = document.createElement('button');
+                                                                        tempBtn.type = 'button';
+                                                                        tempBtn.dataset.bsToggle = 'modal';
+                                                                        tempBtn.dataset.bsTarget = '#modalTaskDetail';
 
-                        const modalEvent = new Event('show.bs.modal');
-                        modalEvent.relatedTarget = button;
-                        modal.dispatchEvent(modalEvent);
+                                                                        // Gắn data attributes cho modal đọc
+                                                                        tempBtn.setAttribute('data-id', event.id || '');
+                                                                        tempBtn.setAttribute('data-ten', event.title || '');
+                                                                        tempBtn.setAttribute('data-mo-ta', props.moTa || '');
+                                                                        tempBtn.setAttribute('data-ngay-bat-dau', event.startStr || '');
+                                                                        tempBtn.setAttribute('data-han', event.endStr || '');
+                                                                        tempBtn.setAttribute('data-uu-tien', props.uuTien || '');
+                                                                        tempBtn.setAttribute('data-ten_nguoi_giao', props.nguoiGiao || '');
+                                                                        tempBtn.setAttribute('data-ten_nguoi_nhan', props.nguoiNhan || '');
+                                                                        tempBtn.setAttribute('data-ten_phong_ban', props.phongBan || '');
+                                                                        tempBtn.setAttribute('data-trang-thai', props.trangThai || '');
+                                                                        tempBtn.setAttribute('data-tai_lieu_cv', props.taiLieu || '');
+                                                                        tempBtn.setAttribute('data-file_tai_lieu', props.fileTaiLieu || '');
+                                                                        tempBtn.setAttribute('data-trang-thai-duyet', props.trangThaiDuyet || 'Chưa duyệt');
+                                                                        tempBtn.setAttribute('data-ly-do-duyet', props.lyDoDuyet || '');
+                                                                        tempBtn.setAttribute('data-ngay-gia-han', props.ngayGiaHan || '');
 
-                        new bootstrap.Modal(modal).show();
-                    },
-                    eventDrop: function (info) {
-                        // Update deadline when event is dragged
-                        const newDate = info.event.start.toISOString().split('T')[0];
-                        updateTaskDeadline(info.event.id, newDate);
-                    },
-                    eventResize: function (info) {
-                        const newDate = info.event.end ? info.event.end.toISOString().split('T')[0] :
-                                info.event.start.toISOString().split('T')[0];
-                        updateTaskDeadline(info.event.id, newDate);
-                    }
-                });
+                                                                        // 🔹 Phải gắn vào DOM thì bootstrap mới bắt được sự kiện click
+                                                                        document.body.appendChild(tempBtn);
 
-                calendar.render();
-            }
+                                                                        // 🔹 Trigger click (Bootstrap tự mở modal và phát 'show.bs.modal')
+                                                                        tempBtn.click();
+
+
+                                                                        // 🔹 Dọn dẹp button tạm sau 200ms
+                                                                        setTimeout(() => tempBtn.remove(), 200);
+
+                                                                    },
+                                                                    eventDrop: function (info) {
+                                                                        // Update deadline when event is dragged
+                                                                        const newDate = info.event.start.toISOString().split('T')[0];
+                                                                        updateTaskDeadline(info.event.id, newDate);
+                                                                    },
+                                                                    eventResize: function (info) {
+                                                                        const newDate = info.event.end ? info.event.end.toISOString().split('T')[0] :
+                                                                                info.event.start.toISOString().split('T')[0];
+                                                                        updateTaskDeadline(info.event.id, newDate);
+                                                                    }
+                                                                });
+
+                                                                calendar.render();
+                                                            }
         </script>
     </body>
 </html>

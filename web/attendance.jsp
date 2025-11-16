@@ -604,7 +604,7 @@
                 </div>
             </div>
         </div>
-        <script src="<%= request.getContextPath() %>/scripts/attendance.obf.js?v=20251105"></script>
+        <script src="<%= request.getContextPath() %>/scripts/attendance.js?v=20251105"></script>
 
     </body>
 

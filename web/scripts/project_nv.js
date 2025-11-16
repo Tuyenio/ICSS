@@ -5,7 +5,7 @@ if (event.target.tagName.toLowerCase() === 'button' ||
 return;
 }
 // Chuyển hướng sang servlet khác
-window.location.href = "dsCongviecDuan?projectId=" + projectId;
+window.location.href = "dsCongviecDuanNV?projectId=" + projectId;
 }
 
 // Hàm hiển thị toast

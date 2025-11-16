@@ -30,7 +30,7 @@ public class dsCongviecNV extends HttpServlet {
             try {
                 HttpSession session = request.getSession();
                 String email = (String) session.getAttribute("userEmail");
-                List<Map<String, Object>> taskList = kn.getAllTasksNV(email);
+                List<Map<String, Object>> taskList = kn.getAllTasksNV(email,1);
 
                 // Thêm map giữ thứ tự hiển thị các cột
                 LinkedHashMap<String, String> trangThaiLabels = new LinkedHashMap<>();

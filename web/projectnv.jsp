@@ -6,7 +6,7 @@
     <head>
         <meta charset="UTF-8">
         <link rel="icon" type="image/png" href="Img/logoics.png">
-        <title>Quản lý Dự án</title>
+        <title>Dự án của tôi</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
         <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
         <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
@@ -22,7 +22,7 @@
             .main-content {
                 padding: 36px 36px 24px 36px;
                 min-height: 100vh;
-                margin-left: 260px;
+                margin-left: 240px;
                 animation: fadeIn 0.6s ease-in-out;
             }
             @keyframes fadeIn {
@@ -161,39 +161,84 @@
             }
 
         </style>
+        <script>
+            var PAGE_TITLE = '<i class="fa-solid fa-diagram-project me-2"></i>Dự án của tôi';
+        </script>
     </head>
     <body>
-        <%@ include file="sidebarnv.jsp" %>
-        <%@ include file="user_header.jsp" %>
-        <div class="main-content">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h3 class="mb-0"><i class="fa-solid fa-diagram-project me-2"></i>Quản lý Dự án</h3>
-            </div>
-            <div class="row project-list">
-                <!-- Lặp lại cho các dự án khác -->
-                <%
-                    List<Map<String, Object>> projects = (List<Map<String, Object>>) request.getAttribute("projects");
-                    if (projects != null) {
-                        for (Map<String, Object> project : projects) {
-                %>
-                <div class="col-md-6 mb-4">
-                    <div class="project-card" data-id="<%= project.get("id") %>" onclick="goToProjectTask(<%= project.get("id") %>, event)">
-                        <div class="project-header d-flex justify-content-between align-items-center">
-                            <span class="project-title"><%= project.get("ten_du_an") %></span>
-                            <div class="project-actions">
-                                <button class="btn btn-info" onclick="showProjectDetail(event, '<%= project.get("id") %>')">
-                                    <i class="fa-solid fa-eye"></i>
-                                </button>
-                                <!-- Nút Sửa và Xóa đã bị ẩn cho nhân viên -->
+        <div class="d-flex">
+            <%@ include file="sidebarnv.jsp" %>
+            <div class="flex-grow-1">
+                <%@ include file="user_header.jsp" %>
+                <div class="main-content">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h3 class="mb-0"><i class="fa-solid fa-diagram-project me-2"></i>Dự án của tôi</h3>
+                    </div>
+                    <div class="row project-list">
+                        <!-- Lặp lại cho các dự án khác -->
+                        <%
+                            List<Map<String, Object>> projects = (List<Map<String, Object>>) request.getAttribute("projects");
+                            if (projects != null) {
+                                for (Map<String, Object> project : projects) {
+                        %>
+                        <div class="col-md-6 mb-4">
+                            <div class="project-card" data-id="<%= project.get("id") %>" onclick="goToProjectTask(<%= project.get("id") %>, event)">
+                                <div class="project-header d-flex justify-content-between align-items-center">
+                                    <span class="project-title"><%= project.get("ten_du_an") %></span>
+                                    <div class="project-actions">
+                                        <button class="btn btn-info" onclick="showProjectDetail(event, <%= project.get("id") %>)">
+                                            <i class="fa-solid fa-eye"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="project-desc mt-2 text-muted">Mô tả: <%= project.get("mo_ta") %></div>
+                                
+                                <%
+                                    // Tính phần trăm tiến độ dự án
+                                    Object tienDoObj = project.get("tien_do");
+                                    int tienDo = 0;
+                                    if (tienDoObj != null) {
+                                        try {
+                                            tienDo = Integer.parseInt(tienDoObj.toString());
+                                        } catch (NumberFormatException e) {
+                                            tienDo = 0;
+                                        }
+                                    }
+                                    
+                                    // Xác định class màu sắc dựa trên tiến độ
+                                    String progressClass = "";
+                                    if (tienDo < 30) {
+                                        progressClass = "bg-danger";
+                                    } else if (tienDo < 70) {
+                                        progressClass = "bg-warning";
+                                    } else {
+                                        progressClass = "bg-success";
+                                    }
+                                %>
+                                
+                                <div class="mt-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <small class="text-muted"><i class="fa-solid fa-tasks me-1"></i>Tiến độ dự án</small>
+                                        <small class="fw-bold text-primary"><%= tienDo %>%</small>
+                                    </div>
+                                    <div class="progress" style="height: 8px; border-radius: 10px;">
+                                        <div class="progress-bar <%= progressClass %>" 
+                                             role="progressbar" 
+                                             style="width: <%= tienDo %>%;" 
+                                             aria-valuenow="<%= tienDo %>" 
+                                             aria-valuemin="0" 
+                                             aria-valuemax="100">
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <div class="project-desc mt-2 text-muted">Mô tả: <%= project.get("mo_ta") %></div>
+                        <%
+                                }
+                            }
+                        %>
                     </div>
                 </div>
-                <%
-                        }
-                    }
-                %>
             </div>
         </div>
         <!-- Modal Thêm/Sửa Dự án -->
@@ -294,13 +339,10 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                        <button type="button" class="btn btn-primary" onclick="editProjectFromDetail()">
-                            <i class="fa-solid fa-edit"></i> Chỉnh sửa
-                        </button>
                     </div>
                 </div>
             </div>
         </div>
-        <script src="<%= request.getContextPath() %>/scripts/project_nv.obf.js?v=20251105"></script>
+        <script src="<%= request.getContextPath() %>/scripts/project_nv.js?v=20251105"></script>
     </body>
 </html>

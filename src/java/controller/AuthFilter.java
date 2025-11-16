@@ -44,10 +44,8 @@ public class AuthFilter implements Filter {
             "/themNhanvien",
             "/themDuan",
             "/xoaDuan",
-            "/apiDanhgiaCV",
             "/xoaPhongban",
-            "/xoaQuytrinh",
-            "/kanban-board.jsp"
+            "/xoaQuytrinh"
     );
 
     @Override

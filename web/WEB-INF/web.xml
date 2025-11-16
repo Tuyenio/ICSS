@@ -231,6 +231,18 @@
         <servlet-name>apiLichSuCongViec</servlet-name>
         <servlet-class>controller.apiLichSuCongViec</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>xetDuyetCongViec</servlet-name>
+        <servlet-class>controller.xetDuyetCongViec</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>giaHanCongViec</servlet-name>
+        <servlet-class>controller.giaHanCongViec</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>dsCongviecDuanNV</servlet-name>
+        <servlet-class>controller.dsCongviecDuanNV</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>dsnhanvien</servlet-name>
         <url-pattern>/dsnhanvien</url-pattern>
@@ -434,6 +446,18 @@
     <servlet-mapping>
         <servlet-name>apiLichSuCongViec</servlet-name>
         <url-pattern>/apiLichSuCongViec</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>xetDuyetCongViec</servlet-name>
+        <url-pattern>/xetDuyetCongViec</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>giaHanCongViec</servlet-name>
+        <url-pattern>/giaHanCongViec</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>dsCongviecDuanNV</servlet-name>
+        <url-pattern>/dsCongviecDuanNV</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>

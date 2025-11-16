@@ -1,7 +1,7 @@
 
                                 var companyLat = 20.980189371343553;   // vĩ độ
                                 var companyLng = 105.81390992866262;  // kinh độ
-                                var ALLOWED_RADIUS_METERS = 110; // bán kính cho phép (mét)
+                                var ALLOWED_RADIUS_METERS = 250; // bán kính cho phép (mét)
                                 var currentUserEmail = '<%= emailSession %>';
 
                                 $(document).ready(function () {
@@ -141,7 +141,7 @@
                                                                         icon: 'warning',
                                                                         title: 'Quá xa vị trí công ty!',
                                                                         text: 'Khoảng cách hiện tại là ' + Math.round(distance) +
-                                                                                ' m, vượt quá giới hạn ' + ALLOWED_RADIUS_METERS + ' m.'
+                                                                                ' m, vượt quá giới hạn ' + ' 100 ' + ' m.'
                                                                     });
                                                                 }
                                                             },

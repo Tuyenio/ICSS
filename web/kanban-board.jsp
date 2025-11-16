@@ -60,21 +60,29 @@
                     hasReminder = false;
                 }
             }
+                                        
+            // Trạng thái duyệt
+            String trangThaiDuyet = task.get("trang_thai_duyet") != null ? task.get("trang_thai_duyet").toString() : "Chưa duyệt";
+            String duyetBadgeClass = "badge-chua-duyet";
+            if ("Đã duyệt".equals(trangThaiDuyet)) duyetBadgeClass = "badge-da-duyet";
+            else if ("Từ chối".equals(trangThaiDuyet)) duyetBadgeClass = "badge-tu-choi";
         %>
         <div class="kanban-task <%= hasReminder ? "task--alert" : "" %>" data-task-id="<%= task.get("id") %>">
             <div class="task-content" 
                  data-bs-toggle="modal" 
                  data-bs-target="#modalTaskDetail"
-
                  data-id="<%= task.get("id") %>"
                  data-ten="<%= task.get("ten_cong_viec") %>"
                  data-mo-ta="<%= task.get("mo_ta") %>"
+                 data-ngay-bat-dau="<%= task.get("ngay_bat_dau") %>"
                  data-han="<%= task.get("han_hoan_thanh") %>"
+                 data-ngay-gia-han="<%= task.get("ngay_gia_han") %>"
                  data-uu-tien="<%= task.get("muc_do_uu_tien") %>"
                  data-ten_nguoi_giao="<%= task.get("nguoi_giao_id") %>"
                  data-ten_nguoi_nhan="<%= task.get("nguoi_nhan_ten") %>"
                  data-ten_phong_ban="<%= task.get("phong_ban_id") %>"
                  data-trang-thai="<%= task.get("trang_thai") %>"
+                 data-trang-thai-duyet="<%= trangThaiDuyet %>"
                  data-tai_lieu_cv="<%= task.get("tai_lieu_cv") %>"
                  data-file_tai_lieu="<%= task.get("file_tai_lieu") %>">
                 <% if (hasReminder) { %>
@@ -86,6 +94,7 @@
                 <div class="task-meta">Người giao: <b><%= task.get("nguoi_giao_id") %></b><br>Người nhận: <b><%= task.get("nguoi_nhan_ten") %></b></div>
                 <span class="task-priority badge <%= priorityBadge.getOrDefault(task.get("muc_do_uu_tien"), "bg-secondary") %>"><%= task.get("muc_do_uu_tien") %></span>
                 <span class="task-status badge <%= badgeClass.getOrDefault(status, "bg-secondary") %>"><%= trangThaiLabels.get(status) %></span>
+                <span class="badge <%= duyetBadgeClass %> ms-1"><%= trangThaiDuyet %></span>
                 <%
                     Object p = task.get("phan_tram");
                     int percent = 0;

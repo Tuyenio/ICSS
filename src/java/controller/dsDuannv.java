@@ -22,7 +22,9 @@ public class dsDuannv extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
             KNCSDL kn = new KNCSDL();
-            List<Map<String, Object>> projects = kn.getAllProjects();
+            HttpSession session = req.getSession();
+                String email = (String) session.getAttribute("userEmail");
+            List<Map<String, Object>> projects = kn.getProjectsByNhanVienEmail(email);
             req.setAttribute("projects", projects);
             req.getRequestDispatcher("projectnv.jsp").forward(req, resp);
         } catch (Exception e) {
