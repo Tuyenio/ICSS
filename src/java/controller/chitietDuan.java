@@ -1,4 +1,3 @@
-
 package controller;
 
 import jakarta.servlet.*;
@@ -8,6 +7,7 @@ import java.sql.Connection;
 import java.util.Map;
 
 public class chitietDuan extends HttpServlet {
+
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
@@ -23,6 +23,9 @@ public class chitietDuan extends HttpServlet {
                 json.append("\"id\":").append(project.get("id")).append(",");
                 json.append("\"ten_du_an\":\"").append(escapeJson(project.get("ten_du_an"))).append("\",");
                 json.append("\"mo_ta\":\"").append(escapeJson(project.get("mo_ta"))).append("\",");
+                json.append("\"muc_do_uu_tien\":\"").append(project.get("muc_do_uu_tien")).append("\",");
+                json.append("\"lead_id\":").append(project.get("lead_id")).append(",");
+                json.append("\"nhom_du_an\":\"").append(project.get("nhom_du_an")).append("\",");
                 json.append("\"ngay_bat_dau\":\"").append(project.get("ngay_bat_dau")).append("\",");
                 json.append("\"ngay_ket_thuc\":\"").append(project.get("ngay_ket_thuc")).append("\",");
                 json.append("\"ngay_tao\":\"").append(project.get("ngay_tao")).append("\",");
@@ -42,7 +45,9 @@ public class chitietDuan extends HttpServlet {
 
     // Hàm escape để tránh lỗi JSON khi có ký tự đặc biệt
     private String escapeJson(Object value) {
-        if (value == null) return "";
+        if (value == null) {
+            return "";
+        }
         return value.toString()
                 .replace("\\", "\\\\")
                 .replace("\"", "\\\"")
@@ -50,4 +55,3 @@ public class chitietDuan extends HttpServlet {
                 .replace("\r", "\\r");
     }
 }
-

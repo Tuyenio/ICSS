@@ -297,7 +297,7 @@
         <li><a href="dsChamCong" class="<%= currentPath.equals("attendance.jsp") ? "active" : "" %>">
                 <i class="fa-solid fa-calendar-check"></i><span>Chấm công</span></a></li>
 
-        <li><a href="calendar.jsp" class="<%= currentPath.equals("calendar.jsp") ? "active" : "" %>">
+        <li><a href="dsLichtrinh" class="<%= currentPath.equals("calendar.jsp") ? "active" : "" %>">
                 <i class="fa-solid fa-calendar-days"></i><span>Lịch trình</span></a></li>
 
         <li><a href="svBaocao" class="<%= currentPath.equals("report.jsp") ? "active" : "" %>">

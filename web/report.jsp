@@ -369,17 +369,36 @@
                                             <span class="badge bg-primary"><%= soTask %></span>
                                         </td>
                                         <td class="text-center">
-                                            <span class="badge bg-success"><%= daHoanThanh %></span>
+                                            <span class="badge bg-success task-detail"
+                                                  data-nvid="<%= nv.get("id") %>"
+                                                  data-tennv="<%= nv.get("ho_ten") %>"
+                                                  data-status="Đã hoàn thành"
+                                                  data-sotask="<%= daHoanThanh %>"><%= daHoanThanh %></span>
+
                                             <small class="d-block text-muted"><%= tyLeHoanThanh %></small>
                                         </td>
                                         <td class="text-center">
-                                            <span class="badge bg-warning"><%= dangThucHien %></span>
+                                            <span class="badge bg-warning task-detail"
+                                                  data-nvid="<%= nv.get("id") %>"
+                                                  data-tennv="<%= nv.get("ho_ten") %>"
+                                                  data-status="Đang thực hiện"
+                                                  data-sotask="<%= dangThucHien %>"><%= dangThucHien %></span>
+
                                         </td>
                                         <td class="text-center">
-                                            <span class="badge bg-danger"><%= treHan %></span>
+                                            <span class="badge bg-danger task-detail"
+                                                  data-nvid="<%= nv.get("id") %>"
+                                                  data-tennv="<%= nv.get("ho_ten") %>"
+                                                  data-status="Trễ hạn"
+                                                  data-sotask="<%= treHan %>"><%= treHan %></span>
+
                                         </td>
                                         <td class="text-center">
-                                            <span class="badge bg-secondary"><%= nv.get("chua_bat_dau") != null ? nv.get("chua_bat_dau") : 0 %></span>
+                                            <span class="badge bg-secondary task-detail"
+                                                  data-nvid="<%= nv.get("id") %>"
+                                                  data-tennv="<%= nv.get("ho_ten") %>"
+                                                  data-status="Chưa bắt đầu"
+                                                  data-sotask="<%= nv.get("chua_bat_dau") != null ? nv.get("chua_bat_dau") : 0 %>"><%= nv.get("chua_bat_dau") != null ? nv.get("chua_bat_dau") : 0 %></span>                                 
                                         </td>
                                     </tr>
                                     <%
@@ -440,6 +459,34 @@
                                 </form>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="modalTaskDetail" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Danh sách công việc</h5>
+                        <button class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p><strong>Nhân viên:</strong> <span id="modalTenNV"></span></p>
+                        <p><strong>Trạng thái:</strong> <span id="modalTrangThai"></span></p>
+
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Tên công việc</th>
+                                    <th>Ngày bắt đầu</th>
+                                    <th>Hạn</th>
+                                    <th>Ngày hoàn thành</th>
+                                </tr>
+                            </thead>
+                            <tbody id="modalTaskTable">
+                                <tr><td colspan="3" class="text-center text-muted">Đang tải...</td></tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>

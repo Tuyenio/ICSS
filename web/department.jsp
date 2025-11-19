@@ -211,7 +211,13 @@
                                     %>
                                     <tr>
                                         <td><%= pb.get("id") %></td>
-                                        <td><strong><%= pb.get("ten_phong") %></strong></td>
+                                        <td>
+                                            <a href="dsCongviec?phongBanId=<%= pb.get("id") %>" 
+                                               class="fw-bold text-primary" 
+                                               style="text-decoration:none;">
+                                                <%= pb.get("ten_phong") %>
+                                            </a>
+                                        </td>
                                         <td>
                                             <% if (pb.get("truong_phong_ten") != null) { %>
                                             <img src="<%= pb.get("truong_phong_avatar") %>" class="rounded-circle me-1" width="28">

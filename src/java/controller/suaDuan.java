@@ -3,6 +3,7 @@ package controller;
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import java.io.*;
+import java.sql.Date;
 
 public class suaDuan extends HttpServlet {
     @Override
@@ -13,26 +14,33 @@ public class suaDuan extends HttpServlet {
         resp.setContentType("application/json;charset=UTF-8");
 
         String idStr = req.getParameter("id");
+        if (idStr == null || idStr.isEmpty()) {
+            resp.getWriter().write("{\"success\":false,\"message\":\"Thiếu ID dự án\"}");
+            return;
+        }
+
+        int id = Integer.parseInt(idStr);
+
         String tenDuAn = req.getParameter("ten_du_an");
         String moTa = req.getParameter("mo_ta");
+        String uuTien = req.getParameter("muc_do_uu_tien");
+        String leadIdStr = req.getParameter("lead_id");
+        String nhomDuAn = req.getParameter("nhom_du_an");
+
+        int leadId = (leadIdStr != null && !leadIdStr.isEmpty()) ? Integer.parseInt(leadIdStr) : 0;
+
         String ngayBatDauStr = req.getParameter("ngay_bat_dau");
         String ngayKetThucStr = req.getParameter("ngay_ket_thuc");
 
+        Date ngayBatDau = null, ngayKetThuc = null;
+        if (ngayBatDauStr != null && !ngayBatDauStr.isEmpty())
+            ngayBatDau = Date.valueOf(ngayBatDauStr);
+        if (ngayKetThucStr != null && !ngayKetThucStr.isEmpty())
+            ngayKetThuc = Date.valueOf(ngayKetThucStr);
+
         try (PrintWriter out = resp.getWriter()) {
-            if (idStr == null || idStr.isEmpty()) {
-                out.print("{\"success\":false,\"message\":\"Thiếu ID dự án\"}");
-                return;
-            }
-
-            int id = Integer.parseInt(idStr);
-            java.sql.Date ngayBatDau = null, ngayKetThuc = null;
-            if (ngayBatDauStr != null && !ngayBatDauStr.isEmpty())
-                ngayBatDau = java.sql.Date.valueOf(ngayBatDauStr);
-            if (ngayKetThucStr != null && !ngayKetThucStr.isEmpty())
-                ngayKetThuc = java.sql.Date.valueOf(ngayKetThucStr);
-
             KNCSDL kn = new KNCSDL();
-            boolean success = kn.updateProject(id, tenDuAn, moTa, ngayBatDau, ngayKetThuc);
+            boolean success = kn.updateProject(id, tenDuAn, moTa, uuTien, leadId, nhomDuAn, ngayBatDau, ngayKetThuc);
 
             if (success) {
                 out.print("{\"success\":true}");

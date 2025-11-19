@@ -299,4 +299,57 @@ $('#trangThaiFilter').change(function () {
         console.log('Status filter not yet implemented for:', selectedStatus);
     }
 });
-    
+$(document).on("click", ".task-detail", function () {
+
+    var nvId = $(this).data("nvid");
+    var tenNV = $(this).data("tennv");
+    var status = $(this).data("status");
+    var soTask = $(this).data("sotask");
+
+    if (soTask == 0)
+        return;
+
+    // Lấy khoảng thời gian hiện đang lọc
+    var tuNgay = $("#tuNgayHidden").val();
+    var denNgay = $("#denNgayHidden").val();
+
+    $("#modalTenNV").text(tenNV);
+    $("#modalTrangThai").text(status);
+    $("#modalTaskTable").html('<tr><td colspan="3" class="text-center text-muted">Đang tải...</td></tr>');
+
+    $("#modalTaskDetail").modal("show");
+
+    // Gọi API lấy chi tiết task
+    $.ajax({
+        url: "getTaskDetail",
+        type: "GET",
+        data: {
+            nvId: nvId,
+            status: status,
+            tu: tuNgay,
+            den: denNgay
+        },
+        success: function (res) {
+            if (!res || res.length === 0) {
+                $("#modalTaskTable").html('<tr><td colspan="3" class="text-center text-muted">Không có công việc</td></tr>');
+                return;
+            }
+
+            var html = "";
+            res.forEach(function (task) {
+
+                html += '<tr>'
+                        + '<td>' + (task.ten_cong_viec ? task.ten_cong_viec : '-') + '</td>'
+                        + '<td>' + (task.ngay_bat_dau ? task.ngay_bat_dau : '-') + '</td>'
+                        + '<td>' + (task.han_hoan_thanh ? task.han_hoan_thanh : '-') + '</td>'
+                        + '<td>' + (task.ngay_hoan_thanh ? task.ngay_hoan_thanh : '-') + '</td>'
+                        + '</tr>';
+            });
+
+            $("#modalTaskTable").html(html);
+        },
+        error: function () {
+            $("#modalTaskTable").html('<tr><td colspan="3" class="text-center text-danger">Lỗi tải dữ liệu</td></tr>');
+        }
+    });
+});

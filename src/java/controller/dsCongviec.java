@@ -25,50 +25,60 @@ public class dsCongviec extends HttpServlet {
             String email = (String) session.getAttribute("userEmail");
 
             // 🟢 Tham số lọc
-            String trangThai = request.getParameter("trangThai");   // trạng_thái công việc (đang thực hiện/hoàn thành/…)
-            String tinhTrang = request.getParameter("tinhTrang");   // tình_trạng (archived/active/…)
+            String trangThai = request.getParameter("trangThai");
+            String tinhTrang = request.getParameter("tinhTrang");
+            String phongBanStr = request.getParameter("phongBanId");
 
-            // 🟢 Lấy danh sách công việc
+            Integer phongBanId = null;
+            if (phongBanStr != null && !phongBanStr.trim().isEmpty()) {
+                phongBanId = Integer.parseInt(phongBanStr);
+            }
+
+            // 🟢 Danh sách trả về
             List<Map<String, Object>> taskList;
             List<Map<String, Object>> archivedTaskList;
             List<Map<String, Object>> deletedTaskList;
 
-            if (trangThai != null && !trangThai.trim().isEmpty()) {
-                // Lọc theo TRẠNG THÁI
+            // 🟢 Ưu tiên lọc theo PHÒNG BAN
+            if (phongBanId != null) {
+                taskList = kn.getTasksByDepartment(email, phongBanId);
+            }
+            // 🔹 Nếu lọc theo TRẠNG THÁI
+            else if (trangThai != null && !trangThai.trim().isEmpty()) {
                 taskList = kn.getTasksByStatus(email, 1, trangThai);
-            } else {
-                // Không truyền filter → lấy tất cả
+            }
+            // 🔹 Không filter → lấy tất cả
+            else {
                 taskList = kn.getAllTasksByProject(email, 1);
             }
 
             archivedTaskList = kn.getTasksByTinhTrang(email, 1, "Lưu trữ");
             deletedTaskList = kn.getTasksByTinhTrang(email, 1, "Đã xóa");
 
-            // 🟢 Cập nhật trạng thái từ tiến độ (không đụng đến task archived)
+            // 🟢 Cập nhật trạng thái từ tiến độ
             for (Map<String, Object> task : taskList) {
-                String tt = (String) task.get("tinh_trang"); // field này được select trong getTasksByTinhTrang / getAll...
+                String tt = (String) task.get("tinh_trang");
                 if (tt == null || !tt.equalsIgnoreCase("archived")) {
-                    int congViecId = (int) task.get("id");
-                    kn.capNhatTrangThaiTuTienDo(congViecId);
+                    kn.capNhatTrangThaiTuTienDo((int) task.get("id"));
                 }
             }
 
-            // 🟢 Nhãn lọc trạng thái (business status)
+            // 🟢 Nhãn lọc trạng thái
             LinkedHashMap<String, String> trangThaiLabels = new LinkedHashMap<>();
             trangThaiLabels.put("Chưa bắt đầu", "Chưa bắt đầu");
             trangThaiLabels.put("Đang thực hiện", "Đang thực hiện");
             trangThaiLabels.put("Đã hoàn thành", "Đã hoàn thành");
             trangThaiLabels.put("Trễ hạn", "Trễ hạn");
 
-            // 🟢 Gửi dữ liệu ra JSP
+            // 🟢 Gửi dữ liệu về JSP
             request.setAttribute("taskList", taskList);
             request.setAttribute("trangThaiLabels", trangThaiLabels);
-            request.setAttribute("archivedTaskList", archivedTaskList);    
+            request.setAttribute("archivedTaskList", archivedTaskList);
             request.setAttribute("deletedTaskList", deletedTaskList);
             request.setAttribute("selectedTrangThai", trangThai);
-            request.setAttribute("selectedTinhTrang", tinhTrang); // để JSP tick đúng “archived” nếu có
+            request.setAttribute("selectedTinhTrang", tinhTrang);
+            request.setAttribute("selectedPhongBan", phongBanId); // ⚡ Gửi phòng ban đã chọn
 
-            // 🟢 Chuyển trang
             request.getRequestDispatcher("/task.jsp").forward(request, response);
 
         } catch (ClassNotFoundException | SQLException ex) {
@@ -79,6 +89,6 @@ public class dsCongviec extends HttpServlet {
 
     @Override
     public String getServletInfo() {
-        return "Hiển thị danh sách công việc, có thể lọc theo trạng thái";
+        return "Hiển thị danh sách công việc, có thể lọc theo trạng thái hoặc phòng ban";
     }
 }

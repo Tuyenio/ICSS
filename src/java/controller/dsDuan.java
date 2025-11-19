@@ -11,6 +11,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.logging.Level;
@@ -22,9 +23,29 @@ public class dsDuan extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
             KNCSDL kn = new KNCSDL();
-            List<Map<String, Object>> projects = kn.getAllProjects();
+
+            // Lấy danh sách nhân viên (để hiện Lead)
+            List<Map<String, Object>> dsNhanVien = kn.getAllNhanVien();
+            req.setAttribute("dsNhanVien", dsNhanVien);
+
+            // --- Lấy tham số lọc ---
+            String keyword = req.getParameter("keyword");
+            String uuTien = req.getParameter("uuTien");
+            String leadIdParam = req.getParameter("leadId");
+            String nhom = req.getParameter("nhom_du_an");
+
+            Integer leadId = null;
+            if (leadIdParam != null && !leadIdParam.isEmpty()) {
+                leadId = Integer.parseInt(leadIdParam);
+            }
+
+            List<Map<String, Object>> projects = kn.getAllProjects(keyword, uuTien, leadId, nhom);
+
+            // --- Gửi sang JSP ---
             req.setAttribute("projects", projects);
-            req.getRequestDispatcher("project.jsp").forward(req, resp);
+
+            req.getRequestDispatcher("/project.jsp").forward(req, resp);
+
         } catch (Exception e) {
             e.printStackTrace();
             resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Lỗi load dự án");

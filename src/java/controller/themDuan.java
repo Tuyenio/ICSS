@@ -15,6 +15,12 @@ public class themDuan extends HttpServlet {
 
         String tenDuAn = req.getParameter("ten_du_an");
         String moTa = req.getParameter("mo_ta");
+        String uuTien = req.getParameter("muc_do_uu_tien");
+        String leadIdStr = req.getParameter("lead_id");
+        String nhomDuAn = req.getParameter("nhom_du_an");
+
+        int leadId = (leadIdStr != null && !leadIdStr.isEmpty()) ? Integer.parseInt(leadIdStr) : 0;
+
         String ngayBatDauStr = req.getParameter("ngay_bat_dau");
         String ngayKetThucStr = req.getParameter("ngay_ket_thuc");
 
@@ -30,7 +36,7 @@ public class themDuan extends HttpServlet {
 
         try (PrintWriter out = resp.getWriter()) {
             KNCSDL kn = new KNCSDL();
-            boolean success = kn.insertDuAn(tenDuAn, moTa, ngayBatDau, ngayKetThuc);
+            boolean success = kn.insertDuAn(tenDuAn, moTa, uuTien, leadId, nhomDuAn, ngayBatDau, ngayKetThuc);
 
             if (success) {
                 out.print("{\"success\":true}");
@@ -39,9 +45,7 @@ public class themDuan extends HttpServlet {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            try (PrintWriter out = resp.getWriter()) {
-                out.print("{\"success\":false,\"message\":\"Lỗi: " + e.getMessage() + "\"}");
-            }
+            resp.getWriter().write("{\"success\":false,\"message\":\"Lỗi: " + e.getMessage() + "\"}");
         }
     }
 }

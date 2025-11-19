@@ -243,6 +243,10 @@
         <servlet-name>dsCongviecDuanNV</servlet-name>
         <servlet-class>controller.dsCongviecDuanNV</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>getTaskDetail</servlet-name>
+        <servlet-class>controller.getTaskDetail</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>dsnhanvien</servlet-name>
         <url-pattern>/dsnhanvien</url-pattern>
@@ -458,6 +462,10 @@
     <servlet-mapping>
         <servlet-name>dsCongviecDuanNV</servlet-name>
         <url-pattern>/dsCongviecDuanNV</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>getTaskDetail</servlet-name>
+        <url-pattern>/getTaskDetail</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>
