@@ -49,6 +49,7 @@ public class getTaskDetail extends HttpServlet {
                 json.append("\"id\":").append(task.get("id")).append(",");
                 json.append("\"ten_cong_viec\":\"").append(escapeJson(task.get("ten_cong_viec"))).append("\",");
                 json.append("\"trang_thai\":\"").append(escapeJson(task.get("trang_thai"))).append("\",");
+                json.append("\"ten_du_an\":\"").append(escapeJson(task.get("ten_du_an"))).append("\",");
                 json.append("\"ngay_bat_dau\":\"").append(escapeJson(task.get("ngay_bat_dau"))).append("\",");
                 json.append("\"han_hoan_thanh\":\"").append(escapeJson(task.get("han_hoan_thanh"))).append("\",");
                 json.append("\"ngay_hoan_thanh\":\"").append(escapeJson(task.get("ngay_hoan_thanh"))).append("\"");

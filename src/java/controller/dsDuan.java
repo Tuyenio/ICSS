@@ -21,6 +21,9 @@ public class dsDuan extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        req.setCharacterEncoding("UTF-8");
+        resp.setCharacterEncoding("UTF-8");
+        resp.setContentType("text/html; charset=UTF-8");
         try {
             KNCSDL kn = new KNCSDL();
 
@@ -32,7 +35,12 @@ public class dsDuan extends HttpServlet {
             String keyword = req.getParameter("keyword");
             String uuTien = req.getParameter("uuTien");
             String leadIdParam = req.getParameter("leadId");
+            HttpSession session = req.getSession();
+
             String nhom = req.getParameter("nhom_du_an");
+            if (nhom == null || nhom.equals("null")) {
+                nhom = (String) session.getAttribute("nhom_du_an");
+            }
 
             Integer leadId = null;
             if (leadIdParam != null && !leadIdParam.isEmpty()) {
@@ -42,8 +50,9 @@ public class dsDuan extends HttpServlet {
             List<Map<String, Object>> projects = kn.getAllProjects(keyword, uuTien, leadId, nhom);
 
             // --- Gửi sang JSP ---
+            session.setAttribute("nhom_du_an", nhom);
             req.setAttribute("projects", projects);
-
+            req.setAttribute("nhomDuAnValue", nhom);
             req.getRequestDispatcher("/project.jsp").forward(req, resp);
 
         } catch (Exception e) {

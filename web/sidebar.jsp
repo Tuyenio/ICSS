@@ -285,7 +285,7 @@
         <li><a href="dsnhanvien" class="<%= currentPath.equals("employee.jsp") ? "active" : "" %>">
                 <i class="fa-solid fa-users-gear"></i><span>Nhân sự</span></a></li>
 
-        <li><a href="dsDuan" class="<%= currentPath.equals("project.jsp") ? "active" : "" %>">
+        <li><a href="dsNhomduan" class="<%= currentPath.equals("nhomDuan.jsp") ? "active" : "" %>">
                 <i class="fa-solid fa-diagram-project"></i><span>Dự án</span></a></li>
 
         <li><a href="dsCongviec" class="<%= currentPath.equals("task.jsp") ? "active" : "" %>">

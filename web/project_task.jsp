@@ -1741,7 +1741,8 @@
                                     <i class="fa-solid fa-plus"></i> Tạo công việc
                                 </button>
                                 <!-- Nút quay lại -->
-                                <a href="./dsDuan" class="btn btn-secondary rounded-pill px-3">
+                                <a href="dsDuan?nhom_du_an=<%= session.getAttribute("nhom_du_an") %>" 
+                                   class="btn btn-secondary rounded-pill px-3">
                                     <i class="fa-solid fa-arrow-left"></i> Quay lại dự án
                                 </a>
                             </div>
@@ -2226,8 +2227,6 @@
                                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                     </div>
                                     <div class="modal-body">
-                                        <input type="hidden" name="id">
-                                        
                                         <div class="mb-3">
                                             <label class="form-label"><b>Tên công việc</b></label>
                                             <input type="text" class="form-control" name="ten_cong_viec" required>
@@ -2620,12 +2619,12 @@
 
                                                                 // Prepare events from task list
                                                                 const events = [];
-                                                                <% for (Map<String, Object> task : taskList) { 
+            <% for (Map<String, Object> task : taskList) { 
                                                                 String eventClass = "event-not-started";
                                                                 if ("Đang thực hiện".equals(task.get("trang_thai"))) eventClass = "event-in-progress";
                                                                 else if ("Đã hoàn thành".equals(task.get("trang_thai"))) eventClass = "event-completed";
                                                                 else if ("Trễ hạn".equals(task.get("trang_thai"))) eventClass = "event-late";
-                                                                %>
+            %>
                                                                 events.push({
                                                                     id: '<%= task.get("id") %>',
                                                                     title: '<%= task.get("ten_cong_viec") != null ? task.get("ten_cong_viec").toString().replace("'", "\\'") : "" %>',

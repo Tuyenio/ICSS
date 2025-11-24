@@ -27,27 +27,37 @@ public class dsCongviecNV extends HttpServlet {
             throws ServletException, IOException {
         try {
             KNCSDL kn = new KNCSDL();
-            try {
-                HttpSession session = request.getSession();
-                String email = (String) session.getAttribute("userEmail");
-                List<Map<String, Object>> taskList = kn.getAllTasksNV(email,1);
+            HttpSession session = request.getSession();
+            String email = (String) session.getAttribute("userEmail");
 
-                // Thêm map giữ thứ tự hiển thị các cột
-                LinkedHashMap<String, String> trangThaiLabels = new LinkedHashMap<>();
-                trangThaiLabels.put("Chưa bắt đầu", "Chưa bắt đầu");
-                trangThaiLabels.put("Đang thực hiện", "Đang thực hiện");
-                trangThaiLabels.put("Đã hoàn thành", "Đã hoàn thành");
-                trangThaiLabels.put("Trễ hạn", "Trễ hạn");
+            // Lấy công việc hiện tại của nhân viên
+            List<Map<String, Object>> taskList = kn.getAllTasksNV(email, 1);
 
-                request.setAttribute("taskList", taskList);
-                request.setAttribute("trangThaiLabels", trangThaiLabels); // <-- dòng này quan trọng
+            // Lấy công việc lưu trữ
+            List<Map<String, Object>> archivedTaskList
+                    = kn.getTasksByTinhTrang(email, 1, "Lưu trữ");
 
-                request.getRequestDispatcher("/user_task.jsp").forward(request, response);
-            } catch (Exception e) {
-                throw new ServletException(e);
-            }
-        } catch (ClassNotFoundException | SQLException ex) {
-            Logger.getLogger(dsCongviec.class.getName()).log(Level.SEVERE, null, ex);
+            // Lấy công việc đã xoá
+            List<Map<String, Object>> deletedTaskList
+                    = kn.getTasksByTinhTrang(email, 1, "Đã xóa");
+
+            // Nhãn trạng thái như cũ
+            LinkedHashMap<String, String> trangThaiLabels = new LinkedHashMap<>();
+            trangThaiLabels.put("Chưa bắt đầu", "Chưa bắt đầu");
+            trangThaiLabels.put("Đang thực hiện", "Đang thực hiện");
+            trangThaiLabels.put("Đã hoàn thành", "Đã hoàn thành");
+            trangThaiLabels.put("Trễ hạn", "Trễ hạn");
+
+            // Gửi sang JSP
+            request.setAttribute("taskList", taskList);
+            request.setAttribute("archivedTaskList", archivedTaskList);
+            request.setAttribute("deletedTaskList", deletedTaskList);
+            request.setAttribute("trangThaiLabels", trangThaiLabels);
+
+            request.getRequestDispatcher("/user_task.jsp").forward(request, response);
+
+        } catch (Exception e) {
+            throw new ServletException(e);
         }
     }
 

@@ -478,6 +478,7 @@
                             <thead>
                                 <tr>
                                     <th>Tên công việc</th>
+                                    <th>Tên dự án</th>
                                     <th>Ngày bắt đầu</th>
                                     <th>Hạn</th>
                                     <th>Ngày hoàn thành</th>

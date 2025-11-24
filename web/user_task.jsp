@@ -7,18 +7,18 @@
     <head>
         <meta charset="UTF-8">
         <link rel="icon" type="image/png" href="Img/logoics.png">
-        <title>Công việc của tôi</title>
+        <title>Quản lý Công việc</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
         <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
         <!-- FullCalendar CSS -->
-        <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet">
+        <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/main.min.css" rel="stylesheet">
         <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
         <script src="https://cdn.ckeditor.com/4.22.1/standard/ckeditor.js"></script>
         <!-- FullCalendar JS -->
         <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
         <script>
-            var PAGE_TITLE = '<i class="fa-solid fa-tasks me-2"></i>Công việc của tôi';
+            var PAGE_TITLE = '<i class="fa-solid fa-tasks me-2"></i>Quản lý Công việc';
         </script>
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <style>
@@ -1498,7 +1498,7 @@
                     <div class="main-box mb-3">
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <div class="d-flex align-items-center gap-3">
-                                <h3 class="mb-0"><i class="fa-solid fa-tasks me-2"></i>Công việc của tôi</h3>
+                                <h3 class="mb-0"><i class="fa-solid fa-tasks me-2"></i>Quản lý Công việc</h3>
 
                                 <!-- Các tab điều hướng -->
                                 <ul class="nav nav-pills task-nav-tabs" id="taskViewTabs" role="tablist">
@@ -1539,6 +1539,17 @@
                                         <i class="fa-solid fa-calendar"></i> Lịch
                                     </button>
                                 </div>
+
+                                <!-- Nút thêm từ Excel -->
+                                <button class="btn btn-success rounded-pill px-3" data-bs-toggle="modal"
+                                        data-bs-target="#modalExcel">
+                                    <i class="fa-solid fa-file-excel"></i> Thêm việc từ Excel
+                                </button>
+                                <!-- Nút tạo công việc -->
+                                <button class="btn btn-primary rounded-pill px-3" data-bs-toggle="modal"
+                                        data-bs-target="#modalTask">
+                                    <i class="fa-solid fa-plus"></i> Tạo công việc
+                                </button>
                             </div>
                         </div>
                         <div class="row mb-2 g-2" id="phongban">
@@ -1549,6 +1560,11 @@
                                 String vaiTro = (String) session.getAttribute("vaiTro");
                                 String selectedTrangThai = (String) request.getAttribute("selectedTrangThai");
                             %>
+                            <div class="col-md-3">
+                                <select class="form-select" name="ten_phong_ban" id="phongSelect"
+                                        <%= !"Admin".equalsIgnoreCase(vaiTro) ? "disabled" : "" %>>
+                                </select>
+                            </div>
                             <div class="col-md-3">
                                 <select class="form-select" name="trangThai">
                                     <option value="" <%= (selectedTrangThai == null || selectedTrangThai.isEmpty()) ? "selected" : "" %>>Tất cả trạng thái</option>
@@ -1616,6 +1632,10 @@
                                     <h5><i class="fa-solid fa-exclamation-triangle"></i> <%= trangThaiLabels.get(status) %></h5>
                                     <% } %>   
                                     <% if ("Chưa bắt đầu".equals(status)) { %>
+                                    <button class="btn btn-outline-secondary kanban-add-btn" data-bs-toggle="modal"
+                                            data-bs-target="#modalTask">
+                                        <i class="fa-solid fa-plus"></i> Thêm task
+                                    </button>
                                     <% } %>
                                     <% for (Map<String, Object> task : taskList) {
                                            if (status.equals(task.get("trang_thai"))) {
@@ -1691,6 +1711,7 @@
                                             </button>
                                             <div class="task-actions-dropdown">
                                                 <button class="task-action-item archive" data-task-id="<%= task.get("id") %>" data-action="archive"><i class="fa-solid fa-archive"></i> Lưu trữ</button>
+                                                <button class="task-action-item delete" data-task-id="<%= task.get("id") %>" data-action="delete"><i class="fa-solid fa-trash"></i> Xóa</button>
                                             </div>
                                         </div>
                                     </div>
@@ -1775,8 +1796,11 @@
                                                 </td>
                                                 <td>
                                                     <div class="action-btns" onclick="event.stopPropagation();">
-                                                        <button class="btn btn-sm btn-warning" title="Lưu trữ" onclick="archiveTask('<%= task.get("id") %>')">
+                                                        <button class="btn btn-sm btn-warning" title="Lưu trữ" onclick="event.stopPropagation(); archiveTask('<%= task.get("id") %>')">
                                                             <i class="fa-solid fa-archive"></i>
+                                                        </button>
+                                                        <button class="btn btn-sm btn-danger" title="Xóa" onclick="event.stopPropagation(); deleteTask('<%= task.get("id") %>')">
+                                                            <i class="fa-solid fa-trash"></i>
                                                         </button>
                                                     </div>
                                                 </td>
@@ -1870,10 +1894,6 @@
                                                 <button class="task-action-item restore-action" type="button"
                                                         data-task-id="<%= task.get("id") %>" data-action="restore">
                                                     <i class="fa-solid fa-undo"></i><span>Khôi phục</span>
-                                                </button>
-                                                <button class="task-action-item permanent-delete-action" type="button"
-                                                        data-task-id="<%= task.get("id") %>" data-action="permanent-delete">
-                                                    <i class="fa-solid fa-trash-can"></i><span>Xóa vĩnh viễn</span>
                                                 </button>
                                             </div>
                                         </div>
@@ -1972,10 +1992,6 @@
                                                         data-task-id="<%= task.get("id") %>" data-action="restore">
                                                     <i class="fa-solid fa-undo"></i><span>Khôi phục</span>
                                                 </button>
-                                                <button class="task-action-item permanent-delete-action" type="button"
-                                                        data-task-id="<%= task.get("id") %>" data-action="permanent-delete">
-                                                    <i class="fa-solid fa-trash-can"></i><span>Xóa vĩnh viễn</span>
-                                                </button>
                                             </div>
                                         </div>
                                     </div>
@@ -2004,7 +2020,6 @@
                                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                     </div>
                                     <div class="modal-body">
-                                        <input type="hidden" name="id">
                                         <input type="hidden" name="du_an_id" value="1">
                                         <div class="mb-3">
                                             <label class="form-label"><b>Tên công việc</b></label>
@@ -2092,42 +2107,71 @@
                                                 <div class="row">
                                                     <div class="col-md-6 mb-2">
                                                         <label class="form-label"><b>Tên công việc</b></label>
-                                                        <input type="text" class="form-control" name="ten_cong_viec" readonly>
+                                                        <input type="text" class="form-control" name="ten_cong_viec">
                                                     </div>
                                                     <div class="col-md-6 mb-2">
                                                         <label class="form-label"><b>Mức độ ưu tiên</b></label>
-                                                        <input type="text" class="form-control" name="muc_do_uu_tien" readonly>
+                                                        <select class="form-select" name="muc_do_uu_tien">
+                                                            <option>Cao</option>
+                                                            <option>Trung bình</option>
+                                                            <option>Thấp</option>
+                                                        </select>
                                                     </div>
                                                 </div>
                                                 <div class="mb-2">
                                                     <label class="form-label"><b>Mô tả</b></label>
-                                                    <textarea class="form-control" rows="3" name="mo_ta" readonly></textarea>
+                                                    <textarea class="form-control" rows="3" name="mo_ta"></textarea>
                                                 </div>
                                                 <div class="row">
                                                     <div class="col-md-4 mb-2">
                                                         <label class="form-label"><b>Ngày bắt đầu</b></label>
-                                                        <input type="date" class="form-control" name="ngay_bat_dau" readonly>
+                                                        <input type="date" class="form-control" name="ngay_bat_dau">
                                                     </div>
                                                     <div class="col-md-4 mb-2">
                                                         <label class="form-label"><b>Hạn hoàn thành</b></label>
-                                                        <input type="date" class="form-control" name="han_hoan_thanh" id="hanHoanThanh" readonly>
+                                                        <input type="date" class="form-control" name="han_hoan_thanh" id="hanHoanThanh">
                                                         <!-- Dòng hiển thị thông tin gia hạn -->
                                                         <small id="giaHanInfo" class="text-danger mt-1 d-block"></small>
                                                     </div>
                                                     <div class="col-md-4 mb-2">
                                                         <label class="form-label"><b>Trạng thái</b></label>
-                                                        <input type="text" class="form-control" name="trang_thai" readonly>
+                                                        <select class="form-select" name="trang_thai">
+                                                            <option>Chưa bắt đầu</option>
+                                                            <option>Đang thực hiện</option>
+                                                            <option>Đã hoàn thành</option>
+                                                            <option>Trễ hạn</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Phần gia hạn công việc (hiển thị khi quá hạn) -->
+                                                <div id="extensionSection" class="alert alert-warning mb-2" style="display: none;">
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <div>
+                                                            <i class="fa-solid fa-exclamation-triangle"></i>
+                                                            <strong>Công việc đã quá hạn!</strong>
+                                                        </div>
+                                                        <button type="button" class="btn btn-sm btn-warning" id="btnGiaHan">
+                                                            <i class="fa-solid fa-clock"></i> Gia hạn công việc
+                                                        </button>
+                                                    </div>
+                                                    <div id="giaHanForm" style="display: none;" class="mt-3">
+                                                        <label class="form-label"><b>Ngày gia hạn mới</b></label>
+                                                        <input type="date" class="form-control mb-2" id="ngayGiaHan">
+                                                        <button type="button" class="btn btn-sm btn-success" id="btnXacNhanGiaHan">
+                                                            <i class="fa-solid fa-check"></i> Xác nhận gia hạn
+                                                        </button>
                                                     </div>
                                                 </div>
 
                                                 <div class="row">
-                                                    <div class="mb-2">
-                                                        <label class="form-label"><b>Người giao:</b></label>
-                                                        <input type="text" class="form-control" name="ten_nguoi_giao" readonly>
+                                                    <div class="col-md-4 mb-2">
+                                                        <label class="form-label"><b>Người giao</b></label>
+                                                        <select class="form-select" name="ten_nguoi_giao"></select>
                                                     </div>
                                                     <div class="col-md-4 mb-2">
                                                         <label class="form-label"><b>Phòng ban</b></label>
-                                                        <input type="text" class="form-control" name="ten_phong_ban" readonly>
+                                                        <select class="form-select" name="ten_phong_ban"></select>
                                                     </div>
                                                     <div class="col-md-4 mb-2">
                                                         <label class="form-label"><b>Trạng thái duyệt</b></label>
@@ -2137,6 +2181,9 @@
 
                                                 <div class="mb-2">
                                                     <label class="form-label"><b>Người nhận</b></label>
+                                                    <button type="button" class="btn btn-outline-primary btn-sm" id="btnOpenNguoiNhanDetail">
+                                                        <i class="fa-solid fa-user-plus"></i> Thêm người nhận
+                                                    </button>
                                                     <div id="danhSachNguoiNhan" class="d-flex flex-wrap gap-2 mt-2">
                                                         <!-- Tag tên người nhận sẽ hiển thị ở đây -->
                                                     </div>
@@ -2166,6 +2213,9 @@
                                             <div class="progress my-2" style="height: 25px;">
                                                 <div class="progress-bar bg-success" style="width: 0%" id="taskProgressBar"></div>
                                             </div>
+                                            <button class="btn btn-outline-primary btn-sm mb-2" id="btnAddProcessStep">
+                                                <i class="fa-solid fa-plus"></i> Thêm quy trình
+                                            </button>
                                             <ul id="processStepList" class="list-group"></ul>
                                         </div>
 
@@ -2191,11 +2241,15 @@
                                             <h6 class="section-title">
                                                 <i class="fa-solid fa-star text-warning"></i> Đánh giá công việc
                                             </h6>
+                                            
                                             <ul id="taskReviewList" class="list-group"></ul>
                                         </div>
                                     </div>
 
                                     <div class="modal-footer">
+                                        <button type="button" class="btn btn-warning" id="btnXetDuyet">
+                                            <i class="fa-solid fa-check-circle"></i> Xét duyệt công việc
+                                        </button>
                                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
                                         <button type="button" class="btn btn-primary" id="btnSaveTask">
                                             <i class="fa-solid fa-save"></i> Lưu thay đổi
@@ -2205,6 +2259,37 @@
                             </div>
                         </div>
 
+                        <!-- Modal Xét duyệt công việc -->
+                        <div class="modal fade" id="modalXetDuyet" tabindex="-1">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title"><i class="fa-solid fa-gavel"></i> Xét duyệt công việc</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <input type="hidden" id="xetDuyetTaskId">
+                                        <div class="mb-3">
+                                            <label class="form-label"><b>Quyết định</b></label>
+                                            <select class="form-select" id="quyetDinhDuyet">
+                                                <option value="Đã duyệt">✅ Duyệt</option>
+                                                <option value="Từ chối">❌ Từ chối</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label"><b>Lý do / Ghi chú</b></label>
+                                            <textarea class="form-control" id="lyDoXetDuyet" rows="4" placeholder="Nhập lý do duyệt hoặc từ chối..."></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                        <button type="button" class="btn btn-success" id="btnXacNhanXetDuyet">
+                                            <i class="fa-solid fa-check"></i> Xác nhận
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         <!-- Modal chọn nhiều người -->
                         <div class="modal fade" id="modalChonNguoiNhan" tabindex="-1">
                             <div class="modal-dialog modal-lg">
@@ -2247,7 +2332,52 @@
                                 </form>
                             </div>
                         </div>
-                        
+                        <!-- Modal thêm quy trình/giai đoạn -->
+                        <div class="modal fade" id="modalAddProcessStep" tabindex="-1">
+                            <div class="modal-dialog">
+                                <form class="modal-content" id="formAddProcessStep">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title"><i class="fa-solid fa-list-check"></i> Thêm bước quy
+                                            trình</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="mb-2">
+                                            <input type="hidden" name="stepid">
+                                            <label class="form-label">Tên bước/giai đoạn</label>
+                                            <input type="text" class="form-control" name="stepName" required>
+                                        </div>
+                                        <div class="mb-2">
+                                            <label class="form-label">Mô tả</label>
+                                            <textarea class="form-control" name="stepDesc" rows="2"></textarea>
+                                        </div>
+                                        <div class="mb-2">
+                                            <label class="form-label">Trạng thái</label>
+                                            <select class="form-select" name="stepStatus">
+                                                <option value="Chưa bắt đầu">Chưa bắt đầu</option>
+                                                <option value="Đang thực hiện">Đang thực hiện</option>
+                                                <option value="Đã hoàn thành">Đã hoàn thành</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-2 row">
+                                            <div class="col">
+                                                <label class="form-label">Ngày bắt đầu</label>
+                                                <input type="date" class="form-control" name="stepStart">
+                                            </div>
+                                            <div class="col">
+                                                <label class="form-label">Ngày kết thúc</label>
+                                                <input type="date" class="form-control" name="stepEnd">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="submit" class="btn btn-primary rounded-pill">Thêm bước</button>
+                                        <button type="button" class="btn btn-secondary rounded-pill"
+                                                data-bs-dismiss="modal">Huỷ</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

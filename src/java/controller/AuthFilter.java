@@ -28,12 +28,10 @@ public class AuthFilter implements Filter {
             "/xoaLichTrinh",
             "/xoaCongviec",
             "/themPhongban",
-            "/themCongviec",
             "/locNhanvien",
             "/dsnhanvien",
             "/dsPhongban",
             "/dsDuan",
-            "/dsCongviec",
             "/dsChamCong",
             "/xoaNhanvien",
             "/dsLichtrinh",
@@ -44,8 +42,7 @@ public class AuthFilter implements Filter {
             "/themNhanvien",
             "/themDuan",
             "/xoaDuan",
-            "/xoaPhongban",
-            "/xoaQuytrinh"
+            "/xoaPhongban"
     );
 
     @Override

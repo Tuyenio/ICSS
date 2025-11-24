@@ -7,21 +7,20 @@
     <head>
         <meta charset="UTF-8">
         <link rel="icon" type="image/png" href="Img/logoics.png">
-        <title>Dự án của tôi</title>
+        <title>Quản lý Công việc</title>
+        <!-- Bootstrap CSS -->
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
         <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
-        <!-- FullCalendar CSS -->
-        <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet">
         <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
         <script src="https://cdn.ckeditor.com/4.22.1/standard/ckeditor.js"></script>
-        <!-- FullCalendar JS -->
+        <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/main.min.css" rel="stylesheet">
         <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <script>
-            var PAGE_TITLE = '<i class="fa-solid fa-diagram-project me-2"></i>Dự án: <%= request.getAttribute("tenDuan") %>';
+            var PAGE_TITLE = '<i class="fa-solid fa-diagram-project me-2"></i>Quản lý Dự án: <%= request.getAttribute("tenDuan") %>';
             var PROJECT_ID = <%= request.getAttribute("projectId") %>;
         </script>
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <style>
             /* BODY + MAIN CONTENT */
             body {
@@ -322,16 +321,6 @@
             .task-action-item i {
                 width: 16px;
                 font-size: 0.85rem;
-            }
-
-            .task-action-item.restore:hover {
-                background-color: #28a745 !important;
-                color: white !important;
-            }
-
-            .task-action-item.delete-permanent:hover {
-                background-color: #dc3545 !important;
-                color: white !important;
             }
 
             /* TASK NAVIGATION TABS */
@@ -1107,6 +1096,206 @@
                 }
             }
 
+            /* ========== LỊCH SỬ CÔNG VIỆC TIMELINE ========== */
+            .history-timeline {
+                position: relative;
+                padding: 20px 0;
+                max-height: 500px;
+                overflow-y: auto;
+            }
+
+            .history-timeline::-webkit-scrollbar {
+                width: 6px;
+            }
+
+            .history-timeline::-webkit-scrollbar-track {
+                background: #f1f5f9;
+                border-radius: 10px;
+            }
+
+            .history-timeline::-webkit-scrollbar-thumb {
+                background: linear-gradient(135deg, #0dcaf0, #4f46e5);
+                border-radius: 10px;
+            }
+
+            .history-timeline::before {
+                content: '';
+                position: absolute;
+                left: 40px;
+                top: 0;
+                bottom: 0;
+                width: 3px;
+                background: linear-gradient(180deg, #0dcaf0, #4f46e5);
+                border-radius: 2px;
+            }
+
+            .history-item {
+                position: relative;
+                padding-left: 80px;
+                margin-bottom: 24px;
+                animation: slideInLeft 0.5s ease;
+            }
+
+            @keyframes slideInLeft {
+                from {
+                    opacity: 0;
+                    transform: translateX(-20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateX(0);
+                }
+            }
+
+            .history-item:last-child {
+                margin-bottom: 0;
+            }
+
+            .history-number {
+                position: absolute;
+                left: 0;
+                top: 5px;
+                width: 32px;
+                height: 32px;
+                background: linear-gradient(135deg, #0dcaf0, #4f46e5);
+                color: white;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 700;
+                font-size: 0.85rem;
+                box-shadow: 0 3px 10px rgba(13, 202, 240, 0.3);
+                z-index: 2;
+            }
+
+            .history-avatar {
+                position: absolute;
+                left: 58px;
+                top: 0;
+                width: 45px;
+                height: 45px;
+                border-radius: 50%;
+                overflow: hidden;
+                border: 3px solid white;
+                box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+                background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 2;
+            }
+
+            .history-avatar img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+
+            .history-avatar-placeholder {
+                width: 100%;
+                height: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: linear-gradient(135deg, #0dcaf0, #4f46e5);
+                color: white;
+                font-weight: 700;
+                font-size: 1.1rem;
+            }
+
+            .history-content {
+                background: white;
+                border: 1px solid #e2e8f0;
+                border-radius: 12px;
+                padding: 16px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+                transition: all 0.3s ease;
+                position: relative;
+            }
+
+            .history-content:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 15px rgba(13, 202, 240, 0.2);
+                border-color: #0dcaf0;
+            }
+
+            .history-content::before {
+                content: '';
+                position: absolute;
+                left: -8px;
+                top: 20px;
+                width: 0;
+                height: 0;
+                border-top: 8px solid transparent;
+                border-bottom: 8px solid transparent;
+                border-right: 8px solid #e2e8f0;
+            }
+
+            .history-content::after {
+                content: '';
+                position: absolute;
+                left: -7px;
+                top: 20px;
+                width: 0;
+                height: 0;
+                border-top: 8px solid transparent;
+                border-bottom: 8px solid transparent;
+                border-right: 8px solid white;
+            }
+
+            .history-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 10px;
+            }
+
+            .history-user {
+                font-weight: 600;
+                color: #1e293b;
+                font-size: 0.95rem;
+            }
+
+            .history-time {
+                color: #64748b;
+                font-size: 0.85rem;
+                display: flex;
+                align-items: center;
+                gap: 4px;
+            }
+
+            .history-time i {
+                font-size: 0.75rem;
+            }
+
+            .history-description {
+                color: #475569;
+                font-size: 0.9rem;
+                line-height: 1.6;
+                padding: 8px 12px;
+                background: #f8fafc;
+                border-radius: 8px;
+                border-left: 3px solid #0dcaf0;
+            }
+
+            .history-empty {
+                text-align: center;
+                padding: 40px 20px;
+                color: #94a3b8;
+            }
+
+            .history-empty i {
+                font-size: 3rem;
+                margin-bottom: 12px;
+                opacity: 0.5;
+            }
+
+            .history-empty p {
+                margin: 0;
+                font-size: 0.95rem;
+            }
+
             /* ==== CHỮ TRONG TASK ==== */
             .task-title {
                 font-weight: 600;
@@ -1499,7 +1688,7 @@
                     <div class="main-box mb-3">
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <div class="d-flex align-items-center gap-3">
-                                <h3 class="mb-0"><i class="fa-solid fa-tasks me-2"></i>Dự án: <%= request.getAttribute("tenDuan") %></h3>
+                                <h3 class="mb-0"><i class="fa-solid fa-diagram-project me-2"></i>Quản lý Dự án: <%= request.getAttribute("tenDuan") %></h3>
 
                                 <!-- Các tab điều hướng -->
                                 <ul class="nav nav-pills task-nav-tabs" id="taskViewTabs" role="tablist">
@@ -1540,10 +1729,16 @@
                                         <i class="fa-solid fa-calendar"></i> Lịch
                                     </button>
                                 </div>
+
+                                <!-- Nút thêm từ Excel -->
+                                <button class="btn btn-success rounded-pill px-3" data-bs-toggle="modal"
+                                        data-bs-target="#modalExcel">
+                                    <i class="fa-solid fa-file-excel"></i> Thêm việc từ Excel
+                                </button>
+                                <a href="./dsDuannv" class="btn btn-secondary rounded-pill px-3">
+                                    <i class="fa-solid fa-arrow-left"></i> Quay lại dự án
+                                </a>
                             </div>
-                            <a href="./dsDuannv" class="btn btn-secondary rounded-pill px-3">
-                                <i class="fa-solid fa-arrow-left"></i> Quay lại dự án
-                            </a>
                         </div>
                         <div class="row mb-2 g-2" id="phongban">
                             <div class="col-md-3">
@@ -1553,6 +1748,11 @@
                                 String vaiTro = (String) session.getAttribute("vaiTro");
                                 String selectedTrangThai = (String) request.getAttribute("selectedTrangThai");
                             %>
+                            <div class="col-md-3">
+                                <select class="form-select" name="ten_phong_ban" id="phongSelect"
+                                        <%= !"Admin".equalsIgnoreCase(vaiTro) ? "disabled" : "" %>>
+                                </select>
+                            </div>
                             <div class="col-md-3">
                                 <select class="form-select" name="trangThai">
                                     <option value="" <%= (selectedTrangThai == null || selectedTrangThai.isEmpty()) ? "selected" : "" %>>Tất cả trạng thái</option>
@@ -1620,6 +1820,10 @@
                                     <h5><i class="fa-solid fa-exclamation-triangle"></i> <%= trangThaiLabels.get(status) %></h5>
                                     <% } %>   
                                     <% if ("Chưa bắt đầu".equals(status)) { %>
+                                    <button class="btn btn-outline-secondary kanban-add-btn" data-bs-toggle="modal"
+                                            data-bs-target="#modalTask">
+                                        <i class="fa-solid fa-plus"></i> Thêm task
+                                    </button>
                                     <% } %>
                                     <% for (Map<String, Object> task : taskList) {
                                            if (status.equals(task.get("trang_thai"))) {
@@ -1695,6 +1899,7 @@
                                             </button>
                                             <div class="task-actions-dropdown">
                                                 <button class="task-action-item archive" data-task-id="<%= task.get("id") %>" data-action="archive"><i class="fa-solid fa-archive"></i> Lưu trữ</button>
+                                                <button class="task-action-item delete" data-task-id="<%= task.get("id") %>" data-action="delete"><i class="fa-solid fa-trash"></i> Xóa</button>
                                             </div>
                                         </div>
                                     </div>
@@ -1781,6 +1986,9 @@
                                                     <div class="action-btns" onclick="event.stopPropagation();">
                                                         <button class="btn btn-sm btn-warning" title="Lưu trữ" onclick="archiveTask('<%= task.get("id") %>')">
                                                             <i class="fa-solid fa-archive"></i>
+                                                        </button>
+                                                        <button class="btn btn-sm btn-danger" title="Xóa" onclick="deleteTask('<%= task.get("id") %>')">
+                                                            <i class="fa-solid fa-trash"></i>
                                                         </button>
                                                     </div>
                                                 </td>
@@ -1874,10 +2082,6 @@
                                                 <button class="task-action-item restore-action" type="button"
                                                         data-task-id="<%= task.get("id") %>" data-action="restore">
                                                     <i class="fa-solid fa-undo"></i><span>Khôi phục</span>
-                                                </button>
-                                                <button class="task-action-item permanent-delete-action" type="button"
-                                                        data-task-id="<%= task.get("id") %>" data-action="permanent-delete">
-                                                    <i class="fa-solid fa-trash-can"></i><span>Xóa vĩnh viễn</span>
                                                 </button>
                                             </div>
                                         </div>
@@ -1976,10 +2180,6 @@
                                                         data-task-id="<%= task.get("id") %>" data-action="restore">
                                                     <i class="fa-solid fa-undo"></i><span>Khôi phục</span>
                                                 </button>
-                                                <button class="task-action-item permanent-delete-action" type="button"
-                                                        data-task-id="<%= task.get("id") %>" data-action="permanent-delete">
-                                                    <i class="fa-solid fa-trash-can"></i><span>Xóa vĩnh viễn</span>
-                                                </button>
                                             </div>
                                         </div>
                                     </div>
@@ -2008,8 +2208,6 @@
                                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                     </div>
                                     <div class="modal-body">
-                                        <input type="hidden" name="id">
-                                        <input type="hidden" name="du_an_id" value="1">
                                         <div class="mb-3">
                                             <label class="form-label"><b>Tên công việc</b></label>
                                             <input type="text" class="form-control" name="ten_cong_viec" required>
@@ -2096,42 +2294,71 @@
                                                 <div class="row">
                                                     <div class="col-md-6 mb-2">
                                                         <label class="form-label"><b>Tên công việc</b></label>
-                                                        <input type="text" class="form-control" name="ten_cong_viec" readonly>
+                                                        <input type="text" class="form-control" name="ten_cong_viec">
                                                     </div>
                                                     <div class="col-md-6 mb-2">
                                                         <label class="form-label"><b>Mức độ ưu tiên</b></label>
-                                                        <input type="text" class="form-control" name="muc_do_uu_tien" readonly>
+                                                        <select class="form-select" name="muc_do_uu_tien">
+                                                            <option>Cao</option>
+                                                            <option>Trung bình</option>
+                                                            <option>Thấp</option>
+                                                        </select>
                                                     </div>
                                                 </div>
                                                 <div class="mb-2">
                                                     <label class="form-label"><b>Mô tả</b></label>
-                                                    <textarea class="form-control" rows="3" name="mo_ta" readonly></textarea>
+                                                    <textarea class="form-control" rows="3" name="mo_ta"></textarea>
                                                 </div>
                                                 <div class="row">
                                                     <div class="col-md-4 mb-2">
                                                         <label class="form-label"><b>Ngày bắt đầu</b></label>
-                                                        <input type="date" class="form-control" name="ngay_bat_dau" readonly>
+                                                        <input type="date" class="form-control" name="ngay_bat_dau">
                                                     </div>
                                                     <div class="col-md-4 mb-2">
                                                         <label class="form-label"><b>Hạn hoàn thành</b></label>
-                                                        <input type="date" class="form-control" name="han_hoan_thanh" id="hanHoanThanh" readonly>
+                                                        <input type="date" class="form-control" name="han_hoan_thanh" id="hanHoanThanh">
                                                         <!-- Dòng hiển thị thông tin gia hạn -->
                                                         <small id="giaHanInfo" class="text-danger mt-1 d-block"></small>
                                                     </div>
                                                     <div class="col-md-4 mb-2">
                                                         <label class="form-label"><b>Trạng thái</b></label>
-                                                        <input type="text" class="form-control" name="trang_thai" readonly>
+                                                        <select class="form-select" name="trang_thai">
+                                                            <option>Chưa bắt đầu</option>
+                                                            <option>Đang thực hiện</option>
+                                                            <option>Đã hoàn thành</option>
+                                                            <option>Trễ hạn</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Phần gia hạn công việc (hiển thị khi quá hạn) -->
+                                                <div id="extensionSection" class="alert alert-warning mb-2" style="display: none;">
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <div>
+                                                            <i class="fa-solid fa-exclamation-triangle"></i>
+                                                            <strong>Công việc đã quá hạn!</strong>
+                                                        </div>
+                                                        <button type="button" class="btn btn-sm btn-warning" id="btnGiaHan">
+                                                            <i class="fa-solid fa-clock"></i> Gia hạn công việc
+                                                        </button>
+                                                    </div>
+                                                    <div id="giaHanForm" style="display: none;" class="mt-3">
+                                                        <label class="form-label"><b>Ngày gia hạn mới</b></label>
+                                                        <input type="date" class="form-control mb-2" id="ngayGiaHan">
+                                                        <button type="button" class="btn btn-sm btn-success" id="btnXacNhanGiaHan">
+                                                            <i class="fa-solid fa-check"></i> Xác nhận gia hạn
+                                                        </button>
                                                     </div>
                                                 </div>
 
                                                 <div class="row">
-                                                    <div class="mb-2">
-                                                        <label class="form-label"><b>Người giao:</b></label>
-                                                        <input type="text" class="form-control" name="ten_nguoi_giao" readonly>
+                                                    <div class="col-md-4 mb-2">
+                                                        <label class="form-label"><b>Người giao</b></label>
+                                                        <select class="form-select" name="ten_nguoi_giao"></select>
                                                     </div>
                                                     <div class="col-md-4 mb-2">
                                                         <label class="form-label"><b>Phòng ban</b></label>
-                                                        <input type="text" class="form-control" name="ten_phong_ban" readonly>
+                                                        <select class="form-select" name="ten_phong_ban"></select>
                                                     </div>
                                                     <div class="col-md-4 mb-2">
                                                         <label class="form-label"><b>Trạng thái duyệt</b></label>
@@ -2141,6 +2368,9 @@
 
                                                 <div class="mb-2">
                                                     <label class="form-label"><b>Người nhận</b></label>
+                                                    <button type="button" class="btn btn-outline-primary btn-sm" id="btnOpenNguoiNhanDetail">
+                                                        <i class="fa-solid fa-user-plus"></i> Thêm người nhận
+                                                    </button>
                                                     <div id="danhSachNguoiNhan" class="d-flex flex-wrap gap-2 mt-2">
                                                         <!-- Tag tên người nhận sẽ hiển thị ở đây -->
                                                     </div>
@@ -2170,6 +2400,9 @@
                                             <div class="progress my-2" style="height: 25px;">
                                                 <div class="progress-bar bg-success" style="width: 0%" id="taskProgressBar"></div>
                                             </div>
+                                            <button class="btn btn-outline-primary btn-sm mb-2" id="btnAddProcessStep">
+                                                <i class="fa-solid fa-plus"></i> Thêm quy trình
+                                            </button>
                                             <ul id="processStepList" class="list-group"></ul>
                                         </div>
 
@@ -2251,14 +2484,60 @@
                                 </form>
                             </div>
                         </div>
-
+                        <!-- Modal thêm quy trình/giai đoạn -->
+                        <div class="modal fade" id="modalAddProcessStep" tabindex="-1">
+                            <div class="modal-dialog">
+                                <form class="modal-content" id="formAddProcessStep">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title"><i class="fa-solid fa-list-check"></i> Thêm bước quy
+                                            trình</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="mb-2">
+                                            <input type="hidden" name="stepid">
+                                            <label class="form-label">Tên bước/giai đoạn</label>
+                                            <input type="text" class="form-control" name="stepName" required>
+                                        </div>
+                                        <div class="mb-2">
+                                            <label class="form-label">Mô tả</label>
+                                            <textarea class="form-control" name="stepDesc" rows="2"></textarea>
+                                        </div>
+                                        <div class="mb-2">
+                                            <label class="form-label">Trạng thái</label>
+                                            <select class="form-select" name="stepStatus">
+                                                <option value="Chưa bắt đầu">Chưa bắt đầu</option>
+                                                <option value="Đang thực hiện">Đang thực hiện</option>
+                                                <option value="Đã hoàn thành">Đã hoàn thành</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-2 row">
+                                            <div class="col">
+                                                <label class="form-label">Ngày bắt đầu</label>
+                                                <input type="date" class="form-control" name="stepStart">
+                                            </div>
+                                            <div class="col">
+                                                <label class="form-label">Ngày kết thúc</label>
+                                                <input type="date" class="form-control" name="stepEnd">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="submit" class="btn btn-primary rounded-pill">Thêm bước</button>
+                                        <button type="button" class="btn btn-secondary rounded-pill"
+                                                data-bs-dismiss="modal">Huỷ</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-
-            <script src="<%= request.getContextPath() %>/scripts/project_tasknv.js?v=<%= System.currentTimeMillis() %>"></script>
-            <script src="<%= request.getContextPath() %>/scripts/task-approval.js?v=<%= System.currentTimeMillis() %>"></script>
-            <script>
+        </div>
+        <script src="<%= request.getContextPath() %>/scripts/project_tasknv.js?v=<%= System.currentTimeMillis() %>"></script>
+        <script src="<%= request.getContextPath() %>/scripts/task-approval.js?v=<%= System.currentTimeMillis() %>"></script>
+        <%--FULLCALENDAR INITIALIZATION--%>
+        <script>
 
                                                             // ====== FULLCALENDAR INITIALIZATION ======
                                                             function initCalendar() {
@@ -2271,12 +2550,12 @@
 
                                                                 // Prepare events from task list
                                                                 const events = [];
-                <% for (Map<String, Object> task : taskList) { 
+            <% for (Map<String, Object> task : taskList) { 
                                                                 String eventClass = "event-not-started";
                                                                 if ("Đang thực hiện".equals(task.get("trang_thai"))) eventClass = "event-in-progress";
                                                                 else if ("Đã hoàn thành".equals(task.get("trang_thai"))) eventClass = "event-completed";
                                                                 else if ("Trễ hạn".equals(task.get("trang_thai"))) eventClass = "event-late";
-                %>
+            %>
                                                                 events.push({
                                                                     id: '<%= task.get("id") %>',
                                                                     title: '<%= task.get("ten_cong_viec") != null ? task.get("ten_cong_viec").toString().replace("'", "\\'") : "" %>',
@@ -2296,7 +2575,7 @@
                                                                         fileTaiLieu: '<%= task.get("file_tai_lieu") %>'
                                                                     }
                                                                 });
-                <% } %>
+            <% } %>
 
                                                                 calendar = new FullCalendar.Calendar(calendarEl, {
                                                                     initialView: 'dayGridMonth',
@@ -2366,6 +2645,6 @@
 
                                                                 calendar.render();
                                                             }
-            </script>
+        </script>
     </body>
 </html>

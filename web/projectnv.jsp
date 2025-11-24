@@ -6,7 +6,7 @@
     <head>
         <meta charset="UTF-8">
         <link rel="icon" type="image/png" href="Img/logoics.png">
-        <title>Dự án của tôi</title>
+        <title>Quản lý Dự án</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
         <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
         <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
@@ -162,7 +162,7 @@
 
         </style>
         <script>
-            var PAGE_TITLE = '<i class="fa-solid fa-diagram-project me-2"></i>Dự án của tôi';
+            var PAGE_TITLE = '<i class="fa-solid fa-diagram-project me-2"></i>Quản lý Dự án';
         </script>
     </head>
     <body>
@@ -172,67 +172,178 @@
                 <%@ include file="user_header.jsp" %>
                 <div class="main-content">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h3 class="mb-0"><i class="fa-solid fa-diagram-project me-2"></i>Dự án của tôi</h3>
+                        <h3 class="mb-0"><i class="fa-solid fa-diagram-project me-2"></i>Quản lý Dự án</h3>
                     </div>
+                    <form class="row g-3 mb-4 align-items-end" method="get" action="dsDuannv">
+
+                        <!-- Tìm theo tên dự án -->
+                        <div class="col-md-3">
+                            <input type="text" name="keyword" class="form-control"
+                                   placeholder="Tìm theo tên dự án..."
+                                   value="<%= request.getParameter("keyword") != null ? request.getParameter("keyword") : "" %>">
+                        </div>
+
+                        <!-- Lọc theo mức độ ưu tiên -->
+                        <div class="col-md-2">
+                            <select name="uuTien" class="form-select">
+                                <option value="">Ưu tiên (Tất cả)</option>
+                                <option value="Cao" <%= "Cao".equals(request.getParameter("uuTien")) ? "selected" : "" %>>Cao</option>
+                                <option value="Trung bình" <%= "Trung bình".equals(request.getParameter("uuTien")) ? "selected" : "" %>>Trung bình</option>
+                                <option value="Thấp" <%= "Thấp".equals(request.getParameter("uuTien")) ? "selected" : "" %>>Thấp</option>
+                            </select>
+                        </div>
+
+                        <!-- Nhóm dự án -->
+                        <div class="col-md-2">
+                            <select name="nhom_du_an" class="form-select">
+                                <option value="">Nhóm dự án (Tất cả)</option>
+                                <option value="Dashboard">Dashboard</option>
+                                <option value="An ninh bảo mật">An ninh bảo mật</option>
+                                <option value="Oracle Cloud">Oracle Cloud</option>
+                                <option value="Đào tạo">Đào tạo</option>
+                                <option value="Khác">Khác</option>
+                            </select>
+                        </div>
+
+                        <!-- Lead -->
+                        <div class="col-md-3">
+                            <select name="leadId" class="form-select">
+                                <option value="">Lead dự án (Tất cả)</option>
+
+                                <%
+                                    List<Map<String, Object>> dsNV = (List<Map<String, Object>>) request.getAttribute("dsNhanVien");
+                                    String leadSelected = request.getParameter("leadId");
+
+                                    if (dsNV != null) {
+                                        for (Map<String, Object> nv : dsNV) {
+                                            int id = (int) nv.get("id");
+                                            String ten = (String) nv.get("ho_ten");
+                                %>
+
+                                <option value="<%= id %>" <%= (leadSelected != null && leadSelected.equals(String.valueOf(id))) ? "selected" : "" %>>
+                                    <%= ten %>
+                                </option>
+
+                                <%
+                                        }
+                                    }
+                                %>
+                            </select>
+                        </div>
+
+                        <!-- Nút Lọc -->
+                        <div class="col-md-1">
+                            <button class="btn btn-primary w-100">
+                                <i class="fa-solid fa-filter"></i> Lọc
+                            </button>
+                        </div>
+
+                        <!-- Nút Reset -->
+                        <div class="col-md-1">
+                            <a href="dsDuannv" class="btn btn-secondary w-100">
+                                <i class="fa-solid fa-rotate-left"></i>
+                            </a>
+                        </div>
+
+                    </form>
                     <div class="row project-list">
-                        <!-- Lặp lại cho các dự án khác -->
                         <%
                             List<Map<String, Object>> projects = (List<Map<String, Object>>) request.getAttribute("projects");
                             if (projects != null) {
                                 for (Map<String, Object> project : projects) {
                         %>
+
                         <div class="col-md-6 mb-4">
-                            <div class="project-card" data-id="<%= project.get("id") %>" onclick="goToProjectTask(<%= project.get("id") %>, event)">
+                            <div class="project-card" data-id="<%= project.get("id") %>"
+                                 onclick="goToProjectTask(<%= project.get("id") %>, event)">
+
+                                <!-- HEADER -->
                                 <div class="project-header d-flex justify-content-between align-items-center">
                                     <span class="project-title"><%= project.get("ten_du_an") %></span>
+
                                     <div class="project-actions">
                                         <button class="btn btn-info" onclick="showProjectDetail(event, <%= project.get("id") %>)">
                                             <i class="fa-solid fa-eye"></i>
                                         </button>
                                     </div>
                                 </div>
-                                <div class="project-desc mt-2 text-muted">Mô tả: <%= project.get("mo_ta") %></div>
-                                
+
+                                <!-- MÔ TẢ -->
+                                <div class="project-desc mt-2 text-muted">
+                                    Mô tả: <%= project.get("mo_ta") %>
+                                </div>
+
+                                <!-- LEAD + ƯU TIÊN -->
+                                <div class="mt-2 d-flex justify-content-between align-items-center">
+                                    <!-- Lead -->
+                                    <div class="d-flex align-items-center">
+                                        <span class="me-2 text-secondary fw-semibold">Lead dự án:</span>
+                                        <% 
+                                            String leadName = (String) project.get("lead_ten");
+                                            String leadAvatar = (String) project.get("lead_avatar");
+                                        %>
+
+                                        <% if (leadAvatar != null && !leadAvatar.isEmpty()) { %>
+                                        <img src="<%= leadAvatar %>" class="rounded-circle me-2" width="28" height="28">
+                                        <% } %>
+
+                                        <span class="fw-semibold text-primary">
+                                            <%= leadName != null ? leadName : "Chưa có Lead" %>
+                                        </span>
+                                    </div>
+
+                                    <!-- Mức độ ưu tiên -->
+                                    <span class="badge 
+                                          <%= "Cao".equals(project.get("muc_do_uu_tien")) ? "bg-danger" :
+                                              "Trung bình".equals(project.get("muc_do_uu_tien")) ? "bg-warning" :
+                                              "bg-secondary" %>">
+                                        <%= project.get("muc_do_uu_tien") != null ? project.get("muc_do_uu_tien") : "Không rõ" %>
+                                    </span>
+                                </div>
+                                <div class="mt-1 text-secondary">
+                                    <small><strong>Nhóm dự án:</strong> <%= project.get("nhom_du_an") %></small>
+                                </div>
+
                                 <%
-                                    // Tính phần trăm tiến độ dự án
+                                    // Tính phần trăm tiến độ
                                     Object tienDoObj = project.get("tien_do");
                                     int tienDo = 0;
                                     if (tienDoObj != null) {
                                         try {
                                             tienDo = Integer.parseInt(tienDoObj.toString());
-                                        } catch (NumberFormatException e) {
+                                        } catch (Exception e) {
                                             tienDo = 0;
                                         }
                                     }
-                                    
-                                    // Xác định class màu sắc dựa trên tiến độ
+
+                                    // Chọn màu thanh tiến độ
                                     String progressClass = "";
-                                    if (tienDo < 30) {
-                                        progressClass = "bg-danger";
-                                    } else if (tienDo < 70) {
-                                        progressClass = "bg-warning";
-                                    } else {
-                                        progressClass = "bg-success";
-                                    }
+                                    if (tienDo < 30) progressClass = "bg-danger";
+                                    else if (tienDo < 70) progressClass = "bg-warning";
+                                    else progressClass = "bg-success";
                                 %>
-                                
+
+                                <!-- TIẾN ĐỘ -->
                                 <div class="mt-3">
                                     <div class="d-flex justify-content-between align-items-center mb-1">
                                         <small class="text-muted"><i class="fa-solid fa-tasks me-1"></i>Tiến độ dự án</small>
                                         <small class="fw-bold text-primary"><%= tienDo %>%</small>
                                     </div>
+
                                     <div class="progress" style="height: 8px; border-radius: 10px;">
-                                        <div class="progress-bar <%= progressClass %>" 
-                                             role="progressbar" 
-                                             style="width: <%= tienDo %>%;" 
-                                             aria-valuenow="<%= tienDo %>" 
-                                             aria-valuemin="0" 
+                                        <div class="progress-bar <%= progressClass %>"
+                                             role="progressbar"
+                                             style="width: <%= tienDo %>%;"
+                                             aria-valuenow="<%= tienDo %>"
+                                             aria-valuemin="0"
                                              aria-valuemax="100">
                                         </div>
                                     </div>
                                 </div>
+
                             </div>
                         </div>
+
                         <%
                                 }
                             }
@@ -251,14 +362,60 @@
                     </div>
                     <div class="modal-body">
                         <input type="hidden" name="id">
+
                         <div class="mb-3">
                             <label class="form-label">Tên dự án</label>
                             <input type="text" class="form-control" name="ten_du_an" required>
                         </div>
+
                         <div class="mb-3">
                             <label class="form-label">Mô tả</label>
                             <textarea class="form-control" name="mo_ta" rows="3"></textarea>
                         </div>
+
+                        <!-- THÊM MỨC ĐỘ ƯU TIÊN -->
+                        <div class="mb-3">
+                            <label class="form-label">Mức độ ưu tiên</label>
+                            <select class="form-select" name="muc_do_uu_tien" required>
+                                <option value="">-- Chọn mức độ ưu tiên --</option>
+                                <option value="Cao">Cao</option>
+                                <option value="Trung bình">Trung bình</option>
+                                <option value="Thấp">Thấp</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Nhóm dự án</label>
+                            <select class="form-select" name="nhom_du_an" required>
+                                <option value="Dashboard">Dashboard</option>
+                                <option value="An ninh bảo mật">An ninh bảo mật</option>
+                                <option value="Oracle Cloud">Oracle Cloud</option>
+                                <option value="Đào tạo">Đào tạo</option>
+                                <option value="Khác">Khác</option>
+                            </select>
+                        </div>
+
+                        <!-- THÊM LEAD DỰ ÁN -->
+                        <div class="mb-3">
+                            <label class="form-label">Lead dự án</label>
+                            <select class="form-select" name="lead_id" required>
+                                <option value="">-- Chọn Lead --</option>
+
+                                <% 
+                                    List<Map<String, Object>> dsNV2 = (List<Map<String, Object>>) request.getAttribute("dsNhanVien");
+                                    if (dsNV2 != null) {
+                                        for (Map<String, Object> nv : dsNV2) {
+                                            int id = (int) nv.get("id");
+                                            String ten = (String) nv.get("ho_ten");
+                                %>
+                                <option value="<%= id %>"><%= ten %></option>
+                                <% 
+                                        }
+                                    }
+                                %>
+                            </select>
+                        </div>
+
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label class="form-label">Ngày bắt đầu</label>
@@ -295,6 +452,10 @@
                                 <div class="mb-3">
                                     <label class="form-label"><strong>Mô tả:</strong></label>
                                     <div id="detailMoTa" class="form-control-plaintext"></div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label"><strong>Nhóm dự án:</strong></label>
+                                    <div id="detailNhomDuAn" class="form-control-plaintext"></div>
                                 </div>
                                 <div class="row mb-3">
                                     <div class="col-md-6">

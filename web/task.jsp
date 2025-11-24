@@ -2032,8 +2032,7 @@
                                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                     </div>
                                     <div class="modal-body">
-                                        <input type="hidden" name="id">
-                                        <input type="hidden" name="du_an_id" value="1">
+                                        <input type="hidden" name="du_an_id" value="0">
                                         <div class="mb-3">
                                             <label class="form-label"><b>Tên công việc</b></label>
                                             <input type="text" class="form-control" name="ten_cong_viec" required>

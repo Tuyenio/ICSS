@@ -272,10 +272,11 @@ document.addEventListener("DOMContentLoaded", function () {
         modal.querySelector('[name="ngay_bat_dau"]').value = ngay_bat_dau;
         modal.querySelector('[name="han_hoan_thanh"]').value = hanHT;
         modal.querySelector('[name="trang_thai_duyet"]').value = trangthaiduyet;
-        modal.querySelector('[name="muc_do_uu_tien"]').value = uuTien;
-        modal.querySelector('[name="ten_nguoi_giao"]').value = nguoiGiao;
-        modal.querySelector('[name="ten_phong_ban"]').value = phongban;
-        modal.querySelector('[name="trang_thai"]').value = trangthai;
+        selectOptionByText(modal.querySelector('[name="muc_do_uu_tien"]'), uuTien);
+        selectOptionByText(modal.querySelector('[name="ten_nguoi_giao"]'), nguoiGiao);
+        // ❌ bỏ dòng selectOptionByText cho người nhận
+        selectOptionByText(modal.querySelector('[name="ten_phong_ban"]'), phongban);
+        selectOptionByText(modal.querySelector('[name="trang_thai"]'), trangthai);
         modal.querySelector('[name="tai_lieu_cv"]').value = tailieu;
 
         // === Hiển thị / ẩn phần gia hạn công việc ===
@@ -389,8 +390,21 @@ document.addEventListener("DOMContentLoaded", function () {
             const tenNode = document.createElement("span");
             tenNode.textContent = ten;
 
+            // Tạo nút xoá
+            const closeBtn = document.createElement("button");
+            closeBtn.type = "button";
+            closeBtn.className = "btn btn-sm btn-close ms-2";
+            closeBtn.setAttribute("aria-label", "Xoá");
+
+            // Sự kiện xoá
+            closeBtn.addEventListener("click", function () {
+                tag.remove();
+                capNhatHiddenInput();
+            });
+
             // Gắn phần text và nút xoá vào thẻ
             tag.appendChild(tenNode);
+            tag.appendChild(closeBtn);
 
             // Thêm tag vào danh sách
             danhSachDiv.appendChild(tag);
@@ -424,6 +438,60 @@ function syncNguoiNhanCheckboxes(hiddenId) {
     }
 }
 
+// Nút trong modal tạo mới
+document.getElementById("btnOpenNguoiNhanCreate").addEventListener("click", function () {
+    currentTarget = "create";
+    syncNguoiNhanCheckboxes("nguoiNhanHidden2"); // tick theo hidden của form tạo
+    new bootstrap.Modal(document.getElementById("modalChonNguoiNhan")).show();
+});
+
+// Nút trong modal chi tiết
+document.getElementById("btnOpenNguoiNhanDetail").addEventListener("click", function () {
+    currentTarget = "detail";
+    syncNguoiNhanCheckboxes("nguoiNhanHidden"); // tick theo hidden của form chi tiết
+    new bootstrap.Modal(document.getElementById("modalChonNguoiNhan")).show();
+});
+
+// Xác nhận chọn người nhận
+document.getElementById("btnXacNhanNguoiNhan").addEventListener("click", function () {
+    var checked = document.querySelectorAll(".nguoiNhanItem:checked");
+
+    var danhSachDiv, hiddenInput;
+    if (currentTarget === "create") {
+        danhSachDiv = document.getElementById("danhSachNguoiNhan2");
+        hiddenInput = document.getElementById("nguoiNhanHidden2");
+    } else {
+        danhSachDiv = document.getElementById("danhSachNguoiNhan");
+        hiddenInput = document.getElementById("nguoiNhanHidden");
+    }
+
+    danhSachDiv.innerHTML = "";
+    var values = [];
+
+    for (var i = 0; i < checked.length; i++) {
+        var ten = checked[i].value;
+        values.push(ten);
+
+        var tag = document.createElement("span");
+        tag.className = "badge bg-primary d-flex align-items-center me-2";
+        tag.style.padding = "0.5em 0.75em";
+        tag.setAttribute("data-ten", ten);
+        tag.innerHTML = ten +
+                '<button type="button" class="btn btn-sm btn-close ms-2" aria-label="Xoá"></button>';
+
+        tag.querySelector(".btn-close").addEventListener("click", function () {
+            this.parentElement.remove();
+            capNhatHiddenInput(danhSachDiv, hiddenInput);
+        });
+
+        danhSachDiv.appendChild(tag);
+    }
+
+    hiddenInput.value = values.join(",");
+
+    bootstrap.Modal.getInstance(document.getElementById("modalChonNguoiNhan")).hide();
+});
+
 function capNhatHiddenInput(danhSachDiv, hiddenInput) {
     var badges = danhSachDiv.querySelectorAll("span[data-ten]");
     var arr = [];
@@ -433,38 +501,32 @@ function capNhatHiddenInput(danhSachDiv, hiddenInput) {
     hiddenInput.value = arr.join(",");
 }
 
-
-
 $('#taskForm').on('submit', function (e) {
-    e.preventDefault(); // Ngăn form submit mặc định
+    e.preventDefault();
 
-    const taskId = $('#taskId').val(); // nếu có ID thì là sửa, không thì là thêm
-    const formData = new FormData(this); // lấy dữ liệu form bao gồm cả file
-    const url = taskId ? './suaCongviec' : './themCongviec';
+    const formData = new FormData(this); 
+    let url = './themCongviec'; // luôn là thêm mới
 
     $.ajax({
         url: url,
         type: 'POST',
         data: formData,
-        processData: false, // cần để gửi FormData
-        contentType: false, // cần để gửi FormData
+        processData: false,
+        contentType: false,
         success: function (response) {
             if (response.success) {
                 $('#modalTask').modal('hide');
-                showToast('success', taskId ? 'Cập nhật thành công' : 'Thêm mới thành công');
-                localStorage.setItem('lastTab', document.querySelector('.nav-link.active').id);
-                localStorage.setItem('lastView', currentView);
+                showToast('success', 'Thêm mới thành công');
                 location.reload();
             } else {
-                showToast('error', response.message || (taskId ? 'Cập nhật thất bại' : 'Thêm mới thất bại'));
+                showToast('error', response.message || 'Thêm mới thất bại');
             }
         },
         error: function () {
-            showToast('error', taskId ? 'Cập nhật thất bại' : 'Thêm mới thất bại');
+            showToast('error', 'Thêm mới thất bại');
         }
     });
 });
-
 
 // ====== LỌC CÔNG VIỆC ======
 $('#btnFilter').on('click', function (e) {
@@ -619,6 +681,9 @@ function renderListViewFromJson(tasks) {
                 + '            <button class="btn btn-sm btn-warning" title="Lưu trữ" onclick="event.stopPropagation(); archiveTask(\'' + task.id + '\')">'
                 + '                <i class="fa-solid fa-archive"></i>'
                 + '            </button>'
+                + '            <button class="btn btn-sm btn-danger" title="Xóa" onclick="event.stopPropagation(); deleteTask(\'' + task.id + '\')">'
+                + '                <i class="fa-solid fa-trash"></i>'
+                + '            </button>'
                 + '        </div>'
                 + '    </td>'
                 + '</tr>';
@@ -764,6 +829,9 @@ function renderProcessSteps() {
             var editBtn =
                     '<button class="btn btn-sm btn-outline-secondary me-1" onclick="showEditStepModal(' + idx + ')">' +
                     '<i class="fa-solid fa-pen"></i> Chỉnh sửa</button>';
+            var deleteBtn =
+                    '<button class="btn btn-sm btn-danger ms-1" onclick="removeProcessStep(' + idx + ')">' +
+                    '<i class="fa-solid fa-trash"></i></button>';
 
             var html = '<li class="list-group-item d-flex justify-content-between align-items-center">' +
                     '<div>' +
@@ -772,7 +840,7 @@ function renderProcessSteps() {
                     '<small>' + (step.desc ? step.desc : '') + '</small>' +
                     '<div class="text-muted small">Từ ' + (step.start || '-') + ' đến ' + (step.end || '-') + '</div>' +
                     '</div>' +
-                    '<div>' + editBtn + '</div>' +
+                    '<div>' + editBtn + deleteBtn + '</div>' +
                     '</li>';
             list.append(html);
         });
@@ -807,11 +875,11 @@ function showEditStepModal(idx) {
             '<div class="modal-body">' +
             '<div class="mb-2">' +
             '<label class="form-label">Tên bước/giai đoạn</label>' +
-            '<input type="text" class="form-control" name="stepName" value="' + step.name + '" required readonly>' +
+            '<input type="text" class="form-control" name="stepName" value="' + step.name + '" required>' +
             '</div>' +
             '<div class="mb-2">' +
             '<label class="form-label">Mô tả</label>' +
-            '<textarea class="form-control" name="stepDesc" rows="2" readonly>' + (step.desc || '') + '</textarea>' +
+            '<textarea class="form-control" name="stepDesc" rows="2">' + (step.desc || '') + '</textarea>' +
             '</div>' +
             '<div class="mb-2">' +
             '<label class="form-label">Trạng thái</label>' +
@@ -823,9 +891,9 @@ function showEditStepModal(idx) {
             '</div>' +
             '<div class="mb-2 row">' +
             '<div class="col"><label class="form-label">Ngày bắt đầu</label>' +
-            '<input type="date" class="form-control" name="stepStart" value="' + (step.start || '') + '" readonly></div>' +
+            '<input type="date" class="form-control" name="stepStart" value="' + (step.start || '') + '"></div>' +
             '<div class="col"><label class="form-label">Ngày kết thúc</label>' +
-            '<input type="date" class="form-control" name="stepEnd" value="' + (step.end || '') + '" readonly></div>' +
+            '<input type="date" class="form-control" name="stepEnd" value="' + (step.end || '') + '"></div>' +
             '</div>' +
             '</div>' +
             '<div class="modal-footer">' +
@@ -878,6 +946,33 @@ function showEditStepModal(idx) {
     });
 }
 
+window.removeProcessStep = function (idx) {
+    var step = processSteps[idx];
+    if (!step || !step.id) {
+        showToast('error', 'Không thể xác định bước cần xóa.');
+        return;
+    }
+    if (confirm("Bạn có chắc chắn muốn xóa bước này không?")) {
+        $.ajax({
+            url: './xoaQuytrinh',
+            method: 'POST',
+            data: {action: 'delete', step_id: step.id},
+            success: function () {
+                processSteps.splice(idx, 1);
+                renderProcessSteps();
+                showToast('success', 'Đã xóa bước thành công.');
+            },
+            error: function () {
+                showToast('error', 'Xóa thất bại. Vui lòng thử lại.');
+            }
+        });
+    }
+};
+
+$('#btnAddProcessStep').on('click', function () {
+    $('#formAddProcessStep')[0].reset();
+    $('#modalAddProcessStep').modal('show');
+});
 $('#formAddProcessStep').on('submit', function (e) {
     e.preventDefault();
     var taskId = document.getElementById("taskId").value;
@@ -970,20 +1065,22 @@ $('#modalTaskDetail').off('show.bs.modal').on('show.bs.modal', function (event) 
 
 document.addEventListener("DOMContentLoaded", function () {
     var tabProgress = document.getElementById("tab-task-progress");
-    tabProgress.addEventListener("shown.bs.tab", function () {
-        var taskId = document.getElementById("taskId").value;
-        $.ajax({
-            url: './apiTaskSteps?task_id=' + taskId,
-            method: 'GET',
-            success: function (data) {
-                processSteps = data;
-                renderProcessSteps();
-            },
-            error: function () {
-                showToast('error', 'Không thể tải quy trình.');
-            }
+    if (tabProgress) {
+        tabProgress.addEventListener("shown.bs.tab", function () {
+            var taskId = document.getElementById("taskId").value;
+            $.ajax({
+                url: './apiTaskSteps?task_id=' + taskId,
+                method: 'GET',
+                success: function (data) {
+                    processSteps = data;
+                    renderProcessSteps();
+                },
+                error: function () {
+                    showToast('error', 'Không thể tải quy trình.');
+                }
+            });
         });
-    });
+    }
 
     var tabReview = document.getElementById("tab-task-review");
     if (tabReview) {
@@ -1160,10 +1257,6 @@ function renderArchivedTasks(html) {
                                             <i class="fa-solid fa-undo"></i>
                                             <span>Khôi phục</span>
                                         </button>
-                                        <button class="task-action-item permanent-delete-action" type="button" data-task-id="1" data-action="permanent-delete">
-                                            <i class="fa-solid fa-trash-can"></i>
-                                            <span>Xóa vĩnh viễn</span>
-                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -1191,10 +1284,6 @@ function renderDeletedTasks(html) {
                                         <button class="task-action-item restore-action" type="button" data-task-id="2" data-action="restore">
                                             <i class="fa-solid fa-undo"></i>
                                             <span>Khôi phục</span>
-                                        </button>
-                                        <button class="task-action-item permanent-delete-action" type="button" data-task-id="2" data-action="permanent-delete">
-                                            <i class="fa-solid fa-trash-can"></i>
-                                            <span>Xóa vĩnh viễn</span>
                                         </button>
                                     </div>
                                 </div>
@@ -1227,6 +1316,9 @@ document.addEventListener('DOMContentLoaded', function () {
             switch (action) {
                 case 'archive':
                     archiveTask(taskId);
+                    break;
+                case 'delete':
+                    deleteTask(taskId);
                     break;
                 case 'restore':
                     restoreTask(taskId);
@@ -1289,6 +1381,52 @@ function archiveTask(taskId) {
     });
 }
 
+function deleteTask(taskId) {
+    Swal.fire({
+        title: 'Xác nhận xóa?',
+        text: 'Bạn có chắc chắn muốn xóa công việc này? (Sẽ được chuyển vào thùng rác)',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Xóa',
+        cancelButtonText: 'Hủy'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            showToast('info', '🗑️ Đang chuyển vào thùng rác...');
+
+            fetch('./suaCongviec', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                body: new URLSearchParams({
+                    task_id: String(taskId),
+                    action: 'delete',
+                    tinh_trang: 'Đã xóa'
+                })
+            })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire('Đã xóa!', 'Công việc đã được chuyển vào thùng rác.', 'success');
+                            setTimeout(() => {
+                                // Ghi nhớ view + tab trước khi reload
+                                localStorage.setItem('lastTab', document.querySelector('.nav-link.active').id);
+                                localStorage.setItem('lastView', currentView);
+                                location.reload();
+                            }, 1200);
+                        } else {
+                            Swal.fire('Lỗi!', data.message || 'Xóa thất bại.', 'error');
+                        }
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        Swal.fire('Lỗi!', 'Không thể kết nối tới server.', 'error');
+                    });
+        }
+    });
+}
+
+
 // ====== KHÔI PHỤC CÔNG VIỆC ======
 function restoreTask(taskId) {
     Swal.fire({
@@ -1329,6 +1467,65 @@ function restoreTask(taskId) {
                     })
                     .catch(err => {
                         console.error(err);
+                        Swal.fire('Lỗi!', 'Không thể kết nối tới server.', 'error');
+                    });
+        }
+    });
+}
+
+// ====== XÓA VĨNH VIỄN CÔNG VIỆC ======
+function permanentDeleteTask(taskId) {
+    Swal.fire({
+        title: 'Xác nhận xóa vĩnh viễn?',
+        text: '⚠️ Hành động này không thể hoàn tác. Công việc sẽ bị xóa hoàn toàn khỏi hệ thống!',
+        icon: 'error',
+        showCancelButton: true,
+        confirmButtonColor: '#d33', // đỏ đậm
+        cancelButtonColor: '#6c757d', // xám
+        confirmButtonText: 'Xóa vĩnh viễn',
+        cancelButtonText: 'Hủy',
+        reverseButtons: true
+    }).then((result) => {
+        if (result.isConfirmed) {
+            Swal.fire({
+                title: 'Đang xóa...',
+                text: 'Vui lòng chờ trong giây lát',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
+
+            fetch('./xoaCongviec', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                body: new URLSearchParams({id: String(taskId), task_id: String(taskId), permanent: 'true'})
+            })
+                    .then(async (res) => {
+                        const text = await res.text();            // lấy text thuần
+                        let data;
+                        try {
+                            data = text ? JSON.parse(text) : {success: res.ok, message: ''};
+                        } catch {
+                            data = {success: res.ok, message: text};
+                        } // nếu không phải JSON, vẫn coi là ok nếu res.ok
+
+                        if (data.success) {
+                            Swal.fire({icon: 'success', title: 'Đã xóa vĩnh viễn!', showConfirmButton: false, timer: 1400});
+                            setTimeout(() => {
+                                const tab = document.querySelector('.nav-link.active');
+                                if (tab?.id === 'deleted-tasks-tab')
+                                    loadDeletedTasks();
+                                else {
+                                    localStorage.setItem('lastTab', document.querySelector('.nav-link.active').id);
+                                    localStorage.setItem('lastView', currentView);
+                                    location.reload();
+                                }
+                            }, 1400);
+                        } else {
+                            Swal.fire('Lỗi!', data.message || 'Xóa vĩnh viễn thất bại.', 'error');
+                        }
+                    })
+                    .catch((err) => {
+                        console.error('Network/parse error:', err);
                         Swal.fire('Lỗi!', 'Không thể kết nối tới server.', 'error');
                     });
         }
@@ -1503,13 +1700,14 @@ document.addEventListener('click', function (e) {
             case 'archive':
                 archiveTask(taskId);
                 break;
+            case 'delete':
+                deleteTask(taskId);
+                break;
             default:
                 console.log('Unknown action:', action);
         }
     }
 });
-
-
 
 // ====== XỬ LÝ NHẮC NHỞ CÔNG VIỆC ======
 document.addEventListener('DOMContentLoaded', function () {
@@ -1618,15 +1816,47 @@ function initTableSorting() {
     });
 }
 
+function getDatasetValue(row, field) {
+    // field = "trang_thai" → chúng ta phải hỗ trợ cả 2 dạng:
+    // data-trangthai  AND  data-trang-thai
+
+    // 1) dạng không dấu gạch: "trangthai"
+    let key1 = field.replace(/_/g, '');
+
+    // 2) dạng camelCase do HTML chuyển: "trangThai"
+    let parts = field.split('_');
+    let key2 = parts[0] + parts.slice(1).map(
+            p => p.charAt(0).toUpperCase() + p.slice(1)
+    ).join('');
+
+    return row.dataset[key1] || row.dataset[key2] || '';
+}
+
 function sortTable(field, order) {
     const tbody = document.getElementById('taskListTableBody');
     const rows = Array.from(tbody.querySelectorAll('tr'));
 
     rows.sort((a, b) => {
-        let aVal = a.dataset[field.replace(/_/g, '')] || '';
-        let bVal = b.dataset[field.replace(/_/g, '')] || '';
+        let aVal = getDatasetValue(a, field);
+        let bVal = getDatasetValue(b, field);
 
-        // Handle dates
+        // 🔥 Nếu đang sort theo trạng thái → dùng bảng thứ tự ưu tiên
+        if (field === 'trang_thai') {
+
+            const priority = {
+                'Chưa bắt đầu': 2,
+                'Đang thực hiện': 3,
+                'Đã hoàn thành': 4,
+                'Trễ hạn': 1
+            };
+
+            aVal = priority[aVal] || 99;
+            bVal = priority[bVal] || 99;
+
+            return order === 'asc' ? (aVal - bVal) : (bVal - aVal);
+        }
+
+        // 🔧 Nếu sort theo deadline → convert sang Date
         if (field === 'han_hoan_thanh') {
             aVal = new Date(aVal);
             bVal = new Date(bVal);

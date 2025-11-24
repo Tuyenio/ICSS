@@ -45,15 +45,15 @@ public class dsCongviec extends HttpServlet {
             }
             // 🔹 Nếu lọc theo TRẠNG THÁI
             else if (trangThai != null && !trangThai.trim().isEmpty()) {
-                taskList = kn.getTasksByStatus(email, 1, trangThai);
+                taskList = kn.getTasksByStatus(email, 0, trangThai);
             }
             // 🔹 Không filter → lấy tất cả
             else {
-                taskList = kn.getAllTasksByProject(email, 1);
+                taskList = kn.getAllTasksByProject(email, 0);
             }
 
-            archivedTaskList = kn.getTasksByTinhTrang(email, 1, "Lưu trữ");
-            deletedTaskList = kn.getTasksByTinhTrang(email, 1, "Đã xóa");
+            archivedTaskList = kn.getTasksByTinhTrang(email, 0, "Lưu trữ");
+            deletedTaskList = kn.getTasksByTinhTrang(email, 0, "Đã xóa");
 
             // 🟢 Cập nhật trạng thái từ tiến độ
             for (Map<String, Object> task : taskList) {

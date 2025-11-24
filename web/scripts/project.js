@@ -1,13 +1,9 @@
+$(document).on("click", ".project-row", function (e) {
+    if ($(e.target).closest(".btn").length > 0) return;
 
-function goToProjectTask(projectId, event) {
-    // Ngăn click vào nút Xem/Sửa/Xóa bị trigger
-    if (event.target.tagName.toLowerCase() === 'button' ||
-            event.target.closest('button')) {
-        return;
-    }
-    // Chuyển hướng sang servlet khác
-    window.location.href = "dsCongviecDuan?projectId=" + projectId;
-}
+    let id = $(this).data("id");
+    window.location.href = "dsCongviecDuan?projectId=" + id;
+});
 
 // Hàm hiển thị toast
 function showToast(type, message) {
@@ -19,6 +15,61 @@ function showToast(type, message) {
         $('#toastError').toast('show');
     }
 }
+
+function initProjectSorting() {
+    const headers = document.querySelectorAll('.project-list-view thead th.sortable');
+
+    headers.forEach(header => {
+        header.addEventListener('click', function () {
+            const field = this.dataset.sort;
+            const isAsc = this.classList.contains('sort-asc');
+
+            headers.forEach(h => h.classList.remove('sort-asc', 'sort-desc'));
+            this.classList.add(isAsc ? 'sort-desc' : 'sort-asc');
+
+            sortProjectTable(field, isAsc ? 'desc' : 'asc');
+        });
+    });
+}
+
+function sortProjectTable(field, order) {
+    const tbody = document.querySelector('.project-list-view tbody');
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+
+    rows.sort((a, b) => {
+        let aVal = a.dataset[field] || "";
+        let bVal = b.dataset[field] || "";
+
+        // Ưu tiên → sắp theo thứ tự custom
+        if (field === 'uutien') {
+            const priorityOrder = { "Thấp": 1, "Trung bình": 2, "Cao": 3 };
+            aVal = priorityOrder[aVal] || 0;
+            bVal = priorityOrder[bVal] || 0;
+        }
+
+        // Ngày → convert Date
+        if (field === 'ngaybatdau' || field === 'ngayketthuc') {
+            aVal = new Date(aVal);
+            bVal = new Date(bVal);
+        }
+
+        if (aVal < bVal) return order === "asc" ? -1 : 1;
+        if (aVal > bVal) return order === "asc" ? 1 : -1;
+        return 0;
+    });
+
+    rows.forEach(r => tbody.appendChild(r));
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    initProjectSorting();
+
+    // 1) Sort theo ngày kết thúc (gần nhất → xa nhất)
+    sortProjectTable("ngayketthuc", "asc");
+
+    // 2) Sort theo ưu tiên (Cao → Trung bình → Thấp)
+    sortProjectTable("uutien", "desc");
+});
 
 $(document).on('click', '.delete-project-btn', function () {
     let id = $(this).data('id');
@@ -142,24 +193,3 @@ function editProject(projectId) {
         }
     });
 }
-
-// Set ngày tối thiểu là hôm nay cho các trường ngày
-document.addEventListener('DOMContentLoaded', function () {
-    const today = new Date().toISOString().split('T')[0];
-    const startDateInput = document.querySelector('input[name="ngay_bat_dau"]');
-    const endDateInput = document.querySelector('input[name="ngay_ket_thuc"]');
-
-    if (startDateInput)
-        startDateInput.setAttribute('min', today);
-    if (endDateInput)
-        endDateInput.setAttribute('min', today);
-
-    // Khi thay đổi ngày bắt đầu, update ngày kết thúc tối thiểu
-    if (startDateInput) {
-        startDateInput.addEventListener('change', function () {
-            if (endDateInput) {
-                endDateInput.setAttribute('min', this.value);
-            }
-        });
-    }
-});

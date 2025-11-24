@@ -340,6 +340,7 @@ $(document).on("click", ".task-detail", function () {
 
                 html += '<tr>'
                         + '<td>' + (task.ten_cong_viec ? task.ten_cong_viec : '-') + '</td>'
+                        + '<td>' + (task.ten_du_an ? task.ten_du_an : '-') + '</td>'
                         + '<td>' + (task.ngay_bat_dau ? task.ngay_bat_dau : '-') + '</td>'
                         + '<td>' + (task.han_hoan_thanh ? task.han_hoan_thanh : '-') + '</td>'
                         + '<td>' + (task.ngay_hoan_thanh ? task.ngay_hoan_thanh : '-') + '</td>'

@@ -420,8 +420,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 
-
-
 var currentTarget = null;
 
 // Tick lại checkbox theo hidden input hiện tại
@@ -502,38 +500,32 @@ function capNhatHiddenInput(danhSachDiv, hiddenInput) {
     hiddenInput.value = arr.join(",");
 }
 
-
-
 $('#taskForm').on('submit', function (e) {
-    e.preventDefault(); // Ngăn form submit mặc định
+    e.preventDefault();
 
-    const taskId = $('#taskId').val(); // nếu có ID thì là sửa, không thì là thêm
-    const formData = new FormData(this); // lấy dữ liệu form bao gồm cả file
-    const url = taskId ? './suaCongviec' : './themCongviec';
+    const formData = new FormData(this);
+    let url = './themCongviec'; // luôn là thêm mới
 
     $.ajax({
         url: url,
         type: 'POST',
         data: formData,
-        processData: false, // cần để gửi FormData
-        contentType: false, // cần để gửi FormData
+        processData: false,
+        contentType: false,
         success: function (response) {
             if (response.success) {
                 $('#modalTask').modal('hide');
-                showToast('success', taskId ? 'Cập nhật thành công' : 'Thêm mới thành công');
-                localStorage.setItem('lastTab', document.querySelector('.nav-link.active').id);
-                localStorage.setItem('lastView', currentView);
+                showToast('success', 'Thêm mới thành công');
                 location.reload();
             } else {
-                showToast('error', response.message || (taskId ? 'Cập nhật thất bại' : 'Thêm mới thất bại'));
+                showToast('error', response.message || 'Thêm mới thất bại');
             }
         },
         error: function () {
-            showToast('error', taskId ? 'Cập nhật thất bại' : 'Thêm mới thất bại');
+            showToast('error', 'Thêm mới thất bại');
         }
     });
 });
-
 
 // ====== LỌC CÔNG VIỆC ======
 $('#btnFilter').on('click', function (e) {
@@ -1075,20 +1067,22 @@ $('#modalTaskDetail').off('show.bs.modal').on('show.bs.modal', function (event) 
 
 document.addEventListener("DOMContentLoaded", function () {
     var tabProgress = document.getElementById("tab-task-progress");
-    tabProgress.addEventListener("shown.bs.tab", function () {
-        var taskId = document.getElementById("taskId").value;
-        $.ajax({
-            url: './apiTaskSteps?task_id=' + taskId,
-            method: 'GET',
-            success: function (data) {
-                processSteps = data;
-                renderProcessSteps();
-            },
-            error: function () {
-                showToast('error', 'Không thể tải quy trình.');
-            }
+    if (tabProgress) {
+        tabProgress.addEventListener("shown.bs.tab", function () {
+            var taskId = document.getElementById("taskId").value;
+            $.ajax({
+                url: './apiTaskSteps?task_id=' + taskId,
+                method: 'GET',
+                success: function (data) {
+                    processSteps = data;
+                    renderProcessSteps();
+                },
+                error: function () {
+                    showToast('error', 'Không thể tải quy trình.');
+                }
+            });
         });
-    });
+    }
 
     var tabReview = document.getElementById("tab-task-review");
     if (tabReview) {
@@ -1888,6 +1882,7 @@ function switchView(viewType) {
         document.getElementById('listView').classList.add('active');
         document.getElementById('calendarView').classList.remove('active');
         initTableSorting();
+        sortTable('trang_thai', 'asc');
     } else if (viewType === 'calendar') {
         document.getElementById('viewCalendar').classList.add('active');
         document.querySelector('.kanban-board').style.display = 'none';
@@ -1918,15 +1913,47 @@ function initTableSorting() {
     });
 }
 
+function getDatasetValue(row, field) {
+    // field = "trang_thai" → chúng ta phải hỗ trợ cả 2 dạng:
+    // data-trangthai  AND  data-trang-thai
+
+    // 1) dạng không dấu gạch: "trangthai"
+    let key1 = field.replace(/_/g, '');
+
+    // 2) dạng camelCase do HTML chuyển: "trangThai"
+    let parts = field.split('_');
+    let key2 = parts[0] + parts.slice(1).map(
+            p => p.charAt(0).toUpperCase() + p.slice(1)
+    ).join('');
+
+    return row.dataset[key1] || row.dataset[key2] || '';
+}
+
 function sortTable(field, order) {
     const tbody = document.getElementById('taskListTableBody');
     const rows = Array.from(tbody.querySelectorAll('tr'));
 
     rows.sort((a, b) => {
-        let aVal = a.dataset[field.replace(/_/g, '')] || '';
-        let bVal = b.dataset[field.replace(/_/g, '')] || '';
+        let aVal = getDatasetValue(a, field);
+        let bVal = getDatasetValue(b, field);
 
-        // Handle dates
+        // 🔥 Nếu đang sort theo trạng thái → dùng bảng thứ tự ưu tiên
+        if (field === 'trang_thai') {
+
+            const priority = {
+                'Chưa bắt đầu': 2,
+                'Đang thực hiện': 3,
+                'Đã hoàn thành': 4,
+                'Trễ hạn': 1
+            };
+
+            aVal = priority[aVal] || 99;
+            bVal = priority[bVal] || 99;
+
+            return order === 'asc' ? (aVal - bVal) : (bVal - aVal);
+        }
+
+        // 🔧 Nếu sort theo deadline → convert sang Date
         if (field === 'han_hoan_thanh') {
             aVal = new Date(aVal);
             bVal = new Date(bVal);
