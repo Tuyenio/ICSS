@@ -91,6 +91,9 @@ $(document).on('click', '.emp-detail-link', function (e) {
         data: {email: email},
         dataType: 'json',
         success: function (data) {
+            // Lưu employee ID vào modal để sử dụng cho phân quyền
+            $('#modalEmpDetail').data('employee-id', data.id);
+            
             // Gán dữ liệu vào modal
             $('#modalEmpDetail .emp-name').text(data.ho_ten);
             $('#modalEmpDetail .emp-email').text(data.email);
@@ -246,6 +249,146 @@ document.querySelectorAll('.toast').forEach(toastEl => {
     const toast = bootstrap.Toast.getOrCreateInstance(toastEl, {delay: 2000});
 });
 
+
+// ============ PHÂN QUYỀN FUNCTIONS ============
+
+// Định nghĩa các quyền mặc định theo vai trò
+const DEFAULT_PERMISSIONS = {
+    'Admin': [
+        'perm_employee_view', 'perm_employee_add', 'perm_employee_edit', 'perm_employee_delete', 'perm_employee_permission',
+        'perm_department_view', 'perm_department_add', 'perm_department_edit', 'perm_department_delete',
+        'perm_project_view', 'perm_project_add', 'perm_project_edit', 'perm_project_delete',
+        'perm_task_view', 'perm_task_add', 'perm_task_edit', 'perm_task_delete', 'perm_task_approve', 'perm_task_progress',
+        'perm_attendance_view', 'perm_attendance_manage', 'perm_salary_view', 'perm_salary_manage',
+        'perm_report_view', 'perm_report_export', 'perm_analytics_view',
+        'perm_system_config', 'perm_backup_restore', 'perm_audit_log'
+    ],
+    'Quản lý': [
+        'perm_employee_view', 'perm_employee_add', 'perm_employee_edit',
+        'perm_department_view',
+        'perm_project_view', 'perm_project_add', 'perm_project_edit',
+        'perm_task_view', 'perm_task_add', 'perm_task_edit', 'perm_task_approve', 'perm_task_progress',
+        'perm_attendance_view', 'perm_attendance_manage', 'perm_salary_view',
+        'perm_report_view', 'perm_report_export', 'perm_analytics_view'
+    ],
+    'Nhân viên': [
+        'perm_employee_view',
+        'perm_department_view',
+        'perm_project_view',
+        'perm_task_view', 'perm_task_progress',
+        'perm_attendance_view', 'perm_salary_view',
+        'perm_report_view'
+    ]
+};
+
+// Load phân quyền cho nhân viên
+function loadEmployeePermissions(employeeId, vaiTro) {
+    // Reset tất cả checkboxes
+    $('.permissions-container input[type="checkbox"]').prop('checked', false);
+    
+    // TODO: AJAX load phân quyền thực tế từ database
+    // Tạm thời dùng quyền mặc định theo vai trò
+    if (DEFAULT_PERMISSIONS[vaiTro]) {
+        DEFAULT_PERMISSIONS[vaiTro].forEach(function(permId) {
+            $('#' + permId).prop('checked', true);
+        });
+    }
+    
+    // Hiệu ứng animation cho checkbox
+    $('.permissions-container input[type="checkbox"]:checked').each(function(index) {
+        const $this = $(this);
+        setTimeout(() => {
+            $this.closest('.form-check').addClass('permission-checked');
+            $this.closest('.permission-group').addClass('has-permissions');
+        }, index * 50);
+    });
+}
+
+// Lưu phân quyền
+$('#btnSavePermissions').on('click', function() {
+    const employeeId = $('#modalEmpDetail').data('employee-id'); // Lưu ID khi mở modal
+    const permissions = [];
+    
+    $('.permissions-container input[type="checkbox"]:checked').each(function() {
+        permissions.push($(this).attr('id'));
+    });
+    
+    Swal.fire({
+        title: 'Xác nhận lưu phân quyền?',
+        text: `Bạn đã chọn ${permissions.length} quyền cho nhân viên này.`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Lưu',
+        cancelButtonText: 'Hủy',
+        confirmButtonColor: '#28a745'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // TODO: AJAX call để lưu phân quyền vào database
+            console.log('Saving permissions for employee:', employeeId, permissions);
+            
+            // Giả lập API call thành công
+            setTimeout(() => {
+                Swal.fire({
+                    title: 'Thành công!',
+                    text: 'Đã cập nhật phân quyền cho nhân viên.',
+                    icon: 'success',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            }, 500);
+        }
+    });
+});
+
+// Khôi phục quyền mặc định
+$('#btnResetPermissions').on('click', function() {
+    const vaiTro = $('#modalEmpDetail .emp-role').text().trim();
+    
+    Swal.fire({
+        title: 'Khôi phục quyền mặc định?',
+        text: `Sẽ áp dụng quyền mặc định cho vai trò "${vaiTro}".`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Khôi phục',
+        cancelButtonText: 'Hủy',
+        confirmButtonColor: '#ffc107'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            loadEmployeePermissions(null, vaiTro);
+            showToast('success', 'Đã khôi phục quyền mặc định');
+        }
+    });
+});
+
+// Sao chép quyền từ vai trò khác
+$('#btnCopyPermissions').on('click', function() {
+    Swal.fire({
+        title: 'Sao chép quyền từ vai trò',
+        input: 'select',
+        inputOptions: {
+            'Admin': 'Admin (Toàn quyền)',
+            'Quản lý': 'Quản lý (Quyền trung gian)',
+            'Nhân viên': 'Nhân viên (Quyền cơ bản)'
+        },
+        inputPlaceholder: 'Chọn vai trò để sao chép quyền',
+        showCancelButton: true,
+        confirmButtonText: 'Sao chép',
+        cancelButtonText: 'Hủy',
+        confirmButtonColor: '#17a2b8'
+    }).then((result) => {
+        if (result.isConfirmed && result.value) {
+            loadEmployeePermissions(null, result.value);
+            showToast('success', `Đã sao chép quyền từ vai trò "${result.value}"`);
+        }
+    });
+});
+
+// Khi mở modal chi tiết, load phân quyền
+$(document).on('shown.bs.tab', '#tab-permission', function() {
+    const employeeId = $('#modalEmpDetail').data('employee-id');
+    const vaiTro = $('#modalEmpDetail .emp-role').text().trim();
+    loadEmployeePermissions(employeeId, vaiTro);
+});
 
 // TODO: AJAX load phòng ban cho filter và form
 // TODO: AJAX load phân quyền động cho vai trò từ bảng phan_quyen_chuc_nang

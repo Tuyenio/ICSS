@@ -251,6 +251,10 @@
         <servlet-name>dsNhomduan</servlet-name>
         <servlet-class>controller.dsNhomduan</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>batNhacViecAll</servlet-name>
+        <servlet-class>controller.batNhacViecAll</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>dsnhanvien</servlet-name>
         <url-pattern>/dsnhanvien</url-pattern>
@@ -474,6 +478,10 @@
     <servlet-mapping>
         <servlet-name>dsNhomduan</servlet-name>
         <url-pattern>/dsNhomduan</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>batNhacViecAll</servlet-name>
+        <url-pattern>/batNhacViecAll</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>

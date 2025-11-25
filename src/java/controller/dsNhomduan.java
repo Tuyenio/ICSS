@@ -23,9 +23,11 @@ public class dsNhomduan extends HttpServlet {
 
             // Lấy map số lượng dự án theo nhóm
             Map<String, Integer> soLuongMap = kn.getSoLuongDuAnTheoNhom();
+            Map<String, Map<String, Integer>> soLuongTheoPB = kn.getSoLuongDuAnTheoNhomVaPhongBan();
 
             // Gửi sang JSP
             req.setAttribute("mapSoLuongNhom", soLuongMap);
+            req.setAttribute("mapSoLuongPB", soLuongTheoPB);
 
             req.getRequestDispatcher("/nhomDuan.jsp").forward(req, resp);
 

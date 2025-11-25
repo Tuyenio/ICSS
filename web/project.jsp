@@ -487,6 +487,7 @@
                                     <th>Mô tả</th>
                                     <th>Lead</th>
                                     <th>Nhóm</th>
+                                    <th>Phòng ban</th>
                                     <th class="sortable" data-sort="uutien">Ưu tiên</th>
                                     <th class="sortable" data-sort="ngaybatdau">Ngày bắt đầu</th>
                                     <th class="sortable" data-sort="ngayketthuc">Ngày kết thúc</th>
@@ -524,6 +525,7 @@
                                     data-id="<%= p.get("id") %>"
                                     data-ten="<%= p.get("ten_du_an") %>"
                                     data-uutien="<%= p.get("muc_do_uu_tien") %>"
+                                    data-phong-ban="<%= p.get("phong_ban") %>"
                                     data-ngaybatdau="<%= p.get("ngay_bat_dau") %>"
                                     data-ngayketthuc="<%= p.get("ngay_ket_thuc") %>">
                                     <td><strong><%= p.get("ten_du_an") %></strong></td>
@@ -534,6 +536,7 @@
                                         <%= p.get("lead_ten") != null ? p.get("lead_ten") : "Chưa có" %>
                                     </td>
                                     <td><%= p.get("nhom_du_an") %></td>
+                                    <td><%= p.get("phong_ban") != null ? p.get("phong_ban") : "Chưa phân" %></td>
                                     <td><span class="badge <%= priorityClass %>"><%= priority %></span></td>
                                     <td><%= p.get("ngay_bat_dau") %></td>
                                     <td><%= p.get("ngay_ket_thuc") %></td>
@@ -621,6 +624,16 @@
                             </select>
                         </div>
 
+                        <!-- THÊM PHÒNG BAN -->
+                        <div class="mb-3">
+                            <label class="form-label">Phòng ban</label>
+                            <select class="form-select" name="phong_ban" required>
+                                <option value="">-- Chọn phòng ban --</option>
+                                <option value="Phòng Kỹ Thuật">Phòng Kỹ Thuật</option>
+                                <option value="Phòng Kinh Doanh">Phòng Kinh Doanh</option>
+                            </select>
+                        </div>
+
                         <!-- THÊM LEAD DỰ ÁN -->
                         <div class="mb-3">
                             <label class="form-label">Lead dự án</label>
@@ -682,6 +695,10 @@
                                 <div class="mb-3">
                                     <label class="form-label"><strong>Nhóm dự án:</strong></label>
                                     <div id="detailNhomDuAn" class="form-control-plaintext"></div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label"><strong>Phòng ban:</strong></label>
+                                    <div id="detailPhongBan" class="form-control-plaintext"></div>
                                 </div>
                                 <div class="row mb-3">
                                     <div class="col-md-6">

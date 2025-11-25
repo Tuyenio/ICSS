@@ -38,8 +38,12 @@ public class dsDuan extends HttpServlet {
             HttpSession session = req.getSession();
 
             String nhom = req.getParameter("nhom_du_an");
+            String phongBan = req.getParameter("phong_ban");
             if (nhom == null || nhom.equals("null")) {
                 nhom = (String) session.getAttribute("nhom_du_an");
+            }
+            if (phongBan == null || phongBan.equals("null")) {
+                phongBan = (String) session.getAttribute("phong_ban");
             }
 
             Integer leadId = null;
@@ -47,10 +51,11 @@ public class dsDuan extends HttpServlet {
                 leadId = Integer.parseInt(leadIdParam);
             }
 
-            List<Map<String, Object>> projects = kn.getAllProjects(keyword, uuTien, leadId, nhom);
+            List<Map<String, Object>> projects = kn.getAllProjects(keyword, uuTien, leadId, nhom, phongBan);
 
             // --- Gửi sang JSP ---
             session.setAttribute("nhom_du_an", nhom);
+            session.setAttribute("phong_ban", phongBan);
             req.setAttribute("projects", projects);
             req.setAttribute("nhomDuAnValue", nhom);
             req.getRequestDispatcher("/project.jsp").forward(req, resp);

@@ -16,12 +16,22 @@
     Map<String, Object> barTienDoPhongBan = new HashMap<>();
     Map<String, Object> chamCongThang = new HashMap<>();
     Map<String, Object> chamCongNgay = new HashMap<>();
+    
+    // Dữ liệu cho biểu đồ tiến độ dự án theo nhóm dự án
+    Map<String, Object> tienDoDuAnDashboard = new HashMap<>();
+    Map<String, Object> tienDoDuAnAnNinh = new HashMap<>();
+    
     KNCSDL kn = null;
     try {
         kn = new KNCSDL();
         thongKeTongQuan = kn.getThongKeTongQuan(sess); // {tong_nhan_vien, tong_phong_ban, tong_cong_viec, ty_le_hoan_thanh}
     thongKeTrangThai = kn.getThongKeCongViecTheoTrangThai(sess); // Map trạng thái
     barTienDoPhongBan = kn.getDataForBarChart2(sess);
+    
+    // Lấy dữ liệu tiến độ dự án cho từng nhóm
+    tienDoDuAnDashboard = kn.getTienDoDuAnTheoPhongBan("Phòng Kỹ Thuật");
+    tienDoDuAnAnNinh = kn.getTienDoDuAnTheoPhongBan("Phòng Kinh Doanh");
+    
     // Thống kê chấm công tháng hiện tại (dùng lại getThongKeChamCong)
     Calendar cal = Calendar.getInstance();
     int thangNow = cal.get(Calendar.MONTH) + 1;
@@ -757,10 +767,52 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="mt-3 small" style="color:#64748b;font-weight:500;">Phân bố trạng thái công việc</div>
+                                <div class="mt-3 small d-flex justify-content-between align-items-center"
+                                     style="color:#64748b;font-weight:500;">
+
+                                    <span>Phân bố trạng thái công việc</span>
+
+                                    <!-- ICON CHUÔNG -->
+                                    <button id="btnNhacViecAll" 
+                                            class="btn btn-sm btn-outline-warning"
+                                            style="border-radius: 50%; width: 32px; height: 32px;">
+                                        <i class="fa-solid fa-bell"></i>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
+
+                    <!-- Biểu đồ tiến độ dự án theo phòng ban -->
+                    <div class="quick-report-box mt-4">
+                        <div class="d-flex justify-content-start align-items-center flex-wrap mb-2">
+                            <h5 class="mb-0"><i class="fa-solid fa-chart-bar me-2 text-success"></i>Tiến độ dự án theo nhóm</h5>
+                        </div>
+                        <div class="row g-3 align-items-center">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="nhomDuAnSelect" class="form-label" style="color:#1e293b;font-weight:600;">Chọn nhóm dự án:</label>
+                                    <select id="phongBanSelect" class="form-select">
+                                        <option value="kyThuat" selected>Phòng Kỹ Thuật</option>
+                                        <option value="kinhDoanh">Phòng Kinh Doanh</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-8">
+                                <div style="height: 600px; overflow-y: auto; padding-right: 20px;">
+                                    <canvas id="chartTienDoDuAn"></canvas>
+                                </div>
+                                <div class="small text-muted mt-2 d-flex justify-content-between align-items-center">
+                                    <span id="projectCountInfo">Hiển thị tiến độ các dự án</span>
+                                    <span class="text-success" style="font-weight:600;">
+                                        <i class="fa-solid fa-info-circle me-1"></i>
+                                        Tiến độ tính theo % hoàn thành
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Biểu đồ -->
                     <div class="row mt-5 g-4 align-items-stretch">
                         <!-- Chấm công theo ngày -->
@@ -819,6 +871,28 @@
             String pbLabelsAttr = String.join("|", pbLabels);
             StringBuilder pbValsAttr = new StringBuilder();
             for(int i=0;i<pbValues.size();i++){ if(i>0) pbValsAttr.append(','); pbValsAttr.append(pbValues.get(i)); }
+            
+            // Dữ liệu cho biểu đồ tiến độ dự án
+            List<String> dashboardProjectNames = (List<String>) tienDoDuAnDashboard.getOrDefault("projectNames", Collections.emptyList());
+            List<Double> dashboardProgressValues = (List<Double>) tienDoDuAnDashboard.getOrDefault("progressValues", Collections.emptyList());
+            
+            List<String> anNinhProjectNames = (List<String>) tienDoDuAnAnNinh.getOrDefault("projectNames", Collections.emptyList());
+            List<Double> anNinhProgressValues = (List<Double>) tienDoDuAnAnNinh.getOrDefault("progressValues", Collections.emptyList());
+            
+            String dashboardProjectNamesAttr = String.join("|", dashboardProjectNames);
+            StringBuilder dashboardProgressAttr = new StringBuilder();
+            for(int i=0;i<dashboardProgressValues.size();i++){ 
+                if(i>0) dashboardProgressAttr.append(','); 
+                dashboardProgressAttr.append(dashboardProgressValues.get(i)); 
+            }
+            
+            String anNinhProjectNamesAttr = String.join("|", anNinhProjectNames);
+            StringBuilder anNinhProgressAttr = new StringBuilder();
+            for(int i=0;i<anNinhProgressValues.size();i++){ 
+                if(i>0) anNinhProgressAttr.append(','); 
+                anNinhProgressAttr.append(anNinhProgressValues.get(i)); 
+            }
+            
             // (Removed personnel composition chart)
         %>
         <div id="chartDataHolder" style="display:none"
@@ -831,7 +905,11 @@
              data-st-tre="<%= treHan %>"
              data-st-cbd="<%= chuaBatDau %>"
              data-tong-ngay="<%= tongNgayLam %>"
-             data-di-muon="<%= soLanDiMuon %>"></div>
+             data-di-muon="<%= soLanDiMuon %>"
+             data-kt-project-names="<%= dashboardProjectNamesAttr %>"
+             data-kt-progress="<%= dashboardProgressAttr.toString() %>"
+             data-kd-project-names="<%= anNinhProjectNamesAttr %>"
+             data-kd-progress="<%= anNinhProgressAttr.toString() %>"></div>
 
         <script>
             const attHolder = document.createElement('div');
@@ -955,4 +1033,3 @@
         </script>
     </body>
 </html>
-

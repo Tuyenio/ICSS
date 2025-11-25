@@ -2401,7 +2401,7 @@
                                                 <div class="progress-bar bg-success" style="width: 0%" id="taskProgressBar"></div>
                                             </div>
                                             <button class="btn btn-outline-primary btn-sm mb-2" id="btnAddProcessStep">
-                                                <i class="fa-solid fa-plus"></i> Thêm quy trình
+                                                <i class="fa-solid fa-plus"></i> Thêm việc con
                                             </button>
                                             <ul id="processStepList" class="list-group"></ul>
                                         </div>

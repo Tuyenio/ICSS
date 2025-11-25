@@ -244,6 +244,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // Lấy dữ liệu từ nút
         const id = button.getAttribute("data-id") || "";
         const tenCV = button.getAttribute("data-ten") || "";
+        const tenDuAn = button.getAttribute("data-ten_du_an") || "";
         const moTa = button.getAttribute("data-mo-ta") || "";
         const ngay_bat_dau = button.getAttribute("data-ngay-bat-dau") || "";
         const hanHT = button.getAttribute("data-han") || "";
@@ -269,6 +270,9 @@ document.addEventListener("DOMContentLoaded", function () {
         // Gán dữ liệu cơ bản
         modal.querySelector('[name="task_id"]').value = id;
         modal.querySelector('[name="ten_cong_viec"]').value = tenCV;
+        modal.querySelector(".modal-title").innerHTML =
+                '<i class="fa-solid fa-info-circle text-primary"></i> '
+                + tenDuAn;
         modal.querySelector('[name="mo_ta"]').value = moTa;
         modal.querySelector('[name="ngay_bat_dau"]').value = ngay_bat_dau;
         modal.querySelector('[name="han_hoan_thanh"]').value = hanHT;

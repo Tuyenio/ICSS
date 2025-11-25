@@ -26,6 +26,7 @@ public class suaDuan extends HttpServlet {
         String uuTien = req.getParameter("muc_do_uu_tien");
         String leadIdStr = req.getParameter("lead_id");
         String nhomDuAn = req.getParameter("nhom_du_an");
+        String phongBan = req.getParameter("phong_ban");
 
         int leadId = (leadIdStr != null && !leadIdStr.isEmpty()) ? Integer.parseInt(leadIdStr) : 0;
 
@@ -40,7 +41,7 @@ public class suaDuan extends HttpServlet {
 
         try (PrintWriter out = resp.getWriter()) {
             KNCSDL kn = new KNCSDL();
-            boolean success = kn.updateProject(id, tenDuAn, moTa, uuTien, leadId, nhomDuAn, ngayBatDau, ngayKetThuc);
+            boolean success = kn.updateProject(id, tenDuAn, moTa, uuTien, leadId, nhomDuAn, phongBan, ngayBatDau, ngayKetThuc);
 
             if (success) {
                 out.print("{\"success\":true}");

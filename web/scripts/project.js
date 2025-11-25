@@ -161,6 +161,7 @@ function showProjectDetail(event, projectId) {
             $("#detailNgayTao").text(project.ngay_tao ? project.ngay_tao : "");
             $("#detailTongCongViec").text(project.tong_cong_viec ? project.tong_cong_viec : 0);
             $("#detailNhomDuAn").text(project.nhom_du_an);
+            $("#detailPhongBan").text(project.phong_ban ? project.phong_ban : "Chưa phân");
             $("#detailTongNguoi").text(project.tong_nguoi ? project.tong_nguoi : 0);
 
             // Bootstrap 5 API để mở modal
@@ -184,6 +185,7 @@ function editProject(projectId) {
             $("#projectForm input[name='ngay_ket_thuc']").val(project.ngay_ket_thuc);
             $("select[name='muc_do_uu_tien']").val(project.muc_do_uu_tien);
             $("select[name='nhom_du_an']").val(project.nhom_du_an);
+            $("select[name='phong_ban']").val(project.phong_ban);
             // 🔥 Load Lead dự án
             $("select[name='lead_id']").val(project.lead_id);
 

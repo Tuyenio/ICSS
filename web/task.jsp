@@ -1664,6 +1664,7 @@
                                              data-bs-target="#modalTaskDetail"
                                              data-id="<%= task.get("id") %>"
                                              data-ten="<%= task.get("ten_cong_viec") %>"
+                                             data-ten_du_an="<%= task.get("ten_du_an") %>"
                                              data-mo-ta="<%= task.get("mo_ta") %>"
                                              data-ngay-bat-dau="<%= task.get("ngay_bat_dau") %>"
                                              data-han="<%= task.get("han_hoan_thanh") %>"
@@ -1771,6 +1772,7 @@
                                             <tr class="task-row <%= hasReminder ? "task-row--alert" : "" %>" data-bs-toggle="modal" data-bs-target="#modalTaskDetail"
                                                 data-id="<%= task.get("id") %>"
                                                 data-ten="<%= task.get("ten_cong_viec") %>"
+                                                data-ten_du_an="<%= task.get("ten_du_an") %>"
                                                 data-mo-ta="<%= task.get("mo_ta") %>"
                                                 data-ngay-bat-dau="<%= task.get("ngay_bat_dau") %>"
                                                 data-han="<%= task.get("han_hoan_thanh") %>"
@@ -1859,6 +1861,7 @@
                                     <div class="kanban-task archived-task"
                                          data-id="<%= task.get("id") %>"
                                          data-ten="<%= task.get("ten_cong_viec") %>"
+                                         data-ten_du_an="<%= task.get("ten_du_an") %>"
                                          data-mo-ta="<%= task.get("mo_ta") %>"
                                          data-ngay-bat-dau="<%= task.get("ngay_bat_dau") %>"
                                          data-han="<%= task.get("han_hoan_thanh") %>"
@@ -1959,6 +1962,7 @@
                                     <div class="kanban-task deleted-task"
                                          data-id="<%= task.get("id") %>"
                                          data-ten="<%= task.get("ten_cong_viec") %>"
+                                         data-ten_du_an="<%= task.get("ten_du_an") %>"
                                          data-mo-ta="<%= task.get("mo_ta") %>"
                                          data-ngay-bat-dau="<%= task.get("ngay_bat_dau") %>"
                                          data-han="<%= task.get("han_hoan_thanh") %>"
@@ -2032,7 +2036,7 @@
                                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                     </div>
                                     <div class="modal-body">
-                                        <input type="hidden" name="du_an_id" value="0">
+                                        <input type="hidden" name="du_an_id" value="1">
                                         <div class="mb-3">
                                             <label class="form-label"><b>Tên công việc</b></label>
                                             <input type="text" class="form-control" name="ten_cong_viec" required>
@@ -2226,7 +2230,7 @@
                                                 <div class="progress-bar bg-success" style="width: 0%" id="taskProgressBar"></div>
                                             </div>
                                             <button class="btn btn-outline-primary btn-sm mb-2" id="btnAddProcessStep">
-                                                <i class="fa-solid fa-plus"></i> Thêm quy trình
+                                                <i class="fa-solid fa-plus"></i> Thêm việc con
                                             </button>
                                             <ul id="processStepList" class="list-group"></ul>
                                         </div>
