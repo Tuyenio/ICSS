@@ -264,9 +264,15 @@
             }
 
             @keyframes pulse {
-                0% { transform: scale(1); }
-                50% { transform: scale(1.1); }
-                100% { transform: scale(1); }
+                0% {
+                    transform: scale(1);
+                }
+                50% {
+                    transform: scale(1.1);
+                }
+                100% {
+                    transform: scale(1);
+                }
             }
 
             /* ==== RESPONSIVE ==== */
@@ -604,9 +610,10 @@
                 </div>
             </div>
         </div>
+        <script>
+                const USER_PERMISSIONS = <%= session.getAttribute("quyen") %>;
+        </script>
         <script src="<%= request.getContextPath() %>/scripts/attendance.js?v=20251105"></script>
 
     </body>
-
 </html>
-

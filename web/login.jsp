@@ -29,6 +29,19 @@
                 session.setAttribute("vaiTro", vaiTro);
                 session.setAttribute("chucVu", chucVu);
                 session.setAttribute("avatar", avatar);
+                int userIdInt = Integer.parseInt(id);
+                
+                KNCSDL db2 = new KNCSDL();
+                List<String> quyenList = db2.getQuyenTheoNhanVien(userIdInt);
+                db2.close();
+                
+                StringBuilder json = new StringBuilder("[");
+                for (int i = 0; i < quyenList.size(); i++) {
+                    json.append("\"").append(quyenList.get(i)).append("\"");
+                    if (i < quyenList.size() - 1) json.append(",");
+                }
+                json.append("]");
+                session.setAttribute("quyen", json.toString());
 
                 if ("Admin".equalsIgnoreCase(vaiTro) || "Quản lý".equalsIgnoreCase(vaiTro)) {
                     response.sendRedirect("index.jsp");

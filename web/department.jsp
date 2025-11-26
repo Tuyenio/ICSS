@@ -399,6 +399,9 @@
                 </div>
             </div>
         </div>
-        <script src="<%= request.getContextPath() %>/scripts/department.obf.js?v=20251106"></script>
+        <script>
+            const USER_PERMISSIONS = <%= session.getAttribute("quyen") %>;
+        </script>
+        <script src="<%= request.getContextPath() %>/scripts/department.js?v=20251106"></script>
     </body>
 </html>

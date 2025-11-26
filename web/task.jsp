@@ -1546,7 +1546,7 @@
                                     <i class="fa-solid fa-file-excel"></i> Thêm việc từ Excel
                                 </button>
                                 <!-- Nút tạo công việc -->
-                                <button class="btn btn-primary rounded-pill px-3" data-bs-toggle="modal"
+                                <button id="btnCreateTask" class="btn btn-primary rounded-pill px-3" data-bs-toggle="modal"
                                         data-bs-target="#modalTask">
                                     <i class="fa-solid fa-plus"></i> Tạo công việc
                                 </button>
@@ -2412,7 +2412,9 @@
                     </div>
                 </div>
             </div>
-
+            <script>
+                const USER_PERMISSIONS = <%= session.getAttribute("quyen") %>;
+            </script>
             <script src="<%= request.getContextPath() %>/scripts/task.js?v=<%= System.currentTimeMillis() %>"></script>
             <script src="<%= request.getContextPath() %>/scripts/task-approval.js?v=<%= System.currentTimeMillis() %>"></script>
             <script>

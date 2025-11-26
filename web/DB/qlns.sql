@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Máy chủ: 127.0.0.1
--- Thời gian đã tạo: Th10 24, 2025 lúc 09:58 AM
+-- Thời gian đã tạo: Th10 26, 2025 lúc 08:28 AM
 -- Phiên bản máy phục vụ: 10.4.32-MariaDB
 -- Phiên bản PHP: 8.0.30
 
@@ -20,6 +20,69 @@ SET time_zone = "+00:00";
 --
 -- Cơ sở dữ liệu: `qlns`
 --
+
+DELIMITER $$
+--
+-- Thủ tục
+--
+CREATE DEFINER=`root`@`localhost` PROCEDURE `CapQuyenMacDinhChoVaiTro` (IN `p_vai_tro` ENUM('Admin','Quản lý','Nhân viên'), IN `p_nguoi_cap_id` INT)   BEGIN
+    DECLARE done INT DEFAULT FALSE;
+    DECLARE v_nhan_vien_id INT;
+    DECLARE v_ma_quyen VARCHAR(50);
+    
+    -- Cursor để duyệt tất cả nhân viên có vai trò này
+    DECLARE cur_nhanvien CURSOR FOR 
+        SELECT id FROM nhanvien WHERE vai_tro = p_vai_tro;
+    
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+    
+    OPEN cur_nhanvien;
+    
+    nhanvien_loop: LOOP
+        FETCH cur_nhanvien INTO v_nhan_vien_id;
+        IF done THEN
+            LEAVE nhanvien_loop;
+        END IF;
+        
+        -- Xóa quyền cũ của nhân viên này
+        DELETE FROM nhanvien_quyen WHERE nhan_vien_id = v_nhan_vien_id;
+        
+        -- Cấp quyền theo vai trò
+        CASE p_vai_tro
+            WHEN 'Admin' THEN
+                -- Admin có tất cả quyền
+                INSERT INTO nhanvien_quyen (nhan_vien_id, ma_quyen, nguoi_cap_quyen_id)
+                SELECT v_nhan_vien_id, ma_quyen, p_nguoi_cap_id 
+                FROM he_thong_quyen WHERE trang_thai = 'Hoạt động';
+                
+            WHEN 'Quản lý' THEN
+                -- Quản lý có quyền trung gian
+                INSERT INTO nhanvien_quyen (nhan_vien_id, ma_quyen, nguoi_cap_quyen_id)
+                SELECT v_nhan_vien_id, ma_quyen, p_nguoi_cap_id 
+                FROM he_thong_quyen 
+                WHERE trang_thai = 'Hoạt động' 
+                AND ma_quyen NOT IN ('nhan_su.xoa', 'nhan_su.phan_quyen', 'phong_ban.xoa', 
+                                   'du_an.xoa', 'cong_viec.xoa', 'luong.quan_ly', 
+                                   'he_thong.cau_hinh', 'he_thong.sao_luu', 'he_thong.nhat_ky');
+                
+            WHEN 'Nhân viên' THEN
+                -- Nhân viên chỉ có quyền cơ bản
+                INSERT INTO nhanvien_quyen (nhan_vien_id, ma_quyen, nguoi_cap_quyen_id)
+                SELECT v_nhan_vien_id, ma_quyen, p_nguoi_cap_id 
+                FROM he_thong_quyen 
+                WHERE trang_thai = 'Hoạt động' 
+                AND ma_quyen IN ('nhan_su.xem', 'phong_ban.xem', 'du_an.xem', 
+                               'cong_viec.xem', 'cong_viec.cap_nhat_tien_do', 
+                               'cham_cong.xem', 'luong.xem', 'bao_cao.xem');
+        END CASE;
+        
+    END LOOP;
+    
+    CLOSE cur_nhanvien;
+    
+END$$
+
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -264,7 +327,7 @@ INSERT INTO `cong_viec` (`id`, `du_an_id`, `ten_cong_viec`, `mo_ta`, `han_hoan_t
 (175, 1, 'Đốc thúc đội marketing tư vấn các gói đào tạo', 'Đốc thúc Dương về gói đào tạo tại Phú Thọ', '2025-11-16', NULL, 'Cao', 11, 7, 'Đã hoàn thành', 'Chưa duyệt', NULL, 'null', '', NULL, NULL, '2025-09-30 10:27:50', '2025-11-11', '2025-11-15'),
 (176, 1, 'Làm việc với a Bình BIDV', 'Đang tiến hành báo giá', '2025-11-16', NULL, 'Cao', 11, 7, 'Đã hoàn thành', 'Chưa duyệt', NULL, 'null', '/opt/Tomcat/uploads/CTĐT BIDV - PROMPT2.docx', 0, NULL, '2025-09-30 10:27:50', '2025-11-11', '2025-11-15'),
 (177, 1, 'Lên phương án hợp tác với TPX', 'gọi ko bắt máy, nhắn tin không trả lời', '2025-11-16', NULL, 'Cao', 11, 7, 'Đã hoàn thành', 'Chưa duyệt', NULL, 'null', '', NULL, NULL, '2025-09-30 10:27:50', '2025-11-11', '2025-11-15'),
-(178, 1, 'Bán được 5 gói đào tạo về AI', 'null', '2025-11-25', '2025-11-25', 'Cao', 4, 7, 'Đang thực hiện', 'Đã duyệt', 'Chưa chốt được hợp đồng', 'null', '', NULL, NULL, '2025-09-30 10:27:50', '2025-09-22', NULL),
+(178, 1, 'Bán được 5 gói đào tạo về AI', 'null', '2025-11-25', '2025-11-25', 'Cao', 4, 7, 'Trễ hạn', 'Đã duyệt', 'Chưa chốt được hợp đồng', 'null', '', NULL, NULL, '2025-09-30 10:27:50', '2025-09-22', NULL),
 (179, 1, 'Trong tháng 9 đến giữa tháng 10 phải bán được 1 Dashboard', 'null', '2025-11-30', NULL, 'Cao', 4, 7, 'Chưa bắt đầu', 'Chưa duyệt', NULL, 'null', '', NULL, NULL, '2025-09-30 10:27:51', '2025-09-22', NULL),
 (180, 1, 'Oracle cloud: Ký hợp đồng với 3C', 'Đã liên hệ với a Cường 3C, họ đang dùng Viettel để triển khai game trong nước. Còn gói Global thì cần 2 tháng nữa mới đánh gía', '2025-11-30', NULL, 'Cao', 11, 7, 'Đang thực hiện', 'Chưa duyệt', NULL, 'null', '', 0, NULL, '2025-09-30 10:27:51', '2025-09-22', NULL),
 (181, 1, 'Tham gia sự kiện tại Hòa Lạc', 'Tư vấn và tìm kiếm khách hàng', '2025-11-16', NULL, 'Cao', 11, 7, 'Đã hoàn thành', 'Chưa duyệt', NULL, 'null', '', NULL, NULL, '2025-09-30 10:27:51', '2025-11-11', '2025-11-15'),
@@ -342,7 +405,7 @@ INSERT INTO `cong_viec` (`id`, `du_an_id`, `ten_cong_viec`, `mo_ta`, `han_hoan_t
 (271, 40, 'Đã xin lịch khảo sát, a ĐỈnh sẽ liên hệ trước 1 tuần', 'null', '2025-12-15', NULL, 'Thấp', 11, 7, 'Đang thực hiện', 'Chưa duyệt', NULL, 'null', '', NULL, NULL, '2025-11-20 04:46:51', '2025-11-20', NULL),
 (272, 41, 'Đã gửi báo giá cho a Cường 3C', 'Đợi phản hồi từ 3C, tầm từ giữa tháng 12 triển khai. Nam hỗ trợ kỹ thuật', '2025-12-20', NULL, 'Thấp', 11, 7, 'Đã hoàn thành', 'Chưa duyệt', NULL, 'null', '', NULL, NULL, '2025-11-20 04:51:12', '2025-11-20', NULL),
 (275, 56, 'Chỉnh sửa 2', '- Phân nhóm và chọn lọc quyền hạn của các thành viên từ Ban điều hành, đến trưởng phòng, nhân viên: mở các tick để phân quyền, khi đó admin hoặc lãnh đạo sẽ phân quyền cho cấp dưới và được vào các mục nào. \r\n', '2025-11-26', NULL, 'Trung bình', 4, 6, 'Đang thực hiện', 'Chưa duyệt', NULL, 'null', '', NULL, NULL, '2025-11-20 06:36:00', '2025-11-20', NULL),
-(276, 69, 'Họp trao đổi lại về Vyin AI', 'trao đổi lại xem AI khi kết nối với Facebook , zalo...', '2025-11-25', NULL, 'Trung bình', 24, 6, 'Đang thực hiện', 'Chưa duyệt', NULL, 'null', '', NULL, NULL, '2025-11-21 01:27:03', '2025-11-24', NULL),
+(276, 69, 'Họp trao đổi lại về Vyin AI', 'trao đổi lại xem AI khi kết nối với Facebook , zalo...', '2025-11-25', NULL, 'Trung bình', 24, 6, 'Trễ hạn', 'Chưa duyệt', NULL, 'null', '', NULL, NULL, '2025-11-21 01:27:03', '2025-11-24', NULL),
 (277, 70, 'Frontend Learning KT', 'Hoàn thiện giao diện ', '2025-11-28', NULL, 'Cao', 24, 6, 'Đang thực hiện', 'Chưa duyệt', NULL, 'null', '', NULL, NULL, '2025-11-21 01:29:09', '2025-11-21', '2025-11-24'),
 (278, 70, 'Backend Learning KT', 'hoàn thiện backend cho auth và phát chiển cho các chức năng còn lại', '2025-11-28', NULL, 'Cao', 24, 6, 'Đã hoàn thành', 'Chưa duyệt', NULL, 'null', '', NULL, NULL, '2025-11-21 01:30:12', '2025-11-21', '2025-11-24'),
 (279, 45, 'Làm việc với a Tim về Netzero', NULL, '2025-11-30', NULL, 'Trung bình', 11, 7, 'Đang thực hiện', 'Chưa duyệt', NULL, NULL, '', NULL, NULL, '2025-11-21 06:47:50', '2025-11-21', NULL),
@@ -351,7 +414,12 @@ INSERT INTO `cong_viec` (`id`, `du_an_id`, `ten_cong_viec`, `mo_ta`, `han_hoan_t
 (282, 51, 'Giới thiệu smartdashboard', 'null', '2025-11-30', NULL, 'Thấp', 11, 7, 'Đang thực hiện', 'Chưa duyệt', NULL, 'null', '', NULL, NULL, '2025-11-21 06:54:51', '2025-11-14', NULL),
 (283, 42, 'đã gửi đề xuất phương án cho Đà Nẵng', 'null', '2025-11-30', NULL, 'Thấp', 11, 7, 'Đang thực hiện', 'Chưa duyệt', NULL, 'null', '', NULL, NULL, '2025-11-21 06:57:37', '2025-11-03', NULL),
 (284, 70, 'Hỗ trợ hoàn thiện backend cho quang anh', 'kiểm tra và hoàn thiện các backend cho chức năng', '2025-11-28', NULL, 'Trung bình', 24, 6, 'Đang thực hiện', 'Chưa duyệt', NULL, 'null', '', NULL, NULL, '2025-11-24 01:47:35', '2025-11-24', NULL),
-(285, 60, 'Làm website Oracle Cloud VN', NULL, '2025-11-30', NULL, 'Cao', 4, 6, 'Đã hoàn thành', 'Chưa duyệt', NULL, NULL, '', NULL, NULL, '2025-11-24 01:49:25', '2025-09-01', '2025-11-24');
+(285, 60, 'Làm website Oracle Cloud VN', NULL, '2025-11-30', NULL, 'Cao', 4, 6, 'Đã hoàn thành', 'Chưa duyệt', NULL, NULL, '', NULL, NULL, '2025-11-24 01:49:25', '2025-09-01', '2025-11-24'),
+(290, 38, 'thử nhé1', '1', '2025-11-29', NULL, 'Thấp', 22, 6, 'Chưa bắt đầu', 'Chưa duyệt', NULL, NULL, '', NULL, NULL, '2025-11-25 06:50:14', '2025-11-20', NULL),
+(291, 1, '5555555', '1', '2025-11-29', NULL, 'Thấp', 18, 6, 'Chưa bắt đầu', 'Chưa duyệt', NULL, NULL, '', NULL, NULL, '2025-11-25 06:50:49', '2025-11-20', NULL),
+(292, 61, '5555555', '1', '2025-11-29', NULL, 'Thấp', 22, 7, 'Đã hoàn thành', 'Chưa duyệt', NULL, 'null', '', NULL, NULL, '2025-11-25 08:02:40', '2025-11-20', '2025-11-25'),
+(293, 61, '11111', 'null', '2025-11-29', NULL, 'Thấp', 22, 7, 'Chưa bắt đầu', 'Chưa duyệt', NULL, 'null', '', NULL, NULL, '2025-11-25 08:02:52', '2025-11-20', NULL),
+(294, 1, '11111', '1', '2025-11-29', NULL, 'Thấp', 18, 6, 'Chưa bắt đầu', 'Chưa duyệt', NULL, NULL, '', NULL, NULL, '2025-11-26 02:03:20', '2025-11-20', NULL);
 
 -- --------------------------------------------------------
 
@@ -827,7 +895,23 @@ INSERT INTO `cong_viec_lich_su` (`id`, `cong_viec_id`, `nguoi_thay_doi_id`, `mo_
 (489, 278, 21, '🔧 [Tiến độ: Login và Regis ] 📝 Đổi tên tiến độ: \'B\' → \'Login và Regis \' | 🔄 Đổi trạng thái tiến độ: \'Đang thực hiện\' → \'Đã hoàn thành\' | 📅 Đổi ngày bắt đầu: \'2025-11-24\' → \'2025-11-22\' | 📅 Đổi deadline tiến độ: \'2025-11-28\' → \'2025-11-25\'', '2025-11-24 07:51:28'),
 (490, 277, 21, '📄 Cập nhật mô tả công việc | 📅 Đổi ngày bắt đầu: \'(chưa có)\' → \'2025-11-21\' | 🔄 Đổi trạng thái: \'Đã hoàn thành\' → \'Đang thực hiện\'', '2025-11-24 07:52:00'),
 (491, 278, 21, '📅 Đổi ngày bắt đầu: \'(chưa có)\' → \'2025-11-21\' | 🔄 Đổi trạng thái: \'Đã hoàn thành\' → \'Đang thực hiện\'', '2025-11-24 07:52:11'),
-(492, 278, 21, '➕ Thêm tiến độ mới: \'CRUD khóa học\' | Trạng thái: Chưa bắt đầu | Ngày bắt đầu: 2025-12-01 | Deadline: 2025-12-03', '2025-11-24 07:52:45');
+(492, 278, 21, '➕ Thêm tiến độ mới: \'CRUD khóa học\' | Trạng thái: Chưa bắt đầu | Ngày bắt đầu: 2025-12-01 | Deadline: 2025-12-03', '2025-11-24 07:52:45'),
+(493, 290, 18, '🆕 Tạo mới công việc: \'thử nhé1\' | Deadline: 2025-11-29 | Độ ưu tiên: Thấp | Người nhận: Nguyễn Huy Hoàng', '2025-11-25 06:50:14'),
+(494, 291, 18, '🆕 Tạo mới công việc: \'5555555\' | Deadline: 2025-11-29 | Độ ưu tiên: Thấp | Người nhận: Tuấn Anh', '2025-11-25 06:50:49'),
+(495, 292, 18, '🆕 Tạo mới công việc: \'5555555\' | Deadline: 2025-11-29 | Độ ưu tiên: Thấp | Người nhận: Nguyễn Huy Hoàng', '2025-11-25 08:02:40'),
+(496, 293, 18, '🆕 Tạo mới công việc: \'11111\' | Deadline: 2025-11-29 | Độ ưu tiên: Thấp | Người nhận: Nguyễn Huy Hoàng', '2025-11-25 08:02:52'),
+(497, 292, 18, '➕ Thêm tiến độ mới: \'123\' | Trạng thái: Chưa bắt đầu | Ngày bắt đầu: 2025-11-20 | Deadline: 2025-11-21 | Mô tả: \"1\"', '2025-11-25 08:03:04'),
+(498, 292, 18, '📅 Đổi ngày bắt đầu: \'(chưa có)\' → \'2025-11-20\' | 📎 Cập nhật link tài liệu', '2025-11-25 08:03:06'),
+(499, 292, 18, '🔧 [Tiến độ: 123] 🔄 Đổi trạng thái tiến độ: \'Chưa bắt đầu\' → \'Đã hoàn thành\'', '2025-11-25 08:03:11'),
+(500, 292, 18, '📅 Đổi ngày bắt đầu: \'(chưa có)\' → \'2025-11-20\' | 🔄 Đổi trạng thái: \'Đã hoàn thành\' → \'Chưa bắt đầu\'', '2025-11-25 08:03:11'),
+(501, 293, 18, '➕ Thêm tiến độ mới: \'123\' | Trạng thái: Chưa bắt đầu | Ngày bắt đầu: 2025-11-20 | Deadline: 2025-11-21 | Mô tả: \"1\"', '2025-11-25 08:03:30'),
+(502, 293, 18, '📄 Cập nhật mô tả công việc | 📅 Đổi ngày bắt đầu: \'(chưa có)\' → \'2025-11-20\' | 📎 Cập nhật link tài liệu', '2025-11-25 08:03:31'),
+(503, 294, 25, '🆕 Tạo mới công việc: \'11111\' | Deadline: 2025-11-29 | Độ ưu tiên: Thấp | Người nhận: Phạm Minh Thắng', '2025-11-26 02:03:20'),
+(504, 294, 25, 'Xóa công việc', '2025-11-26 03:07:32'),
+(505, 294, 25, 'Khôi phục công việc', '2025-11-26 03:14:42'),
+(506, 294, 25, 'Lưu trữ công việc', '2025-11-26 04:25:00'),
+(507, 294, 25, 'Khôi phục công việc', '2025-11-26 04:27:07'),
+(508, 294, 25, '➕ Thêm tiến độ mới: \'123\' | Trạng thái: Chưa bắt đầu | Ngày bắt đầu: 2025-11-26 | Deadline: 2025-11-21 | Mô tả: \"123\"', '2025-11-26 04:35:45');
 
 -- --------------------------------------------------------
 
@@ -963,7 +1047,12 @@ INSERT INTO `cong_viec_nguoi_nhan` (`id`, `cong_viec_id`, `nhan_vien_id`) VALUES
 (752, 266, 3),
 (754, 284, 24),
 (759, 277, 21),
-(760, 278, 21);
+(760, 278, 21),
+(761, 290, 17),
+(762, 291, 23),
+(766, 292, 17),
+(767, 293, 17),
+(768, 294, 25);
 
 -- --------------------------------------------------------
 
@@ -1090,7 +1179,10 @@ INSERT INTO `cong_viec_quy_trinh` (`id`, `cong_viec_id`, `ten_buoc`, `mo_ta`, `t
 (276, 277, 'Giao diện khóa học, chi tiết khóa học, search.', '', 'Đã hoàn thành', '2025-11-22', '2025-11-23', '2025-11-24 07:49:33'),
 (277, 277, 'Giao diện admin, giảng viên và các giao diện chức năng.', '', 'Đang thực hiện', '2025-11-23', '2025-11-27', '2025-11-24 07:50:03'),
 (278, 277, 'Giao diện cài đặt và các chức năng user', '', 'Đang thực hiện', '2025-11-23', '2025-11-27', '2025-11-24 07:50:47'),
-(279, 278, 'CRUD khóa học', '', 'Chưa bắt đầu', '2025-12-01', '2025-12-03', '2025-11-24 07:52:45');
+(279, 278, 'CRUD khóa học', '', 'Chưa bắt đầu', '2025-12-01', '2025-12-03', '2025-11-24 07:52:45'),
+(280, 292, '123', '1', 'Đã hoàn thành', '2025-11-20', '2025-11-21', '2025-11-25 08:03:03'),
+(281, 293, '123', '1', 'Chưa bắt đầu', '2025-11-20', '2025-11-21', '2025-11-25 08:03:30'),
+(282, 294, '123', '123', 'Chưa bắt đầu', '2025-11-26', '2025-11-21', '2025-11-26 04:35:45');
 
 -- --------------------------------------------------------
 
@@ -1120,7 +1212,7 @@ INSERT INTO `cong_viec_tien_do` (`id`, `cong_viec_id`, `phan_tram`, `thoi_gian_c
 (85, 198, 100, '2025-11-12 01:27:42'),
 (86, 197, 100, '2025-11-19 04:02:24'),
 (87, 202, 100, '2025-11-24 04:20:47'),
-(88, 190, 100, '2025-11-14 02:37:18'),
+(88, 190, 100, '2025-11-25 06:26:33'),
 (90, 192, 100, '2025-11-14 02:37:36'),
 (91, 205, 100, '2025-11-14 02:26:07'),
 (93, 206, 100, '2025-11-20 04:32:41'),
@@ -1132,7 +1224,7 @@ INSERT INTO `cong_viec_tien_do` (`id`, `cong_viec_id`, `phan_tram`, `thoi_gian_c
 (100, 175, 100, '2025-11-14 02:30:53'),
 (101, 193, 0, '2025-11-21 09:48:58'),
 (102, 177, 100, '2025-11-14 02:31:38'),
-(103, 178, 0, '2025-11-24 04:27:44'),
+(103, 178, 0, '2025-11-25 06:57:04'),
 (104, 180, 50, '2025-11-24 04:02:18'),
 (105, 184, 100, '2025-11-14 02:35:46'),
 (106, 212, 0, '2025-11-24 03:11:29'),
@@ -1178,7 +1270,7 @@ INSERT INTO `cong_viec_tien_do` (`id`, `cong_viec_id`, `phan_tram`, `thoi_gian_c
 (157, 260, 0, '2025-11-24 03:33:15'),
 (158, 261, 0, '2025-11-24 02:57:50'),
 (159, 255, 100, '2025-11-24 01:44:50'),
-(160, 265, 0, '2025-11-24 04:51:25'),
+(160, 265, 0, '2025-11-26 04:41:47'),
 (161, 266, 0, '2025-11-24 03:39:32'),
 (162, 267, 0, '2025-11-20 04:24:08'),
 (163, 270, 0, '2025-11-24 03:09:51'),
@@ -1201,7 +1293,10 @@ INSERT INTO `cong_viec_tien_do` (`id`, `cong_viec_id`, `phan_tram`, `thoi_gian_c
 (181, 280, 0, '2025-11-24 03:15:15'),
 (182, 263, 0, '2025-11-24 03:17:05'),
 (183, 284, 0, '2025-11-24 07:14:15'),
-(184, 262, 0, '2025-11-24 04:20:50');
+(184, 262, 0, '2025-11-24 04:20:50'),
+(185, 292, 100, '2025-11-25 08:03:11'),
+(186, 293, 0, '2025-11-25 08:03:30'),
+(187, 294, 0, '2025-11-26 04:40:47');
 
 -- --------------------------------------------------------
 
@@ -1231,8 +1326,8 @@ INSERT INTO `du_an` (`id`, `ten_du_an`, `mo_ta`, `lead_id`, `muc_do_uu_tien`, `n
 (35, 'Số hoá cho công ty Phutraco', 'Nghiên cứu viết lại trang web phutraco.vn\r\nTư vấn sử dụng Oracle Cloud thau thế cho máy chủ vật lý', 8, 'Cao', '2025-11-18', '2025-11-30', '2025-10-20 07:21:31', 'Chuyển đổi số', 'Phòng Kỹ Thuật'),
 (37, 'Dự án TKV', 'Đã báo giá, năm 2026 triển khai', 11, 'Cao', '2025-11-18', '2026-01-31', '2025-11-10 06:55:45', 'Dashboard', 'Phòng Kỹ Thuật'),
 (38, 'Database Mobifone', 'Đã gửi báo giá', 11, 'Cao', '2025-11-18', '2025-11-30', '2025-11-10 06:56:34', 'Oracle Cloud', 'Phòng Kỹ Thuật'),
-(39, 'AI SOC cho đối tác Cathay', 'Liên hệ với a GĐKT a Lương', 24, 'Cao', '2025-11-18', '2025-11-30', '2025-11-10 06:57:15', 'An ninh bảo mật', 'Phòng Kỹ Thuật'),
-(40, 'Demo anh Đỉnh ', 'Cuối tháng 11 vào khảo sát, tư vấn', 3, 'Cao', '2025-11-18', '2025-11-30', '2025-11-10 06:57:52', 'Dashboard', 'Phòng Kỹ Thuật'),
+(39, 'AI SOC cho đối tác Cathay', 'Liên hệ với a GĐKT a Lương', 24, 'Cao', '2025-11-18', '2025-11-30', '2025-11-10 06:57:15', 'An ninh bảo mật', 'Phòng Kinh Doanh'),
+(40, 'Demo anh Đỉnh ', 'Cuối tháng 11 vào khảo sát, tư vấn', 3, 'Cao', '2025-11-18', '2025-11-30', '2025-11-10 06:57:52', 'Dashboard', 'Phòng Kinh Doanh'),
 (41, 'Oracle cho 3C', 'Đang dùng thử, Nam hỗ trợ', 8, 'Cao', '2025-11-18', '2025-11-30', '2025-11-10 07:00:08', 'Oracle Cloud', 'Phòng Kỹ Thuật'),
 (42, 'Dự án Đà Nẵng', 'Tư vấn chuyển đổi số', 6, 'Cao', '2025-11-18', '2026-01-01', '2025-11-10 07:00:41', 'Dashboard', 'Phòng Kỹ Thuật'),
 (43, 'Dự án NIC', '', 3, 'Trung bình', '2025-11-18', '2026-01-01', '2025-11-10 07:26:27', 'Dashboard', 'Phòng Kỹ Thuật'),
@@ -1251,13 +1346,13 @@ INSERT INTO `du_an` (`id`, `ten_du_an`, `mo_ta`, `lead_id`, `muc_do_uu_tien`, `n
 (57, 'Web HyperG', 'Tuyền Lead, Đang API security check (12/11 done) rồi họ mới gửi API cho mình tích hợp. Allen báo sẽ gửi trong hôm nay 13/11 nhưng chưa thấy', 8, 'Cao', '2025-11-18', '2025-12-15', '2025-11-17 01:40:29', 'Khác', 'Phòng Kỹ Thuật'),
 (58, 'Zalo Mini APP - ECHOSS KT', 'Thực hiện triển khai các mini app thông qua zalo, chuyển giao công nghệ từ Echoss', 25, 'Cao', '2025-11-19', '2025-12-01', '2025-11-17 06:32:19', 'Khác', 'Phòng Kỹ Thuật'),
 (60, 'Oracle Cloud KT', 'Oracle Cloud KT', 8, 'Cao', '2025-11-19', '2025-11-30', '2025-11-19 04:38:14', 'Oracle Cloud', 'Phòng Kỹ Thuật'),
-(61, 'Dashboard KT', 'Dashboard KT', 3, 'Cao', '2025-11-19', '2025-11-30', '2025-11-19 04:39:47', 'Dashboard', 'Phòng Kỹ Thuật'),
-(62, 'AI SOC KT', 'AI SOC KT', 24, 'Cao', '2025-11-19', '2025-11-30', '2025-11-19 04:41:44', 'An ninh bảo mật', 'Phòng Kỹ Thuật'),
-(63, 'VietGuard KT', 'VietGuard KT', 24, 'Cao', '2025-11-19', '2025-11-30', '2025-11-19 04:42:24', 'An ninh bảo mật', 'Phòng Kỹ Thuật'),
+(61, 'Dashboard KT', 'Dashboard KT', 3, 'Cao', '2025-11-19', '2025-11-30', '2025-11-19 04:39:47', 'Dashboard', 'Phòng Kinh Doanh'),
+(62, 'AI SOC KT', 'AI SOC KT', 24, 'Cao', '2025-11-19', '2025-11-30', '2025-11-19 04:41:44', 'An ninh bảo mật', 'Phòng Kinh Doanh'),
+(63, 'VietGuard KT', 'VietGuard KT', 24, 'Cao', '2025-11-19', '2025-11-30', '2025-11-19 04:42:24', 'An ninh bảo mật', 'Phòng Kinh Doanh'),
 (64, 'CSA KT', 'CSA KT', 24, 'Cao', '2025-11-19', '2025-11-30', '2025-11-19 04:43:17', 'An ninh bảo mật', 'Phòng Kỹ Thuật'),
 (65, 'Phutraco KT', 'Phutraco KT', 8, 'Cao', '2025-11-19', '2025-11-30', '2025-11-19 04:44:43', 'Khác', 'Phòng Kỹ Thuật'),
 (66, 'ICSS Web KT', 'ICSS Web KT', 8, 'Cao', '2025-11-19', '2025-11-30', '2025-11-19 04:45:19', 'Khác', 'Phòng Kỹ Thuật'),
-(67, 'Dashboard Sale KT', 'Dashboard Sale KT', 24, 'Cao', '2025-11-19', '2025-11-30', '2025-11-19 04:46:06', 'Dashboard', 'Phòng Kỹ Thuật'),
+(67, 'Dashboard Sale KT', 'Dashboard Sale KT', 24, 'Cao', '2025-11-19', '2025-11-30', '2025-11-19 04:46:06', 'Dashboard', 'Phòng Kinh Doanh'),
 (68, 'Web HyperG KT', 'Web HyperG KT', 24, 'Cao', '2025-11-19', '2025-11-30', '2025-11-19 04:46:45', 'An ninh bảo mật', 'Phòng Kỹ Thuật'),
 (69, 'Vyin AI KT', 'Vyin AI KT', 24, 'Cao', '2025-11-19', '2025-11-30', '2025-11-19 04:48:58', 'Khác', 'Phòng Kỹ Thuật'),
 (70, 'Web Learning', 'Web Learning', 24, 'Cao', '2025-11-19', '2025-11-30', '2025-11-19 04:50:18', 'Đào tạo', 'Phòng Kỹ Thuật'),
@@ -1278,6 +1373,75 @@ CREATE TABLE `file_dinh_kem` (
   `duong_dan_file` varchar(255) DEFAULT NULL,
   `mo_ta` text DEFAULT NULL,
   `thoi_gian_upload` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Cấu trúc bảng cho bảng `he_thong_quyen`
+--
+
+CREATE TABLE `he_thong_quyen` (
+  `id` int(11) NOT NULL,
+  `ma_quyen` varchar(50) NOT NULL COMMENT 'Mã quyền unique, dùng trong code',
+  `ten_quyen` varchar(100) NOT NULL COMMENT 'Tên quyền hiển thị',
+  `nhom_quyen` varchar(50) NOT NULL COMMENT 'Nhóm quyền (nhan_su, phong_ban, du_an, etc.)',
+  `mo_ta` text DEFAULT NULL COMMENT 'Mô tả chi tiết quyền',
+  `trang_thai` enum('Hoạt động','Vô hiệu') DEFAULT 'Hoạt động',
+  `ngay_tao` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Đang đổ dữ liệu cho bảng `he_thong_quyen`
+--
+
+INSERT INTO `he_thong_quyen` (`id`, `ma_quyen`, `ten_quyen`, `nhom_quyen`, `mo_ta`, `trang_thai`, `ngay_tao`) VALUES
+(1, 'nhan_su.xem', 'Xem danh sách nhân viên', 'nhan_su', 'Được phép xem danh sách và thông tin nhân viên', 'Hoạt động', '2025-11-25 08:54:36'),
+(2, 'nhan_su.them', 'Thêm nhân viên mới', 'nhan_su', 'Được phép thêm mới nhân viên vào hệ thống', 'Hoạt động', '2025-11-25 08:54:36'),
+(3, 'nhan_su.sua', 'Sửa thông tin nhân viên', 'nhan_su', 'Được phép chỉnh sửa thông tin nhân viên', 'Hoạt động', '2025-11-25 08:54:36'),
+(4, 'nhan_su.xoa', 'Xóa nhân viên', 'nhan_su', 'Được phép xóa nhân viên khỏi hệ thống', 'Hoạt động', '2025-11-25 08:54:36'),
+(5, 'nhan_su.phan_quyen', 'Phân quyền nhân viên', 'nhan_su', 'Được phép cấp và thu hồi quyền cho nhân viên', 'Hoạt động', '2025-11-25 08:54:36'),
+(6, 'phong_ban.xem', 'Xem danh sách phòng ban', 'phong_ban', 'Được phép xem thông tin các phòng ban', 'Hoạt động', '2025-11-25 08:54:36'),
+(7, 'phong_ban.them', 'Thêm phòng ban mới', 'phong_ban', 'Được phép tạo phòng ban mới', 'Hoạt động', '2025-11-25 08:54:36'),
+(8, 'phong_ban.sua', 'Sửa thông tin phòng ban', 'phong_ban', 'Được phép chỉnh sửa thông tin phòng ban', 'Hoạt động', '2025-11-25 08:54:36'),
+(9, 'phong_ban.xoa', 'Xóa phòng ban', 'phong_ban', 'Được phép xóa phòng ban', 'Hoạt động', '2025-11-25 08:54:36'),
+(10, 'du_an.xem', 'Xem danh sách dự án', 'du_an', 'Được phép xem thông tin các dự án', 'Hoạt động', '2025-11-25 08:54:36'),
+(11, 'du_an.them', 'Tạo dự án mới', 'du_an', 'Được phép tạo dự án mới', 'Hoạt động', '2025-11-25 08:54:36'),
+(12, 'du_an.sua', 'Sửa thông tin dự án', 'du_an', 'Được phép chỉnh sửa thông tin dự án', 'Hoạt động', '2025-11-25 08:54:36'),
+(13, 'du_an.xoa', 'Xóa dự án', 'du_an', 'Được phép xóa dự án', 'Hoạt động', '2025-11-25 08:54:36'),
+(14, 'cong_viec.xem', 'Xem danh sách công việc', 'cong_viec', 'Được phép xem danh sách công việc', 'Hoạt động', '2025-11-25 08:54:36'),
+(15, 'cong_viec.them', 'Giao công việc mới', 'cong_viec', 'Được phép giao công việc cho nhân viên', 'Hoạt động', '2025-11-25 08:54:36'),
+(16, 'cong_viec.sua', 'Sửa thông tin công việc', 'cong_viec', 'Được phép chỉnh sửa thông tin công việc', 'Hoạt động', '2025-11-25 08:54:36'),
+(17, 'cong_viec.xoa', 'Xóa công việc', 'cong_viec', 'Được phép xóa công việc', 'Hoạt động', '2025-11-25 08:54:36'),
+(18, 'cong_viec.duyet', 'Duyệt/đánh giá công việc', 'cong_viec', 'Được phép duyệt và đánh giá công việc', 'Hoạt động', '2025-11-25 08:54:36'),
+(19, 'cong_viec.cap_nhat_tien_do', 'Cập nhật tiến độ', 'cong_viec', 'Được phép cập nhật tiến độ công việc', 'Hoạt động', '2025-11-25 08:54:36'),
+(20, 'cham_cong.xem', 'Xem dữ liệu chấm công', 'cham_cong', 'Được phép xem dữ liệu chấm công', 'Hoạt động', '2025-11-25 08:54:36'),
+(21, 'cham_cong.quan_ly', 'Quản lý chấm công', 'cham_cong', 'Được phép quản lý và chỉnh sửa dữ liệu chấm công', 'Hoạt động', '2025-11-25 08:54:36'),
+(22, 'luong.xem', 'Xem bảng lương', 'luong', 'Được phép xem thông tin lương', 'Hoạt động', '2025-11-25 08:54:36'),
+(23, 'luong.quan_ly', 'Quản lý lương', 'luong', 'Được phép quản lý và tính toán lương', 'Hoạt động', '2025-11-25 08:54:36'),
+(24, 'bao_cao.xem', 'Xem báo cáo tổng hợp', 'bao_cao', 'Được phép xem các báo cáo tổng hợp', 'Hoạt động', '2025-11-25 08:54:36'),
+(25, 'bao_cao.xuat', 'Xuất báo cáo', 'bao_cao', 'Được phép xuất báo cáo ra file', 'Hoạt động', '2025-11-25 08:54:36'),
+(26, 'thong_ke.xem', 'Xem phân tích dữ liệu', 'thong_ke', 'Được phép xem các biểu đồ phân tích dữ liệu', 'Hoạt động', '2025-11-25 08:54:36'),
+(27, 'he_thong.cau_hinh', 'Cấu hình hệ thống', 'he_thong', 'Được phép thay đổi cấu hình hệ thống', 'Hoạt động', '2025-11-25 08:54:36'),
+(28, 'he_thong.sao_luu', 'Sao lưu & Khôi phục', 'he_thong', 'Được phép thực hiện sao lưu và khôi phục dữ liệu', 'Hoạt động', '2025-11-25 08:54:36'),
+(29, 'he_thong.nhat_ky', 'Xem nhật ký hệ thống', 'he_thong', 'Được phép xem nhật ký hoạt động hệ thống', 'Hoạt động', '2025-11-25 08:54:36');
+
+-- --------------------------------------------------------
+
+--
+-- Cấu trúc bảng cho bảng `lich_su_phan_quyen`
+--
+
+CREATE TABLE `lich_su_phan_quyen` (
+  `id` int(11) NOT NULL,
+  `nhan_vien_id` int(11) NOT NULL COMMENT 'ID nhân viên bị thay đổi quyền',
+  `ma_quyen` varchar(50) NOT NULL COMMENT 'Mã quyền',
+  `hanh_dong` enum('Cấp quyền','Thu hồi quyền','Cập nhật') NOT NULL COMMENT 'Loại thay đổi',
+  `gia_tri_cu` tinyint(1) DEFAULT NULL COMMENT 'Giá trị cũ (1: có, 0: không)',
+  `gia_tri_moi` tinyint(1) DEFAULT NULL COMMENT 'Giá trị mới (1: có, 0: không)',
+  `nguoi_thuc_hien_id` int(11) DEFAULT NULL COMMENT 'ID người thực hiện thay đổi',
+  `thoi_gian` timestamp NOT NULL DEFAULT current_timestamp(),
+  `ghi_chu` text DEFAULT NULL COMMENT 'Ghi chú lý do thay đổi'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -1413,6 +1577,106 @@ INSERT INTO `nhanvien` (`id`, `ho_ten`, `email`, `mat_khau`, `so_dien_thoai`, `g
 (25, 'Phạm Minh Thắng', 'minhthang@gmail.com', '12345678', '0834035090', 'Nam', '2003-11-23', 6, 'Nhân viên', 0.00, 'Đang làm', 'Nhân viên', '2025-07-20', 'https://i.postimg.cc/x1mhwnFR/IMG-8032.jpg', '2025-11-03 23:50:31'),
 (27, 'Nguyễn Công Bảo', 'ncongbao2003@gmail.com', '12345678', '0900000001', 'Nam', '2003-01-22', 6, 'Nhân viên', 0.00, 'Đang làm', 'Nhân viên', '2025-11-20', 'https://i.postimg.cc/x1mhwnFR/IMG-8032.jpg', '2025-11-19 10:08:38');
 
+--
+-- Bẫy `nhanvien`
+--
+DELIMITER $$
+CREATE TRIGGER `trigger_cap_quyen_nhan_vien_moi` AFTER INSERT ON `nhanvien` FOR EACH ROW BEGIN
+    -- Cấp quyền mặc định dựa trên vai trò
+    CASE NEW.vai_tro
+        WHEN 'Admin' THEN
+            INSERT INTO nhanvien_quyen (nhan_vien_id, ma_quyen, nguoi_cap_quyen_id)
+            SELECT NEW.id, ma_quyen, 4 -- 4 là ID Admin mặc định
+            FROM he_thong_quyen WHERE trang_thai = 'Hoạt động';
+            
+        WHEN 'Quản lý' THEN
+            INSERT INTO nhanvien_quyen (nhan_vien_id, ma_quyen, nguoi_cap_quyen_id)
+            SELECT NEW.id, ma_quyen, 4 
+            FROM he_thong_quyen 
+            WHERE trang_thai = 'Hoạt động' 
+            AND ma_quyen NOT IN ('nhan_su.xoa', 'nhan_su.phan_quyen', 'phong_ban.xoa', 
+                               'du_an.xoa', 'cong_viec.xoa', 'luong.quan_ly', 
+                               'he_thong.cau_hinh', 'he_thong.sao_luu', 'he_thong.nhat_ky');
+            
+        WHEN 'Nhân viên' THEN
+            INSERT INTO nhanvien_quyen (nhan_vien_id, ma_quyen, nguoi_cap_quyen_id)
+            SELECT NEW.id, ma_quyen, 4 
+            FROM he_thong_quyen 
+            WHERE trang_thai = 'Hoạt động' 
+            AND ma_quyen IN ('nhan_su.xem', 'phong_ban.xem', 'du_an.xem', 
+                           'cong_viec.xem', 'cong_viec.cap_nhat_tien_do', 
+                           'cham_cong.xem', 'luong.xem', 'bao_cao.xem');
+    END CASE;
+END
+$$
+DELIMITER ;
+
+-- --------------------------------------------------------
+
+--
+-- Cấu trúc bảng cho bảng `nhanvien_quyen`
+--
+
+CREATE TABLE `nhanvien_quyen` (
+  `nhanvien_id` int(11) NOT NULL,
+  `quyen_id` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Đang đổ dữ liệu cho bảng `nhanvien_quyen`
+--
+
+INSERT INTO `nhanvien_quyen` (`nhanvien_id`, `quyen_id`) VALUES
+(18, 1),
+(18, 2),
+(18, 3),
+(18, 4),
+(18, 5),
+(18, 6),
+(18, 7),
+(18, 8),
+(18, 9),
+(18, 10),
+(18, 11),
+(18, 12),
+(18, 13),
+(18, 14),
+(18, 16),
+(18, 17),
+(18, 18),
+(18, 19),
+(18, 20),
+(18, 21),
+(18, 22),
+(18, 23),
+(18, 24),
+(18, 25),
+(18, 26),
+(18, 27),
+(18, 28),
+(18, 29),
+(18, 59),
+(18, 60),
+(22, 10),
+(22, 14),
+(22, 19),
+(22, 20),
+(22, 22),
+(25, 10),
+(25, 11),
+(25, 12),
+(25, 13),
+(25, 14),
+(25, 15),
+(25, 18),
+(25, 19),
+(25, 60),
+(27, 10),
+(27, 14),
+(27, 19),
+(27, 20),
+(27, 22);
+
 -- --------------------------------------------------------
 
 --
@@ -1466,6 +1730,56 @@ INSERT INTO `phong_ban` (`id`, `ten_phong`, `truong_phong_id`, `ngay_tao`) VALUE
 (7, 'Phòng Marketing & Sales', 11, '2025-09-04 04:20:02'),
 (8, 'Phòng Pháp Chế', NULL, '2025-09-04 04:20:52'),
 (12, 'TTS', NULL, '2025-10-02 08:40:30');
+
+-- --------------------------------------------------------
+
+--
+-- Cấu trúc bảng cho bảng `quyen`
+--
+
+CREATE TABLE `quyen` (
+  `id` int(11) NOT NULL,
+  `ma_quyen` varchar(100) NOT NULL,
+  `ten_quyen` varchar(255) NOT NULL,
+  `nhom_quyen` varchar(100) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Đang đổ dữ liệu cho bảng `quyen`
+--
+
+INSERT INTO `quyen` (`id`, `ma_quyen`, `ten_quyen`, `nhom_quyen`) VALUES
+(1, 'xem_nhanvien', 'Xem danh sách nhân viên', 'nhanvien'),
+(2, 'them_nhanvien', 'Thêm nhân viên', 'nhanvien'),
+(3, 'sua_nhanvien', 'Sửa nhân viên', 'nhanvien'),
+(4, 'xoa_nhanvien', 'Xóa nhân viên', 'nhanvien'),
+(5, 'phanquyen_nhanvien', 'Phân quyền nhân viên', 'nhanvien'),
+(6, 'xem_phongban', 'Xem danh sách phòng ban', 'phongban'),
+(7, 'them_phongban', 'Thêm phòng ban', 'phongban'),
+(8, 'sua_phongban', 'Sửa phòng ban', 'phongban'),
+(9, 'xoa_phongban', 'Xóa phòng ban', 'phongban'),
+(10, 'xem_duan', 'Xem danh sách dự án', 'duan'),
+(11, 'them_duan', 'Thêm dự án mới', 'duan'),
+(12, 'sua_duan', 'Sửa dự án', 'duan'),
+(13, 'xoa_duan', 'Xóa dự án', 'duan'),
+(14, 'xem_congviec', 'Xem danh sách công việc', 'congviec'),
+(15, 'them_congviec', 'Thêm công việc mới', 'congviec'),
+(16, 'sua_congviec', 'Sửa công việc', 'congviec'),
+(17, 'xoa_congviec', 'Xóa công việc', 'congviec'),
+(18, 'duyet_congviec', 'Duyệt công việc', 'congviec'),
+(19, 'capnhat_tiendo', 'Cập nhật tiến độ công việc', 'congviec'),
+(20, 'xem_chamcong', 'Xem chấm công', 'chamcong'),
+(21, 'quanly_chamcong', 'Quản lý chấm công', 'chamcong'),
+(22, 'xem_luong', 'Xem bảng lương', 'luong'),
+(23, 'quanly_luong', 'Quản lý lương', 'luong'),
+(24, 'xem_baocao', 'Xem báo cáo', 'baocao'),
+(25, 'xuat_baocao', 'Xuất báo cáo', 'baocao'),
+(26, 'xem_phan_tich', 'Xem phân tích dữ liệu', 'baocao'),
+(27, 'cauhinh_hethong', 'Cấu hình hệ thống', 'hethong'),
+(28, 'saoluu_khoiphuc', 'Sao lưu và khôi phục', 'hethong'),
+(29, 'xem_nhatky', 'Xem nhật ký hệ thống', 'hethong'),
+(59, 'nhacviec', 'Nhắc việc', 'congviec'),
+(60, 'them_quytrinh', 'Thêm quy trình', 'congviec');
 
 -- --------------------------------------------------------
 
@@ -2184,7 +2498,19 @@ INSERT INTO `thong_bao` (`id`, `tieu_de`, `noi_dung`, `nguoi_nhan_id`, `loai_tho
 (1042, 'Cập nhật quy trình', 'Công việc: Backend Learning KT vừa được cập nhật quy trình mới', 21, 'Cập nhật', 0, '2025-11-24 07:51:27', '2025-11-24 07:51:27'),
 (1043, 'Cập nhật công việc', 'Công việc: Frontend Learning KT vừa được cập nhật mới', 21, 'Cập nhật', 0, '2025-11-24 07:52:00', '2025-11-24 07:52:00'),
 (1044, 'Cập nhật công việc', 'Công việc: Backend Learning KT vừa được cập nhật mới', 21, 'Cập nhật', 0, '2025-11-24 07:52:11', '2025-11-24 07:52:11'),
-(1045, 'Thêm mới quy trình', 'Công việc: Backend Learning KT vừa được thêm quy trình mới', 21, 'Cập nhật', 0, '2025-11-24 07:52:45', '2025-11-24 07:52:45');
+(1045, 'Thêm mới quy trình', 'Công việc: Backend Learning KT vừa được thêm quy trình mới', 21, 'Cập nhật', 0, '2025-11-24 07:52:45', '2025-11-24 07:52:45'),
+(1046, 'Công việc mới', 'Bạn được giao công việc: thử nhé1. Hạn: 2025-11-29.', 17, 'Công việc mới', 0, '2025-11-25 06:50:14', '2025-11-25 06:50:14'),
+(1047, 'Công việc mới', 'Bạn được giao công việc: 5555555. Hạn: 2025-11-29.', 23, 'Công việc mới', 0, '2025-11-25 06:50:49', '2025-11-25 06:50:49'),
+(1048, 'Công việc mới', 'Bạn được giao công việc: 5555555. Hạn: 2025-11-29.', 17, 'Công việc mới', 0, '2025-11-25 08:02:40', '2025-11-25 08:02:40'),
+(1049, 'Công việc mới', 'Bạn được giao công việc: 11111. Hạn: 2025-11-29.', 17, 'Công việc mới', 0, '2025-11-25 08:02:52', '2025-11-25 08:02:52'),
+(1050, 'Thêm mới quy trình', 'Công việc: 5555555 vừa được thêm quy trình mới', 17, 'Cập nhật', 0, '2025-11-25 08:03:03', '2025-11-25 08:03:03'),
+(1051, 'Cập nhật công việc', 'Công việc: 5555555 vừa được cập nhật mới', 17, 'Cập nhật', 0, '2025-11-25 08:03:06', '2025-11-25 08:03:06'),
+(1052, 'Cập nhật quy trình', 'Công việc: 5555555 vừa được cập nhật quy trình mới', 17, 'Cập nhật', 0, '2025-11-25 08:03:11', '2025-11-25 08:03:11'),
+(1053, 'Cập nhật công việc', 'Công việc: 5555555 vừa được cập nhật mới', 17, 'Cập nhật', 0, '2025-11-25 08:03:11', '2025-11-25 08:03:11'),
+(1054, 'Thêm mới quy trình', 'Công việc: 11111 vừa được thêm quy trình mới', 17, 'Cập nhật', 0, '2025-11-25 08:03:30', '2025-11-25 08:03:30'),
+(1055, 'Cập nhật công việc', 'Công việc: 11111 vừa được cập nhật mới', 17, 'Cập nhật', 0, '2025-11-25 08:03:31', '2025-11-25 08:03:31'),
+(1056, 'Công việc mới', 'Bạn được giao công việc: 11111. Hạn: 2025-11-29.', 25, 'Công việc mới', 0, '2025-11-26 02:03:20', '2025-11-26 02:03:20'),
+(1057, 'Thêm mới quy trình', 'Công việc: 11111 vừa được thêm quy trình mới', 25, 'Cập nhật', 0, '2025-11-26 04:35:45', '2025-11-26 04:35:45');
 
 --
 -- Chỉ mục cho các bảng đã đổ
@@ -2266,6 +2592,24 @@ ALTER TABLE `file_dinh_kem`
   ADD KEY `tien_do_id` (`tien_do_id`);
 
 --
+-- Chỉ mục cho bảng `he_thong_quyen`
+--
+ALTER TABLE `he_thong_quyen`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `ma_quyen` (`ma_quyen`),
+  ADD KEY `idx_ma_quyen` (`ma_quyen`),
+  ADD KEY `idx_nhom_quyen` (`nhom_quyen`);
+
+--
+-- Chỉ mục cho bảng `lich_su_phan_quyen`
+--
+ALTER TABLE `lich_su_phan_quyen`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `nguoi_thuc_hien_id` (`nguoi_thuc_hien_id`),
+  ADD KEY `idx_nhan_vien` (`nhan_vien_id`),
+  ADD KEY `idx_thoi_gian` (`thoi_gian`);
+
+--
 -- Chỉ mục cho bảng `lich_trinh`
 --
 ALTER TABLE `lich_trinh`
@@ -2300,6 +2644,13 @@ ALTER TABLE `nhanvien`
   ADD KEY `phong_ban_id` (`phong_ban_id`);
 
 --
+-- Chỉ mục cho bảng `nhanvien_quyen`
+--
+ALTER TABLE `nhanvien_quyen`
+  ADD PRIMARY KEY (`nhanvien_id`,`quyen_id`),
+  ADD KEY `quyen_id` (`quyen_id`);
+
+--
 -- Chỉ mục cho bảng `nhan_su_lich_su`
 --
 ALTER TABLE `nhan_su_lich_su`
@@ -2319,6 +2670,13 @@ ALTER TABLE `phan_quyen_chuc_nang`
 ALTER TABLE `phong_ban`
   ADD PRIMARY KEY (`id`),
   ADD KEY `fk_truong_phong` (`truong_phong_id`);
+
+--
+-- Chỉ mục cho bảng `quyen`
+--
+ALTER TABLE `quyen`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `ma_quyen` (`ma_quyen`);
 
 --
 -- Chỉ mục cho bảng `thong_bao`
@@ -2347,7 +2705,7 @@ ALTER TABLE `cham_cong`
 -- AUTO_INCREMENT cho bảng `cong_viec`
 --
 ALTER TABLE `cong_viec`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=289;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=295;
 
 --
 -- AUTO_INCREMENT cho bảng `cong_viec_danh_gia`
@@ -2359,25 +2717,25 @@ ALTER TABLE `cong_viec_danh_gia`
 -- AUTO_INCREMENT cho bảng `cong_viec_lich_su`
 --
 ALTER TABLE `cong_viec_lich_su`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=493;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=509;
 
 --
 -- AUTO_INCREMENT cho bảng `cong_viec_nguoi_nhan`
 --
 ALTER TABLE `cong_viec_nguoi_nhan`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=761;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=769;
 
 --
 -- AUTO_INCREMENT cho bảng `cong_viec_quy_trinh`
 --
 ALTER TABLE `cong_viec_quy_trinh`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=280;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=283;
 
 --
 -- AUTO_INCREMENT cho bảng `cong_viec_tien_do`
 --
 ALTER TABLE `cong_viec_tien_do`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=185;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=188;
 
 --
 -- AUTO_INCREMENT cho bảng `du_an`
@@ -2390,6 +2748,18 @@ ALTER TABLE `du_an`
 --
 ALTER TABLE `file_dinh_kem`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
+-- AUTO_INCREMENT cho bảng `he_thong_quyen`
+--
+ALTER TABLE `he_thong_quyen`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
+
+--
+-- AUTO_INCREMENT cho bảng `lich_su_phan_quyen`
+--
+ALTER TABLE `lich_su_phan_quyen`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT cho bảng `lich_trinh`
@@ -2440,10 +2810,16 @@ ALTER TABLE `phong_ban`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
+-- AUTO_INCREMENT cho bảng `quyen`
+--
+ALTER TABLE `quyen`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=61;
+
+--
 -- AUTO_INCREMENT cho bảng `thong_bao`
 --
 ALTER TABLE `thong_bao`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1046;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1058;
 
 --
 -- Các ràng buộc cho các bảng đã đổ
@@ -2510,6 +2886,13 @@ ALTER TABLE `file_dinh_kem`
   ADD CONSTRAINT `file_dinh_kem_ibfk_2` FOREIGN KEY (`tien_do_id`) REFERENCES `cong_viec_tien_do` (`id`) ON DELETE CASCADE;
 
 --
+-- Các ràng buộc cho bảng `lich_su_phan_quyen`
+--
+ALTER TABLE `lich_su_phan_quyen`
+  ADD CONSTRAINT `lich_su_phan_quyen_ibfk_1` FOREIGN KEY (`nhan_vien_id`) REFERENCES `nhanvien` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `lich_su_phan_quyen_ibfk_2` FOREIGN KEY (`nguoi_thuc_hien_id`) REFERENCES `nhanvien` (`id`) ON DELETE SET NULL;
+
+--
 -- Các ràng buộc cho bảng `luong`
 --
 ALTER TABLE `luong`
@@ -2526,6 +2909,13 @@ ALTER TABLE `luu_kpi`
 --
 ALTER TABLE `nhanvien`
   ADD CONSTRAINT `nhanvien_ibfk_1` FOREIGN KEY (`phong_ban_id`) REFERENCES `phong_ban` (`id`) ON DELETE SET NULL;
+
+--
+-- Các ràng buộc cho bảng `nhanvien_quyen`
+--
+ALTER TABLE `nhanvien_quyen`
+  ADD CONSTRAINT `nhanvien_quyen_ibfk_1` FOREIGN KEY (`nhanvien_id`) REFERENCES `nhanvien` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `nhanvien_quyen_ibfk_2` FOREIGN KEY (`quyen_id`) REFERENCES `quyen` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Các ràng buộc cho bảng `nhan_su_lich_su`

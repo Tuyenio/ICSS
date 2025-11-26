@@ -5107,6 +5107,59 @@ public class KNCSDL {
         return data;
     }
 
+    public List<String> getQuyenTheoNhanVien(int nhanvienId) throws SQLException {
+        List<String> danhSach = new ArrayList<>();
+
+        String sql = """
+        SELECT q.ma_quyen
+        FROM nhanvien_quyen nq
+        JOIN quyen q ON q.id = nq.quyen_id
+        WHERE nq.nhanvien_id = ?
+    """;
+
+        PreparedStatement ps = cn.prepareStatement(sql);
+        ps.setInt(1, nhanvienId);
+
+        ResultSet rs = ps.executeQuery();
+        while (rs.next()) {
+            danhSach.add(rs.getString("ma_quyen"));
+        }
+        return danhSach;
+    }
+
+    public boolean luuPhanQuyenNhanVien(int nhanvienId, String[] dsQuyen) throws SQLException {
+        cn.setAutoCommit(false);
+
+        try {
+            // Xóa quyền cũ
+            PreparedStatement xoa = cn.prepareStatement(
+                    "DELETE FROM nhanvien_quyen WHERE nhanvien_id = ?"
+            );
+            xoa.setInt(1, nhanvienId);
+            xoa.executeUpdate();
+
+            // Thêm quyền mới
+            PreparedStatement them = cn.prepareStatement(
+                    "INSERT INTO nhanvien_quyen (nhanvien_id, quyen_id) "
+                    + "VALUES (?, (SELECT id FROM quyen WHERE ma_quyen = ?))"
+            );
+
+            for (String q : dsQuyen) {
+                them.setInt(1, nhanvienId);
+                them.setString(2, q);
+                them.executeUpdate();
+            }
+
+            cn.commit();
+            return true;
+
+        } catch (Exception e) {
+            cn.rollback();
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     public void close() throws SQLException {
         if (cn != null && !cn.isClosed()) {
             cn.close();

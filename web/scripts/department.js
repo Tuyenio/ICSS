@@ -1,3 +1,41 @@
+function hasPermission(code) {
+    return USER_PERMISSIONS && USER_PERMISSIONS.includes(code);
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    if (!hasPermission("xem_phongban")) {
+        $("#departmentTableBody").html(
+            `<tr><td colspan="6" class="text-center text-danger">
+                Bạn không có quyền xem dữ liệu phòng ban
+            </td></tr>`
+        );
+
+        // Ẩn nút thêm mới
+        $(".btn-primary[data-bs-target='#modalDepartment']").hide();
+    }
+
+    if (!hasPermission("them_phongban")) {
+        // Ẩn nút thêm mới
+        $(".btn-primary[data-bs-target='#modalDepartment']").hide();
+
+        // Ẩn nút Lưu trong modal
+        $("#modalDepartment button[type=submit]").hide();
+    }
+
+    if (!hasPermission("sua_phongban")) {
+        $(".edit-dept-btn").remove();  // nút sửa
+        $("#modalDepartment button[type=submit]").hide(); // không cho lưu modal
+    }
+
+    if (!hasPermission("xoa_phongban")) {
+        $(".delete-dept-btn").remove(); // nút xóa
+    }
+
+    if (!hasPermission("xem_phongban")) {
+        $(".btn-info").remove();  // nút xem chi tiết
+    }
+});
 // ================== LOAD DANH SÁCH NHÂN VIÊN ==================
 function loadNhanVien() {
     fetch('./apiNhanvien')

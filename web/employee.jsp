@@ -242,7 +242,7 @@
                 padding-top: 16px;
                 margin-top: 20px;
             }
-            
+
             /* ==== RESPONSIVE ==== */
             @media (max-width: 992px) {
                 .main-content {
@@ -503,11 +503,6 @@
                                                 tin</button>
                                         </li>
                                         <li class="nav-item" role="presentation">
-                                            <button class="nav-link" id="tab-task" data-bs-toggle="tab"
-                                                    data-bs-target="#tabTask" type="button" role="tab">Lịch sử công
-                                                việc</button>
-                                        </li>
-                                        <li class="nav-item" role="presentation">
                                             <button class="nav-link" id="tab-permission" data-bs-toggle="tab"
                                                     data-bs-target="#tabPermission" type="button" role="tab">
                                                 <i class="fa-solid fa-key me-1"></i>Phân quyền
@@ -534,13 +529,6 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="tab-pane fade" id="tabTask" role="tabpanel">
-                                            <ul>
-                                                <li>Task 1 - Đã hoàn thành</li>
-                                                <li>Task 2 - Đang làm</li>
-                                                <!-- AJAX load lịch sử công việc -->
-                                            </ul>
-                                        </div>
                                         <div class="tab-pane fade" id="tabPermission" role="tabpanel">
                                             <div class="permissions-container">
                                                 <div class="alert alert-info mb-3">
@@ -551,8 +539,25 @@
                                                         <strong>Mẹo:</strong> Click vào tên nhân viên để xem chi tiết và thiết lập phân quyền. Sử dụng nút "Sao chép từ vai trò" để áp dụng nhanh quyền chuẩn.
                                                     </small>
                                                 </div>
-                                                
-                                                <!-- Quyền quản lý nhân sự -->
+
+                                                <div class="permission-group mb-4">
+                                                    <h6 class="permission-group-title">
+                                                        <i class="fa-solid fa-users text-primary me-2"></i>
+                                                        <strong>Tất cả quyền hạn</strong>
+                                                    </h6>
+                                                    <div class="row">
+                                                        <div class="col-md-6">
+                                                            <div class="form-check mb-3">
+                                                                <input class="form-check-input" type="checkbox" id="checkAllPermission">
+                                                                <label class="form-check-label fw-bold" for="checkAllPermission">
+                                                                    ✔ Chọn tất cả quyền
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- QUYỀN QUẢN LÝ NHÂN SỰ -->
                                                 <div class="permission-group mb-4">
                                                     <h6 class="permission-group-title">
                                                         <i class="fa-solid fa-users text-primary me-2"></i>
@@ -561,42 +566,32 @@
                                                     <div class="row">
                                                         <div class="col-md-6">
                                                             <div class="form-check mb-2">
-                                                                <input class="form-check-input" type="checkbox" id="perm_employee_view">
-                                                                <label class="form-check-label" for="perm_employee_view">
-                                                                    Xem danh sách nhân viên
-                                                                </label>
+                                                                <input class="form-check-input" type="checkbox" id="xem_nhanvien">
+                                                                <label class="form-check-label" for="xem_nhanvien">Xem danh sách nhân viên</label>
                                                             </div>
                                                             <div class="form-check mb-2">
-                                                                <input class="form-check-input" type="checkbox" id="perm_employee_add">
-                                                                <label class="form-check-label" for="perm_employee_add">
-                                                                    Thêm nhân viên mới
-                                                                </label>
+                                                                <input class="form-check-input" type="checkbox" id="them_nhanvien">
+                                                                <label class="form-check-label" for="them_nhanvien">Thêm nhân viên mới</label>
                                                             </div>
                                                             <div class="form-check mb-2">
-                                                                <input class="form-check-input" type="checkbox" id="perm_employee_edit">
-                                                                <label class="form-check-label" for="perm_employee_edit">
-                                                                    Sửa thông tin nhân viên
-                                                                </label>
+                                                                <input class="form-check-input" type="checkbox" id="sua_nhanvien">
+                                                                <label class="form-check-label" for="sua_nhanvien">Sửa thông tin nhân viên</label>
                                                             </div>
                                                         </div>
                                                         <div class="col-md-6">
                                                             <div class="form-check mb-2">
-                                                                <input class="form-check-input" type="checkbox" id="perm_employee_delete">
-                                                                <label class="form-check-label" for="perm_employee_delete">
-                                                                    Xóa nhân viên
-                                                                </label>
+                                                                <input class="form-check-input" type="checkbox" id="xoa_nhanvien">
+                                                                <label class="form-check-label" for="xoa_nhanvien">Xóa nhân viên</label>
                                                             </div>
                                                             <div class="form-check mb-2">
-                                                                <input class="form-check-input" type="checkbox" id="perm_employee_permission">
-                                                                <label class="form-check-label" for="perm_employee_permission">
-                                                                    Phân quyền nhân viên
-                                                                </label>
+                                                                <input class="form-check-input" type="checkbox" id="phanquyen_nhanvien">
+                                                                <label class="form-check-label" for="phanquyen_nhanvien">Phân quyền nhân viên</label>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </div>
-                                                
-                                                <!-- Quyền quản lý phòng ban -->
+
+                                                <!-- PHÒNG BAN -->
                                                 <div class="permission-group mb-4">
                                                     <h6 class="permission-group-title">
                                                         <i class="fa-solid fa-building text-success me-2"></i>
@@ -605,36 +600,28 @@
                                                     <div class="row">
                                                         <div class="col-md-6">
                                                             <div class="form-check mb-2">
-                                                                <input class="form-check-input" type="checkbox" id="perm_department_view">
-                                                                <label class="form-check-label" for="perm_department_view">
-                                                                    Xem danh sách phòng ban
-                                                                </label>
+                                                                <input class="form-check-input" type="checkbox" id="xem_phongban">
+                                                                <label class="form-check-label" for="xem_phongban">Xem danh sách phòng ban</label>
                                                             </div>
                                                             <div class="form-check mb-2">
-                                                                <input class="form-check-input" type="checkbox" id="perm_department_add">
-                                                                <label class="form-check-label" for="perm_department_add">
-                                                                    Thêm phòng ban mới
-                                                                </label>
+                                                                <input class="form-check-input" type="checkbox" id="them_phongban">
+                                                                <label class="form-check-label" for="them_phongban">Thêm phòng ban mới</label>
                                                             </div>
                                                         </div>
                                                         <div class="col-md-6">
                                                             <div class="form-check mb-2">
-                                                                <input class="form-check-input" type="checkbox" id="perm_department_edit">
-                                                                <label class="form-check-label" for="perm_department_edit">
-                                                                    Sửa thông tin phòng ban
-                                                                </label>
+                                                                <input class="form-check-input" type="checkbox" id="sua_phongban">
+                                                                <label class="form-check-label" for="sua_phongban">Sửa thông tin phòng ban</label>
                                                             </div>
                                                             <div class="form-check mb-2">
-                                                                <input class="form-check-input" type="checkbox" id="perm_department_delete">
-                                                                <label class="form-check-label" for="perm_department_delete">
-                                                                    Xóa phòng ban
-                                                                </label>
+                                                                <input class="form-check-input" type="checkbox" id="xoa_phongban">
+                                                                <label class="form-check-label" for="xoa_phongban">Xóa phòng ban</label>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </div>
-                                                
-                                                <!-- Quyền quản lý dự án -->
+
+                                                <!-- DỰ ÁN -->
                                                 <div class="permission-group mb-4">
                                                     <h6 class="permission-group-title">
                                                         <i class="fa-solid fa-folder-open text-warning me-2"></i>
@@ -643,36 +630,28 @@
                                                     <div class="row">
                                                         <div class="col-md-6">
                                                             <div class="form-check mb-2">
-                                                                <input class="form-check-input" type="checkbox" id="perm_project_view">
-                                                                <label class="form-check-label" for="perm_project_view">
-                                                                    Xem danh sách dự án
-                                                                </label>
+                                                                <input class="form-check-input" type="checkbox" id="xem_duan">
+                                                                <label class="form-check-label" for="xem_duan">Xem danh sách dự án</label>
                                                             </div>
                                                             <div class="form-check mb-2">
-                                                                <input class="form-check-input" type="checkbox" id="perm_project_add">
-                                                                <label class="form-check-label" for="perm_project_add">
-                                                                    Tạo dự án mới
-                                                                </label>
+                                                                <input class="form-check-input" type="checkbox" id="them_duan">
+                                                                <label class="form-check-label" for="them_duan">Tạo dự án mới</label>
                                                             </div>
                                                         </div>
                                                         <div class="col-md-6">
                                                             <div class="form-check mb-2">
-                                                                <input class="form-check-input" type="checkbox" id="perm_project_edit">
-                                                                <label class="form-check-label" for="perm_project_edit">
-                                                                    Sửa thông tin dự án
-                                                                </label>
+                                                                <input class="form-check-input" type="checkbox" id="sua_duan">
+                                                                <label class="form-check-label" for="sua_duan">Sửa thông tin dự án</label>
                                                             </div>
                                                             <div class="form-check mb-2">
-                                                                <input class="form-check-input" type="checkbox" id="perm_project_delete">
-                                                                <label class="form-check-label" for="perm_project_delete">
-                                                                    Xóa dự án
-                                                                </label>
+                                                                <input class="form-check-input" type="checkbox" id="xoa_duan">
+                                                                <label class="form-check-label" for="xoa_duan">Xóa dự án</label>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </div>
-                                                
-                                                <!-- Quyền quản lý công việc -->
+
+                                                <!-- CÔNG VIỆC -->
                                                 <div class="permission-group mb-4">
                                                     <h6 class="permission-group-title">
                                                         <i class="fa-solid fa-tasks text-info me-2"></i>
@@ -681,48 +660,49 @@
                                                     <div class="row">
                                                         <div class="col-md-6">
                                                             <div class="form-check mb-2">
-                                                                <input class="form-check-input" type="checkbox" id="perm_task_view">
-                                                                <label class="form-check-label" for="perm_task_view">
-                                                                    Xem danh sách công việc
-                                                                </label>
+                                                                <input class="form-check-input" type="checkbox" id="xem_congviec">
+                                                                <label class="form-check-label" for="xem_congviec">Xem danh sách công việc</label>
                                                             </div>
                                                             <div class="form-check mb-2">
-                                                                <input class="form-check-input" type="checkbox" id="perm_task_add">
-                                                                <label class="form-check-label" for="perm_task_add">
-                                                                    Giao công việc mới
-                                                                </label>
+                                                                <input class="form-check-input" type="checkbox" id="them_congviec">
+                                                                <label class="form-check-label" for="them_congviec">Giao công việc mới</label>
                                                             </div>
                                                             <div class="form-check mb-2">
-                                                                <input class="form-check-input" type="checkbox" id="perm_task_edit">
-                                                                <label class="form-check-label" for="perm_task_edit">
-                                                                    Sửa thông tin công việc
+                                                                <input class="form-check-input" type="checkbox" id="sua_congviec">
+                                                                <label class="form-check-label" for="sua_congviec">Sửa thông tin công việc</label>
+                                                            </div>
+                                                            <div class="form-check mb-2">
+                                                                <input class="form-check-input" type="checkbox" id="nhacviec">
+                                                                <label class="form-check-label" for="nhacviec">
+                                                                    Nhắc việc
                                                                 </label>
                                                             </div>
                                                         </div>
+
                                                         <div class="col-md-6">
                                                             <div class="form-check mb-2">
-                                                                <input class="form-check-input" type="checkbox" id="perm_task_delete">
-                                                                <label class="form-check-label" for="perm_task_delete">
-                                                                    Xóa công việc
-                                                                </label>
+                                                                <input class="form-check-input" type="checkbox" id="xoa_congviec">
+                                                                <label class="form-check-label" for="xoa_congviec">Xóa công việc</label>
                                                             </div>
                                                             <div class="form-check mb-2">
-                                                                <input class="form-check-input" type="checkbox" id="perm_task_approve">
-                                                                <label class="form-check-label" for="perm_task_approve">
-                                                                    Duyệt/đánh giá công việc
-                                                                </label>
+                                                                <input class="form-check-input" type="checkbox" id="duyet_congviec">
+                                                                <label class="form-check-label" for="duyet_congviec">Duyệt/đánh giá công việc</label>
                                                             </div>
                                                             <div class="form-check mb-2">
-                                                                <input class="form-check-input" type="checkbox" id="perm_task_progress">
-                                                                <label class="form-check-label" for="perm_task_progress">
-                                                                    Cập nhật tiến độ
+                                                                <input class="form-check-input" type="checkbox" id="capnhat_tiendo">
+                                                                <label class="form-check-label" for="capnhat_tiendo">Cập nhật - Xóa tiến độ</label>
+                                                            </div>
+                                                            <div class="form-check mb-2">
+                                                                <input class="form-check-input" type="checkbox" id="them_quytrinh">
+                                                                <label class="form-check-label" for="them_quytrinh">
+                                                                    Thêm việc con / Thêm quy trình
                                                                 </label>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </div>
-                                                
-                                                <!-- Quyền chấm công và lương -->
+
+                                                <!-- CHẤM CÔNG & LƯƠNG -->
                                                 <div class="permission-group mb-4">
                                                     <h6 class="permission-group-title">
                                                         <i class="fa-solid fa-clock text-danger me-2"></i>
@@ -731,36 +711,29 @@
                                                     <div class="row">
                                                         <div class="col-md-6">
                                                             <div class="form-check mb-2">
-                                                                <input class="form-check-input" type="checkbox" id="perm_attendance_view">
-                                                                <label class="form-check-label" for="perm_attendance_view">
-                                                                    Xem dữ liệu chấm công
-                                                                </label>
+                                                                <input class="form-check-input" type="checkbox" id="xem_chamcong">
+                                                                <label class="form-check-label" for="xem_chamcong">Xem dữ liệu chấm công</label>
                                                             </div>
                                                             <div class="form-check mb-2">
-                                                                <input class="form-check-input" type="checkbox" id="perm_attendance_manage">
-                                                                <label class="form-check-label" for="perm_attendance_manage">
-                                                                    Quản lý chấm công
-                                                                </label>
+                                                                <input class="form-check-input" type="checkbox" id="quanly_chamcong">
+                                                                <label class="form-check-label" for="quanly_chamcong">Quản lý chấm công</label>
                                                             </div>
                                                         </div>
+
                                                         <div class="col-md-6">
                                                             <div class="form-check mb-2">
-                                                                <input class="form-check-input" type="checkbox" id="perm_salary_view">
-                                                                <label class="form-check-label" for="perm_salary_view">
-                                                                    Xem bảng lương
-                                                                </label>
+                                                                <input class="form-check-input" type="checkbox" id="xem_luong">
+                                                                <label class="form-check-label" for="xem_luong">Xem bảng lương</label>
                                                             </div>
                                                             <div class="form-check mb-2">
-                                                                <input class="form-check-input" type="checkbox" id="perm_salary_manage">
-                                                                <label class="form-check-label" for="perm_salary_manage">
-                                                                    Quản lý lương
-                                                                </label>
+                                                                <input class="form-check-input" type="checkbox" id="quanly_luong">
+                                                                <label class="form-check-label" for="quanly_luong">Quản lý lương</label>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </div>
-                                                
-                                                <!-- Quyền báo cáo -->
+
+                                                <!-- BÁO CÁO -->
                                                 <div class="permission-group mb-4">
                                                     <h6 class="permission-group-title">
                                                         <i class="fa-solid fa-chart-bar text-secondary me-2"></i>
@@ -769,30 +742,24 @@
                                                     <div class="row">
                                                         <div class="col-md-6">
                                                             <div class="form-check mb-2">
-                                                                <input class="form-check-input" type="checkbox" id="perm_report_view">
-                                                                <label class="form-check-label" for="perm_report_view">
-                                                                    Xem báo cáo tổng hợp
-                                                                </label>
+                                                                <input class="form-check-input" type="checkbox" id="xem_baocao">
+                                                                <label class="form-check-label" for="xem_baocao">Xem báo cáo tổng hợp</label>
                                                             </div>
                                                             <div class="form-check mb-2">
-                                                                <input class="form-check-input" type="checkbox" id="perm_report_export">
-                                                                <label class="form-check-label" for="perm_report_export">
-                                                                    Xuất báo cáo
-                                                                </label>
+                                                                <input class="form-check-input" type="checkbox" id="xuat_baocao">
+                                                                <label class="form-check-label" for="xuat_baocao">Xuất báo cáo</label>
                                                             </div>
                                                         </div>
                                                         <div class="col-md-6">
                                                             <div class="form-check mb-2">
-                                                                <input class="form-check-input" type="checkbox" id="perm_analytics_view">
-                                                                <label class="form-check-label" for="perm_analytics_view">
-                                                                    Xem phân tích dữ liệu
-                                                                </label>
+                                                                <input class="form-check-input" type="checkbox" id="xem_phan_tich">
+                                                                <label class="form-check-label" for="xem_phan_tich">Xem phân tích dữ liệu</label>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </div>
-                                                
-                                                <!-- Quyền hệ thống -->
+
+                                                <!-- HỆ THỐNG -->
                                                 <div class="permission-group mb-4">
                                                     <h6 class="permission-group-title">
                                                         <i class="fa-solid fa-cogs text-dark me-2"></i>
@@ -801,29 +768,23 @@
                                                     <div class="row">
                                                         <div class="col-md-6">
                                                             <div class="form-check mb-2">
-                                                                <input class="form-check-input" type="checkbox" id="perm_system_config">
-                                                                <label class="form-check-label" for="perm_system_config">
-                                                                    Cấu hình hệ thống
-                                                                </label>
+                                                                <input class="form-check-input" type="checkbox" id="cauhinh_hethong">
+                                                                <label class="form-check-label" for="cauhinh_hethong">Cấu hình hệ thống</label>
                                                             </div>
                                                             <div class="form-check mb-2">
-                                                                <input class="form-check-input" type="checkbox" id="perm_backup_restore">
-                                                                <label class="form-check-label" for="perm_backup_restore">
-                                                                    Sao lưu & Khôi phục
-                                                                </label>
+                                                                <input class="form-check-input" type="checkbox" id="saoluu_khoiphuc">
+                                                                <label class="form-check-label" for="saoluu_khoiphuc">Sao lưu & Khôi phục</label>
                                                             </div>
                                                         </div>
                                                         <div class="col-md-6">
                                                             <div class="form-check mb-2">
-                                                                <input class="form-check-input" type="checkbox" id="perm_audit_log">
-                                                                <label class="form-check-label" for="perm_audit_log">
-                                                                    Xem nhật ký hệ thống
-                                                                </label>
+                                                                <input class="form-check-input" type="checkbox" id="xem_nhatky">
+                                                                <label class="form-check-label" for="xem_nhatky">Xem nhật ký hệ thống</label>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </div>
-                                                
+
                                                 <!-- Nút hành động -->
                                                 <div class="permission-actions text-center mt-4">
                                                     <button type="button" class="btn btn-success rounded-pill me-2" id="btnSavePermissions">
@@ -867,8 +828,10 @@
                 </div>
             </div>
         </div>
-        <script src="<%= request.getContextPath() %>/scripts/employee.obf.js?v=20251105"></script>
+        <script>
+            const USER_PERMISSIONS = <%= session.getAttribute("quyen") %>;
+        </script>
+        <script src="<%= request.getContextPath() %>/scripts/employee.js?v=20251105"></script>
     </body>
 
 </html>
-

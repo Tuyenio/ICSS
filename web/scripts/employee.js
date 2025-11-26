@@ -1,4 +1,60 @@
+function hasPermission(code) {
+    return USER_PERMISSIONS && USER_PERMISSIONS.includes(code);
+}
 
+document.addEventListener("DOMContentLoaded", function () {
+
+    if (!hasPermission("xem_nhanvien")) {
+        $("#employeeTableBody").html(
+                "<tr><td colspan='13' class='text-center text-danger'>Bạn không có quyền xem dữ liệu nhân sự</td></tr>"
+                );
+        $(".btn-primary").hide();
+    }
+
+    if (!hasPermission("them_nhanvien")) {
+        // Nút thêm mới trên header
+        $(".btn.btn-primary[data-bs-target='#modalEmployee']").hide();
+
+        // Tắt nút Lưu trong modal
+        $("#modalEmployee button[type=submit]").hide();
+    }
+
+    if (!hasPermission("sua_nhanvien")) {
+        $(".edit-emp-btn").remove(); // nút sửa
+        $("#modalEmployee button[type=submit]").hide(); // không cho lưu modal
+    }
+
+    if (!hasPermission("xoa_nhanvien")) {
+        $(".delete-emp-btn").remove();
+    }
+
+    if (!hasPermission("xem_nhanvien")) {
+        $(".emp-detail-link").css("pointer-events", "none")
+                .addClass("text-muted")
+                .removeClass("text-primary");
+    }
+
+    if (!hasPermission("phanquyen_nhanvien")) {
+        // Ẩn TAB phân quyền
+        $("#tab-permission").hide();
+
+        // Ẩn nút Lưu phân quyền
+        $("#btnSavePermissions").hide();
+        $("#btnResetPermissions").hide();
+        $("#btnCopyPermissions").hide();
+    }
+});
+document.addEventListener("DOMContentLoaded", function () {
+
+    // Tick tất cả quyền
+    $("#checkAllPermission").on("change", function () {
+        let checked = $(this).is(":checked");
+
+        // Lấy toàn bộ checkbox con TRONG permissions-container
+        $(".permissions-container .form-check-input").prop("checked", checked);
+    });
+
+});
 
 function openAddModal() {
     $('#employeeForm')[0].reset();              // Xóa trắng tất cả field
@@ -93,7 +149,7 @@ $(document).on('click', '.emp-detail-link', function (e) {
         success: function (data) {
             // Lưu employee ID vào modal để sử dụng cho phân quyền
             $('#modalEmpDetail').data('employee-id', data.id);
-            
+
             // Gán dữ liệu vào modal
             $('#modalEmpDetail .emp-name').text(data.ho_ten);
             $('#modalEmpDetail .emp-email').text(data.email);
@@ -249,70 +305,51 @@ document.querySelectorAll('.toast').forEach(toastEl => {
     const toast = bootstrap.Toast.getOrCreateInstance(toastEl, {delay: 2000});
 });
 
-
 // ============ PHÂN QUYỀN FUNCTIONS ============
 
 // Định nghĩa các quyền mặc định theo vai trò
 const DEFAULT_PERMISSIONS = {
     'Admin': [
-        'perm_employee_view', 'perm_employee_add', 'perm_employee_edit', 'perm_employee_delete', 'perm_employee_permission',
-        'perm_department_view', 'perm_department_add', 'perm_department_edit', 'perm_department_delete',
-        'perm_project_view', 'perm_project_add', 'perm_project_edit', 'perm_project_delete',
-        'perm_task_view', 'perm_task_add', 'perm_task_edit', 'perm_task_delete', 'perm_task_approve', 'perm_task_progress',
-        'perm_attendance_view', 'perm_attendance_manage', 'perm_salary_view', 'perm_salary_manage',
-        'perm_report_view', 'perm_report_export', 'perm_analytics_view',
-        'perm_system_config', 'perm_backup_restore', 'perm_audit_log'
+        'xem_nhanvien', 'them_nhanvien', 'sua_nhanvien', 'xoa_nhanvien', 'phanquyen_nhanvien',
+        'xem_phongban', 'them_phongban', 'sua_phongban', 'xoa_phongban',
+        'xem_duan', 'them_duan', 'sua_duan', 'xoa_duan',
+        'xem_congviec', 'them_congviec', 'sua_congviec', 'xoa_congviec',
+        'duyet_congviec', 'capnhat_tiendo',
+        'xem_chamcong', 'quanly_chamcong',
+        'xem_luong', 'quanly_luong',
+        'xem_baocao', 'xuat_baocao', 'xem_phan_tich',
+        'sao_luu', 'khoi_phuc',
+        'xem_nhatky', 'them_quytrinh','nhacviec','cauhinh_hethong','saoluu_khoiphuc'
     ],
+
     'Quản lý': [
-        'perm_employee_view', 'perm_employee_add', 'perm_employee_edit',
-        'perm_department_view',
-        'perm_project_view', 'perm_project_add', 'perm_project_edit',
-        'perm_task_view', 'perm_task_add', 'perm_task_edit', 'perm_task_approve', 'perm_task_progress',
-        'perm_attendance_view', 'perm_attendance_manage', 'perm_salary_view',
-        'perm_report_view', 'perm_report_export', 'perm_analytics_view'
+        'xem_nhanvien', 'them_nhanvien', 'sua_nhanvien',
+        'xem_phongban', 'them_phongban', 'sua_phongban',
+        'xem_duan', 'them_duan', 'sua_duan',
+        'xem_congviec', 'them_congviec', 'sua_congviec',
+        'duyet_congviec', 'capnhat_tiendo',
+        'xem_chamcong', 'quanly_chamcong',
+        'xem_luong', 'quanly_luong',
+        'xem_baocao', 'xuat_baocao', 'xem_phan_tich','xoa_duan','xoa_congviec','nhacviec','them_quytrinh'
     ],
+
     'Nhân viên': [
-        'perm_employee_view',
-        'perm_department_view',
-        'perm_project_view',
-        'perm_task_view', 'perm_task_progress',
-        'perm_attendance_view', 'perm_salary_view',
-        'perm_report_view'
+        'xem_duan',
+        'xem_congviec', 'capnhat_tiendo',
+        'xem_chamcong',
+        'xem_luong'
     ]
 };
 
-// Load phân quyền cho nhân viên
-function loadEmployeePermissions(employeeId, vaiTro) {
-    // Reset tất cả checkboxes
-    $('.permissions-container input[type="checkbox"]').prop('checked', false);
-    
-    // TODO: AJAX load phân quyền thực tế từ database
-    // Tạm thời dùng quyền mặc định theo vai trò
-    if (DEFAULT_PERMISSIONS[vaiTro]) {
-        DEFAULT_PERMISSIONS[vaiTro].forEach(function(permId) {
-            $('#' + permId).prop('checked', true);
-        });
-    }
-    
-    // Hiệu ứng animation cho checkbox
-    $('.permissions-container input[type="checkbox"]:checked').each(function(index) {
-        const $this = $(this);
-        setTimeout(() => {
-            $this.closest('.form-check').addClass('permission-checked');
-            $this.closest('.permission-group').addClass('has-permissions');
-        }, index * 50);
-    });
-}
-
 // Lưu phân quyền
-$('#btnSavePermissions').on('click', function() {
+$('#btnSavePermissions').on('click', function () {
     const employeeId = $('#modalEmpDetail').data('employee-id'); // Lưu ID khi mở modal
     const permissions = [];
-    
-    $('.permissions-container input[type="checkbox"]:checked').each(function() {
+
+    $('.permissions-container input[type="checkbox"]:checked').each(function () {
         permissions.push($(this).attr('id'));
     });
-    
+
     Swal.fire({
         title: 'Xác nhận lưu phân quyền?',
         text: `Bạn đã chọn ${permissions.length} quyền cho nhân viên này.`,
@@ -325,7 +362,7 @@ $('#btnSavePermissions').on('click', function() {
         if (result.isConfirmed) {
             // TODO: AJAX call để lưu phân quyền vào database
             console.log('Saving permissions for employee:', employeeId, permissions);
-            
+
             // Giả lập API call thành công
             setTimeout(() => {
                 Swal.fire({
@@ -341,12 +378,18 @@ $('#btnSavePermissions').on('click', function() {
 });
 
 // Khôi phục quyền mặc định
-$('#btnResetPermissions').on('click', function() {
-    const vaiTro = $('#modalEmpDetail .emp-role').text().trim();
-    
+$('#btnResetPermissions').on('click', function () {
+    const role = $('#modalEmpDetail .emp-role').text().trim();
+    const defaultPerms = DEFAULT_PERMISSIONS[role];
+
+    if (!defaultPerms) {
+        showToast('error', 'Không tìm thấy quyền mặc định của vai trò!');
+        return;
+    }
+
     Swal.fire({
         title: 'Khôi phục quyền mặc định?',
-        text: `Sẽ áp dụng quyền mặc định cho vai trò "${vaiTro}".`,
+        text: `Áp dụng quyền mặc định cho vai trò "${role}".`,
         icon: 'warning',
         showCancelButton: true,
         confirmButtonText: 'Khôi phục',
@@ -354,14 +397,22 @@ $('#btnResetPermissions').on('click', function() {
         confirmButtonColor: '#ffc107'
     }).then((result) => {
         if (result.isConfirmed) {
-            loadEmployeePermissions(null, vaiTro);
+
+            // ❌ Bỏ chọn tất cả checkbox
+            $('.permissions-container input[type="checkbox"]').prop('checked', false);
+
+            // ✔ Chọn lại quyền mặc định
+            defaultPerms.forEach(q => {
+                $('#' + q).prop('checked', true);
+            });
+
             showToast('success', 'Đã khôi phục quyền mặc định');
         }
     });
 });
 
 // Sao chép quyền từ vai trò khác
-$('#btnCopyPermissions').on('click', function() {
+$('#btnCopyPermissions').on('click', function () {
     Swal.fire({
         title: 'Sao chép quyền từ vai trò',
         input: 'select',
@@ -370,29 +421,40 @@ $('#btnCopyPermissions').on('click', function() {
             'Quản lý': 'Quản lý (Quyền trung gian)',
             'Nhân viên': 'Nhân viên (Quyền cơ bản)'
         },
-        inputPlaceholder: 'Chọn vai trò để sao chép quyền',
+        inputPlaceholder: 'Chọn vai trò',
         showCancelButton: true,
         confirmButtonText: 'Sao chép',
         cancelButtonText: 'Hủy',
         confirmButtonColor: '#17a2b8'
     }).then((result) => {
         if (result.isConfirmed && result.value) {
-            loadEmployeePermissions(null, result.value);
-            showToast('success', `Đã sao chép quyền từ vai trò "${result.value}"`);
+
+            const roleCopy = result.value;
+            const perms = DEFAULT_PERMISSIONS[roleCopy];
+
+            if (!perms) {
+                showToast('error', 'Vai trò không hợp lệ!');
+                return;
+            }
+
+            // ❌ Bỏ chọn tất cả checkbox
+            $('.permissions-container input[type="checkbox"]').prop('checked', false);
+
+            // ✔ Chọn quyền theo vai trò đã copy
+            perms.forEach(p => {
+                $('#' + p).prop('checked', true);
+            });
+
+            showToast('success', `Đã sao chép quyền từ vai trò "${roleCopy}"`);
         }
     });
 });
 
-// Khi mở modal chi tiết, load phân quyền
-$(document).on('shown.bs.tab', '#tab-permission', function() {
-    const employeeId = $('#modalEmpDetail').data('employee-id');
-    const vaiTro = $('#modalEmpDetail .emp-role').text().trim();
-    loadEmployeePermissions(employeeId, vaiTro);
-});
+// Cập nhật trạng thái "Chọn tất cả"
+const total = $('.permissions-container .form-check-input').length;
+const checked = $('.permissions-container .form-check-input:checked').length;
 
-// TODO: AJAX load phòng ban cho filter và form
-// TODO: AJAX load phân quyền động cho vai trò từ bảng phan_quyen_chuc_nang
-// TODO: AJAX load lịch sử thay đổi nhân sự cho modalEmpDetail
+$("#checkAllPermission").prop("checked", total === checked);
 
 // Avatar preview
 $('#empAvatar').on('input', function () {
@@ -424,6 +486,49 @@ $('#employeeForm').on('submit', function (e) {
     });
 });
 
+$(document).on('shown.bs.tab', '#tab-permission', function () {
+
+    const idNV = $('#modalEmpDetail').data('employee-id');
+
+    $.get('./loadQuyenNV', {id: idNV}, function (ds) {
+
+        $('.permissions-container input[type="checkbox"]').prop('checked', false);
+
+        ds.forEach(mq => {
+            $('#' + mq).prop('checked', true);
+        });
+    });
+});
+
+$('#btnSavePermissions').click(function () {
+
+    const idNV = $('#modalEmpDetail').data('employee-id');
+    const dsQuyen = [];
+
+    $('.permissions-container input[type="checkbox"]:checked').each(function () {
+        const id = $(this).attr('id');
+        if (id !== 'checkAllPermission') {   // bỏ checkbox chọn tất cả
+            dsQuyen.push(id);
+        }
+    });
+
+    $.ajax({
+        url: './luuQuyenNV',
+        method: 'POST',
+        traditional: true,
+        data: {id: idNV, 'quyen[]': dsQuyen},
+        success: function (res) {
+            if (res.status === "ok") {
+                showToast('success', 'Đã lưu phân quyền!');
+            } else {
+                showToast('error', 'Lưu thất bại!');
+            }
+        },
+        error: function () {
+            showToast('error', 'Có lỗi xảy ra!');
+        }
+    });
+});
 
 function showToast(type, message) {
     const toastId = type === 'success' ? 'toastSuccess' : 'toastError';

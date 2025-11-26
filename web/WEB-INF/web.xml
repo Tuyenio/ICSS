@@ -255,6 +255,14 @@
         <servlet-name>batNhacViecAll</servlet-name>
         <servlet-class>controller.batNhacViecAll</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>loadQuyenNV</servlet-name>
+        <servlet-class>controller.loadQuyenNV</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>luuQuyenNV</servlet-name>
+        <servlet-class>controller.luuQuyenNV</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>dsnhanvien</servlet-name>
         <url-pattern>/dsnhanvien</url-pattern>
@@ -482,6 +490,14 @@
     <servlet-mapping>
         <servlet-name>batNhacViecAll</servlet-name>
         <url-pattern>/batNhacViecAll</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>loadQuyenNV</servlet-name>
+        <url-pattern>/loadQuyenNV</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>luuQuyenNV</servlet-name>
+        <url-pattern>/luuQuyenNV</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>

@@ -1,3 +1,59 @@
+function hasPermission(code) {
+    return USER_PERMISSIONS && USER_PERMISSIONS.includes(code);
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    if (!hasPermission("xem_chamcong")) {
+
+        $("tbody").html(`
+            <tr>
+                <td colspan="12" class="text-center py-4 text-danger">
+                    <i class="fa-solid fa-ban fs-1"></i>
+                    <p class="mt-2 mb-0">Bạn không có quyền xem dữ liệu chấm công</p>
+                </td>
+            </tr>
+        `);
+
+        // Ẩn hai nút hành động chính
+        $(".btn-action-primary").hide(); // Thêm chấm công
+        $(".btn-action-success").hide(); // Xuất phiếu công
+
+        return; // không cần kiểm tra tiếp
+    }
+
+    if (!hasPermission("quanly_chamcong")) {
+        $(".btn-action-primary").hide(); // nút "Thêm chấm công"
+        $("#modalAddAttendance button[type=submit]").hide(); // nút lưu trong modal
+    }
+
+    if (!hasPermission("quanly_chamcong")) {
+        $(".btn-warning").remove(); // nút sửa
+        $("#modalEditAttendance button[type=submit]").hide();
+    }
+
+    if (!hasPermission("quanly_chamcong")) {
+        $(".btn-danger").remove(); // nút xóa
+    }
+
+    if (!hasPermission("xem_chamcong")) {
+        $(".btn-info").remove(); // nút xem chi tiết
+        $(".attendance-emp-detail").css("pointer-events", "none")
+            .removeClass("text-primary")
+            .addClass("text-muted");
+    }
+
+    if (!hasPermission("xem_luong")) {
+        $(".btn-action-success").hide(); // nút "Xuất phiếu chấm công"
+        $("#modalExportPayroll button[type=submit]").hide();
+    }
+
+    if (!hasPermission("xem_chamcong")) {
+        $("#tab-att-report").hide(); // ẩn tab báo cáo
+    }
+
+});
+
 // Hàm xóa chấm công
 function deleteAttendance(attendanceId) {
     Swal.fire({

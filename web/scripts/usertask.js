@@ -1,4 +1,39 @@
+function hasPermission(code) {
+    return USER_PERMISSIONS && USER_PERMISSIONS.includes(code);
+}
+document.addEventListener("DOMContentLoaded", function () {
 
+    // Tạo task
+    if (!hasPermission("them_congviec")) {
+        $("#btnCreateTask").hide();
+        $(".kanban-add-btn").hide(); // nút + trong Kanban
+    }
+
+    // Xóa task
+    if (!hasPermission("xoa_congviec")) {
+        $(".task-action-item.delete").remove();
+        $(".task-action-item.permanent-delete-action").remove();
+    }
+
+    if (!hasPermission("them_quytrinh")) {
+        $("#btnAddProcessStep").hide();
+    }
+
+    // Lưu thay đổi task
+    if (!hasPermission("sua_congviec")) {
+        $("#btnSaveTask").remove();
+    }
+
+    // Nhắc việc
+    if (!hasPermission("nhacviec")) {
+        $(".task-action-item.remind").remove();
+    }
+
+    // Duyệt task
+    if (!hasPermission("duyet_congviec")) {
+        $("#btnXetDuyet").remove();
+    }
+});
 // ====== BIẾN GLOBAL THEO DÕI TAB HIỆN TẠI ======
 var currentTabState = 'active'; // 'active', 'archived', 'deleted'
 
@@ -229,6 +264,7 @@ document.addEventListener("DOMContentLoaded", function () {
             .then(html => {
                 document.querySelector('#modalTaskDetail select[name="ten_nguoi_giao"]').innerHTML = html;
                 //document.querySelector('#modalTaskDetail select[name="ten_nguoi_nhan"]').innerHTML = html;
+                document.querySelector('#modalTaskDetail select[name="ten_nguoi_danh_gia"]').innerHTML = html;
                 document.querySelector('#taskForm select[name="ten_nguoi_giao"]').innerHTML = html;
                 //document.querySelector('#taskForm select[name="ten_nguoi_nhan"]').innerHTML = html;
             });
@@ -243,6 +279,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // Lấy dữ liệu từ nút
         const id = button.getAttribute("data-id") || "";
         const tenCV = button.getAttribute("data-ten") || "";
+        const tenDuAn = button.getAttribute("data-ten_du_an") || "";
         const moTa = button.getAttribute("data-mo-ta") || "";
         const ngay_bat_dau = button.getAttribute("data-ngay-bat-dau") || "";
         const hanHT = button.getAttribute("data-han") || "";
@@ -268,6 +305,9 @@ document.addEventListener("DOMContentLoaded", function () {
         // Gán dữ liệu cơ bản
         modal.querySelector('[name="task_id"]').value = id;
         modal.querySelector('[name="ten_cong_viec"]').value = tenCV;
+        modal.querySelector(".modal-title").innerHTML =
+                '<i class="fa-solid fa-info-circle text-primary"></i> '
+                + tenDuAn;
         modal.querySelector('[name="mo_ta"]').value = moTa;
         modal.querySelector('[name="ngay_bat_dau"]').value = ngay_bat_dau;
         modal.querySelector('[name="han_hoan_thanh"]').value = hanHT;
@@ -419,8 +459,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 
-
-
 var currentTarget = null;
 
 // Tick lại checkbox theo hidden input hiện tại
@@ -504,7 +542,7 @@ function capNhatHiddenInput(danhSachDiv, hiddenInput) {
 $('#taskForm').on('submit', function (e) {
     e.preventDefault();
 
-    const formData = new FormData(this); 
+    const formData = new FormData(this);
     let url = './themCongviec'; // luôn là thêm mới
 
     $.ajax({
@@ -681,6 +719,9 @@ function renderListViewFromJson(tasks) {
                 + '            <button class="btn btn-sm btn-warning" title="Lưu trữ" onclick="event.stopPropagation(); archiveTask(\'' + task.id + '\')">'
                 + '                <i class="fa-solid fa-archive"></i>'
                 + '            </button>'
+                + '            <button class="btn btn-sm btn-info" title="Nhắc việc" onclick="event.stopPropagation(); remindTask(\'' + task.id + '\')">'
+                + '                <i class="fa-solid fa-bell"></i>'
+                + '            </button>'
                 + '            <button class="btn btn-sm btn-danger" title="Xóa" onclick="event.stopPropagation(); deleteTask(\'' + task.id + '\')">'
                 + '                <i class="fa-solid fa-trash"></i>'
                 + '            </button>'
@@ -826,12 +867,18 @@ function renderProcessSteps() {
             else if (step.status === "Trễ hạn")
                 badgeClass = "bg-danger";
 
-            var editBtn =
-                    '<button class="btn btn-sm btn-outline-secondary me-1" onclick="showEditStepModal(' + idx + ')">' +
-                    '<i class="fa-solid fa-pen"></i> Chỉnh sửa</button>';
-            var deleteBtn =
-                    '<button class="btn btn-sm btn-danger ms-1" onclick="removeProcessStep(' + idx + ')">' +
-                    '<i class="fa-solid fa-trash"></i></button>';
+            var editBtn = '';
+            var deleteBtn = '';
+
+            if (hasPermission("capnhat_tiendo")) {
+                editBtn =
+                        '<button class="btn btn-sm btn-outline-secondary me-1" onclick="showEditStepModal(' + idx + ')">' +
+                        '<i class="fa-solid fa-pen"></i> Chỉnh sửa</button>';
+
+                deleteBtn =
+                        '<button class="btn btn-sm btn-danger ms-1" onclick="removeProcessStep(' + idx + ')">' +
+                        '<i class="fa-solid fa-trash"></i></button>';
+            }
 
             var html = '<li class="list-group-item d-flex justify-content-between align-items-center">' +
                     '<div>' +
@@ -1100,6 +1147,48 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 });
 
+document.getElementById("btnAddReview").addEventListener("click", function () {
+    var taskId = document.getElementById("taskId").value;
+    var reviewerSelect = document.querySelector('select[name="ten_nguoi_danh_gia"]');
+    var reviewerId = reviewerSelect.value;
+    var comment = document.getElementById("reviewComment").value.trim();
+
+    if (!reviewerId || !comment) {
+        showToast('error', 'Vui lòng chọn người đánh giá và nhập nhận xét.');
+        return;
+    }
+    if (!confirm("Bạn có chắc chắn muốn thêm đánh giá này không?")) {
+        return;
+    }
+    var formData = new URLSearchParams();
+    formData.append("cong_viec_id", taskId);
+    formData.append("nguoi_danh_gia_id", reviewerId);
+    formData.append("nhan_xet", comment);
+
+    fetch("./apiDanhgiaCV", {
+        method: "POST",
+        headers: {"Content-Type": "application/x-www-form-urlencoded"},
+        body: formData.toString()
+    })
+            .then(function (res) {
+                return res.json();
+            })
+            .then(function (data) {
+                if (data.success) {
+                    showToast('success', 'Thêm đánh giá thành công!');
+                    document.getElementById("reviewComment").value = "";
+                    setTimeout(function () {
+                        loadTaskReviews(taskId);
+                    }, 300);
+                } else {
+                    showToast('error', 'Thêm thất bại: ' + (data.message || ''));
+                }
+            })
+            .catch(function () {
+                showToast('error', 'Đã xảy ra lỗi khi thêm đánh giá.');
+            });
+});
+
 function loadTaskReviews(taskId) {
     fetch("./apiDanhgiaCV?taskId=" + encodeURIComponent(taskId))
             .then(function (res) {
@@ -1257,6 +1346,10 @@ function renderArchivedTasks(html) {
                                             <i class="fa-solid fa-undo"></i>
                                             <span>Khôi phục</span>
                                         </button>
+                                        <button class="task-action-item permanent-delete-action" type="button" data-task-id="1" data-action="permanent-delete">
+                                            <i class="fa-solid fa-trash-can"></i>
+                                            <span>Xóa vĩnh viễn</span>
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -1284,6 +1377,10 @@ function renderDeletedTasks(html) {
                                         <button class="task-action-item restore-action" type="button" data-task-id="2" data-action="restore">
                                             <i class="fa-solid fa-undo"></i>
                                             <span>Khôi phục</span>
+                                        </button>
+                                        <button class="task-action-item permanent-delete-action" type="button" data-task-id="2" data-action="permanent-delete">
+                                            <i class="fa-solid fa-trash-can"></i>
+                                            <span>Xóa vĩnh viễn</span>
                                         </button>
                                     </div>
                                 </div>
@@ -1317,11 +1414,17 @@ document.addEventListener('DOMContentLoaded', function () {
                 case 'archive':
                     archiveTask(taskId);
                     break;
+                case 'remind':
+                    remindTask(taskId);
+                    break;
                 case 'delete':
                     deleteTask(taskId);
                     break;
                 case 'restore':
                     restoreTask(taskId);
+                    break;
+                case 'permanent-delete':
+                    permanentDeleteTask(taskId);
                     break;
             }
         }
@@ -1379,6 +1482,36 @@ function archiveTask(taskId) {
                     });
         }
     });
+}
+
+function remindTask(taskId) {
+    fetch('./suaCongviec', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: new URLSearchParams({
+            task_id: String(taskId),
+            action: 'remind',
+            nhac_viec: '1'
+        })
+    })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire('Thành công!', 'Nhắc việc thành công.', 'success');
+                    setTimeout(() => {
+                        // Ghi nhớ view + tab trước khi reload
+                        localStorage.setItem('lastTab', document.querySelector('.nav-link.active').id);
+                        localStorage.setItem('lastView', currentView);
+                        location.reload();
+                    }, 1200);
+                } else {
+                    Swal.fire('Lỗi!', data.message || 'Lưu trữ thất bại.', 'error');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                Swal.fire('Lỗi!', 'Không thể kết nối tới server.', 'error');
+            });
 }
 
 function deleteTask(taskId) {
@@ -1697,8 +1830,14 @@ document.addEventListener('click', function (e) {
             case 'restore':
                 restoreTask(taskId);
                 break;
+            case 'permanent-delete':
+                permanentDeleteTask(taskId);
+                break;
             case 'archive':
                 archiveTask(taskId);
+                break;
+            case 'remind':
+                remindTask(taskId);
                 break;
             case 'delete':
                 deleteTask(taskId);
@@ -1708,6 +1847,8 @@ document.addEventListener('click', function (e) {
         }
     }
 });
+
+
 
 // ====== XỬ LÝ NHẮC NHỞ CÔNG VIỆC ======
 document.addEventListener('DOMContentLoaded', function () {
@@ -1786,6 +1927,7 @@ function switchView(viewType) {
         document.getElementById('listView').classList.add('active');
         document.getElementById('calendarView').classList.remove('active');
         initTableSorting();
+        sortTable('trang_thai', 'asc');
     } else if (viewType === 'calendar') {
         document.getElementById('viewCalendar').classList.add('active');
         document.querySelector('.kanban-board').style.display = 'none';

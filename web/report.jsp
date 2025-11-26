@@ -499,7 +499,10 @@
             out.println("var pieChartData = " + pieChartJson + ";");
             out.println("var barChartData = " + barChartJson + ";");
             %>
-        </script>       
+        </script>
+        <script>
+            const USER_PERMISSIONS = <%= session.getAttribute("quyen") %>;
+        </script>
         <script src="<%= request.getContextPath() %>/scripts/report.js?v=<%= System.currentTimeMillis() %>"></script>
     </body>
 </html>

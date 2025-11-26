@@ -1,4 +1,39 @@
+function hasPermission(code) {
+    return USER_PERMISSIONS && USER_PERMISSIONS.includes(code);
+}
+document.addEventListener("DOMContentLoaded", function () {
 
+    // Tạo task
+    if (!hasPermission("them_congviec")) {
+        $("#btnCreateTask").hide();
+        $(".kanban-add-btn").hide(); // nút + trong Kanban
+    }
+
+    // Xóa task
+    if (!hasPermission("xoa_congviec")) {
+        $(".task-action-item.delete").remove();
+        $(".task-action-item.permanent-delete-action").remove();
+    }
+
+    if (!hasPermission("them_quytrinh")) {
+        $("#btnAddProcessStep").hide();
+    }
+
+    // Lưu thay đổi task
+    if (!hasPermission("sua_congviec")) {
+        $("#btnSaveTask").remove();
+    }
+
+    // Nhắc việc
+    if (!hasPermission("nhacviec")) {
+        $(".task-action-item.remind").remove();
+    }
+
+    // Duyệt task
+    if (!hasPermission("duyet_congviec")) {
+        $("#btnXetDuyet").remove();
+    }
+});
 // ====== BIẾN GLOBAL THEO DÕI TAB HIỆN TẠI ======
 var currentTabState = 'active'; // 'active', 'archived', 'deleted'
 

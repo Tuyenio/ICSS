@@ -13,30 +13,282 @@
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <style>
+            /* ============================
+      PROJECT LIST VIEW (PREMIUM)
+   ============================ */
+
             body {
-                background: #f4f6fa;
-                transition: background 0.3s ease;
+                background: #f8fafc;
+                font-family: 'Segoe UI', Roboto, sans-serif;
+                color: #1e293b;
             }
 
-            /* Hiệu ứng fade-in toàn trang */
+            /* ----- MAIN CONTENT FADE IN ----- */
             .main-content {
-                padding: 36px 36px 24px 36px;
+                padding: 32px;
                 min-height: 100vh;
                 margin-left: 240px;
-                animation: fadeIn 0.6s ease-in-out;
+                animation: fadeIn 0.5s ease;
             }
+
             @keyframes fadeIn {
                 from {
                     opacity: 0;
-                    transform: translateY(10px);
+                    transform: translateY(12px);
                 }
-                to {
+                to   {
                     opacity: 1;
                     transform: translateY(0);
                 }
             }
 
-            /* Nút thêm dự án */
+            /* ===============================
+               🔵 LIST VIEW BOX
+               =============================== */
+            .project-list-view .table {
+                background: white;
+                border-radius: 16px;
+                overflow: hidden;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            }
+
+            /* ===============================
+               🔵 HEADER (THEAD)
+               =============================== */
+            .project-list-view thead {
+                background: linear-gradient(135deg, #0dcaf0, #4f46e5);
+                color: white;
+            }
+
+            .project-list-view thead th {
+                padding: 16px 12px;
+                font-weight: 600;
+                border: none;
+                cursor: pointer;
+                user-select: none;
+                vertical-align: middle;
+            }
+
+            .project-list-view thead th:hover {
+                background: rgba(255,255,255,0.1);
+            }
+
+            /* Sort icon style */
+            .project-list-view thead th.sortable::after {
+                content: "\f0dc";
+                font-family: "Font Awesome 6 Free";
+                font-weight: 900;
+                margin-left: 6px;
+                opacity: 0.5;
+                font-size: 0.8em;
+            }
+
+            .project-list-view thead th.sort-asc::after {
+                content: "\f0de";
+                opacity: 1;
+            }
+
+            .project-list-view thead th.sort-desc::after {
+                content: "\f0dd";
+                opacity: 1;
+            }
+
+            /* ===============================
+               🔵 TABLE BODY
+               =============================== */
+            .project-list-view tbody tr {
+                border-bottom: 1px solid #f1f5f9;
+                transition: all 0.2s ease;
+            }
+
+            .project-list-view tbody tr:hover {
+                background: linear-gradient(90deg, rgba(13,202,240,0.05), rgba(79,70,229,0.05));
+                transform: translateX(4px);
+                cursor: pointer;
+            }
+
+            .project-list-view tbody td {
+                padding: 14px 12px;
+                vertical-align: middle;
+            }
+
+            .project-name {
+                font-weight: 600;
+                color: #1e293b;
+            }
+
+            /* ===============================
+               🔵 BADGES (ƯU TIÊN)
+               =============================== */
+            .badge.priority-high {
+                background: linear-gradient(135deg, #ef4444, #dc2626);
+            }
+            .badge.priority-medium {
+                background: linear-gradient(135deg, #f59e0b, #d97706);
+            }
+            .badge.priority-low {
+                background: linear-gradient(135deg, #10b981, #059669);
+            }
+            .badge.priority-none {
+                background: #94a3b8;
+            }
+
+            /* Badge chung */
+            .project-list-view .badge {
+                padding: 6px 12px;
+                border-radius: 10px;
+                font-weight: 500;
+                font-size: 0.85rem;
+            }
+
+            /* ===============================
+               🔵 PROGRESS BAR (TIẾN ĐỘ)
+               =============================== */
+            .project-progress .progress {
+                height: 7px;
+                border-radius: 6px;
+                background: #e5e7eb;
+            }
+
+            .project-progress .progress-bar {
+                border-radius: 6px;
+            }
+
+            .project-progress .percent {
+                margin-left: 8px;
+                font-weight: 700;
+                color: #1e293b;
+            }
+
+            /* ===============================
+               🔵 PROJECT ACTION BUTTONS
+               =============================== */
+            .project-actions-wrapper {
+                display: flex;
+                gap: 8px;
+                justify-content: center;
+            }
+
+            .project-actions-wrapper .btn {
+                border-radius: 10px;
+                padding: 6px 10px;
+                color: #fff;
+                transition: all 0.25s ease;
+            }
+
+            /* Xem */
+            .btn-info {
+                background: linear-gradient(135deg,#0dcaf0,#4f46e5);
+                border: none;
+            }
+            .btn-info:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 16px rgba(79,70,229,0.4);
+            }
+
+            /* Sửa */
+            .btn-warning {
+                background: linear-gradient(135deg,#facc15,#eab308);
+                border: none;
+            }
+            .btn-warning:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 16px rgba(250,204,21,0.4);
+            }
+
+            /* Xóa */
+            .btn-danger {
+                background: linear-gradient(135deg,#ef4444,#dc2626);
+                border: none;
+            }
+            .btn-danger:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 16px rgba(220,38,38,0.4);
+            }
+
+            /* Avatar Lead */
+            .project-lead img {
+                border-radius: 50%;
+                box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+            }
+
+            /* ===============================
+               🔔 ROW ALERT (DỰ ÁN CÓ NHẮC VIỆC)
+               =============================== */
+            .project-row--alert {
+                animation: rowBlink 1.1s ease-in-out infinite;
+                position: relative;
+            }
+
+            .project-row--alert::before {
+                content: "🔔";
+                position: absolute;
+                left: 6px;
+                top: 50%;
+                transform: translateY(-50%);
+                font-size: 1rem;
+                animation: bellPulse 2s infinite;
+            }
+
+            .project-row--alert td:first-child {
+                padding-left: 32px !important;
+            }
+
+            @keyframes rowBlink {
+                0%, 100% {
+                    background: rgba(220,53,69,0.05);
+                }
+                50% {
+                    background: rgba(220,53,69,0.15);
+                }
+            }
+
+            @keyframes bellPulse {
+                0%,100% {
+                    transform: translateY(-50%) rotate(0deg);
+                }
+                25% {
+                    transform: translateY(-50%) rotate(10deg);
+                }
+                50% {
+                    transform: translateY(-50%) rotate(-10deg);
+                }
+                75% {
+                    transform: translateY(-50%) rotate(5deg);
+                }
+            }
+
+            /* ===============================
+               🔵 RESPONSIVE
+               =============================== */
+            @media (max-width: 992px) {
+                .main-content {
+                    margin-left: 60px;
+                    padding: 20px;
+                }
+            }
+
+            @media (max-width: 768px) {
+                .project-list-view table {
+                    font-size: 0.85rem;
+                }
+                .project-actions-wrapper .btn {
+                    padding: 4px 8px;
+                }
+                .project-progress .percent {
+                    font-size: 0.8rem;
+                }
+            }
+
+            @media (max-width: 480px) {
+                .project-list-view table thead {
+                    font-size: 0.85rem;
+                }
+                .project-list-view tbody td {
+                    padding: 10px 8px;
+                }
+            }
+
             .btn-add-project {
                 background: linear-gradient(45deg, #0d6efd, #0dcaf0);
                 border: none;
@@ -52,112 +304,85 @@
                 box-shadow: 0 6px 16px rgba(13,110,253,0.45);
             }
 
-            /* Card Dự án */
-            .project-card {
-                background: #fff;
-                border-radius: 14px;
-                box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-                padding: 20px 24px;
-                margin-bottom: 18px;
-                transition: all 0.3s ease;
-                cursor: pointer;
-            }
-            .project-card:hover {
-                box-shadow: 0 8px 24px rgba(0,0,0,0.15);
-                transform: translateY(-3px);
-            }
+            /* ==============================
+   BUTTON ACTIONS – PREMIUM STYLE
+   ============================== */
 
-            /* Header trong card */
-            .project-header {
-                display: flex;
-                justify-content: space-between;
+            .action-btn {
+                display: inline-flex;
                 align-items: center;
-            }
-            .project-title {
-                font-size: 1.3rem;
+                gap: 6px;
+                padding: 8px 14px;
+                border-radius: 12px;
                 font-weight: 600;
-                color: #1e293b;
-            }
-
-            /* Các nút hành động trong card */
-            .project-actions {
-                display: flex;
-                gap: 8px;
-            }
-            .project-actions .btn {
-                border-radius: 50%;
-                width: 36px;
-                height: 36px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                transition: all 0.25s ease;
-            }
-            .project-actions .btn:hover {
-                transform: scale(1.15) rotate(5deg);
-            }
-
-            /* Mô tả dự án */
-            .project-desc {
-                margin-top: 10px;
-                color: #6c757d;
-                font-size: 0.95rem;
-            }
-
-            /* Container nút hành động trong card dự án */
-            .project-actions {
-                display: flex;
-                gap: 8px;
-                justify-content: center;
-                align-items: center;
-            }
-
-            /* Nút tròn đều */
-            .project-actions .btn {
-                border-radius: 50%;
-                width: 36px;
-                height: 36px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                padding: 0;
-                transition: all 0.25s ease;
-            }
-            .project-actions .btn i {
                 font-size: 0.9rem;
+                border: none;
+                color: #fff !important;
+                cursor: pointer;
+                transition: all 0.25s ease;
+                text-decoration: none;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.12);
             }
 
-            /* Nút Xem */
-            .project-actions .btn-info {
-                background: linear-gradient(90deg,#0dcaf0,#4f46e5);
-                border: none;
-                color: #fff;
+            /* VIEW BUTTON – Xanh tím */
+            .action-view {
+                background: linear-gradient(135deg,#0dcaf0,#4f46e5);
             }
-            .project-actions .btn-info:hover {
-                transform: scale(1.1);
-                box-shadow: 0 2px 8px rgba(79,70,229,0.4);
+            .action-view:hover {
+                transform: translateY(-3px) scale(1.03);
+                box-shadow: 0 6px 20px rgba(79,70,229,0.45);
             }
 
-            /* Nút Sửa */
-            .project-actions .btn-warning {
-                background: linear-gradient(90deg,#facc15,#eab308);
-                border: none;
-                color: #fff;
+            /* EDIT BUTTON – Vàng cam */
+            .action-edit {
+                background: linear-gradient(135deg,#fbbf24,#f59e0b);
             }
-            .project-actions .btn-warning:hover {
-                transform: scale(1.1);
-                box-shadow: 0 2px 8px rgba(250,204,21,0.4);
+            .action-edit:hover {
+                transform: translateY(-3px) scale(1.03);
+                box-shadow: 0 6px 20px rgba(245,158,11,0.45);
             }
 
-            /* Nút Xóa */
-            .project-actions .btn-danger {
-                background: linear-gradient(90deg,#ef4444,#dc2626);
-                border: none;
-                color: #fff;
+            /* DELETE BUTTON – Đỏ */
+            .action-delete {
+                background: linear-gradient(135deg,#ef4444,#dc2626);
             }
-            .project-actions .btn-danger:hover {
-                transform: scale(1.1);
-                box-shadow: 0 2px 8px rgba(220,38,38,0.4);
+            .action-delete:hover {
+                transform: translateY(-3px) scale(1.03);
+                box-shadow: 0 6px 20px rgba(220,38,38,0.45);
+            }
+
+            /* Icon style */
+            .action-btn i {
+                font-size: 0.85rem;
+            }
+
+            /* Khi bấm giữ */
+            .action-btn:active {
+                transform: translateY(-1px) scale(0.98);
+                box-shadow: 0 3px 10px rgba(0,0,0,0.12);
+            }
+            .td-desc {
+                max-width: 300px; /* chỉnh tùy ý 150–300px */
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            thead th.sortable::after {
+                content: "\f0dc"; /* icon sort */
+                font-family: "Font Awesome 6 Free";
+                font-weight: 900;
+                margin-left: 6px;
+                opacity: 0.4;
+            }
+
+            thead th.sort-asc::after {
+                content: "\f0de"; /* up arrow */
+                opacity: 1;
+            }
+
+            thead th.sort-desc::after {
+                content: "\f0dd"; /* down arrow */
+                opacity: 1;
             }
 
         </style>
@@ -173,8 +398,11 @@
                 <div class="main-content">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h3 class="mb-0"><i class="fa-solid fa-diagram-project me-2"></i>Quản lý Dự án</h3>
+                        <button class="btn btn-add-project" data-bs-toggle="modal" data-bs-target="#modalProject">
+                            <i class="fa-solid fa-plus me-1"></i> Thêm dự án
+                        </button>
                     </div>
-                    <form class="row g-3 mb-4 align-items-end" method="get" action="dsDuannv">
+                    <form class="row g-3 mb-4 align-items-end" method="get" action="dsDuan">
 
                         <!-- Tìm theo tên dự án -->
                         <div class="col-md-3">
@@ -193,17 +421,20 @@
                             </select>
                         </div>
 
+                        <input type="hidden" name="nhom_du_an" 
+                               value="<%= request.getAttribute("nhomDuAnValue") != null ? request.getAttribute("nhomDuAnValue") : "" %>">
+
                         <!-- Nhóm dự án -->
-                        <div class="col-md-2">
-                            <select name="nhom_du_an" class="form-select">
-                                <option value="">Nhóm dự án (Tất cả)</option>
-                                <option value="Dashboard">Dashboard</option>
-                                <option value="An ninh bảo mật">An ninh bảo mật</option>
-                                <option value="Oracle Cloud">Oracle Cloud</option>
-                                <option value="Đào tạo">Đào tạo</option>
-                                <option value="Khác">Khác</option>
-                            </select>
-                        </div>
+                        <!--                        <div class="col-md-2">
+                                                    <select name="nhom_du_an" class="form-select">
+                                                        <option value="">Nhóm dự án (Tất cả)</option>
+                                                        <option value="Dashboard">Dashboard</option>
+                                                        <option value="An ninh bảo mật">An ninh bảo mật</option>
+                                                        <option value="Oracle Cloud">Oracle Cloud</option>
+                                                        <option value="Đào tạo">Đào tạo</option>
+                                                        <option value="Khác">Khác</option>
+                                                    </select>
+                                                </div>-->
 
                         <!-- Lead -->
                         <div class="col-md-3">
@@ -240,114 +471,111 @@
 
                         <!-- Nút Reset -->
                         <div class="col-md-1">
-                            <a href="dsDuannv" class="btn btn-secondary w-100">
+                            <a href="dsDuan?nhom_du_an=<%= request.getParameter("nhom_du_an") %>" class="btn btn-secondary w-100">
                                 <i class="fa-solid fa-rotate-left"></i>
                             </a>
                         </div>
 
                     </form>
-                    <div class="row project-list">
-                        <%
-                            List<Map<String, Object>> projects = (List<Map<String, Object>>) request.getAttribute("projects");
-                            if (projects != null) {
-                                for (Map<String, Object> project : projects) {
-                        %>
+                    <!-- ==================== PROJECT LIST VIEW ==================== -->
+                    <div class="project-list-view mt-3">
 
-                        <div class="col-md-6 mb-4">
-                            <div class="project-card" data-id="<%= project.get("id") %>"
-                                 onclick="goToProjectTask(<%= project.get("id") %>, event)">
+                        <table class="table table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th class="sortable" data-sort="ten">Tên dự án</th>
+                                    <th>Mô tả</th>
+                                    <th>Lead</th>
+                                    <th>Nhóm</th>
+                                    <th>Phòng ban</th>
+                                    <th class="sortable" data-sort="uutien">Ưu tiên</th>
+                                    <th class="sortable" data-sort="ngaybatdau">Ngày bắt đầu</th>
+                                    <th class="sortable" data-sort="ngayketthuc">Ngày kết thúc</th>
+                                    <th>Tiến độ</th>
+                                    <th>Hành động</th>
+                                </tr>
+                            </thead>
 
-                                <!-- HEADER -->
-                                <div class="project-header d-flex justify-content-between align-items-center">
-                                    <span class="project-title"><%= project.get("ten_du_an") %></span>
+                            <tbody>
+                                <% 
+                                    List<Map<String, Object>> projects = 
+                                        (List<Map<String, Object>>) request.getAttribute("projects");
 
-                                    <div class="project-actions">
-                                        <button class="btn btn-info" onclick="showProjectDetail(event, <%= project.get("id") %>)">
-                                            <i class="fa-solid fa-eye"></i>
-                                        </button>
-                                    </div>
-                                </div>
+                                    if (projects != null) {
+                                        for (Map<String, Object> p : projects) {
+                        
+                                            String priority = p.get("muc_do_uu_tien") != null 
+                                                ? p.get("muc_do_uu_tien").toString() : "Không rõ";
 
-                                <!-- MÔ TẢ -->
-                                <div class="project-desc mt-2 text-muted">
-                                    Mô tả: <%= project.get("mo_ta") %>
-                                </div>
+                                            String priorityClass = "bg-secondary";
+                                            if ("Cao".equals(priority)) priorityClass = "bg-danger";
+                                            else if ("Trung bình".equals(priority)) priorityClass = "bg-warning";
+                        
+                                            // Tiến độ
+                                            int td = 0;
+                                            try { td = Integer.parseInt(p.get("tien_do").toString()); } 
+                                            catch (Exception ex) {}
 
-                                <!-- LEAD + ƯU TIÊN -->
-                                <div class="mt-2 d-flex justify-content-between align-items-center">
-                                    <!-- Lead -->
-                                    <div class="d-flex align-items-center">
-                                        <span class="me-2 text-secondary fw-semibold">Lead dự án:</span>
-                                        <% 
-                                            String leadName = (String) project.get("lead_ten");
-                                            String leadAvatar = (String) project.get("lead_avatar");
-                                        %>
-
-                                        <% if (leadAvatar != null && !leadAvatar.isEmpty()) { %>
-                                        <img src="<%= leadAvatar %>" class="rounded-circle me-2" width="28" height="28">
-                                        <% } %>
-
-                                        <span class="fw-semibold text-primary">
-                                            <%= leadName != null ? leadName : "Chưa có Lead" %>
-                                        </span>
-                                    </div>
-
-                                    <!-- Mức độ ưu tiên -->
-                                    <span class="badge 
-                                          <%= "Cao".equals(project.get("muc_do_uu_tien")) ? "bg-danger" :
-                                              "Trung bình".equals(project.get("muc_do_uu_tien")) ? "bg-warning" :
-                                              "bg-secondary" %>">
-                                        <%= project.get("muc_do_uu_tien") != null ? project.get("muc_do_uu_tien") : "Không rõ" %>
-                                    </span>
-                                </div>
-                                <div class="mt-1 text-secondary">
-                                    <small><strong>Nhóm dự án:</strong> <%= project.get("nhom_du_an") %></small>
-                                </div>
-
-                                <%
-                                    // Tính phần trăm tiến độ
-                                    Object tienDoObj = project.get("tien_do");
-                                    int tienDo = 0;
-                                    if (tienDoObj != null) {
-                                        try {
-                                            tienDo = Integer.parseInt(tienDoObj.toString());
-                                        } catch (Exception e) {
-                                            tienDo = 0;
-                                        }
-                                    }
-
-                                    // Chọn màu thanh tiến độ
-                                    String progressClass = "";
-                                    if (tienDo < 30) progressClass = "bg-danger";
-                                    else if (tienDo < 70) progressClass = "bg-warning";
-                                    else progressClass = "bg-success";
+                                            String progressColor = td < 30 ? "bg-danger" 
+                                                                : td < 70 ? "bg-warning" 
+                                                                : "bg-success";
                                 %>
 
-                                <!-- TIẾN ĐỘ -->
-                                <div class="mt-3">
-                                    <div class="d-flex justify-content-between align-items-center mb-1">
-                                        <small class="text-muted"><i class="fa-solid fa-tasks me-1"></i>Tiến độ dự án</small>
-                                        <small class="fw-bold text-primary"><%= tienDo %>%</small>
-                                    </div>
+                                <tr class="project-row"
+                                    data-id="<%= p.get("id") %>"
+                                    data-ten="<%= p.get("ten_du_an") %>"
+                                    data-uutien="<%= p.get("muc_do_uu_tien") %>"
+                                    data-phong-ban="<%= p.get("phong_ban") %>"
+                                    data-ngaybatdau="<%= p.get("ngay_bat_dau") %>"
+                                    data-ngayketthuc="<%= p.get("ngay_ket_thuc") %>">
+                                    <td><strong><%= p.get("ten_du_an") %></strong></td>
+                                    <td class="td-desc"><%= p.get("mo_ta") %></td>
+                                    <td>
+                                        <img src="<%= p.get("lead_avatar") %>" width="26" height="26"
+                                             class="rounded-circle me-1">
+                                        <%= p.get("lead_ten") != null ? p.get("lead_ten") : "Chưa có" %>
+                                    </td>
+                                    <td><%= p.get("nhom_du_an") %></td>
+                                    <td><%= p.get("phong_ban") != null ? p.get("phong_ban") : "Chưa phân" %></td>
+                                    <td><span class="badge <%= priorityClass %>"><%= priority %></span></td>
+                                    <td><%= p.get("ngay_bat_dau") %></td>
+                                    <td><%= p.get("ngay_ket_thuc") %></td>
 
-                                    <div class="progress" style="height: 8px; border-radius: 10px;">
-                                        <div class="progress-bar <%= progressClass %>"
-                                             role="progressbar"
-                                             style="width: <%= tienDo %>%;"
-                                             aria-valuenow="<%= tienDo %>"
-                                             aria-valuemin="0"
-                                             aria-valuemax="100">
+                                    <!-- Tiến độ -->
+                                    <td style="min-width:160px;">
+                                        <div class="d-flex align-items-center">
+                                            <div class="progress flex-grow-1" style="height:6px;">
+                                                <div class="progress-bar <%= progressColor %>"
+                                                     style="width:<%= td %>%"></div>
+                                            </div>
+                                            <span class="ms-2 fw-bold"><%= td %>%</span>
                                         </div>
-                                    </div>
-                                </div>
+                                    </td>
 
-                            </div>
-                        </div>
+                                    <td>
+                                        <div class="btn-group">
+                                            <button class="btn btn-sm btn-info" 
+                                                    onclick="showProjectDetail(event, <%= p.get("id") %>)">
+                                                <i class="fa-solid fa-eye"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-warning"
+                                                    onclick="editProject(<%= p.get("id") %>); event.stopPropagation();">
+                                                <i class="fa-solid fa-pen"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-danger delete-project-btn"
+                                                    data-id="<%= p.get("id") %>">
+                                                <i class="fa-solid fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
 
-                        <%
-                                }
-                            }
-                        %>
+                                <% 
+                                        } 
+                                    } 
+                                %>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -391,7 +619,18 @@
                                 <option value="An ninh bảo mật">An ninh bảo mật</option>
                                 <option value="Oracle Cloud">Oracle Cloud</option>
                                 <option value="Đào tạo">Đào tạo</option>
+                                <option value="Chuyển đổi số">Chuyển đổi số</option>
                                 <option value="Khác">Khác</option>
+                            </select>
+                        </div>
+
+                        <!-- THÊM PHÒNG BAN -->
+                        <div class="mb-3">
+                            <label class="form-label">Phòng ban</label>
+                            <select class="form-select" name="phong_ban" required>
+                                <option value="">-- Chọn phòng ban --</option>
+                                <option value="Phòng Kỹ Thuật">Phòng Kỹ Thuật</option>
+                                <option value="Phòng Kinh Doanh">Phòng Kinh Doanh</option>
                             </select>
                         </div>
 
@@ -457,6 +696,10 @@
                                     <label class="form-label"><strong>Nhóm dự án:</strong></label>
                                     <div id="detailNhomDuAn" class="form-control-plaintext"></div>
                                 </div>
+                                <div class="mb-3">
+                                    <label class="form-label"><strong>Phòng ban:</strong></label>
+                                    <div id="detailPhongBan" class="form-control-plaintext"></div>
+                                </div>
                                 <div class="row mb-3">
                                     <div class="col-md-6">
                                         <label class="form-label"><strong>Ngày bắt đầu:</strong></label>
@@ -504,6 +747,9 @@
                 </div>
             </div>
         </div>
+        <script>
+            const USER_PERMISSIONS = <%= session.getAttribute("quyen") %>;
+        </script>
         <script src="<%= request.getContextPath() %>/scripts/project_nv.js?v=20251105"></script>
     </body>
 </html>

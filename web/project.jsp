@@ -747,6 +747,9 @@
                 </div>
             </div>
         </div>
+        <script>
+            const USER_PERMISSIONS = <%= session.getAttribute("quyen") %>;
+        </script>
         <script src="<%= request.getContextPath() %>/scripts/project.js?v=20251105"></script>
     </body>
 </html>

@@ -1546,7 +1546,7 @@
                                     <i class="fa-solid fa-file-excel"></i> Thêm việc từ Excel
                                 </button>
                                 <!-- Nút tạo công việc -->
-                                <button class="btn btn-primary rounded-pill px-3" data-bs-toggle="modal"
+                                <button id="btnCreateTask" class="btn btn-primary rounded-pill px-3" data-bs-toggle="modal"
                                         data-bs-target="#modalTask">
                                     <i class="fa-solid fa-plus"></i> Tạo công việc
                                 </button>
@@ -1664,6 +1664,7 @@
                                              data-bs-target="#modalTaskDetail"
                                              data-id="<%= task.get("id") %>"
                                              data-ten="<%= task.get("ten_cong_viec") %>"
+                                             data-ten_du_an="<%= task.get("ten_du_an") %>"
                                              data-mo-ta="<%= task.get("mo_ta") %>"
                                              data-ngay-bat-dau="<%= task.get("ngay_bat_dau") %>"
                                              data-han="<%= task.get("han_hoan_thanh") %>"
@@ -1711,6 +1712,7 @@
                                             </button>
                                             <div class="task-actions-dropdown">
                                                 <button class="task-action-item archive" data-task-id="<%= task.get("id") %>" data-action="archive"><i class="fa-solid fa-archive"></i> Lưu trữ</button>
+                                                <button class="task-action-item remind" data-task-id="<%= task.get("id") %>" data-action="remind"><i class="fa-solid fa-bell"></i> Nhắc việc</button>
                                                 <button class="task-action-item delete" data-task-id="<%= task.get("id") %>" data-action="delete"><i class="fa-solid fa-trash"></i> Xóa</button>
                                             </div>
                                         </div>
@@ -1770,6 +1772,7 @@
                                             <tr class="task-row <%= hasReminder ? "task-row--alert" : "" %>" data-bs-toggle="modal" data-bs-target="#modalTaskDetail"
                                                 data-id="<%= task.get("id") %>"
                                                 data-ten="<%= task.get("ten_cong_viec") %>"
+                                                data-ten_du_an="<%= task.get("ten_du_an") %>"
                                                 data-mo-ta="<%= task.get("mo_ta") %>"
                                                 data-ngay-bat-dau="<%= task.get("ngay_bat_dau") %>"
                                                 data-han="<%= task.get("han_hoan_thanh") %>"
@@ -1798,6 +1801,9 @@
                                                     <div class="action-btns" onclick="event.stopPropagation();">
                                                         <button class="btn btn-sm btn-warning" title="Lưu trữ" onclick="event.stopPropagation(); archiveTask('<%= task.get("id") %>')">
                                                             <i class="fa-solid fa-archive"></i>
+                                                        </button>
+                                                        <button class="btn btn-sm btn-info" title="Nhắc việc" onclick="event.stopPropagation(); remindTask('<%= task.get("id") %>')">
+                                                            <i class="fa-solid fa-bell"></i>
                                                         </button>
                                                         <button class="btn btn-sm btn-danger" title="Xóa" onclick="event.stopPropagation(); deleteTask('<%= task.get("id") %>')">
                                                             <i class="fa-solid fa-trash"></i>
@@ -1855,6 +1861,7 @@
                                     <div class="kanban-task archived-task"
                                          data-id="<%= task.get("id") %>"
                                          data-ten="<%= task.get("ten_cong_viec") %>"
+                                         data-ten_du_an="<%= task.get("ten_du_an") %>"
                                          data-mo-ta="<%= task.get("mo_ta") %>"
                                          data-ngay-bat-dau="<%= task.get("ngay_bat_dau") %>"
                                          data-han="<%= task.get("han_hoan_thanh") %>"
@@ -1894,6 +1901,10 @@
                                                 <button class="task-action-item restore-action" type="button"
                                                         data-task-id="<%= task.get("id") %>" data-action="restore">
                                                     <i class="fa-solid fa-undo"></i><span>Khôi phục</span>
+                                                </button>
+                                                <button class="task-action-item permanent-delete-action" type="button"
+                                                        data-task-id="<%= task.get("id") %>" data-action="permanent-delete">
+                                                    <i class="fa-solid fa-trash-can"></i><span>Xóa vĩnh viễn</span>
                                                 </button>
                                             </div>
                                         </div>
@@ -1951,6 +1962,7 @@
                                     <div class="kanban-task deleted-task"
                                          data-id="<%= task.get("id") %>"
                                          data-ten="<%= task.get("ten_cong_viec") %>"
+                                         data-ten_du_an="<%= task.get("ten_du_an") %>"
                                          data-mo-ta="<%= task.get("mo_ta") %>"
                                          data-ngay-bat-dau="<%= task.get("ngay_bat_dau") %>"
                                          data-han="<%= task.get("han_hoan_thanh") %>"
@@ -1991,6 +2003,10 @@
                                                 <button class="task-action-item restore-action" type="button"
                                                         data-task-id="<%= task.get("id") %>" data-action="restore">
                                                     <i class="fa-solid fa-undo"></i><span>Khôi phục</span>
+                                                </button>
+                                                <button class="task-action-item permanent-delete-action" type="button"
+                                                        data-task-id="<%= task.get("id") %>" data-action="permanent-delete">
+                                                    <i class="fa-solid fa-trash-can"></i><span>Xóa vĩnh viễn</span>
                                                 </button>
                                             </div>
                                         </div>
@@ -2241,7 +2257,22 @@
                                             <h6 class="section-title">
                                                 <i class="fa-solid fa-star text-warning"></i> Đánh giá công việc
                                             </h6>
-                                            
+                                            <form id="taskReviewForm" class="mb-3">
+                                                <input type="hidden" id="taskReviewId" name="task_id" value="">
+                                                <div class="row">
+                                                    <div class="col-md-6 mb-2">
+                                                        <label class="form-label">Người đánh giá:</label>
+                                                        <select class="form-select" name="ten_nguoi_danh_gia"></select>
+                                                    </div>
+                                                    <div class="col-md-12 mb-2">
+                                                        <label class="form-label">Nhận xét:</label>
+                                                        <textarea class="form-control" id="reviewComment" rows="2" placeholder="Nhập nhận xét..."></textarea>
+                                                    </div>
+                                                </div>
+                                                <button type="button" class="btn btn-success btn-sm" id="btnAddReview">
+                                                    <i class="fa-solid fa-plus"></i> Thêm đánh giá
+                                                </button>
+                                            </form>
                                             <ul id="taskReviewList" class="list-group"></ul>
                                         </div>
                                     </div>
@@ -2381,117 +2412,119 @@
                     </div>
                 </div>
             </div>
-
+            <script>
+                const USER_PERMISSIONS = <%= session.getAttribute("quyen") %>;
+            </script>
             <script src="<%= request.getContextPath() %>/scripts/usertask.js?v=<%= System.currentTimeMillis() %>"></script>
             <script src="<%= request.getContextPath() %>/scripts/task-approval.js?v=<%= System.currentTimeMillis() %>"></script>
             <script>
 
-                                                            // ====== FULLCALENDAR INITIALIZATION ======
-                                                            function initCalendar() {
-                                                                if (calendar) {
-                                                                    calendar.render();
-                                                                    return;
-                                                                }
+                // ====== FULLCALENDAR INITIALIZATION ======
+                function initCalendar() {
+                    if (calendar) {
+                        calendar.render();
+                        return;
+                    }
 
-                                                                const calendarEl = document.getElementById('taskCalendar');
+                    const calendarEl = document.getElementById('taskCalendar');
 
-                                                                // Prepare events from task list
-                                                                const events = [];
+                    // Prepare events from task list
+                    const events = [];
                 <% for (Map<String, Object> task : taskList) { 
                                                                 String eventClass = "event-not-started";
                                                                 if ("Đang thực hiện".equals(task.get("trang_thai"))) eventClass = "event-in-progress";
                                                                 else if ("Đã hoàn thành".equals(task.get("trang_thai"))) eventClass = "event-completed";
                                                                 else if ("Trễ hạn".equals(task.get("trang_thai"))) eventClass = "event-late";
                 %>
-                                                                events.push({
-                                                                    id: '<%= task.get("id") %>',
-                                                                    title: '<%= task.get("ten_cong_viec") != null ? task.get("ten_cong_viec").toString().replace("'", "\\'") : "" %>',
-                                                                    start: '<%= task.get("ngay_bat_dau") %>',
-                                                                    end: '<%= task.get("han_hoan_thanh") %>',
-                                                                    className: '<%= eventClass %>',
-                                                                    extendedProps: {
-                                                                        nguoiGiao: '<%= task.get("nguoi_giao_id") %>',
-                                                                        nguoiNhan: '<%= task.get("nguoi_nhan_ten") %>',
-                                                                        phongBan: '<%= task.get("phong_ban_id") %>',
-                                                                        uuTien: '<%= task.get("muc_do_uu_tien") %>',
-                                                                        trangThai: '<%= task.get("trang_thai") %>',
-                                                                        trangThaiDuyet: '<%= task.get("trang_thai_duyet") != null ? task.get("trang_thai_duyet").toString() : "" %>',
-                                                                        lyDoDuyet: '<%= task.get("ly_do_duyet") != null ? task.get("ly_do_duyet").toString().replace("'", "\\'") : "" %>',
-                                                                        moTa: '<%= task.get("mo_ta") != null ? task.get("mo_ta").toString().replace("'", "\\'").replace("\n", " ") : "" %>',
-                                                                        taiLieu: '<%= task.get("tai_lieu_cv") %>',
-                                                                        fileTaiLieu: '<%= task.get("file_tai_lieu") %>'
-                                                                    }
-                                                                });
+                    events.push({
+                        id: '<%= task.get("id") %>',
+                        title: '<%= task.get("ten_cong_viec") != null ? task.get("ten_cong_viec").toString().replace("'", "\\'") : "" %>',
+                        start: '<%= task.get("ngay_bat_dau") %>',
+                        end: '<%= task.get("han_hoan_thanh") %>',
+                        className: '<%= eventClass %>',
+                        extendedProps: {
+                            nguoiGiao: '<%= task.get("nguoi_giao_id") %>',
+                            nguoiNhan: '<%= task.get("nguoi_nhan_ten") %>',
+                            phongBan: '<%= task.get("phong_ban_id") %>',
+                            uuTien: '<%= task.get("muc_do_uu_tien") %>',
+                            trangThai: '<%= task.get("trang_thai") %>',
+                            trangThaiDuyet: '<%= task.get("trang_thai_duyet") != null ? task.get("trang_thai_duyet").toString() : "" %>',
+                            lyDoDuyet: '<%= task.get("ly_do_duyet") != null ? task.get("ly_do_duyet").toString().replace("'", "\\'") : "" %>',
+                            moTa: '<%= task.get("mo_ta") != null ? task.get("mo_ta").toString().replace("'", "\\'").replace("\n", " ") : "" %>',
+                            taiLieu: '<%= task.get("tai_lieu_cv") %>',
+                            fileTaiLieu: '<%= task.get("file_tai_lieu") %>'
+                        }
+                    });
                 <% } %>
 
-                                                                calendar = new FullCalendar.Calendar(calendarEl, {
-                                                                    initialView: 'dayGridMonth',
-                                                                    headerToolbar: {
-                                                                        left: 'prev,next today',
-                                                                        center: 'title',
-                                                                        right: 'dayGridMonth,timeGridWeek,timeGridDay'
-                                                                    },
-                                                                    locale: 'vi',
-                                                                    buttonText: {
-                                                                        today: 'Hôm nay',
-                                                                        month: 'Tháng',
-                                                                        week: 'Tuần',
-                                                                        day: 'Ngày'
-                                                                    },
-                                                                    events: events,
-                                                                    editable: true,
-                                                                    eventClick: function (info) {
-                                                                        const event = info.event;
-                                                                        const props = event.extendedProps;
+                    calendar = new FullCalendar.Calendar(calendarEl, {
+                        initialView: 'dayGridMonth',
+                        headerToolbar: {
+                            left: 'prev,next today',
+                            center: 'title',
+                            right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                        },
+                        locale: 'vi',
+                        buttonText: {
+                            today: 'Hôm nay',
+                            month: 'Tháng',
+                            week: 'Tuần',
+                            day: 'Ngày'
+                        },
+                        events: events,
+                        editable: true,
+                        eventClick: function (info) {
+                            const event = info.event;
+                            const props = event.extendedProps;
 
-                                                                        // 🔹 Tạo button tạm để bootstrap hiểu được trigger modal
-                                                                        const tempBtn = document.createElement('button');
-                                                                        tempBtn.type = 'button';
-                                                                        tempBtn.dataset.bsToggle = 'modal';
-                                                                        tempBtn.dataset.bsTarget = '#modalTaskDetail';
+                            // 🔹 Tạo button tạm để bootstrap hiểu được trigger modal
+                            const tempBtn = document.createElement('button');
+                            tempBtn.type = 'button';
+                            tempBtn.dataset.bsToggle = 'modal';
+                            tempBtn.dataset.bsTarget = '#modalTaskDetail';
 
-                                                                        // Gắn data attributes cho modal đọc
-                                                                        tempBtn.setAttribute('data-id', event.id || '');
-                                                                        tempBtn.setAttribute('data-ten', event.title || '');
-                                                                        tempBtn.setAttribute('data-mo-ta', props.moTa || '');
-                                                                        tempBtn.setAttribute('data-ngay-bat-dau', event.startStr || '');
-                                                                        tempBtn.setAttribute('data-han', event.endStr || '');
-                                                                        tempBtn.setAttribute('data-uu-tien', props.uuTien || '');
-                                                                        tempBtn.setAttribute('data-ten_nguoi_giao', props.nguoiGiao || '');
-                                                                        tempBtn.setAttribute('data-ten_nguoi_nhan', props.nguoiNhan || '');
-                                                                        tempBtn.setAttribute('data-ten_phong_ban', props.phongBan || '');
-                                                                        tempBtn.setAttribute('data-trang-thai', props.trangThai || '');
-                                                                        tempBtn.setAttribute('data-tai_lieu_cv', props.taiLieu || '');
-                                                                        tempBtn.setAttribute('data-file_tai_lieu', props.fileTaiLieu || '');
-                                                                        tempBtn.setAttribute('data-trang-thai-duyet', props.trangThaiDuyet || 'Chưa duyệt');
-                                                                        tempBtn.setAttribute('data-ly-do-duyet', props.lyDoDuyet || '');
-                                                                        tempBtn.setAttribute('data-ngay-gia-han', props.ngayGiaHan || '');
+                            // Gắn data attributes cho modal đọc
+                            tempBtn.setAttribute('data-id', event.id || '');
+                            tempBtn.setAttribute('data-ten', event.title || '');
+                            tempBtn.setAttribute('data-mo-ta', props.moTa || '');
+                            tempBtn.setAttribute('data-ngay-bat-dau', event.startStr || '');
+                            tempBtn.setAttribute('data-han', event.endStr || '');
+                            tempBtn.setAttribute('data-uu-tien', props.uuTien || '');
+                            tempBtn.setAttribute('data-ten_nguoi_giao', props.nguoiGiao || '');
+                            tempBtn.setAttribute('data-ten_nguoi_nhan', props.nguoiNhan || '');
+                            tempBtn.setAttribute('data-ten_phong_ban', props.phongBan || '');
+                            tempBtn.setAttribute('data-trang-thai', props.trangThai || '');
+                            tempBtn.setAttribute('data-tai_lieu_cv', props.taiLieu || '');
+                            tempBtn.setAttribute('data-file_tai_lieu', props.fileTaiLieu || '');
+                            tempBtn.setAttribute('data-trang-thai-duyet', props.trangThaiDuyet || 'Chưa duyệt');
+                            tempBtn.setAttribute('data-ly-do-duyet', props.lyDoDuyet || '');
+                            tempBtn.setAttribute('data-ngay-gia-han', props.ngayGiaHan || '');
 
-                                                                        // 🔹 Phải gắn vào DOM thì bootstrap mới bắt được sự kiện click
-                                                                        document.body.appendChild(tempBtn);
+                            // 🔹 Phải gắn vào DOM thì bootstrap mới bắt được sự kiện click
+                            document.body.appendChild(tempBtn);
 
-                                                                        // 🔹 Trigger click (Bootstrap tự mở modal và phát 'show.bs.modal')
-                                                                        tempBtn.click();
+                            // 🔹 Trigger click (Bootstrap tự mở modal và phát 'show.bs.modal')
+                            tempBtn.click();
 
 
-                                                                        // 🔹 Dọn dẹp button tạm sau 200ms
-                                                                        setTimeout(() => tempBtn.remove(), 200);
+                            // 🔹 Dọn dẹp button tạm sau 200ms
+                            setTimeout(() => tempBtn.remove(), 200);
 
-                                                                    },
-                                                                    eventDrop: function (info) {
-                                                                        // Update deadline when event is dragged
-                                                                        const newDate = info.event.start.toISOString().split('T')[0];
-                                                                        updateTaskDeadline(info.event.id, newDate);
-                                                                    },
-                                                                    eventResize: function (info) {
-                                                                        const newDate = info.event.end ? info.event.end.toISOString().split('T')[0] :
-                                                                                info.event.start.toISOString().split('T')[0];
-                                                                        updateTaskDeadline(info.event.id, newDate);
-                                                                    }
-                                                                });
+                        },
+                        eventDrop: function (info) {
+                            // Update deadline when event is dragged
+                            const newDate = info.event.start.toISOString().split('T')[0];
+                            updateTaskDeadline(info.event.id, newDate);
+                        },
+                        eventResize: function (info) {
+                            const newDate = info.event.end ? info.event.end.toISOString().split('T')[0] :
+                                    info.event.start.toISOString().split('T')[0];
+                            updateTaskDeadline(info.event.id, newDate);
+                        }
+                    });
 
-                                                                calendar.render();
-                                                            }
+                    calendar.render();
+                }
             </script>
     </body>
 </html>

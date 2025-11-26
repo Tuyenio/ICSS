@@ -1,3 +1,32 @@
+function hasPermission(code) {
+    return USER_PERMISSIONS && USER_PERMISSIONS.includes(code);
+}
+document.addEventListener("DOMContentLoaded", function () {
+
+    // 👉 1. Tạo dự án
+    if (!hasPermission("them_duan")) {
+        $(".btn-add-project").hide();      // nút Thêm dự án trên header
+        $("#modalProject button[type=submit]").remove();  // không cho lưu trong modal
+    }
+
+    // 👉 2. Sửa dự án
+    if (!hasPermission("sua_duan")) {
+        $(".btn-warning").remove(); // nút edit trong bảng
+        $("#modalProject button[type=submit]").remove();   // không cho lưu modal
+    }
+
+    // 👉 3. Xóa dự án
+    if (!hasPermission("xoa_duan")) {
+        $(".delete-project-btn").remove(); // nút xóa trong bảng
+    }
+
+    // 👉 4. Xem dự án (tuỳ bạn có muốn phân quyền hay không)
+    if (!hasPermission("xem_duan")) {
+        $(".btn-info").remove();  // nút xem chi tiết
+        $(".project-row").css("pointer-events", "none"); // không click được
+    }
+
+});
 $(document).on("click", ".project-row", function (e) {
     if ($(e.target).closest(".btn").length > 0) return;
 

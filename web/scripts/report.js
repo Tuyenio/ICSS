@@ -1,3 +1,62 @@
+function hasPermission(code) {
+    return USER_PERMISSIONS && USER_PERMISSIONS.includes(code);
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    /* ======================================================
+       🔹 1. QUYỀN XEM BÁO CÁO (xem_baocao)
+       ====================================================== */
+    if (!hasPermission("xem_baocao")) {
+
+        $(".main-box").html(`
+            <div class="text-center py-5">
+                <i class="fa-solid fa-ban fa-3x text-danger mb-3"></i>
+                <h4 class="text-danger">Bạn không có quyền xem báo cáo</h4>
+                <p class="text-muted">Vui lòng liên hệ quản trị viên để được cấp quyền.</p>
+            </div>
+        `);
+
+        return; // không cho chạy các quyền dưới
+    }
+
+    /* ======================================================
+       🔹 2. QUYỀN LÀM MỚI DỮ LIỆU
+       ====================================================== */
+    if (!hasPermission("xem_baocao")) {
+        $("#refreshData").hide();
+    }
+
+    /* ======================================================
+       🔹 3. QUYỀN XUẤT FILE (xuat_baocao)
+       ====================================================== */
+    if (!hasPermission("xuat_baocao")) {
+
+        // Ẩn nút xuất báo cáo
+        $(".btn-action-success").hide();  
+
+        // Ẩn nút Lưu trong modal Export
+        $("#modalExportReport button[type=submit]").hide();
+    }
+
+    /* ======================================================
+       🔹 4. QUYỀN XEM CHI TIẾT TASK (click badge)
+       ====================================================== */
+    if (!hasPermission("xem_baocao")) {
+        $(".task-detail").css("pointer-events", "none")
+            .removeClass("text-primary")
+            .addClass("text-muted");
+    }
+
+    /* ======================================================
+       🔹 5. (TÙY CHỌN) Ẩn chart nếu không có quyền xem báo cáo
+       ====================================================== */
+    if (!hasPermission("xem_baocao")) {
+        $("#pieChart").parent().hide();
+        $("#barChart").parent().hide();
+    }
+
+});
 // Gắn reportType theo tab đang active & kiểm tra đơn giản
 (function () {
     var form = document.getElementById('formExportReport');
