@@ -5,6 +5,7 @@ import jakarta.servlet.http.*;
 import java.io.IOException;
 import java.util.*;
 
+
 public class dsLichtrinh extends HttpServlet {
 
     @Override
@@ -12,14 +13,21 @@ public class dsLichtrinh extends HttpServlet {
             throws ServletException, IOException {
 
         try {
+            HttpSession session = req.getSession();
+            String role = (String) session.getAttribute("vaiTro");
             KNCSDL kn = new KNCSDL();
             List<Map<String, Object>> ds = kn.layTatCaLichTrinh();
 
             // Gửi dữ liệu sang JSP
             req.setAttribute("lichTrinh", ds);
 
-            RequestDispatcher rd = req.getRequestDispatcher("calendar.jsp");
-            rd.forward(req, resp);
+            if ("Nhân viên".equalsIgnoreCase(role)) {
+                // Nhân viên
+                req.getRequestDispatcher("calendarnv.jsp").forward(req, resp);
+            } else {
+                // Quản lý + Admin → dùng trang chấm công chính
+                req.getRequestDispatcher("calendar.jsp").forward(req, resp);
+            }
 
         } catch (Exception e) {
             e.printStackTrace();

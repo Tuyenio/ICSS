@@ -1484,6 +1484,74 @@
                     min-width: auto;
                 }
             }
+            
+            .chat-review-list {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+            }
+
+            .chat-bubble {
+                max-width: 75%;
+                padding: 10px 14px;
+                border-radius: 15px;
+                margin-bottom: 12px;
+                display: inline-block;
+                position: relative;
+                animation: fadeIn .2s ease-in;
+            }
+
+            .chat-left {
+                background: #f1f1f1;
+                color: #333;
+                border-bottom-left-radius: 0;
+            }
+
+            .chat-right {
+                background: #4e73df;
+                color: white;
+                border-bottom-right-radius: 0;
+                margin-left: auto;
+            }
+
+            .chat-item {
+                display: flex;
+                align-items: flex-end;
+                margin: 10px 0;
+            }
+
+            .chat-item-left {
+                flex-direction: row;
+            }
+
+            .chat-item-right {
+                flex-direction: row-reverse;
+            }
+
+            .chat-avatar {
+                width: 36px;
+                height: 36px;
+                border-radius: 50%;
+                margin: 0 10px;
+                object-fit: cover;
+            }
+
+            .chat-time {
+                font-size: 11px;
+                margin-top: 4px;
+                color: #666;
+            }
+
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(5px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
         </style>
     </head>
 
@@ -2258,17 +2326,27 @@
                                                 <i class="fa-solid fa-star text-warning"></i> Đánh giá công việc
                                             </h6>
                                             <form id="taskReviewForm" class="mb-3">
+                                                <%
+                                                    Object uidObj = session.getAttribute("userId");
+                                                    int currentUserId = 0;
+                                                    if (uidObj != null) {
+                                                        try {
+                                                            currentUserId = Integer.parseInt(uidObj.toString());
+                                                        } catch (Exception e) {}
+                                                    }
+                                                %>
+
+                                                <!-- ID người dùng đang đăng nhập -->
+                                                <input type="hidden" id="currentUserId" value="<%= currentUserId %>">
+
+                                                <!-- Task ID -->
                                                 <input type="hidden" id="taskReviewId" name="task_id" value="">
-                                                <div class="row">
-                                                    <div class="col-md-6 mb-2">
-                                                        <label class="form-label">Người đánh giá:</label>
-                                                        <select class="form-select" name="ten_nguoi_danh_gia"></select>
-                                                    </div>
-                                                    <div class="col-md-12 mb-2">
-                                                        <label class="form-label">Nhận xét:</label>
-                                                        <textarea class="form-control" id="reviewComment" rows="2" placeholder="Nhập nhận xét..."></textarea>
-                                                    </div>
+
+                                                <div class="mb-2">
+                                                    <label class="form-label">Nhận xét:</label>
+                                                    <textarea class="form-control" id="reviewComment" rows="2" placeholder="Nhập nhận xét..."></textarea>
                                                 </div>
+
                                                 <button type="button" class="btn btn-success btn-sm" id="btnAddReview">
                                                     <i class="fa-solid fa-plus"></i> Thêm đánh giá
                                                 </button>

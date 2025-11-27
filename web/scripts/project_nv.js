@@ -27,12 +27,11 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
 });
-
 $(document).on("click", ".project-row", function (e) {
     if ($(e.target).closest(".btn").length > 0) return;
 
     let id = $(this).data("id");
-    window.location.href = "dsCongviecDuan?projectId=" + id;
+    window.location.href = "dsCongviecDuanNV?projectId=" + id;
 });
 
 // Hàm hiển thị toast

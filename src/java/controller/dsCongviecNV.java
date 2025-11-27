@@ -31,15 +31,15 @@ public class dsCongviecNV extends HttpServlet {
             String email = (String) session.getAttribute("userEmail");
 
             // Lấy công việc hiện tại của nhân viên
-            List<Map<String, Object>> taskList = kn.getAllTasksNV(email, 1);
+            List<Map<String, Object>> taskList = kn.getAllTasksNV(email, 0);
 
             // Lấy công việc lưu trữ
             List<Map<String, Object>> archivedTaskList
-                    = kn.getTasksByTinhTrang(email, 1, "Lưu trữ");
+                    = kn.getTasksByTinhTrang(email, 0, "Lưu trữ");
 
             // Lấy công việc đã xoá
             List<Map<String, Object>> deletedTaskList
-                    = kn.getTasksByTinhTrang(email, 1, "Đã xóa");
+                    = kn.getTasksByTinhTrang(email, 0, "Đã xóa");
 
             // Nhãn trạng thái như cũ
             LinkedHashMap<String, String> trangThaiLabels = new LinkedHashMap<>();

@@ -264,7 +264,6 @@ document.addEventListener("DOMContentLoaded", function () {
             .then(html => {
                 document.querySelector('#modalTaskDetail select[name="ten_nguoi_giao"]').innerHTML = html;
                 //document.querySelector('#modalTaskDetail select[name="ten_nguoi_nhan"]').innerHTML = html;
-                document.querySelector('#modalTaskDetail select[name="ten_nguoi_danh_gia"]').innerHTML = html;
                 document.querySelector('#taskForm select[name="ten_nguoi_giao"]').innerHTML = html;
                 //document.querySelector('#taskForm select[name="ten_nguoi_nhan"]').innerHTML = html;
             });
@@ -586,7 +585,7 @@ $('#btnFilter').on('click', function (e) {
             keyword: keyword,
             phong_ban: phongBan,
             trang_thai: trangThai,
-            projectId: projectId,
+            projectId: 0,
             tabState: currentTabState, // Thêm biến tab hiện tại
             returnJson: (currentView === 'list' || currentView === 'calendar') ? 'true' : 'false'
         },
@@ -867,18 +866,12 @@ function renderProcessSteps() {
             else if (step.status === "Trễ hạn")
                 badgeClass = "bg-danger";
 
-            var editBtn = '';
-            var deleteBtn = '';
-
-            if (hasPermission("capnhat_tiendo")) {
-                editBtn =
-                        '<button class="btn btn-sm btn-outline-secondary me-1" onclick="showEditStepModal(' + idx + ')">' +
-                        '<i class="fa-solid fa-pen"></i> Chỉnh sửa</button>';
-
-                deleteBtn =
-                        '<button class="btn btn-sm btn-danger ms-1" onclick="removeProcessStep(' + idx + ')">' +
-                        '<i class="fa-solid fa-trash"></i></button>';
-            }
+            var editBtn =
+                    '<button class="btn btn-sm btn-outline-secondary me-1" onclick="showEditStepModal(' + idx + ')">' +
+                    '<i class="fa-solid fa-pen"></i> Chỉnh sửa</button>';
+            var deleteBtn =
+                    '<button class="btn btn-sm btn-danger ms-1" onclick="removeProcessStep(' + idx + ')">' +
+                    '<i class="fa-solid fa-trash"></i></button>';
 
             var html = '<li class="list-group-item d-flex justify-content-between align-items-center">' +
                     '<div>' +
@@ -895,15 +888,35 @@ function renderProcessSteps() {
 }
 
 function renderTaskReviews(data) {
-    var list = document.getElementById("taskReviewList");
+    const list = document.getElementById("taskReviewList");
     list.innerHTML = "";
-    data.forEach(function (item) {
+
+    data.forEach(function(item) {
+
+        // Avatar fallback
+        var avatar = (item.anh_dai_dien && item.anh_dai_dien.trim() !== "")
+            ? item.anh_dai_dien
+            : "https://ui-avatars.com/api/?name=" + encodeURIComponent(item.ten_nguoi_danh_gia);
+
+        var timeStr = new Date(item.thoi_gian).toLocaleString("vi-VN");
+
+        var isRight = item.is_from_worker == 1;
+
         var li = document.createElement("li");
-        var html = "<b>Người đánh giá:</b> " + item.ten_nguoi_danh_gia + "<br>" +
-                "<b>Nhận xét:</b> " + item.nhan_xet + "<br>" +
-                "<i class='text-muted'>" + item.thoi_gian + "</i>";
+        li.className = "chat-item " + (isRight ? "chat-item-right" : "chat-item-left");
+
+        // ❇️ KHÔNG DÙNG TEMPLATE LITERAL, KHÔNG CÓ `${}`
+        var html = ""
+            + "<img class='chat-avatar' src='" + avatar + "'>"
+            + "<div>"
+            + "    <div class='chat-bubble " + (isRight ? "chat-right" : "chat-left") + "'>"
+            + "        <div class='fw-bold'>" + item.ten_nguoi_danh_gia + "</div>"
+            + "        <div>" + item.nhan_xet + "</div>"
+            + "    </div>"
+            + "    <div class='chat-time'>" + timeStr + "</div>"
+            + "</div>";
+
         li.innerHTML = html;
-        li.classList.add("mb-2", "border", "p-2", "rounded");
         list.appendChild(li);
     });
 }
@@ -1149,17 +1162,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
 document.getElementById("btnAddReview").addEventListener("click", function () {
     var taskId = document.getElementById("taskId").value;
-    var reviewerSelect = document.querySelector('select[name="ten_nguoi_danh_gia"]');
-    var reviewerId = reviewerSelect.value;
     var comment = document.getElementById("reviewComment").value.trim();
+    var reviewerId = document.getElementById("currentUserId").value;
 
-    if (!reviewerId || !comment) {
-        showToast('error', 'Vui lòng chọn người đánh giá và nhập nhận xét.');
+    if (!comment) {
+        showToast('error', 'Vui lòng nhập nhận xét.');
         return;
     }
-    if (!confirm("Bạn có chắc chắn muốn thêm đánh giá này không?")) {
-        return;
-    }
+
     var formData = new URLSearchParams();
     formData.append("cong_viec_id", taskId);
     formData.append("nguoi_danh_gia_id", reviewerId);
@@ -1170,21 +1180,17 @@ document.getElementById("btnAddReview").addEventListener("click", function () {
         headers: {"Content-Type": "application/x-www-form-urlencoded"},
         body: formData.toString()
     })
-            .then(function (res) {
-                return res.json();
-            })
-            .then(function (data) {
+            .then(res => res.json())
+            .then(data => {
                 if (data.success) {
                     showToast('success', 'Thêm đánh giá thành công!');
                     document.getElementById("reviewComment").value = "";
-                    setTimeout(function () {
-                        loadTaskReviews(taskId);
-                    }, 300);
+                    loadTaskReviews(taskId);
                 } else {
                     showToast('error', 'Thêm thất bại: ' + (data.message || ''));
                 }
             })
-            .catch(function () {
+            .catch(() => {
                 showToast('error', 'Đã xảy ra lỗi khi thêm đánh giá.');
             });
 });

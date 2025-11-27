@@ -33,10 +33,12 @@ public class apiDanhgiaCV extends HttpServlet {
 
             for (int i = 0; i < danhGiaList.size(); i++) {
                 Map<String, String> item = danhGiaList.get(i);
+
                 json.append("{");
-                json.append("\"nhan_xet\":").append("\"").append(escapeJson(item.get("nhan_xet"))).append("\",");
-                json.append("\"thoi_gian\":").append("\"").append(escapeJson(item.get("thoi_gian"))).append("\",");
-                json.append("\"ten_nguoi_danh_gia\":").append("\"").append(escapeJson(item.get("ten_nguoi_danh_gia"))).append("\"");
+                json.append("\"nhan_xet\":\"").append(escapeJson(item.get("nhan_xet"))).append("\",");
+                json.append("\"thoi_gian\":\"").append(escapeJson(item.get("thoi_gian"))).append("\",");
+                json.append("\"ten_nguoi_danh_gia\":\"").append(escapeJson(item.get("ten_nguoi_danh_gia"))).append("\",");
+                json.append("\"is_from_worker\":").append(item.get("is_from_worker"));
                 json.append("}");
 
                 if (i < danhGiaList.size() - 1) {
@@ -68,7 +70,9 @@ public class apiDanhgiaCV extends HttpServlet {
             String nhanXet = req.getParameter("nhan_xet");
 
             KNCSDL db = new KNCSDL();
-            boolean result = db.insertDanhGia(congViecId, nguoiDanhGiaId, nhanXet);
+            List<Integer> workerIds = db.getDanhSachNguoiNhanId(congViecId);
+            int isFromWorker = workerIds.contains(nguoiDanhGiaId) ? 1 : 0;
+            boolean result = db.insertDanhGia(congViecId, nguoiDanhGiaId, nhanXet, isFromWorker);
 
             if (result) {
                 db = new KNCSDL();
@@ -80,14 +84,15 @@ public class apiDanhgiaCV extends HttpServlet {
                 for (int nhanId : danhSachNguoiNhan) {
                     db.insertThongBao(nhanId, tieuDeTB, noiDungTB, "Đánh giá");
                 }
-                
+
                 // Ghi log lịch sử
                 HttpSession session = req.getSession(false);
                 int userId = 0;
                 if (session != null && session.getAttribute("userId") != null) {
                     try {
                         userId = Integer.parseInt(session.getAttribute("userId").toString());
-                    } catch (Exception e) {}
+                    } catch (Exception e) {
+                    }
                 }
                 if (userId > 0) {
                     // Rút gọn nhận xét nếu quá dài

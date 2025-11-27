@@ -22,6 +22,7 @@ public class userChamCong extends HttpServlet {
         try {
             HttpSession session = request.getSession();
             String email = (String) session.getAttribute("userEmail");
+            String role = (String) session.getAttribute("vaiTro");
 
             if (email == null) {
                 response.sendRedirect("login.jsp");
@@ -66,7 +67,13 @@ public class userChamCong extends HttpServlet {
             request.setAttribute("thangHienTai", thang);
             request.setAttribute("namHienTai", nam);
 
-            request.getRequestDispatcher("user_attendance.jsp").forward(request, response);
+            if ("Nhân viên".equalsIgnoreCase(role)) {
+                // Nhân viên
+                request.getRequestDispatcher("user_attendance.jsp").forward(request, response);
+            } else {
+                // Quản lý + Admin → dùng trang chấm công chính
+                request.getRequestDispatcher("chamcong.jsp").forward(request, response);
+            }
 
         } catch (ClassNotFoundException | SQLException ex) {
             Logger.getLogger(userChamCong.class.getName()).log(Level.SEVERE, null, ex);
@@ -155,16 +162,16 @@ public class userChamCong extends HttpServlet {
                 // Xử lý gửi báo cáo
                 String attendanceIdStr = request.getParameter("attendanceId");
                 String reportContent = request.getParameter("reportContent");
-                
+
                 if (attendanceIdStr == null || reportContent == null || reportContent.trim().isEmpty()) {
                     response.getWriter().write("{\"success\": false, \"message\": \"Thiếu thông tin báo cáo\"}");
                     return;
                 }
-                
+
                 try {
                     int attendanceId = Integer.parseInt(attendanceIdStr);
                     boolean success = kn.guiBaoCaoChamCong(attendanceId, reportContent.trim(), nhanVienId);
-                    
+
                     if (success) {
                         response.getWriter().write("{\"success\": true, \"message\": \"Gửi báo cáo thành công!\"}");
                     } else {

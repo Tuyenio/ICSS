@@ -8,19 +8,19 @@
     /* PREMIUM SIDEBAR DESIGN */
     .sidebar {
         min-height: 100vh;
-        background: linear-gradient(145deg, 
+        background: linear-gradient(145deg,
             rgba(15, 23, 42, 0.95) 0%,
-            rgba(30, 41, 59, 0.95) 35%, 
+            rgba(30, 41, 59, 0.95) 35%,
             rgba(51, 65, 85, 0.95) 70%,
             rgba(30, 41, 59, 0.95) 100%
-        );
+            );
         backdrop-filter: blur(20px);
         -webkit-backdrop-filter: blur(20px);
         border-right: 1px solid rgba(255, 255, 255, 0.1);
         color: #fff;
         width: 260px;
         transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-        box-shadow: 
+        box-shadow:
             0 25px 50px rgba(0, 0, 0, 0.25),
             inset 0 1px 0 rgba(255, 255, 255, 0.1),
             0 0 0 1px rgba(255, 255, 255, 0.05);
@@ -44,13 +44,13 @@
     }
 
     .sidebar:hover {
-        background: linear-gradient(145deg, 
+        background: linear-gradient(145deg,
             rgba(30, 41, 59, 0.98) 0%,
-            rgba(51, 65, 85, 0.98) 35%, 
+            rgba(51, 65, 85, 0.98) 35%,
             rgba(71, 85, 105, 0.98) 70%,
             rgba(51, 65, 85, 0.98) 100%
-        );
-        box-shadow: 
+            );
+        box-shadow:
             0 30px 60px rgba(0, 0, 0, 0.3),
             inset 0 1px 0 rgba(255, 255, 255, 0.15),
             0 0 0 1px rgba(255, 255, 255, 0.1);
@@ -90,7 +90,7 @@
     }
 
     .sidebar .sidebar-title:hover {
-        text-shadow: 
+        text-shadow:
             0 0 20px rgba(96, 165, 250, 0.6),
             0 0 40px rgba(52, 211, 153, 0.4),
             0 0 60px rgba(168, 85, 247, 0.3);
@@ -132,11 +132,11 @@
         left: -100%;
         width: 100%;
         height: 100%;
-        background: linear-gradient(135deg, 
+        background: linear-gradient(135deg,
             rgba(96, 165, 250, 0.3) 0%,
             rgba(52, 211, 153, 0.2) 50%,
             rgba(168, 85, 247, 0.3) 100%
-        );
+            );
         transition: left 0.6s cubic-bezier(0.23, 1, 0.320, 1);
         border-radius: 16px;
     }
@@ -163,26 +163,26 @@
     }
 
     .sidebar-nav a:hover {
-        background: linear-gradient(135deg, 
+        background: linear-gradient(135deg,
             rgba(255, 255, 255, 0.15) 0%,
             rgba(255, 255, 255, 0.05) 100%
-        );
+            );
         color: #ffffff;
         transform: translateX(8px) scale(1.02);
-        box-shadow: 
+        box-shadow:
             0 10px 25px rgba(0, 0, 0, 0.15),
             inset 0 1px 0 rgba(255, 255, 255, 0.2);
     }
 
     .sidebar-nav a.active {
-        background: linear-gradient(135deg, 
+        background: linear-gradient(135deg,
             rgba(96, 165, 250, 0.3) 0%,
             rgba(52, 211, 153, 0.2) 50%,
             rgba(168, 85, 247, 0.3) 100%
-        );
+            );
         color: #ffffff;
         font-weight: 700;
-        box-shadow: 
+        box-shadow:
             0 15px 35px rgba(96, 165, 250, 0.2),
             inset 0 1px 0 rgba(255, 255, 255, 0.3);
         border: 1px solid rgba(255, 255, 255, 0.2);
@@ -214,6 +214,34 @@
     /* PREMIUM HOVER EFFECTS */
     .sidebar-nav li:hover {
         filter: brightness(1.1);
+    }
+
+    .sidebar-nav .has-submenu .submenu {
+        list-style: none;
+        padding-left: 42px;
+        margin-top: 4px;
+        display: none;
+    }
+
+    .sidebar-nav .submenu li a {
+        padding: 12px 18px;
+        font-size: 0.95rem;
+        opacity: 0.85;
+        border-radius: 12px;
+    }
+
+    .sidebar-nav .submenu li a:hover {
+        background: rgba(255, 255, 255, 0.12);
+        opacity: 1;
+        transform: translateX(6px);
+    }
+
+    .submenu-toggle .fa-chevron-down {
+        transition: transform 0.3s ease;
+    }
+
+    .has-submenu.open > a .fa-chevron-down {
+        transform: rotate(-180deg);
     }
 
     /* RESPONSIVE DESIGN */
@@ -294,8 +322,43 @@
         <li><a href="dsPhongban" class="<%= currentPath.equals("department.jsp") ? "active" : "" %>">
                 <i class="fa-solid fa-building-user"></i><span>Phòng ban</span></a></li>
 
-        <li><a href="dsChamCong" class="<%= currentPath.equals("attendance.jsp") ? "active" : "" %>">
-                <i class="fa-solid fa-calendar-check"></i><span>Chấm công</span></a></li>
+        <%
+    // Kiểm tra xem trang hiện tại thuộc nhóm chấm công
+    boolean isChamCongGroup =
+            uri.contains("dsChamCong") ||
+            uri.contains("userChamCong") ||
+            currentPath.equals("attendance.jsp") ||
+            currentPath.equals("chamcong.jsp");
+
+    boolean isQLChamCong = uri.contains("dsChamCong") || currentPath.equals("attendance.jsp");
+    boolean isUserChamCong = uri.contains("userChamCong") || currentPath.equals("chamcong.jsp");
+%>
+
+<li class="has-submenu <%= isChamCongGroup ? "open" : "" %>">
+
+    <a href="#" class="submenu-toggle <%= isChamCongGroup ? "active" : "" %>">
+        <i class="fa-solid fa-calendar-check"></i><span>Chấm công</span>
+        <i class="fa-solid fa-chevron-down ms-auto small"></i>
+    </a>
+
+    <ul class="submenu" style="<%= isChamCongGroup ? "display:block;" : "display:none;" %>">
+
+        <!-- Quản lý chấm công -->
+        <li>
+            <a href="dsChamCong" class="<%= isQLChamCong ? "active" : "" %>">
+                <i class="fa-solid fa-list"></i><span>Quản lý chấm công</span>
+            </a>
+        </li>
+
+        <!-- Chấm công cá nhân -->
+        <li>
+            <a href="userChamCong" class="<%= isUserChamCong ? "active" : "" %>">
+                <i class="fa-solid fa-calendar-check"></i><span>Chấm công</span>
+            </a>
+        </li>
+
+    </ul>
+</li>
 
         <li><a href="dsLichtrinh" class="<%= currentPath.equals("calendar.jsp") ? "active" : "" %>">
                 <i class="fa-solid fa-calendar-days"></i><span>Lịch trình</span></a></li>
@@ -304,3 +367,13 @@
                 <i class="fa-solid fa-chart-column"></i><span>Báo cáo</span></a></li>
     </ul>
 </nav>
+<script>
+    $(document).on("click", ".submenu-toggle", function (e) {
+        e.preventDefault();
+
+        const parent = $(this).closest(".has-submenu");
+
+        parent.toggleClass("open");
+        parent.find(".submenu").slideToggle(250);
+    });
+</script>

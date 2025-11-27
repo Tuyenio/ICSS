@@ -28,14 +28,14 @@
     <head>
         <meta charset="UTF-8">
         <link rel="icon" type="image/png" href="Img/logoics.png">
-        <title>Chấm công & Lương</title>
+        <title>Quản lý chấm công</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
         <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
         <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <script>
-            var PAGE_TITLE = '<i class="fa-solid fa-calendar-check me-2"></i>Chấm công & Lương';
+            var PAGE_TITLE = '<i class="fa-solid fa-calendar-check me-2"></i>Quản lý chấm công';
         </script>
         <style>
             /* ==== GLOBAL ==== */
@@ -306,7 +306,7 @@
                 <div class="main-content">
                     <div class="main-box">
                         <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h3 class="mb-0"><i class="fa-solid fa-calendar-check me-2"></i>Chấm công & Lương</h3>
+                            <h3 class="mb-0"><i class="fa-solid fa-calendar-check me-2"></i>Quản lý chấm công</h3>
                             <div>
                                 <button class="btn btn-action btn-action-primary me-2" data-bs-toggle="modal"
                                         data-bs-target="#modalAddAttendance">

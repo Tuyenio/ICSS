@@ -2,6 +2,15 @@
 <%@ page import="java.util.*" %>
 <%@ page import="java.time.LocalDate" %>
 <%@ page import="java.time.format.DateTimeFormatter" %>
+<%! 
+    public String escapeJS(String s) {
+        if (s == null) return "";
+        return s.replace("\\", "\\\\")
+                .replace("\"", "\\\"")
+                .replace("\r", "\\r")
+                .replace("\n", "\\n");
+    }
+%>
 <!DOCTYPE html>
 <html lang="vi">
     <head>
@@ -146,6 +155,9 @@
             }
 
         </style>
+        <script>
+            var PAGE_TITLE = '<i class="fa-solid fa-calendar-days me-2"></i>Lịch trình công tác';
+        </script>
     </head>
     <body>
         <div class="d-flex">
@@ -155,7 +167,9 @@
                 <div class="main-content">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h3 class="mb-0"><i class="fa-solid fa-calendar-days me-2"></i>Lịch trình công tác</h3>
-                        <!-- Nút Thêm lịch trình đã bị ẩn cho nhân viên -->
+                        <button class="btn btn-action btn-action-primary" id="btnAddSchedule">
+                            <i class="fa-solid fa-plus"></i> Thêm lịch trình
+                        </button>
                     </div>
                     <div id="calendar"></div>
                 </div>
@@ -189,7 +203,8 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <!-- Nút Lưu và Xóa đã bị ẩn cho nhân viên -->
+                        <button type="submit" class="btn btn-primary rounded-pill">Lưu</button>
+                        <button type="button" class="btn btn-danger rounded-pill" id="btnDeleteEvent" style="display:none">Xóa</button>
                         <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Huỷ</button>
                     </div>
                 </form>
@@ -201,7 +216,91 @@
             LocalDate today = LocalDate.now();
             String todayStr = today.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
         %>
-
-        <script src="<%= request.getContextPath() %>/scripts/calendarnv.obf.js?v=20251105"></script>
+        <script>
+            var todayDate = "<%= todayStr %>";
+            var CONTEXT = "<%= request.getContextPath() %>";
+        </script>
+        <%
+        List<Map<String,Object>> list = (List<Map<String,Object>>) request.getAttribute("lichTrinh");
+        %>
+        <script>
+            var eventsData = [
+            <% if (list != null) {
+        for (int i = 0; i < list.size(); i++) {
+       Map<String,Object> ev = list.get(i);
+            %>
+            {
+            id: "<%= ev.get("id") %>",
+                    title: "<%= escapeJS((String) ev.get("tieu_de")) %>",
+                    start: "<%= ev.get("ngay_bat_dau") %>",
+                    end: "<%= ev.get("ngay_ket_thuc") == null ? "" : ev.get("ngay_ket_thuc") %>",
+                    description: "<%= escapeJS((String) ev.get("mo_ta")) %>"
+                    }<%= (i < list.size()-1) ? "," : "" %>
+            <% }} %>
+            ];</script>
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+            var calendarEl = document.getElementById("calendar");
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+            locale: "vi",
+                    initialView: "dayGridMonth",
+                    events: eventsData,
+                    eventClick: function (info) {
+                    let e = info.event;
+                    $("#eventForm")[0].reset();
+                    $("input[name='id']").val(e.id);
+                    $("input[name='title']").val(e.title);
+                    $("input[name='start']").val(e.startStr);
+                    $("input[name='end']").val(e.endStr ? e.endStr.split("T")[0] : "");
+                    $("textarea[name='description']").val(e.extendedProps.description);
+                    $("#btnDeleteEvent").show();
+                    $("#modalEvent").modal("show");
+                    },
+                    dateClick: function (info) {
+                    $("#eventForm")[0].reset();
+                    $("input[name='id']").val("");
+                    $("input[name='start']").val(info.dateStr);
+                    $("#btnDeleteEvent").hide();
+                    $("#modalEvent").modal("show");
+                    }
+            });
+            calendar.render();
+            // ====== NÚT THÊM LỊCH TRÌNH ======
+            $("#btnAddSchedule").on("click", function () {
+            $("#eventForm")[0].reset();
+            $("input[name='id']").val("");
+            $("#btnDeleteEvent").hide();
+            $("#modalEvent").modal("show");
+            });
+            // ===== LƯU =====
+            $("#eventForm").on("submit", function (e) {
+            e.preventDefault();
+            var data = {
+            id: $("input[name='id']").val(),
+                    title: $("input[name='title']").val(),
+                    start: $("input[name='start']").val(),
+                    end: $("input[name='end']").val(),
+                    description: $("textarea[name='description']").val()
+            };
+            $.ajax({
+            url: CONTEXT + "/luuLichTrinh",
+                    type: "POST",
+                    data: data,
+                    success: function (res) {
+                    Swal.fire("Đã lưu!", "", "success");
+                    location.reload();
+                    }
+            });
+            });
+            // ===== XÓA =====
+            $("#btnDeleteEvent").on("click", function () {
+            let id = $("input[name='id']").val();
+            $.post(CONTEXT + "/xoaLichTrinh", {id: id}, function (res) {
+            Swal.fire("Đã xóa!", "", "success");
+            location.reload();
+            });
+            });
+            });
+        </script>
     </body>
 </html>

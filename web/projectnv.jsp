@@ -471,7 +471,7 @@
 
                         <!-- Nút Reset -->
                         <div class="col-md-1">
-                            <a href="dsDuan?nhom_du_an=<%= request.getParameter("nhom_du_an") %>" class="btn btn-secondary w-100">
+                            <a href="dsDuannv" class="btn btn-secondary w-100">
                                 <i class="fa-solid fa-rotate-left"></i>
                             </a>
                         </div>
@@ -750,6 +750,6 @@
         <script>
             const USER_PERMISSIONS = <%= session.getAttribute("quyen") %>;
         </script>
-        <script src="<%= request.getContextPath() %>/scripts/project_nv.js?v=20251105"></script>
+        <script src="<%= request.getContextPath() %>/scripts/project_nv.js?v=<%= System.currentTimeMillis() %>"></script>
     </body>
 </html>

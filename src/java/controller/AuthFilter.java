@@ -34,14 +34,10 @@ public class AuthFilter implements Filter {
             "/dsDuan",
             "/dsChamCong",
             "/xoaNhanvien",
-            "/dsLichtrinh",
             "/luuLichTrinh",
-            "/suaDuan",
             "/svBaocao",
             "/suaPhongban",
             "/themNhanvien",
-            "/themDuan",
-            "/xoaDuan",
             "/xoaPhongban"
     );
 

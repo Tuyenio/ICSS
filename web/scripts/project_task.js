@@ -1,4 +1,39 @@
+function hasPermission(code) {
+    return USER_PERMISSIONS && USER_PERMISSIONS.includes(code);
+}
+document.addEventListener("DOMContentLoaded", function () {
 
+    // Tạo task
+    if (!hasPermission("them_congviec")) {
+        $("#btnCreateTask").hide();
+        $(".kanban-add-btn").hide(); // nút + trong Kanban
+    }
+
+    // Xóa task
+    if (!hasPermission("xoa_congviec")) {
+        $(".task-action-item.delete").remove();
+        $(".task-action-item.permanent-delete-action").remove();
+    }
+
+    if (!hasPermission("them_quytrinh")) {
+        $("#btnAddProcessStep").hide();
+    }
+
+    // Lưu thay đổi task
+    if (!hasPermission("sua_congviec")) {
+        $("#btnSaveTask").remove();
+    }
+
+    // Nhắc việc
+    if (!hasPermission("nhacviec")) {
+        $(".task-action-item.remind").remove();
+    }
+
+    // Duyệt task
+    if (!hasPermission("duyet_congviec")) {
+        $("#btnXetDuyet").remove();
+    }
+});
 // ====== BIẾN GLOBAL THEO DÕI TAB HIỆN TẠI ======
 var currentTabState = 'active'; // 'active', 'archived', 'deleted'
 
@@ -51,6 +86,8 @@ document.getElementById('btnSaveTask').addEventListener('click', function () {
                     showToast('success', '✅ Cập nhật công việc thành công!');
                     // Ẩn modal và làm mới danh sách (tuỳ theo bạn xử lý)
                     bootstrap.Modal.getInstance(document.getElementById('modalTaskDetail')).hide();
+                    localStorage.setItem('lastTab', document.querySelector('.nav-link.active').id);
+                    localStorage.setItem('lastView', currentView);
                     location.reload();
                 } else {
                     showToast('error', data.message || '❌ Lỗi khi cập nhật');
@@ -227,7 +264,6 @@ document.addEventListener("DOMContentLoaded", function () {
             .then(html => {
                 document.querySelector('#modalTaskDetail select[name="ten_nguoi_giao"]').innerHTML = html;
                 //document.querySelector('#modalTaskDetail select[name="ten_nguoi_nhan"]').innerHTML = html;
-                document.querySelector('#modalTaskDetail select[name="ten_nguoi_danh_gia"]').innerHTML = html;
                 document.querySelector('#taskForm select[name="ten_nguoi_giao"]').innerHTML = html;
                 //document.querySelector('#taskForm select[name="ten_nguoi_nhan"]').innerHTML = html;
             });
@@ -242,6 +278,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // Lấy dữ liệu từ nút
         const id = button.getAttribute("data-id") || "";
         const tenCV = button.getAttribute("data-ten") || "";
+        const tenDuAn = button.getAttribute("data-ten_du_an") || "";
         const moTa = button.getAttribute("data-mo-ta") || "";
         const ngay_bat_dau = button.getAttribute("data-ngay-bat-dau") || "";
         const hanHT = button.getAttribute("data-han") || "";
@@ -267,6 +304,9 @@ document.addEventListener("DOMContentLoaded", function () {
         // Gán dữ liệu cơ bản
         modal.querySelector('[name="task_id"]').value = id;
         modal.querySelector('[name="ten_cong_viec"]').value = tenCV;
+        modal.querySelector(".modal-title").innerHTML =
+                '<i class="fa-solid fa-info-circle text-primary"></i> '
+                + tenDuAn;
         modal.querySelector('[name="mo_ta"]').value = moTa;
         modal.querySelector('[name="ngay_bat_dau"]').value = ngay_bat_dau;
         modal.querySelector('[name="han_hoan_thanh"]').value = hanHT;
@@ -417,8 +457,6 @@ document.addEventListener("DOMContentLoaded", function () {
             new bootstrap.Tab(tabTrigger).show();
     });
 });
-
-
 
 var currentTarget = null;
 
@@ -677,14 +715,14 @@ function renderListViewFromJson(tasks) {
                 + '    <td><span class="badge ' + statusClass + '">' + (task.trang_thai || '') + '</span></td>'
                 + '    <td><span class="badge ' + getApprovalBadge(task.trang_thai_duyet) + '">' + (task.trang_thai_duyet || 'Chưa duyệt') + '</span></td>'
                 + '    <td>'
-                + '        <div class="action-btns" onclick="event.stopPropagation();">'
-                + '            <button class="btn btn-sm btn-warning" title="Lưu trữ" onclick="archiveTask(\'' + task.id + '\')">'
+                + '        <div class="action-btns">'
+                + '            <button class="btn btn-sm btn-warning" title="Lưu trữ" onclick="event.stopPropagation(); archiveTask(\'' + task.id + '\')">'
                 + '                <i class="fa-solid fa-archive"></i>'
                 + '            </button>'
-                + '            <button class="btn btn-sm btn-info" title="Nhắc việc" onclick="remindTask(\'' + task.id + '\')">'
+                + '            <button class="btn btn-sm btn-info" title="Nhắc việc" onclick="event.stopPropagation(); remindTask(\'' + task.id + '\')">'
                 + '                <i class="fa-solid fa-bell"></i>'
                 + '            </button>'
-                + '            <button class="btn btn-sm btn-danger" title="Xóa" onclick="deleteTask(\'' + task.id + '\')">'
+                + '            <button class="btn btn-sm btn-danger" title="Xóa" onclick="event.stopPropagation(); deleteTask(\'' + task.id + '\')">'
                 + '                <i class="fa-solid fa-trash"></i>'
                 + '            </button>'
                 + '        </div>'
@@ -851,15 +889,35 @@ function renderProcessSteps() {
 }
 
 function renderTaskReviews(data) {
-    var list = document.getElementById("taskReviewList");
+    const list = document.getElementById("taskReviewList");
     list.innerHTML = "";
+
     data.forEach(function (item) {
+
+        // Avatar fallback
+        var avatar = (item.anh_dai_dien && item.anh_dai_dien.trim() !== "")
+                ? item.anh_dai_dien
+                : "https://ui-avatars.com/api/?name=" + encodeURIComponent(item.ten_nguoi_danh_gia);
+
+        var timeStr = new Date(item.thoi_gian).toLocaleString("vi-VN");
+
+        var isRight = item.is_from_worker == 1;
+
         var li = document.createElement("li");
-        var html = "<b>Người đánh giá:</b> " + item.ten_nguoi_danh_gia + "<br>" +
-                "<b>Nhận xét:</b> " + item.nhan_xet + "<br>" +
-                "<i class='text-muted'>" + item.thoi_gian + "</i>";
+        li.className = "chat-item " + (isRight ? "chat-item-right" : "chat-item-left");
+
+        // ❇️ KHÔNG DÙNG TEMPLATE LITERAL, KHÔNG CÓ `${}`
+        var html = ""
+                + "<img class='chat-avatar' src='" + avatar + "'>"
+                + "<div>"
+                + "    <div class='chat-bubble " + (isRight ? "chat-right" : "chat-left") + "'>"
+                + "        <div class='fw-bold'>" + item.ten_nguoi_danh_gia + "</div>"
+                + "        <div>" + item.nhan_xet + "</div>"
+                + "    </div>"
+                + "    <div class='chat-time'>" + timeStr + "</div>"
+                + "</div>";
+
         li.innerHTML = html;
-        li.classList.add("mb-2", "border", "p-2", "rounded");
         list.appendChild(li);
     });
 }
@@ -1105,17 +1163,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
 document.getElementById("btnAddReview").addEventListener("click", function () {
     var taskId = document.getElementById("taskId").value;
-    var reviewerSelect = document.querySelector('select[name="ten_nguoi_danh_gia"]');
-    var reviewerId = reviewerSelect.value;
     var comment = document.getElementById("reviewComment").value.trim();
+    var reviewerId = document.getElementById("currentUserId").value;
 
-    if (!reviewerId || !comment) {
-        showToast('error', 'Vui lòng chọn người đánh giá và nhập nhận xét.');
+    if (!comment) {
+        showToast('error', 'Vui lòng nhập nhận xét.');
         return;
     }
-    if (!confirm("Bạn có chắc chắn muốn thêm đánh giá này không?")) {
-        return;
-    }
+
     var formData = new URLSearchParams();
     formData.append("cong_viec_id", taskId);
     formData.append("nguoi_danh_gia_id", reviewerId);
@@ -1126,21 +1181,17 @@ document.getElementById("btnAddReview").addEventListener("click", function () {
         headers: {"Content-Type": "application/x-www-form-urlencoded"},
         body: formData.toString()
     })
-            .then(function (res) {
-                return res.json();
-            })
-            .then(function (data) {
+            .then(res => res.json())
+            .then(data => {
                 if (data.success) {
                     showToast('success', 'Thêm đánh giá thành công!');
                     document.getElementById("reviewComment").value = "";
-                    setTimeout(function () {
-                        loadTaskReviews(taskId);
-                    }, 300);
+                    loadTaskReviews(taskId);
                 } else {
                     showToast('error', 'Thêm thất bại: ' + (data.message || ''));
                 }
             })
-            .catch(function () {
+            .catch(() => {
                 showToast('error', 'Đã xảy ra lỗi khi thêm đánh giá.');
             });
 });
@@ -1422,7 +1473,12 @@ function archiveTask(taskId) {
                     .then(data => {
                         if (data.success) {
                             Swal.fire('Thành công!', 'Công việc đã được lưu trữ.', 'success');
-                            setTimeout(() => location.reload(), 1200);
+                            setTimeout(() => {
+                                // Ghi nhớ view + tab trước khi reload
+                                localStorage.setItem('lastTab', document.querySelector('.nav-link.active').id);
+                                localStorage.setItem('lastView', currentView);
+                                location.reload();
+                            }, 1200);
                         } else {
                             Swal.fire('Lỗi!', data.message || 'Lưu trữ thất bại.', 'error');
                         }
@@ -1449,7 +1505,12 @@ function remindTask(taskId) {
             .then(data => {
                 if (data.success) {
                     Swal.fire('Thành công!', 'Nhắc việc thành công.', 'success');
-                    setTimeout(() => location.reload(), 1200);
+                    setTimeout(() => {
+                        // Ghi nhớ view + tab trước khi reload
+                        localStorage.setItem('lastTab', document.querySelector('.nav-link.active').id);
+                        localStorage.setItem('lastView', currentView);
+                        location.reload();
+                    }, 1200);
                 } else {
                     Swal.fire('Lỗi!', data.message || 'Lưu trữ thất bại.', 'error');
                 }
@@ -1487,7 +1548,12 @@ function deleteTask(taskId) {
                     .then(data => {
                         if (data.success) {
                             Swal.fire('Đã xóa!', 'Công việc đã được chuyển vào thùng rác.', 'success');
-                            setTimeout(() => location.reload(), 1200);
+                            setTimeout(() => {
+                                // Ghi nhớ view + tab trước khi reload
+                                localStorage.setItem('lastTab', document.querySelector('.nav-link.active').id);
+                                localStorage.setItem('lastView', currentView);
+                                location.reload();
+                            }, 1200);
                         } else {
                             Swal.fire('Lỗi!', data.message || 'Xóa thất bại.', 'error');
                         }
@@ -1529,7 +1595,12 @@ function restoreTask(taskId) {
                     .then(data => {
                         if (data.success) {
                             Swal.fire('Thành công!', 'Công việc đã được khôi phục.', 'success');
-                            setTimeout(() => location.reload(), 1200);
+                            setTimeout(() => {
+                                // Ghi nhớ view + tab trước khi reload
+                                localStorage.setItem('lastTab', document.querySelector('.nav-link.active').id);
+                                localStorage.setItem('lastView', currentView);
+                                location.reload();
+                            }, 1200);
                         } else {
                             Swal.fire('Lỗi!', data.message || 'Khôi phục thất bại.', 'error');
                         }
@@ -1583,8 +1654,11 @@ function permanentDeleteTask(taskId) {
                                 const tab = document.querySelector('.nav-link.active');
                                 if (tab?.id === 'deleted-tasks-tab')
                                     loadDeletedTasks();
-                                else
+                                else {
+                                    localStorage.setItem('lastTab', document.querySelector('.nav-link.active').id);
+                                    localStorage.setItem('lastView', currentView);
                                     location.reload();
+                                }
                             }, 1400);
                         } else {
                             Swal.fire('Lỗi!', data.message || 'Xóa vĩnh viễn thất bại.', 'error');
@@ -1821,7 +1895,12 @@ function markReminderAsRead(taskId) {
             .then(data => {
                 if (data.success) {
                     Swal.fire('Đã đọc!', 'Đã tắt nhắc việc.', 'success');
-                    setTimeout(() => location.reload(), 1200);
+                    setTimeout(() => {
+                        // Ghi nhớ view + tab trước khi reload
+                        localStorage.setItem('lastTab', document.querySelector('.nav-link.active').id);
+                        localStorage.setItem('lastView', currentView);
+                        location.reload();
+                    }, 1200);
                 } else {
                     Swal.fire('Lỗi!', data.message || 'Đọc thất bại.', 'error');
                 }
@@ -1855,6 +1934,7 @@ function switchView(viewType) {
         document.getElementById('listView').classList.add('active');
         document.getElementById('calendarView').classList.remove('active');
         initTableSorting();
+        sortTable('trang_thai', 'asc');
     } else if (viewType === 'calendar') {
         document.getElementById('viewCalendar').classList.add('active');
         document.querySelector('.kanban-board').style.display = 'none';
@@ -1973,6 +2053,7 @@ function updateTaskDeadline(taskId, newDeadline) {
             });
 }
 
+// load trang đúng view
 document.addEventListener('DOMContentLoaded', function () {
 
     // 1️⃣ Lấy trạng thái cuối cùng

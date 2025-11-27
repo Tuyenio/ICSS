@@ -1674,6 +1674,74 @@
                     min-width: auto;
                 }
             }
+            /* Chatbox ở day*/
+            .chat-review-list {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+            }
+
+            .chat-bubble {
+                max-width: 75%;
+                padding: 10px 14px;
+                border-radius: 15px;
+                margin-bottom: 12px;
+                display: inline-block;
+                position: relative;
+                animation: fadeIn .2s ease-in;
+            }
+
+            .chat-left {
+                background: #f1f1f1;
+                color: #333;
+                border-bottom-left-radius: 0;
+            }
+
+            .chat-right {
+                background: #4e73df;
+                color: white;
+                border-bottom-right-radius: 0;
+                margin-left: auto;
+            }
+
+            .chat-item {
+                display: flex;
+                align-items: flex-end;
+                margin: 10px 0;
+            }
+
+            .chat-item-left {
+                flex-direction: row;
+            }
+
+            .chat-item-right {
+                flex-direction: row-reverse;
+            }
+
+            .chat-avatar {
+                width: 36px;
+                height: 36px;
+                border-radius: 50%;
+                margin: 0 10px;
+                object-fit: cover;
+            }
+
+            .chat-time {
+                font-size: 11px;
+                margin-top: 4px;
+                color: #666;
+            }
+
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(5px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
         </style>
     </head>
 
@@ -1731,11 +1799,18 @@
                                 </div>
 
                                 <!-- Nút thêm từ Excel -->
-                                <button class="btn btn-success rounded-pill px-3" data-bs-toggle="modal"
-                                        data-bs-target="#modalExcel">
-                                    <i class="fa-solid fa-file-excel"></i> Thêm việc từ Excel
+                                <!--                                <button class="btn btn-success rounded-pill px-3" data-bs-toggle="modal"
+                                                                        data-bs-target="#modalExcel">
+                                                                    <i class="fa-solid fa-file-excel"></i> Thêm việc từ Excel
+                                                                </button>-->
+                                <!-- Nút tạo công việc -->
+                                <button class="btn btn-primary rounded-pill px-3" data-bs-toggle="modal"
+                                        data-bs-target="#modalTask">
+                                    <i class="fa-solid fa-plus"></i> Tạo công việc
                                 </button>
-                                <a href="./dsDuannv" class="btn btn-secondary rounded-pill px-3">
+                                <!-- Nút quay lại -->
+                                <a href="dsDuan?nhom_du_an=<%= session.getAttribute("nhom_du_an") %>" 
+                                   class="btn btn-secondary rounded-pill px-3">
                                     <i class="fa-solid fa-arrow-left"></i> Quay lại dự án
                                 </a>
                             </div>
@@ -1899,6 +1974,7 @@
                                             </button>
                                             <div class="task-actions-dropdown">
                                                 <button class="task-action-item archive" data-task-id="<%= task.get("id") %>" data-action="archive"><i class="fa-solid fa-archive"></i> Lưu trữ</button>
+                                                <button class="task-action-item remind" data-task-id="<%= task.get("id") %>" data-action="remind"><i class="fa-solid fa-bell"></i> Nhắc việc</button>
                                                 <button class="task-action-item delete" data-task-id="<%= task.get("id") %>" data-action="delete"><i class="fa-solid fa-trash"></i> Xóa</button>
                                             </div>
                                         </div>
@@ -1986,6 +2062,9 @@
                                                     <div class="action-btns" onclick="event.stopPropagation();">
                                                         <button class="btn btn-sm btn-warning" title="Lưu trữ" onclick="archiveTask('<%= task.get("id") %>')">
                                                             <i class="fa-solid fa-archive"></i>
+                                                        </button>
+                                                        <button class="btn btn-sm btn-info" title="Nhắc việc" onclick="remindTask('<%= task.get("id") %>')">
+                                                            <i class="fa-solid fa-bell"></i>
                                                         </button>
                                                         <button class="btn btn-sm btn-danger" title="Xóa" onclick="deleteTask('<%= task.get("id") %>')">
                                                             <i class="fa-solid fa-trash"></i>
@@ -2083,6 +2162,10 @@
                                                         data-task-id="<%= task.get("id") %>" data-action="restore">
                                                     <i class="fa-solid fa-undo"></i><span>Khôi phục</span>
                                                 </button>
+                                                <button class="task-action-item permanent-delete-action" type="button"
+                                                        data-task-id="<%= task.get("id") %>" data-action="permanent-delete">
+                                                    <i class="fa-solid fa-trash-can"></i><span>Xóa vĩnh viễn</span>
+                                                </button>
                                             </div>
                                         </div>
                                     </div>
@@ -2179,6 +2262,10 @@
                                                 <button class="task-action-item restore-action" type="button"
                                                         data-task-id="<%= task.get("id") %>" data-action="restore">
                                                     <i class="fa-solid fa-undo"></i><span>Khôi phục</span>
+                                                </button>
+                                                <button class="task-action-item permanent-delete-action" type="button"
+                                                        data-task-id="<%= task.get("id") %>" data-action="permanent-delete">
+                                                    <i class="fa-solid fa-trash-can"></i><span>Xóa vĩnh viễn</span>
                                                 </button>
                                             </div>
                                         </div>
@@ -2428,11 +2515,40 @@
                                             <h6 class="section-title">
                                                 <i class="fa-solid fa-star text-warning"></i> Đánh giá công việc
                                             </h6>
+                                            <form id="taskReviewForm" class="mb-3">
+                                                <%
+                                                    Object uidObj = session.getAttribute("userId");
+                                                    int currentUserId = 0;
+                                                    if (uidObj != null) {
+                                                        try {
+                                                            currentUserId = Integer.parseInt(uidObj.toString());
+                                                        } catch (Exception e) {}
+                                                    }
+                                                %>
+
+                                                <!-- ID người dùng đang đăng nhập -->
+                                                <input type="hidden" id="currentUserId" value="<%= currentUserId %>">
+
+                                                <!-- Task ID -->
+                                                <input type="hidden" id="taskReviewId" name="task_id" value="">
+
+                                                <div class="mb-2">
+                                                    <label class="form-label">Nhận xét:</label>
+                                                    <textarea class="form-control" id="reviewComment" rows="2" placeholder="Nhập nhận xét..."></textarea>
+                                                </div>
+
+                                                <button type="button" class="btn btn-success btn-sm" id="btnAddReview">
+                                                    <i class="fa-solid fa-plus"></i> Thêm đánh giá
+                                                </button>
+                                            </form>
                                             <ul id="taskReviewList" class="list-group"></ul>
                                         </div>
                                     </div>
 
                                     <div class="modal-footer">
+                                        <button type="button" class="btn btn-warning" id="btnXetDuyet">
+                                            <i class="fa-solid fa-check-circle"></i> Xét duyệt công việc
+                                        </button>
                                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
                                         <button type="button" class="btn btn-primary" id="btnSaveTask">
                                             <i class="fa-solid fa-save"></i> Lưu thay đổi
@@ -2442,6 +2558,37 @@
                             </div>
                         </div>
 
+                        <!-- Modal Xét duyệt công việc -->
+                        <div class="modal fade" id="modalXetDuyet" tabindex="-1">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title"><i class="fa-solid fa-gavel"></i> Xét duyệt công việc</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <input type="hidden" id="xetDuyetTaskId">
+                                        <div class="mb-3">
+                                            <label class="form-label"><b>Quyết định</b></label>
+                                            <select class="form-select" id="quyetDinhDuyet">
+                                                <option value="Đã duyệt">✅ Duyệt</option>
+                                                <option value="Từ chối">❌ Từ chối</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label"><b>Lý do / Ghi chú</b></label>
+                                            <textarea class="form-control" id="lyDoXetDuyet" rows="4" placeholder="Nhập lý do duyệt hoặc từ chối..."></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                        <button type="button" class="btn btn-success" id="btnXacNhanXetDuyet">
+                                            <i class="fa-solid fa-check"></i> Xác nhận
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         <!-- Modal chọn nhiều người -->
                         <div class="modal fade" id="modalChonNguoiNhan" tabindex="-1">
                             <div class="modal-dialog modal-lg">
@@ -2534,7 +2681,7 @@
                 </div>
             </div>
         </div>
-        <script src="<%= request.getContextPath() %>/scripts/project_tasknv.js?v=<%= System.currentTimeMillis() %>"></script>
+        <script src="<%= request.getContextPath() %>/scripts/project_task.js?v=<%= System.currentTimeMillis() %>"></script>
         <script src="<%= request.getContextPath() %>/scripts/task-approval.js?v=<%= System.currentTimeMillis() %>"></script>
         <%--FULLCALENDAR INITIALIZATION--%>
         <script>

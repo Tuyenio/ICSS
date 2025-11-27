@@ -11,9 +11,9 @@
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
         <style>
             html, body {
-                font-family: 'Inter', 'Roboto', Arial, sans-serif !important;
-                background: #f4f6fa;
-                color: #23272f;
+                background: #f8fafc;
+                font-family: 'Segoe UI', Roboto, sans-serif;
+                color: #1e293b;
             }
             /* Responsive styles for included sidebar */
             .main-content {

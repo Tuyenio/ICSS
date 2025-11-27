@@ -60,9 +60,9 @@
         <script src="https://cdn.ckeditor.com/4.22.1/standard/ckeditor.js"></script>
         <style>
             html, body {
-                font-family: 'Inter', 'Roboto', Arial, sans-serif !important;
-                background: #f4f6fa;
-                color: #23272f;
+                background: #f8fafc;
+                font-family: 'Segoe UI', Roboto, sans-serif;
+                color: #1e293b;
             }
             /* Responsive styles for included sidebar */
             .main-content {
