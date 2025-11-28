@@ -90,7 +90,7 @@
             }
 
             .kanban-col:hover {
-                transform: translateY(-6px) scale(1.02);
+                transform: scale(1.015);
                 box-shadow: 0 12px 30px rgba(0,0,0,0.15);
                 background: linear-gradient(145deg, #ffffff, #f1f5f9);
             }
@@ -161,7 +161,7 @@
             }
 
             .kanban-task:hover {
-                transform: translateY(-4px) scale(1.02);
+                transform: scale(1.01);
                 box-shadow: 0 8px 25px rgba(13, 202, 240, 0.2);
                 border-left-color: #4f46e5;
                 background: linear-gradient(135deg, #ffffff, #f0f9ff);
@@ -1484,7 +1484,7 @@
                     min-width: auto;
                 }
             }
-            
+            /* Chat day*/
             .chat-review-list {
                 list-style: none;
                 padding: 0;
@@ -1552,6 +1552,7 @@
                     transform: translateY(0);
                 }
             }
+            
         </style>
     </head>
 
@@ -2351,7 +2352,7 @@
                                                     <i class="fa-solid fa-plus"></i> Thêm đánh giá
                                                 </button>
                                             </form>
-                                            <ul id="taskReviewList" class="list-group"></ul>
+                                            <ul id="taskReviewList" class="chat-review-list"></ul>
                                         </div>
                                     </div>
 
@@ -2459,6 +2460,15 @@
                                         <div class="mb-2">
                                             <label class="form-label">Mô tả</label>
                                             <textarea class="form-control" name="stepDesc" rows="2"></textarea>
+                                        </div>
+                                        <div class="mb-2">
+                                            <label class="form-label">Người nhận</label>
+                                            <button type="button" class="btn btn-outline-primary btn-sm" id="btnOpenNguoiNhanProcess">
+                                                <i class="fa-solid fa-user-plus"></i> Thêm người nhận
+                                            </button>
+                                            <div id="danhSachNguoiNhanProcess" class="d-flex flex-wrap gap-2 mt-2"></div>
+
+                                            <input type="hidden" name="process_nguoi_nhan" id="nguoiNhanProcessHidden">
                                         </div>
                                         <div class="mb-2">
                                             <label class="form-label">Trạng thái</label>

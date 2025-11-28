@@ -1552,6 +1552,7 @@
                     transform: translateY(0);
                 }
             }
+            
         </style>
     </head>
 
@@ -2459,6 +2460,15 @@
                                         <div class="mb-2">
                                             <label class="form-label">Mô tả</label>
                                             <textarea class="form-control" name="stepDesc" rows="2"></textarea>
+                                        </div>
+                                        <div class="mb-2">
+                                            <label class="form-label">Người nhận</label>
+                                            <button type="button" class="btn btn-outline-primary btn-sm" id="btnOpenNguoiNhanProcess">
+                                                <i class="fa-solid fa-user-plus"></i> Thêm người nhận
+                                            </button>
+                                            <div id="danhSachNguoiNhanProcess" class="d-flex flex-wrap gap-2 mt-2"></div>
+
+                                            <input type="hidden" name="process_nguoi_nhan" id="nguoiNhanProcessHidden">
                                         </div>
                                         <div class="mb-2">
                                             <label class="form-label">Trạng thái</label>

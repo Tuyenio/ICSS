@@ -18,8 +18,8 @@
     Map<String, Object> chamCongNgay = new HashMap<>();
     
     // Dữ liệu cho biểu đồ tiến độ dự án theo nhóm dự án
-    Map<String, Object> tienDoDuAnDashboard = new HashMap<>();
-    Map<String, Object> tienDoDuAnAnNinh = new HashMap<>();
+    Map<String, Object> tienDoKyThuat = new HashMap<>();
+    Map<String, Object> tienDoKinhDoanh = new HashMap<>();
     
     KNCSDL kn = null;
     try {
@@ -29,8 +29,8 @@
     barTienDoPhongBan = kn.getDataForBarChart2(sess);
     
     // Lấy dữ liệu tiến độ dự án cho từng nhóm
-    tienDoDuAnDashboard = kn.getTienDoDuAnTheoPhongBan("Phòng Kỹ Thuật");
-    tienDoDuAnAnNinh = kn.getTienDoDuAnTheoPhongBan("Phòng Kinh Doanh");
+    tienDoKyThuat = kn.getTienDoDuAnTheoPhongBan("Phòng Kỹ Thuật");
+    tienDoKinhDoanh = kn.getTienDoDuAnTheoPhongBan("Phòng Kinh Doanh");
     
     // Thống kê chấm công tháng hiện tại (dùng lại getThongKeChamCong)
     Calendar cal = Calendar.getInstance();
@@ -873,11 +873,16 @@
             for(int i=0;i<pbValues.size();i++){ if(i>0) pbValsAttr.append(','); pbValsAttr.append(pbValues.get(i)); }
             
             // Dữ liệu cho biểu đồ tiến độ dự án
-            List<String> dashboardProjectNames = (List<String>) tienDoDuAnDashboard.getOrDefault("projectNames", Collections.emptyList());
-            List<Double> dashboardProgressValues = (List<Double>) tienDoDuAnDashboard.getOrDefault("progressValues", Collections.emptyList());
+            List<String> dashboardProjectNames = (List<String>) tienDoKyThuat.getOrDefault("projectNames", Collections.emptyList());
+            List<Double> dashboardProgressValues = (List<Double>) tienDoKyThuat.getOrDefault("progressValues", Collections.emptyList());
+            List<String> dashboardEndDates = (List<String>) tienDoKyThuat.getOrDefault("endDates", Collections.emptyList());
+            List<Integer> dashboardDaysLeft = (List<Integer>) tienDoKyThuat.getOrDefault("daysLeft", Collections.emptyList());
+
+            List<String> anNinhEndDates = (List<String>) tienDoKinhDoanh.getOrDefault("endDates", Collections.emptyList());
+            List<Integer> anNinhDaysLeft = (List<Integer>) tienDoKinhDoanh.getOrDefault("daysLeft", Collections.emptyList());
             
-            List<String> anNinhProjectNames = (List<String>) tienDoDuAnAnNinh.getOrDefault("projectNames", Collections.emptyList());
-            List<Double> anNinhProgressValues = (List<Double>) tienDoDuAnAnNinh.getOrDefault("progressValues", Collections.emptyList());
+            List<String> anNinhProjectNames = (List<String>) tienDoKinhDoanh.getOrDefault("projectNames", Collections.emptyList());
+            List<Double> anNinhProgressValues = (List<Double>) tienDoKinhDoanh.getOrDefault("progressValues", Collections.emptyList());
             
             String dashboardProjectNamesAttr = String.join("|", dashboardProjectNames);
             StringBuilder dashboardProgressAttr = new StringBuilder();
@@ -909,6 +914,11 @@
              data-kt-project-names="<%= dashboardProjectNamesAttr %>"
              data-kt-progress="<%= dashboardProgressAttr.toString() %>"
              data-kd-project-names="<%= anNinhProjectNamesAttr %>"
+             data-kt-end-dates="<%= String.join("|", dashboardEndDates) %>"
+             data-kt-days-left="<%= dashboardDaysLeft.toString() %>"
+
+             data-kd-end-dates="<%= String.join("|", anNinhEndDates) %>"
+             data-kd-days-left="<%= anNinhDaysLeft.toString() %>"
              data-kd-progress="<%= anNinhProgressAttr.toString() %>"></div>
 
         <script>

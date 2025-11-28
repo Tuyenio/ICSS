@@ -263,6 +263,10 @@
         <servlet-name>luuQuyenNV</servlet-name>
         <servlet-class>controller.luuQuyenNV</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>ApiThongbaoLatest</servlet-name>
+        <servlet-class>controller.ApiThongbaoLatest</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>dsnhanvien</servlet-name>
         <url-pattern>/dsnhanvien</url-pattern>
@@ -499,7 +503,11 @@
         <servlet-name>luuQuyenNV</servlet-name>
         <url-pattern>/luuQuyenNV</url-pattern>
     </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ApiThongbaoLatest</servlet-name>
+        <url-pattern>/ApiThongbaoLatest</url-pattern>
+    </servlet-mapping>
     <session-config>
-        <session-timeout>-1</session-timeout>
+        <session-timeout>60</session-timeout>
     </session-config>
 </web-app>

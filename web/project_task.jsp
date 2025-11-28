@@ -7,20 +7,21 @@
     <head>
         <meta charset="UTF-8">
         <link rel="icon" type="image/png" href="Img/logoics.png">
-        <title>Quản lý Công việc</title>
-        <!-- Bootstrap CSS -->
+        <title>Quản lý Dự án</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
         <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+        <!-- FullCalendar CSS -->
+        <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/main.min.css" rel="stylesheet">
         <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
         <script src="https://cdn.ckeditor.com/4.22.1/standard/ckeditor.js"></script>
-        <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/main.min.css" rel="stylesheet">
+        <!-- FullCalendar JS -->
         <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <script>
             var PAGE_TITLE = '<i class="fa-solid fa-diagram-project me-2"></i>Quản lý Dự án: <%= request.getAttribute("tenDuan") %>';
             var PROJECT_ID = <%= request.getAttribute("projectId") %>;
         </script>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <style>
             /* BODY + MAIN CONTENT */
             body {
@@ -90,7 +91,7 @@
             }
 
             .kanban-col:hover {
-                transform: translateY(-6px) scale(1.02);
+                transform: scale(1.015);
                 box-shadow: 0 12px 30px rgba(0,0,0,0.15);
                 background: linear-gradient(145deg, #ffffff, #f1f5f9);
             }
@@ -161,7 +162,7 @@
             }
 
             .kanban-task:hover {
-                transform: translateY(-4px) scale(1.02);
+                transform: scale(1.01);
                 box-shadow: 0 8px 25px rgba(13, 202, 240, 0.2);
                 border-left-color: #4f46e5;
                 background: linear-gradient(135deg, #ffffff, #f0f9ff);
@@ -321,6 +322,16 @@
             .task-action-item i {
                 width: 16px;
                 font-size: 0.85rem;
+            }
+
+            .task-action-item.restore:hover {
+                background-color: #28a745 !important;
+                color: white !important;
+            }
+
+            .task-action-item.delete-permanent:hover {
+                background-color: #dc3545 !important;
+                color: white !important;
             }
 
             /* TASK NAVIGATION TABS */
@@ -1096,206 +1107,6 @@
                 }
             }
 
-            /* ========== LỊCH SỬ CÔNG VIỆC TIMELINE ========== */
-            .history-timeline {
-                position: relative;
-                padding: 20px 0;
-                max-height: 500px;
-                overflow-y: auto;
-            }
-
-            .history-timeline::-webkit-scrollbar {
-                width: 6px;
-            }
-
-            .history-timeline::-webkit-scrollbar-track {
-                background: #f1f5f9;
-                border-radius: 10px;
-            }
-
-            .history-timeline::-webkit-scrollbar-thumb {
-                background: linear-gradient(135deg, #0dcaf0, #4f46e5);
-                border-radius: 10px;
-            }
-
-            .history-timeline::before {
-                content: '';
-                position: absolute;
-                left: 40px;
-                top: 0;
-                bottom: 0;
-                width: 3px;
-                background: linear-gradient(180deg, #0dcaf0, #4f46e5);
-                border-radius: 2px;
-            }
-
-            .history-item {
-                position: relative;
-                padding-left: 80px;
-                margin-bottom: 24px;
-                animation: slideInLeft 0.5s ease;
-            }
-
-            @keyframes slideInLeft {
-                from {
-                    opacity: 0;
-                    transform: translateX(-20px);
-                }
-                to {
-                    opacity: 1;
-                    transform: translateX(0);
-                }
-            }
-
-            .history-item:last-child {
-                margin-bottom: 0;
-            }
-
-            .history-number {
-                position: absolute;
-                left: 0;
-                top: 5px;
-                width: 32px;
-                height: 32px;
-                background: linear-gradient(135deg, #0dcaf0, #4f46e5);
-                color: white;
-                border-radius: 50%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-weight: 700;
-                font-size: 0.85rem;
-                box-shadow: 0 3px 10px rgba(13, 202, 240, 0.3);
-                z-index: 2;
-            }
-
-            .history-avatar {
-                position: absolute;
-                left: 58px;
-                top: 0;
-                width: 45px;
-                height: 45px;
-                border-radius: 50%;
-                overflow: hidden;
-                border: 3px solid white;
-                box-shadow: 0 3px 10px rgba(0,0,0,0.15);
-                background: linear-gradient(135deg, #f8fafc, #e2e8f0);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                z-index: 2;
-            }
-
-            .history-avatar img {
-                width: 100%;
-                height: 100%;
-                object-fit: cover;
-            }
-
-            .history-avatar-placeholder {
-                width: 100%;
-                height: 100%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                background: linear-gradient(135deg, #0dcaf0, #4f46e5);
-                color: white;
-                font-weight: 700;
-                font-size: 1.1rem;
-            }
-
-            .history-content {
-                background: white;
-                border: 1px solid #e2e8f0;
-                border-radius: 12px;
-                padding: 16px;
-                box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-                transition: all 0.3s ease;
-                position: relative;
-            }
-
-            .history-content:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 4px 15px rgba(13, 202, 240, 0.2);
-                border-color: #0dcaf0;
-            }
-
-            .history-content::before {
-                content: '';
-                position: absolute;
-                left: -8px;
-                top: 20px;
-                width: 0;
-                height: 0;
-                border-top: 8px solid transparent;
-                border-bottom: 8px solid transparent;
-                border-right: 8px solid #e2e8f0;
-            }
-
-            .history-content::after {
-                content: '';
-                position: absolute;
-                left: -7px;
-                top: 20px;
-                width: 0;
-                height: 0;
-                border-top: 8px solid transparent;
-                border-bottom: 8px solid transparent;
-                border-right: 8px solid white;
-            }
-
-            .history-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                margin-bottom: 10px;
-            }
-
-            .history-user {
-                font-weight: 600;
-                color: #1e293b;
-                font-size: 0.95rem;
-            }
-
-            .history-time {
-                color: #64748b;
-                font-size: 0.85rem;
-                display: flex;
-                align-items: center;
-                gap: 4px;
-            }
-
-            .history-time i {
-                font-size: 0.75rem;
-            }
-
-            .history-description {
-                color: #475569;
-                font-size: 0.9rem;
-                line-height: 1.6;
-                padding: 8px 12px;
-                background: #f8fafc;
-                border-radius: 8px;
-                border-left: 3px solid #0dcaf0;
-            }
-
-            .history-empty {
-                text-align: center;
-                padding: 40px 20px;
-                color: #94a3b8;
-            }
-
-            .history-empty i {
-                font-size: 3rem;
-                margin-bottom: 12px;
-                opacity: 0.5;
-            }
-
-            .history-empty p {
-                margin: 0;
-                font-size: 0.95rem;
-            }
-
             /* ==== CHỮ TRONG TASK ==== */
             .task-title {
                 font-weight: 600;
@@ -1674,7 +1485,7 @@
                     min-width: auto;
                 }
             }
-            /* Chatbox ở day*/
+            /* Chat day*/
             .chat-review-list {
                 list-style: none;
                 padding: 0;
@@ -1742,6 +1553,7 @@
                     transform: translateY(0);
                 }
             }
+            
         </style>
     </head>
 
@@ -1756,7 +1568,7 @@
                     <div class="main-box mb-3">
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <div class="d-flex align-items-center gap-3">
-                                <h3 class="mb-0"><i class="fa-solid fa-diagram-project me-2"></i>Quản lý Dự án: <%= request.getAttribute("tenDuan") %></h3>
+                                <h3 class="mb-0"><i class="fa-solid fa-diagram-project me-2"></i>Quản lý Dự án</h3>
 
                                 <!-- Các tab điều hướng -->
                                 <ul class="nav nav-pills task-nav-tabs" id="taskViewTabs" role="tablist">
@@ -1799,16 +1611,11 @@
                                 </div>
 
                                 <!-- Nút thêm từ Excel -->
-                                <!--                                <button class="btn btn-success rounded-pill px-3" data-bs-toggle="modal"
-                                                                        data-bs-target="#modalExcel">
-                                                                    <i class="fa-solid fa-file-excel"></i> Thêm việc từ Excel
-                                                                </button>-->
-                                <!-- Nút tạo công việc -->
-                                <button class="btn btn-primary rounded-pill px-3" data-bs-toggle="modal"
-                                        data-bs-target="#modalTask">
-                                    <i class="fa-solid fa-plus"></i> Tạo công việc
+                                <button class="btn btn-success rounded-pill px-3" data-bs-toggle="modal"
+                                        data-bs-target="#modalExcel">
+                                    <i class="fa-solid fa-file-excel"></i> Thêm việc từ Excel
                                 </button>
-                                <!-- Nút quay lại -->
+
                                 <a href="dsDuan?nhom_du_an=<%= session.getAttribute("nhom_du_an") %>" 
                                    class="btn btn-secondary rounded-pill px-3">
                                     <i class="fa-solid fa-arrow-left"></i> Quay lại dự án
@@ -1927,6 +1734,7 @@
                                              data-bs-target="#modalTaskDetail"
                                              data-id="<%= task.get("id") %>"
                                              data-ten="<%= task.get("ten_cong_viec") %>"
+                                             data-ten_du_an="<%= task.get("ten_du_an") %>"
                                              data-mo-ta="<%= task.get("mo_ta") %>"
                                              data-ngay-bat-dau="<%= task.get("ngay_bat_dau") %>"
                                              data-han="<%= task.get("han_hoan_thanh") %>"
@@ -2034,6 +1842,7 @@
                                             <tr class="task-row <%= hasReminder ? "task-row--alert" : "" %>" data-bs-toggle="modal" data-bs-target="#modalTaskDetail"
                                                 data-id="<%= task.get("id") %>"
                                                 data-ten="<%= task.get("ten_cong_viec") %>"
+                                                data-ten_du_an="<%= task.get("ten_du_an") %>"
                                                 data-mo-ta="<%= task.get("mo_ta") %>"
                                                 data-ngay-bat-dau="<%= task.get("ngay_bat_dau") %>"
                                                 data-han="<%= task.get("han_hoan_thanh") %>"
@@ -2060,13 +1869,13 @@
                                                 </td>
                                                 <td>
                                                     <div class="action-btns" onclick="event.stopPropagation();">
-                                                        <button class="btn btn-sm btn-warning" title="Lưu trữ" onclick="archiveTask('<%= task.get("id") %>')">
+                                                        <button class="btn btn-sm btn-warning" title="Lưu trữ" onclick="event.stopPropagation(); archiveTask('<%= task.get("id") %>')">
                                                             <i class="fa-solid fa-archive"></i>
                                                         </button>
-                                                        <button class="btn btn-sm btn-info" title="Nhắc việc" onclick="remindTask('<%= task.get("id") %>')">
+                                                        <button class="btn btn-sm btn-info" title="Nhắc việc" onclick="event.stopPropagation(); remindTask('<%= task.get("id") %>')">
                                                             <i class="fa-solid fa-bell"></i>
                                                         </button>
-                                                        <button class="btn btn-sm btn-danger" title="Xóa" onclick="deleteTask('<%= task.get("id") %>')">
+                                                        <button class="btn btn-sm btn-danger" title="Xóa" onclick="event.stopPropagation(); deleteTask('<%= task.get("id") %>')">
                                                             <i class="fa-solid fa-trash"></i>
                                                         </button>
                                                     </div>
@@ -2122,6 +1931,7 @@
                                     <div class="kanban-task archived-task"
                                          data-id="<%= task.get("id") %>"
                                          data-ten="<%= task.get("ten_cong_viec") %>"
+                                         data-ten_du_an="<%= task.get("ten_du_an") %>"
                                          data-mo-ta="<%= task.get("mo_ta") %>"
                                          data-ngay-bat-dau="<%= task.get("ngay_bat_dau") %>"
                                          data-han="<%= task.get("han_hoan_thanh") %>"
@@ -2222,6 +2032,7 @@
                                     <div class="kanban-task deleted-task"
                                          data-id="<%= task.get("id") %>"
                                          data-ten="<%= task.get("ten_cong_viec") %>"
+                                         data-ten_du_an="<%= task.get("ten_du_an") %>"
                                          data-mo-ta="<%= task.get("mo_ta") %>"
                                          data-ngay-bat-dau="<%= task.get("ngay_bat_dau") %>"
                                          data-han="<%= task.get("han_hoan_thanh") %>"
@@ -2541,7 +2352,7 @@
                                                     <i class="fa-solid fa-plus"></i> Thêm đánh giá
                                                 </button>
                                             </form>
-                                            <ul id="taskReviewList" class="list-group"></ul>
+                                            <ul id="taskReviewList" class="chat-review-list"></ul>
                                         </div>
                                     </div>
 
@@ -2651,6 +2462,15 @@
                                             <textarea class="form-control" name="stepDesc" rows="2"></textarea>
                                         </div>
                                         <div class="mb-2">
+                                            <label class="form-label">Người nhận</label>
+                                            <button type="button" class="btn btn-outline-primary btn-sm" id="btnOpenNguoiNhanProcess">
+                                                <i class="fa-solid fa-user-plus"></i> Thêm người nhận
+                                            </button>
+                                            <div id="danhSachNguoiNhanProcess" class="d-flex flex-wrap gap-2 mt-2"></div>
+
+                                            <input type="hidden" name="process_nguoi_nhan" id="nguoiNhanProcessHidden">
+                                        </div>
+                                        <div class="mb-2">
                                             <label class="form-label">Trạng thái</label>
                                             <select class="form-select" name="stepStatus">
                                                 <option value="Chưa bắt đầu">Chưa bắt đầu</option>
@@ -2680,118 +2500,119 @@
                     </div>
                 </div>
             </div>
-        </div>
-        <script src="<%= request.getContextPath() %>/scripts/project_task.js?v=<%= System.currentTimeMillis() %>"></script>
-        <script src="<%= request.getContextPath() %>/scripts/task-approval.js?v=<%= System.currentTimeMillis() %>"></script>
-        <%--FULLCALENDAR INITIALIZATION--%>
-        <script>
+            <script>
+                const USER_PERMISSIONS = <%= session.getAttribute("quyen") %>;
+            </script>
+            <script src="<%= request.getContextPath() %>/scripts/project_task.js?v=<%= System.currentTimeMillis() %>"></script>
+            <script src="<%= request.getContextPath() %>/scripts/task-approval.js?v=<%= System.currentTimeMillis() %>"></script>
+            <script>
 
-                                                            // ====== FULLCALENDAR INITIALIZATION ======
-                                                            function initCalendar() {
-                                                                if (calendar) {
-                                                                    calendar.render();
-                                                                    return;
-                                                                }
+                // ====== FULLCALENDAR INITIALIZATION ======
+                function initCalendar() {
+                    if (calendar) {
+                        calendar.render();
+                        return;
+                    }
 
-                                                                const calendarEl = document.getElementById('taskCalendar');
+                    const calendarEl = document.getElementById('taskCalendar');
 
-                                                                // Prepare events from task list
-                                                                const events = [];
-            <% for (Map<String, Object> task : taskList) { 
+                    // Prepare events from task list
+                    const events = [];
+                <% for (Map<String, Object> task : taskList) { 
                                                                 String eventClass = "event-not-started";
                                                                 if ("Đang thực hiện".equals(task.get("trang_thai"))) eventClass = "event-in-progress";
                                                                 else if ("Đã hoàn thành".equals(task.get("trang_thai"))) eventClass = "event-completed";
                                                                 else if ("Trễ hạn".equals(task.get("trang_thai"))) eventClass = "event-late";
-            %>
-                                                                events.push({
-                                                                    id: '<%= task.get("id") %>',
-                                                                    title: '<%= task.get("ten_cong_viec") != null ? task.get("ten_cong_viec").toString().replace("'", "\\'") : "" %>',
-                                                                    start: '<%= task.get("ngay_bat_dau") %>',
-                                                                    end: '<%= task.get("han_hoan_thanh") %>',
-                                                                    className: '<%= eventClass %>',
-                                                                    extendedProps: {
-                                                                        nguoiGiao: '<%= task.get("nguoi_giao_id") %>',
-                                                                        nguoiNhan: '<%= task.get("nguoi_nhan_ten") %>',
-                                                                        phongBan: '<%= task.get("phong_ban_id") %>',
-                                                                        uuTien: '<%= task.get("muc_do_uu_tien") %>',
-                                                                        trangThai: '<%= task.get("trang_thai") %>',
-                                                                        trangThaiDuyet: '<%= task.get("trang_thai_duyet") != null ? task.get("trang_thai_duyet").toString() : "" %>',
-                                                                        lyDoDuyet: '<%= task.get("ly_do_duyet") != null ? task.get("ly_do_duyet").toString().replace("'", "\\'") : "" %>',
-                                                                        moTa: '<%= task.get("mo_ta") != null ? task.get("mo_ta").toString().replace("'", "\\'").replace("\n", " ") : "" %>',
-                                                                        taiLieu: '<%= task.get("tai_lieu_cv") %>',
-                                                                        fileTaiLieu: '<%= task.get("file_tai_lieu") %>'
-                                                                    }
-                                                                });
-            <% } %>
+                %>
+                    events.push({
+                        id: '<%= task.get("id") %>',
+                        title: '<%= task.get("ten_cong_viec") != null ? task.get("ten_cong_viec").toString().replace("'", "\\'") : "" %>',
+                        start: '<%= task.get("ngay_bat_dau") %>',
+                        end: '<%= task.get("han_hoan_thanh") %>',
+                        className: '<%= eventClass %>',
+                        extendedProps: {
+                            nguoiGiao: '<%= task.get("nguoi_giao_id") %>',
+                            nguoiNhan: '<%= task.get("nguoi_nhan_ten") %>',
+                            phongBan: '<%= task.get("phong_ban_id") %>',
+                            uuTien: '<%= task.get("muc_do_uu_tien") %>',
+                            trangThai: '<%= task.get("trang_thai") %>',
+                            trangThaiDuyet: '<%= task.get("trang_thai_duyet") != null ? task.get("trang_thai_duyet").toString() : "" %>',
+                            lyDoDuyet: '<%= task.get("ly_do_duyet") != null ? task.get("ly_do_duyet").toString().replace("'", "\\'") : "" %>',
+                            moTa: '<%= task.get("mo_ta") != null ? task.get("mo_ta").toString().replace("'", "\\'").replace("\n", " ") : "" %>',
+                            taiLieu: '<%= task.get("tai_lieu_cv") %>',
+                            fileTaiLieu: '<%= task.get("file_tai_lieu") %>'
+                        }
+                    });
+                <% } %>
 
-                                                                calendar = new FullCalendar.Calendar(calendarEl, {
-                                                                    initialView: 'dayGridMonth',
-                                                                    headerToolbar: {
-                                                                        left: 'prev,next today',
-                                                                        center: 'title',
-                                                                        right: 'dayGridMonth,timeGridWeek,timeGridDay'
-                                                                    },
-                                                                    locale: 'vi',
-                                                                    buttonText: {
-                                                                        today: 'Hôm nay',
-                                                                        month: 'Tháng',
-                                                                        week: 'Tuần',
-                                                                        day: 'Ngày'
-                                                                    },
-                                                                    events: events,
-                                                                    editable: true,
-                                                                    eventClick: function (info) {
-                                                                        const event = info.event;
-                                                                        const props = event.extendedProps;
+                    calendar = new FullCalendar.Calendar(calendarEl, {
+                        initialView: 'dayGridMonth',
+                        headerToolbar: {
+                            left: 'prev,next today',
+                            center: 'title',
+                            right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                        },
+                        locale: 'vi',
+                        buttonText: {
+                            today: 'Hôm nay',
+                            month: 'Tháng',
+                            week: 'Tuần',
+                            day: 'Ngày'
+                        },
+                        events: events,
+                        editable: true,
+                        eventClick: function (info) {
+                            const event = info.event;
+                            const props = event.extendedProps;
 
-                                                                        // 🔹 Tạo button tạm để bootstrap hiểu được trigger modal
-                                                                        const tempBtn = document.createElement('button');
-                                                                        tempBtn.type = 'button';
-                                                                        tempBtn.dataset.bsToggle = 'modal';
-                                                                        tempBtn.dataset.bsTarget = '#modalTaskDetail';
+                            // 🔹 Tạo button tạm để bootstrap hiểu được trigger modal
+                            const tempBtn = document.createElement('button');
+                            tempBtn.type = 'button';
+                            tempBtn.dataset.bsToggle = 'modal';
+                            tempBtn.dataset.bsTarget = '#modalTaskDetail';
 
-                                                                        // Gắn data attributes cho modal đọc
-                                                                        tempBtn.setAttribute('data-id', event.id || '');
-                                                                        tempBtn.setAttribute('data-ten', event.title || '');
-                                                                        tempBtn.setAttribute('data-mo-ta', props.moTa || '');
-                                                                        tempBtn.setAttribute('data-ngay-bat-dau', event.startStr || '');
-                                                                        tempBtn.setAttribute('data-han', event.endStr || '');
-                                                                        tempBtn.setAttribute('data-uu-tien', props.uuTien || '');
-                                                                        tempBtn.setAttribute('data-ten_nguoi_giao', props.nguoiGiao || '');
-                                                                        tempBtn.setAttribute('data-ten_nguoi_nhan', props.nguoiNhan || '');
-                                                                        tempBtn.setAttribute('data-ten_phong_ban', props.phongBan || '');
-                                                                        tempBtn.setAttribute('data-trang-thai', props.trangThai || '');
-                                                                        tempBtn.setAttribute('data-tai_lieu_cv', props.taiLieu || '');
-                                                                        tempBtn.setAttribute('data-file_tai_lieu', props.fileTaiLieu || '');
-                                                                        tempBtn.setAttribute('data-trang-thai-duyet', props.trangThaiDuyet || 'Chưa duyệt');
-                                                                        tempBtn.setAttribute('data-ly-do-duyet', props.lyDoDuyet || '');
-                                                                        tempBtn.setAttribute('data-ngay-gia-han', props.ngayGiaHan || '');
+                            // Gắn data attributes cho modal đọc
+                            tempBtn.setAttribute('data-id', event.id || '');
+                            tempBtn.setAttribute('data-ten', event.title || '');
+                            tempBtn.setAttribute('data-mo-ta', props.moTa || '');
+                            tempBtn.setAttribute('data-ngay-bat-dau', event.startStr || '');
+                            tempBtn.setAttribute('data-han', event.endStr || '');
+                            tempBtn.setAttribute('data-uu-tien', props.uuTien || '');
+                            tempBtn.setAttribute('data-ten_nguoi_giao', props.nguoiGiao || '');
+                            tempBtn.setAttribute('data-ten_nguoi_nhan', props.nguoiNhan || '');
+                            tempBtn.setAttribute('data-ten_phong_ban', props.phongBan || '');
+                            tempBtn.setAttribute('data-trang-thai', props.trangThai || '');
+                            tempBtn.setAttribute('data-tai_lieu_cv', props.taiLieu || '');
+                            tempBtn.setAttribute('data-file_tai_lieu', props.fileTaiLieu || '');
+                            tempBtn.setAttribute('data-trang-thai-duyet', props.trangThaiDuyet || 'Chưa duyệt');
+                            tempBtn.setAttribute('data-ly-do-duyet', props.lyDoDuyet || '');
+                            tempBtn.setAttribute('data-ngay-gia-han', props.ngayGiaHan || '');
 
-                                                                        // 🔹 Phải gắn vào DOM thì bootstrap mới bắt được sự kiện click
-                                                                        document.body.appendChild(tempBtn);
+                            // 🔹 Phải gắn vào DOM thì bootstrap mới bắt được sự kiện click
+                            document.body.appendChild(tempBtn);
 
-                                                                        // 🔹 Trigger click (Bootstrap tự mở modal và phát 'show.bs.modal')
-                                                                        tempBtn.click();
+                            // 🔹 Trigger click (Bootstrap tự mở modal và phát 'show.bs.modal')
+                            tempBtn.click();
 
 
-                                                                        // 🔹 Dọn dẹp button tạm sau 200ms
-                                                                        setTimeout(() => tempBtn.remove(), 200);
+                            // 🔹 Dọn dẹp button tạm sau 200ms
+                            setTimeout(() => tempBtn.remove(), 200);
 
-                                                                    },
-                                                                    eventDrop: function (info) {
-                                                                        // Update deadline when event is dragged
-                                                                        const newDate = info.event.start.toISOString().split('T')[0];
-                                                                        updateTaskDeadline(info.event.id, newDate);
-                                                                    },
-                                                                    eventResize: function (info) {
-                                                                        const newDate = info.event.end ? info.event.end.toISOString().split('T')[0] :
-                                                                                info.event.start.toISOString().split('T')[0];
-                                                                        updateTaskDeadline(info.event.id, newDate);
-                                                                    }
-                                                                });
+                        },
+                        eventDrop: function (info) {
+                            // Update deadline when event is dragged
+                            const newDate = info.event.start.toISOString().split('T')[0];
+                            updateTaskDeadline(info.event.id, newDate);
+                        },
+                        eventResize: function (info) {
+                            const newDate = info.event.end ? info.event.end.toISOString().split('T')[0] :
+                                    info.event.start.toISOString().split('T')[0];
+                            updateTaskDeadline(info.event.id, newDate);
+                        }
+                    });
 
-                                                                calendar.render();
-                                                            }
-        </script>
+                    calendar.render();
+                }
+            </script>
     </body>
 </html>

@@ -89,28 +89,37 @@
 
         let currentChart = null;
 
-        const createProjectChart = (labels, values) => {
+        const createProjectChart = (labels, values, endDates, daysLeft) => {
+
             if (currentChart)
                 currentChart.destroy();
 
-            const colorScale = value => {
-                if (value >= 90)
+            // Tạo nhãn mới: kèm '(Còn X ngày)' hoặc '(Quá hạn Y ngày)'
+            const labelsWithDeadline = labels.map((name, i) => {
+                const d = daysLeft[i];
+                if (d < 0)
+                    return `${name} (Quá hạn ${Math.abs(d)} ngày)`;
+                return `${name} (Còn ${d} ngày)`;
+            });
+
+            // Màu tiến độ giữ nguyên
+            const colorScale = v => {
+                if (v >= 90)
                     return '#10b981';
-                if (value >= 70)
+                if (v >= 70)
                     return '#3b82f6';
-                if (value >= 50)
+                if (v >= 50)
                     return '#f59e0b';
-                if (value >= 30)
+                if (v >= 30)
                     return '#f97316';
                 return '#ef4444';
             };
-
             const barColors = values.map(colorScale);
 
             currentChart = new Chart(ctxTienDoDuAn, {
                 type: 'bar',
                 data: {
-                    labels: labels,
+                    labels: labelsWithDeadline,
                     datasets: [{
                             label: '% Tiến độ',
                             data: values,
@@ -121,7 +130,17 @@
                 options: {
                     indexAxis: 'y',
                     responsive: true,
-                    maintainAspectRatio: false
+                    maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                afterLabel: (ctx) => {
+                                    const i = ctx.dataIndex;
+                                    return "Hạn kết thúc: " + endDates[i];
+                                }
+                            }
+                        }
+                    }
                 }
             });
 
@@ -129,15 +148,26 @@
                     "Hiển thị " + labels.length + " dự án";
         };
 
-        // Load mặc định
-        createProjectChart(kyThuatProjectNames, kyThuatProgress);
+        const ktEndDates = h.dataset.ktEndDates.split("|");
+        const ktDaysLeft = JSON.parse(h.dataset.ktDaysLeft);
 
-        // Đổi phòng ban
+        const kdEndDates = h.dataset.kdEndDates.split("|");
+        const kdDaysLeft = JSON.parse(h.dataset.kdDaysLeft);
+
+// Load mặc định
+        createProjectChart(
+                kyThuatProjectNames,
+                kyThuatProgress,
+                ktEndDates,
+                ktDaysLeft
+                );
+
+// Khi đổi nhóm dự án
         document.getElementById('phongBanSelect').addEventListener('change', function () {
             if (this.value === 'kyThuat') {
-                createProjectChart(kyThuatProjectNames, kyThuatProgress);
-            } else if (this.value === 'kinhDoanh') {
-                createProjectChart(kinhDoanhProjectNames, kinhDoanhProgress);
+                createProjectChart(kyThuatProjectNames, kyThuatProgress, ktEndDates, ktDaysLeft);
+            } else {
+                createProjectChart(kinhDoanhProjectNames, kinhDoanhProgress, kdEndDates, kdDaysLeft);
             }
         });
     }

@@ -32,9 +32,51 @@ public class themCongviec extends HttpServlet {
 
         try {
             KNCSDL db = new KNCSDL();
-            int giaoId = Integer.parseInt(tenNguoiGiao);
-            int phongId = Integer.parseInt(tenPhong);
-            int duanid = Integer.parseInt(duan);
+            
+            if (duan == null) duan = request.getParameter("du_an_id");
+            if (ten == null) ten = request.getParameter("ten_cong_viec");
+            if (moTa == null) moTa = request.getParameter("mo_ta");
+            if (ngaybd == null) ngaybd = request.getParameter("ngay_bat_dau");
+            if (han == null) han = request.getParameter("han_hoan_thanh");
+            if (uuTien == null) uuTien = request.getParameter("muc_do_uu_tien");
+            if (tenNguoiGiao == null) tenNguoiGiao = request.getParameter("ten_nguoi_giao");
+            if (dsNguoiNhan == null) dsNguoiNhan = request.getParameter("ten_nguoi_nhan");
+            if (tenPhong == null) tenPhong = request.getParameter("ten_phong_ban");
+            if (tailieu == null) tailieu = request.getParameter("tai_lieu_cv");
+
+            // Kiểm tra trường bắt buộc
+            List<String> missing = new ArrayList<>();
+            if (ten == null || ten.trim().isEmpty()) missing.add("Tên công việc");
+            if (duan == null || duan.trim().isEmpty()) missing.add("Dự án");
+            if (tenNguoiGiao == null || tenNguoiGiao.trim().isEmpty()) missing.add("Người giao");
+            if (tenPhong == null || tenPhong.trim().isEmpty()) missing.add("Phòng ban");
+
+            if (!missing.isEmpty()) {
+                out.print("{\"success\": false, \"message\": \"Vui lòng nhập: " + String.join(", ", missing) + "\"}");
+                return;
+            }
+
+            int giaoId;
+            int phongId;
+            int duanid;
+            try {
+                giaoId = Integer.parseInt(tenNguoiGiao);
+            } catch (NumberFormatException ex) {
+                out.print("{\"success\": false, \"message\": \"Người giao không hợp lệ. Vui lòng chọn lại.\"}");
+                return;
+            }
+            try {
+                phongId = Integer.parseInt(tenPhong);
+            } catch (NumberFormatException ex) {
+                out.print("{\"success\": false, \"message\": \"Phòng ban không hợp lệ. Vui lòng chọn lại.\"}");
+                return;
+            }
+            try {
+                duanid = Integer.parseInt(duan);
+            } catch (NumberFormatException ex) {
+                out.print("{\"success\": false, \"message\": \"Dự án không hợp lệ. Vui lòng chọn lại.\"}");
+                return;
+            }
 
             if (giaoId == -1 || phongId == -1) {
                 out.print("{\"success\": false, \"message\": \"Không tìm thấy ID cho người giao hoặc phòng ban.\"}");

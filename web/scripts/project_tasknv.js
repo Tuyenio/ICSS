@@ -1,4 +1,39 @@
+function hasPermission(code) {
+    return USER_PERMISSIONS && USER_PERMISSIONS.includes(code);
+}
+document.addEventListener("DOMContentLoaded", function () {
 
+    // Tạo task
+    if (!hasPermission("them_congviec")) {
+        $("#btnCreateTask").hide();
+        $(".kanban-add-btn").hide(); // nút + trong Kanban
+    }
+
+    // Xóa task
+    if (!hasPermission("xoa_congviec")) {
+        $(".task-action-item.delete").remove();
+        $(".task-action-item.permanent-delete-action").remove();
+    }
+
+    if (!hasPermission("them_quytrinh")) {
+        $("#btnAddProcessStep").hide();
+    }
+
+    // Lưu thay đổi task
+    if (!hasPermission("sua_congviec")) {
+        $("#btnSaveTask").remove();
+    }
+
+    // Nhắc việc
+    if (!hasPermission("nhacviec")) {
+        $(".task-action-item.remind").remove();
+    }
+
+    // Duyệt task
+    if (!hasPermission("duyet_congviec")) {
+        $("#btnXetDuyet").remove();
+    }
+});
 // ====== BIẾN GLOBAL THEO DÕI TAB HIỆN TẠI ======
 var currentTabState = 'active'; // 'active', 'archived', 'deleted'
 
@@ -51,6 +86,8 @@ document.getElementById('btnSaveTask').addEventListener('click', function () {
                     showToast('success', '✅ Cập nhật công việc thành công!');
                     // Ẩn modal và làm mới danh sách (tuỳ theo bạn xử lý)
                     bootstrap.Modal.getInstance(document.getElementById('modalTaskDetail')).hide();
+                    localStorage.setItem('lastTab', document.querySelector('.nav-link.active').id);
+                    localStorage.setItem('lastView', currentView);
                     location.reload();
                 } else {
                     showToast('error', data.message || '❌ Lỗi khi cập nhật');
@@ -227,7 +264,6 @@ document.addEventListener("DOMContentLoaded", function () {
             .then(html => {
                 document.querySelector('#modalTaskDetail select[name="ten_nguoi_giao"]').innerHTML = html;
                 //document.querySelector('#modalTaskDetail select[name="ten_nguoi_nhan"]').innerHTML = html;
-                document.querySelector('#modalTaskDetail select[name="ten_nguoi_danh_gia"]').innerHTML = html;
                 document.querySelector('#taskForm select[name="ten_nguoi_giao"]').innerHTML = html;
                 //document.querySelector('#taskForm select[name="ten_nguoi_nhan"]').innerHTML = html;
             });
@@ -242,6 +278,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // Lấy dữ liệu từ nút
         const id = button.getAttribute("data-id") || "";
         const tenCV = button.getAttribute("data-ten") || "";
+        const tenDuAn = button.getAttribute("data-ten_du_an") || "";
         const moTa = button.getAttribute("data-mo-ta") || "";
         const ngay_bat_dau = button.getAttribute("data-ngay-bat-dau") || "";
         const hanHT = button.getAttribute("data-han") || "";
@@ -267,6 +304,9 @@ document.addEventListener("DOMContentLoaded", function () {
         // Gán dữ liệu cơ bản
         modal.querySelector('[name="task_id"]').value = id;
         modal.querySelector('[name="ten_cong_viec"]').value = tenCV;
+        modal.querySelector(".modal-title").innerHTML =
+                '<i class="fa-solid fa-info-circle text-primary"></i> '
+                + tenDuAn;
         modal.querySelector('[name="mo_ta"]').value = moTa;
         modal.querySelector('[name="ngay_bat_dau"]').value = ngay_bat_dau;
         modal.querySelector('[name="han_hoan_thanh"]').value = hanHT;
@@ -418,8 +458,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 
-
-
 var currentTarget = null;
 
 // Tick lại checkbox theo hidden input hiện tại
@@ -450,8 +488,31 @@ document.getElementById("btnOpenNguoiNhanDetail").addEventListener("click", func
     syncNguoiNhanCheckboxes("nguoiNhanHidden"); // tick theo hidden của form chi tiết
     new bootstrap.Modal(document.getElementById("modalChonNguoiNhan")).show();
 });
+document.getElementById("btnOpenNguoiNhanProcess").addEventListener("click", function () {
+    currentTarget = "process";
+    syncNguoiNhanCheckboxes("nguoiNhanProcessHidden");
 
-// Xác nhận chọn người nhận
+    let md = new bootstrap.Modal(document.getElementById("modalChonNguoiNhan"));
+    md.show();
+});
+
+document.addEventListener("shown.bs.modal", function (event) {
+    const modal = event.target;
+
+    // Nếu đây là modal mở thứ 2 trở lên
+    if ($('.modal.show').length > 1) {
+        let zIndex = 1050 + ($('.modal.show').length * 20);
+        $(modal).css('z-index', zIndex);
+
+        // cũng tăng z-index của backdrop
+        setTimeout(function () {
+            $('.modal-backdrop').not('.stacked')
+                    .css('z-index', zIndex - 10)
+                    .addClass('stacked');
+        }, 50);
+    }
+});
+
 document.getElementById("btnXacNhanNguoiNhan").addEventListener("click", function () {
     var checked = document.querySelectorAll(".nguoiNhanItem:checked");
 
@@ -459,9 +520,22 @@ document.getElementById("btnXacNhanNguoiNhan").addEventListener("click", functio
     if (currentTarget === "create") {
         danhSachDiv = document.getElementById("danhSachNguoiNhan2");
         hiddenInput = document.getElementById("nguoiNhanHidden2");
-    } else {
+    } else if (currentTarget === "detail") {
         danhSachDiv = document.getElementById("danhSachNguoiNhan");
         hiddenInput = document.getElementById("nguoiNhanHidden");
+    } else if (currentTarget === "process") {
+        danhSachDiv = document.getElementById("danhSachNguoiNhanProcess");
+        hiddenInput = document.getElementById("nguoiNhanProcessHidden");
+    } else if (currentTarget === "editStep") {
+        // NEW: khi gọi từ modal sửa bước
+        danhSachDiv = document.getElementById("danhSachNguoiNhanEdit");
+        hiddenInput = document.getElementById("nguoiNhanEditHidden");
+    }
+
+    if (!danhSachDiv || !hiddenInput) {
+        // an toàn: nếu không tìm thấy element, đóng modal chọn
+        bootstrap.Modal.getInstance(document.getElementById("modalChonNguoiNhan")).hide();
+        return;
     }
 
     danhSachDiv.innerHTML = "";
@@ -503,6 +577,31 @@ function capNhatHiddenInput(danhSachDiv, hiddenInput) {
 $('#taskForm').on('submit', function (e) {
     e.preventDefault();
 
+    // Client-side validation cho trường bắt buộc
+    var ten = $(this).find('[name="ten_cong_viec"]').val() || '';
+    var duAn = $(this).find('[name="du_an_id"]').val() || '';
+    var nguoiGiao = $(this).find('[name="ten_nguoi_giao"]').val() || '';
+    var phongBan = $(this).find('[name="ten_phong_ban"]').val() || '';
+
+    var missing = [];
+    if (!ten.trim())
+        missing.push({field: 'ten_cong_viec', msg: 'Vui lòng nhập tên công việc'});
+    if (!duAn.trim())
+        missing.push({field: 'du_an_id', msg: 'Vui lòng chọn dự án'});
+    if (!nguoiGiao.trim())
+        missing.push({field: 'ten_nguoi_giao', msg: 'Vui lòng chọn người giao'});
+    if (!phongBan.trim())
+        missing.push({field: 'ten_phong_ban', msg: 'Vui lòng chọn phòng ban'});
+
+    if (missing.length > 0) {
+        // Hiện thông báo cho trường đầu tiên thiếu và focus vào input tương ứng
+        showToast('error', missing[0].msg);
+        var fld = $(this).find('[name="' + missing[0].field + '"]');
+        if (fld && fld.length)
+            fld.focus();
+        return;
+    }
+
     const formData = new FormData(this);
     formData.append("du_an_id", PROJECT_ID);
     let url = './themCongviec'; // luôn là thêm mới
@@ -519,11 +618,19 @@ $('#taskForm').on('submit', function (e) {
                 showToast('success', 'Thêm mới thành công');
                 location.reload();
             } else {
+                // Hiện message trả về từ server (đã rõ ràng)
                 showToast('error', response.message || 'Thêm mới thất bại');
             }
         },
-        error: function () {
-            showToast('error', 'Thêm mới thất bại');
+        error: function (xhr) {
+            var msg = 'Thêm mới thất bại';
+            try {
+                var json = JSON.parse(xhr.responseText);
+                if (json && json.message)
+                    msg = json.message;
+            } catch (e) {
+            }
+            showToast('error', msg);
         }
     });
 });
@@ -536,6 +643,7 @@ $('#btnFilter').on('click', function (e) {
     var keyword = $('input[name="keyword"]').val() || '';
     var phongBan = $('select[name="ten_phong_ban"]').val() || '';
     var trangThai = $('select[name="trangThai"]').val() || '';
+    var projectId = $('input[name="du_an_id"]').val() || '';
 
     // Debug: hiển thị trạng thái tab hiện tại
     console.log('Lọc với tabState:', currentTabState);
@@ -676,14 +784,14 @@ function renderListViewFromJson(tasks) {
                 + '    <td><span class="badge ' + statusClass + '">' + (task.trang_thai || '') + '</span></td>'
                 + '    <td><span class="badge ' + getApprovalBadge(task.trang_thai_duyet) + '">' + (task.trang_thai_duyet || 'Chưa duyệt') + '</span></td>'
                 + '    <td>'
-                + '        <div class="action-btns" onclick="event.stopPropagation();">'
-                + '            <button class="btn btn-sm btn-warning" title="Lưu trữ" onclick="archiveTask(\'' + task.id + '\')">'
+                + '        <div class="action-btns">'
+                + '            <button class="btn btn-sm btn-warning" title="Lưu trữ" onclick="event.stopPropagation(); archiveTask(\'' + task.id + '\')">'
                 + '                <i class="fa-solid fa-archive"></i>'
                 + '            </button>'
-                + '            <button class="btn btn-sm btn-info" title="Nhắc việc" onclick="remindTask(\'' + task.id + '\')">'
+                + '            <button class="btn btn-sm btn-info" title="Nhắc việc" onclick="event.stopPropagation(); remindTask(\'' + task.id + '\')">'
                 + '                <i class="fa-solid fa-bell"></i>'
                 + '            </button>'
-                + '            <button class="btn btn-sm btn-danger" title="Xóa" onclick="deleteTask(\'' + task.id + '\')">'
+                + '            <button class="btn btn-sm btn-danger" title="Xóa" onclick="event.stopPropagation(); deleteTask(\'' + task.id + '\')">'
                 + '                <i class="fa-solid fa-trash"></i>'
                 + '            </button>'
                 + '        </div>'
@@ -739,34 +847,6 @@ function renderCalendarViewFromJson(tasks) {
     });
 }
 
-// ====== HÀM TOAST DÙNG CHUNG ======
-function showToast(type, message) {
-    var map = {
-        success: '#toastSuccess',
-        error: '#toastError',
-        info: '#toastInfo',
-        warning: '#toastWarning'
-    };
-    var toastId = map[type] || '#toastInfo';
-
-    if ($(toastId).length === 0) {
-        var toastHtml =
-                '<div id="' + toastId.substring(1) + '" class="toast align-items-center border-0 position-fixed bottom-0 end-0 m-3" role="alert" aria-live="assertive" aria-atomic="true">' +
-                '<div class="d-flex">' +
-                '<div class="toast-body"></div>' +
-                '<button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>' +
-                '</div>' +
-                '</div>';
-        $('body').append(toastHtml);
-    }
-
-    $(toastId).find('.toast-body').text(message);
-    var bsToast = new bootstrap.Toast($(toastId)[0], {delay: 2500, autohide: true});
-    bsToast.show();
-}
-
-
-// Danh sách các bước quy trình (demo, nên dùng AJAX thực tế)
 var processSteps = [
     {
         id: "12",
@@ -798,7 +878,7 @@ function renderProcessSteps() {
             .addClass(barClass)
             .text(percent + '%');
 
-    // 👇 Gửi phần trăm về server
+    // 👇 Gửi phần trăm về server và cập nhật UI nếu cần
     var taskId = $('#taskId').val();
     if (taskId) {
         $.ajax({
@@ -806,12 +886,65 @@ function renderProcessSteps() {
             method: 'POST',
             data: {cong_viec_id: taskId, phan_tram: percent},
             success: function () {
-                showToast('success', 'Cập nhật tiến độ thành công');
+                // Nếu tất cả bước hoàn thành -> cập nhật trạng thái task thành "Đã hoàn thành" trên UI ngay
+                if (percent === 100) {
+                    var newStatus = 'Đã hoàn thành';
+
+                    // 1) Cập nhật select hiển thị trong modal đang mở (nếu có)
+                    var modal = $('#modalTaskDetail');
+                    if (modal.length) {
+                        var select = modal.find('[name="trang_thai"]');
+                        if (select.length)
+                            select.val(newStatus);
+                        modal.find('[name="trang_thai_duyet"]').val(modal.find('[name="trang_thai_duyet"]').val()); // giữ nguyên duyệt
+                    }
+
+                    // 2) Cập nhật thẻ Kanban (cả dạng data-task-id và data-id)
+                    var card = $('.kanban-task[data-task-id="' + taskId + '"], .kanban-task[data-id="' + taskId + '"]');
+                    if (card.length) {
+                        // cập nhật data attribute
+                        card.attr('data-trang-thai', newStatus);
+
+                        // cập nhật badge hiển thị trong card
+                        var statusBadge = card.find('.task-status');
+                        if (statusBadge.length) {
+                            statusBadge.text(newStatus).removeClass().addClass('task-status badge bg-success');
+                        }
+
+                        // di chuyển card vào cột "completed"
+                        var completedCol = $('.kanban-col.completed').first();
+                        if (completedCol.length) {
+                            completedCol.append(card);
+                        }
+                    }
+
+                    // 3) Cập nhật List view (nếu có hàng tương ứng)
+                    var row = $('tr[data-id="' + taskId + '"]');
+                    if (row.length) {
+                        // update data attribute
+                        row.attr('data-trang-thai', newStatus);
+
+                        // cột trạng thái thường là cột thứ 8 (index 7)
+                        var statusCell = row.find('td').eq(7);
+                        if (statusCell.length) {
+                            statusCell.html('<span class="badge status-completed">' + newStatus + '</span>');
+                        }
+                    }
+
+                    showToast('success', 'Cập nhật tiến độ 100% — công việc được đánh là "Đã hoàn thành" trên giao diện.');
+                } else {
+                    showToast('success', 'Cập nhật tiến độ thành công');
+                }
             },
             error: function () {
                 showToast('error', 'Lỗi khi cập nhật tiến độ');
             }
         });
+    } else {
+        // không có taskId chỉ cập nhật progress bar local
+        if (percent === 100) {
+            showToast('success', 'Tiến độ đạt 100% (cập nhật local).');
+        }
     }
 
     var list = $('#processStepList');
@@ -827,6 +960,10 @@ function renderProcessSteps() {
                 badgeClass = "bg-warning text-dark";
             else if (step.status === "Trễ hạn")
                 badgeClass = "bg-danger";
+            var receiverNames = '';
+            if (Array.isArray(step.receivers) && step.receivers.length > 0) {
+                receiverNames = step.receivers.map(r => r.name).join(', ');
+            }
 
             var editBtn =
                     '<button class="btn btn-sm btn-outline-secondary me-1" onclick="showEditStepModal(' + idx + ')">' +
@@ -840,6 +977,7 @@ function renderProcessSteps() {
                     '<b>' + step.name + '</b> ' +
                     '<span class="badge ' + badgeClass + '">' + step.status + '</span><br>' +
                     '<small>' + (step.desc ? step.desc : '') + '</small>' +
+                    '<div class="text-muted small"><i class="fa-solid fa-user"></i> Người nhận: ' + (receiverNames || 'Chưa có') + '</div>' +
                     '<div class="text-muted small">Từ ' + (step.start || '-') + ' đến ' + (step.end || '-') + '</div>' +
                     '</div>' +
                     '<div>' + editBtn + deleteBtn + '</div>' +
@@ -885,65 +1023,162 @@ function renderTaskReviews(data) {
 
 function showEditStepModal(idx) {
     var step = processSteps[idx];
-    var modalHtml =
-            '<div class="modal fade" id="modalEditStepStatus" tabindex="-1">' +
-            '<div class="modal-dialog">' +
-            '<form class="modal-content" id="formEditStepStatus">' +
-            '<input type="hidden" name="stepid" value="' + step.id + '">' +
-            '<div class="modal-header">' +
-            '<h5 class="modal-title"><i class="fa-solid fa-pen"></i> Chỉnh sửa bước quy trình</h5>' +
-            '<button type="button" class="btn-close" data-bs-dismiss="modal"></button>' +
-            '</div>' +
-            '<div class="modal-body">' +
-            '<div class="mb-2">' +
-            '<label class="form-label">Tên bước/giai đoạn</label>' +
-            '<input type="text" class="form-control" name="stepName" value="' + step.name + '" required>' +
-            '</div>' +
-            '<div class="mb-2">' +
-            '<label class="form-label">Mô tả</label>' +
-            '<textarea class="form-control" name="stepDesc" rows="2">' + (step.desc || '') + '</textarea>' +
-            '</div>' +
-            '<div class="mb-2">' +
-            '<label class="form-label">Trạng thái</label>' +
-            '<select class="form-select" name="stepStatus">' +
-            '<option value="Chưa bắt đầu"' + (step.status === "Chưa bắt đầu" ? " selected" : "") + '>Chưa bắt đầu</option>' +
-            '<option value="Đang thực hiện"' + (step.status === "Đang thực hiện" ? " selected" : "") + '>Đang thực hiện</option>' +
-            '<option value="Đã hoàn thành"' + (step.status === "Đã hoàn thành" ? " selected" : "") + '>Đã hoàn thành</option>' +
-            '</select>' +
-            '</div>' +
-            '<div class="mb-2 row">' +
-            '<div class="col"><label class="form-label">Ngày bắt đầu</label>' +
-            '<input type="date" class="form-control" name="stepStart" value="' + (step.start || '') + '"></div>' +
-            '<div class="col"><label class="form-label">Ngày kết thúc</label>' +
-            '<input type="date" class="form-control" name="stepEnd" value="' + (step.end || '') + '"></div>' +
-            '</div>' +
-            '</div>' +
-            '<div class="modal-footer">' +
-            '<button type="submit" class="btn btn-primary rounded-pill">Cập nhật</button>' +
-            '<button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Huỷ</button>' +
-            '</div>' +
-            '</form>' +
-            '</div>' +
-            '</div>';
+    if (!step)
+        return;
+
+    // Xóa modal cũ nếu tồn tại
     $('#modalEditStepStatus').remove();
+
+    // Tạo HTML modal (thêm phần chọn người nhận)
+    var modalHtml = `
+        <div class="modal fade" id="modalEditStepStatus" tabindex="-1">
+          <div class="modal-dialog">
+            <form class="modal-content" id="formEditStepStatus">
+              <input type="hidden" name="stepid" value="${step.id}">
+              <div class="modal-header">
+                <h5 class="modal-title">
+                  <i class="fa-solid fa-pen"></i> Chỉnh sửa bước quy trình
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+              </div>
+              <div class="modal-body">
+                <div class="mb-2">
+                  <label class="form-label">Tên bước/giai đoạn</label>
+                  <input type="text" class="form-control" name="stepName" value="${step.name || ''}" required>
+                </div>
+                <div class="mb-2">
+                  <label class="form-label">Mô tả</label>
+                  <textarea class="form-control" name="stepDesc" rows="2">${step.desc || ''}</textarea>
+                </div>
+                <div class="mb-2">
+                  <label class="form-label">Người nhận</label>
+                  <div id="danhSachNguoiNhanEdit" class="mb-2 d-flex flex-wrap"></div>
+                  <input type="hidden" id="nguoiNhanEditHidden" name="nguoiNhanEditHidden" value="">
+                  <div>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" id="btnOpenNguoiNhanEdit">
+                      <i class="fa-solid fa-users me-1"></i> Chọn người nhận
+                    </button>
+                  </div>
+                </div>
+                <div class="mb-2">
+                  <label class="form-label">Trạng thái</label>
+                  <select class="form-select" name="stepStatus">
+                    <option value="Chưa bắt đầu" ${step.status === "Chưa bắt đầu" ? "selected" : ""}>Chưa bắt đầu</option>
+                    <option value="Đang thực hiện" ${step.status === "Đang thực hiện" ? "selected" : ""}>Đang thực hiện</option>
+                    <option value="Đã hoàn thành" ${step.status === "Đã hoàn thành" ? "selected" : ""}>Đã hoàn thành</option>
+                  </select>
+                </div>
+
+                <div class="mb-2 row">
+                  <div class="col">
+                    <label class="form-label">Ngày bắt đầu</label>
+                    <input type="date" class="form-control" name="stepStart" value="${step.start || ''}">
+                  </div>
+                  <div class="col">
+                    <label class="form-label">Ngày kết thúc</label>
+                    <input type="date" class="form-control" name="stepEnd" value="${step.end || ''}">
+                  </div>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="submit" class="btn btn-primary rounded-pill">Cập nhật</button>
+                <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Huỷ</button>
+              </div>
+            </form>
+          </div>
+        </div>`;
+
     $('body').append(modalHtml);
-    var modal = new bootstrap.Modal(document.getElementById('modalEditStepStatus'));
+
+    var modalEl = document.getElementById('modalEditStepStatus');
+    var modal = new bootstrap.Modal(modalEl, {backdrop: 'static', keyboard: true});
+
+    // ✅ Fix chồng modal: tăng z-index
+    const parentModal = document.getElementById('modalTaskDetail');
+    if (parentModal && $(parentModal).hasClass('show')) {
+        $(modalEl).css('z-index', parseInt($(parentModal).css('z-index')) + 20);
+        $('.modal-backdrop').last().css('z-index', parseInt($(parentModal).css('z-index')) + 10);
+    }
+
+    // --- populate người nhận ban đầu ---
+    (function populateEditReceivers() {
+        var hidden = $('#nguoiNhanEditHidden');
+        var badgeContainer = $('#danhSachNguoiNhanEdit');
+        badgeContainer.empty();
+
+        // step.receivers có thể là mảng {id, name} hoặc step.receiverNames (chuỗi)
+        var names = [];
+        if (Array.isArray(step.receivers) && step.receivers.length > 0) {
+            names = step.receivers.map(r => r.name || r.ten || '').filter(Boolean);
+        } else if (step.receiver_names) {
+            names = String(step.receiver_names).split(',').map(s => s.trim()).filter(Boolean);
+        } else if (step.receiver || step.receivers_names) {
+            names = String(step.receiver || step.receivers_names).split(',').map(s => s.trim()).filter(Boolean);
+        }
+
+        hidden.val(names.join(','));
+
+        names.forEach(function (ten) {
+            var tag = $('<span>').addClass('badge bg-primary d-flex align-items-center me-2').css('padding', '0.5em 0.75em').attr('data-ten', ten);
+            var tenNode = $('<span>').text(ten);
+            var closeBtn = $('<button type="button" class="btn btn-sm btn-close ms-2" aria-label="Xoá"></button>');
+            closeBtn.on('click', function () {
+                tag.remove();
+                // cập nhật hidden
+                var arr = [];
+                badgeContainer.find('span[data-ten]').each(function () {
+                    arr.push($(this).data('ten'));
+                });
+                hidden.val(arr.join(','));
+            });
+            tag.append(tenNode).append(closeBtn);
+            badgeContainer.append(tag);
+        });
+    })();
+
     modal.show();
 
+    // mở modal chọn người nhận từ modal edit
+    $(modalEl).find('#btnOpenNguoiNhanEdit').on('click', function () {
+        currentTarget = 'editStep';
+        syncNguoiNhanCheckboxes('nguoiNhanEditHidden');
+        new bootstrap.Modal(document.getElementById('modalChonNguoiNhan')).show();
+    });
+
+    // Xử lý submit cập nhật (gửi cả danh sách người nhận dưới dạng ID tới backend)
     $('#formEditStepStatus').on('submit', function (e) {
         e.preventDefault();
+
+        // cập nhật object lokal
         processSteps[idx] = {
             id: $(this).find('[name="stepid"]').val(),
             name: $(this).find('[name="stepName"]').val(),
             desc: $(this).find('[name="stepDesc"]').val(),
             status: $(this).find('[name="stepStatus"]').val(),
             start: $(this).find('[name="stepStart"]').val(),
-            end: $(this).find('[name="stepEnd"]').val()
+            end: $(this).find('[name="stepEnd"]').val(),
+            // lưu tên người nhận tạm thời
+            receivers: (function () {
+                var names = ($('#nguoiNhanEditHidden').val() || '').split(',').map(s => s.trim()).filter(Boolean);
+                return names.map(n => ({name: n}));
+            })()
         };
+
         renderProcessSteps();
         modal.hide();
-        $('#modalEditStepStatus').remove();
-        var taskId = document.getElementById("taskId").value;
+
+        // map tên -> id (tương tự phần thêm)
+        var nguoiNhanNames = $('#nguoiNhanEditHidden').val() || "";
+        var nguoiNhanIds = [];
+        nguoiNhanNames.split(',').map(t => t.trim()).forEach(function (ten) {
+            var el = Array.from(document.querySelectorAll('.nguoiNhanItem')).find(c => c.value.trim() === ten);
+            if (el) {
+                var id = el.id.replace('nv_', '');
+                nguoiNhanIds.push(id);
+            }
+        });
+
+        // Gửi cập nhật về server kèm process_nguoi_nhan (IDs)
         $.ajax({
             url: './apiTaskSteps',
             method: 'POST',
@@ -953,7 +1188,8 @@ function showEditStepModal(idx) {
                 desc: processSteps[idx].desc,
                 status: processSteps[idx].status,
                 start: processSteps[idx].start,
-                end: processSteps[idx].end
+                end: processSteps[idx].end,
+                process_nguoi_nhan: nguoiNhanIds.join(',') // <-- gửi ID tới backend
             },
             success: function () {
                 showToast('success', 'Cập nhật bước thành công');
@@ -963,8 +1199,24 @@ function showEditStepModal(idx) {
             }
         });
     });
-    $('#modalEditStepStatus').on('hidden.bs.modal', function () {
-        $('#modalEditStepStatus').remove();
+
+    $(modalEl).on('hidden.bs.modal', function () {
+        // Remove the modal element itself
+        $(this).remove();
+
+        // Remove ONLY the backdrop that was added for this modal (the last one)
+        var $backdrops = $('.modal-backdrop');
+        if ($backdrops.length > 0) {
+            $backdrops.last().remove();
+        }
+
+        // Nếu vẫn còn modal khác đang mở → đảm bảo body giữ class modal-open
+        if ($('.modal.show').length > 0) {
+            $('body').addClass('modal-open').css('padding-right', '');
+        } else {
+            // Không còn modal → dọn sạch trạng thái
+            $('body').removeClass('modal-open').css('padding-right', '');
+        }
     });
 }
 
@@ -974,27 +1226,62 @@ window.removeProcessStep = function (idx) {
         showToast('error', 'Không thể xác định bước cần xóa.');
         return;
     }
-    if (confirm("Bạn có chắc chắn muốn xóa bước này không?")) {
-        $.ajax({
-            url: './xoaQuytrinh',
-            method: 'POST',
-            data: {action: 'delete', step_id: step.id},
-            success: function () {
-                processSteps.splice(idx, 1);
-                renderProcessSteps();
-                showToast('success', 'Đã xóa bước thành công.');
-            },
-            error: function () {
-                showToast('error', 'Xóa thất bại. Vui lòng thử lại.');
-            }
+
+    Swal.fire({
+        title: 'Xác nhận xóa bước quy trình?',
+        html: 'Bạn có chắc chắn muốn xóa bước: <b>' + (step.name || '') + '</b> ?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Xóa',
+        cancelButtonText: 'Hủy',
+        focusCancel: true
+    }).then(function (result) {
+        if (!result.isConfirmed)
+            return;
+
+        Swal.fire({
+            title: 'Đang xóa...',
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
         });
-    }
+
+        fetch('./xoaQuytrinh', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: new URLSearchParams({action: 'delete', step_id: String(step.id)})
+        })
+                .then(async res => {
+                    const text = await res.text();
+                    let data = {};
+                    try {
+                        data = text ? JSON.parse(text) : {};
+                    } catch {
+                        data = {success: res.ok};
+                    }
+                    if (res.ok && data.success) {
+                        // Cập nhật UI local
+                        processSteps.splice(idx, 1);
+                        renderProcessSteps();
+                        Swal.fire({icon: 'success', title: 'Đã xóa!', text: 'Bước quy trình đã được xóa.'});
+                    } else {
+                        const msg = data.message || 'Xóa thất bại. Vui lòng thử lại.';
+                        Swal.fire('Lỗi!', msg, 'error');
+                    }
+                })
+                .catch(err => {
+                    console.error('Delete step error:', err);
+                    Swal.fire('Lỗi!', 'Không thể kết nối tới server.', 'error');
+                });
+    });
 };
 
 $('#btnAddProcessStep').on('click', function () {
     $('#formAddProcessStep')[0].reset();
     $('#modalAddProcessStep').modal('show');
 });
+
 $('#formAddProcessStep').on('submit', function (e) {
     e.preventDefault();
     var taskId = document.getElementById("taskId").value;
@@ -1005,6 +1292,25 @@ $('#formAddProcessStep').on('submit', function (e) {
         start: $(this).find('[name="stepStart"]').val(),
         end: $(this).find('[name="stepEnd"]').val()
     };
+
+    var nguoiNhanNames = ($('#nguoiNhanProcessHidden').val() || "").split(',')
+            .map(t => t.trim()).filter(Boolean);
+
+    var nguoiNhanIds = [];
+    var receivers = [];
+    nguoiNhanNames.forEach(function (ten) {
+        var el = Array.from(document.querySelectorAll('.nguoiNhanItem')).find(c => c.value.trim() === ten);
+        if (el) {
+            var id = el.id.replace('nv_', '');
+            nguoiNhanIds.push(id);
+            receivers.push({id: id, name: ten});
+        } else {
+            receivers.push({name: ten});
+        }
+    });
+
+    step.receivers = receivers;
+
     $.ajax({
         url: './xoaQuytrinh',
         method: 'POST',
@@ -1015,7 +1321,8 @@ $('#formAddProcessStep').on('submit', function (e) {
             desc: step.desc,
             status: step.status,
             start: step.start,
-            end: step.end
+            end: step.end,
+            process_nguoi_nhan: nguoiNhanIds.join(',') // ✅ gửi ID sang backend
         },
         success: function (newStepId) {
             step.id = newStepId;
@@ -1121,7 +1428,18 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 });
+document.addEventListener("hidden.bs.modal", function () {
+    // Nếu chỉ còn 1 modal mở → reset backdrop
+    if ($('.modal.show').length === 1) {
+        $('.modal-backdrop').removeClass('stacked').css('z-index', '');
+    }
 
+    // Nếu không còn modal nào mở → xoá mọi backdrop còn sót
+    if ($('.modal.show').length === 0) {
+        $('.modal-backdrop').remove();
+        $('body').removeClass('modal-open').css('padding-right', '');
+    }
+});
 document.getElementById("btnAddReview").addEventListener("click", function () {
     var taskId = document.getElementById("taskId").value;
     var comment = document.getElementById("reviewComment").value.trim();
@@ -1434,7 +1752,12 @@ function archiveTask(taskId) {
                     .then(data => {
                         if (data.success) {
                             Swal.fire('Thành công!', 'Công việc đã được lưu trữ.', 'success');
-                            setTimeout(() => location.reload(), 1200);
+                            setTimeout(() => {
+                                // Ghi nhớ view + tab trước khi reload
+                                localStorage.setItem('lastTab', document.querySelector('.nav-link.active').id);
+                                localStorage.setItem('lastView', currentView);
+                                location.reload();
+                            }, 1200);
                         } else {
                             Swal.fire('Lỗi!', data.message || 'Lưu trữ thất bại.', 'error');
                         }
@@ -1461,7 +1784,12 @@ function remindTask(taskId) {
             .then(data => {
                 if (data.success) {
                     Swal.fire('Thành công!', 'Nhắc việc thành công.', 'success');
-                    setTimeout(() => location.reload(), 1200);
+                    setTimeout(() => {
+                        // Ghi nhớ view + tab trước khi reload
+                        localStorage.setItem('lastTab', document.querySelector('.nav-link.active').id);
+                        localStorage.setItem('lastView', currentView);
+                        location.reload();
+                    }, 1200);
                 } else {
                     Swal.fire('Lỗi!', data.message || 'Lưu trữ thất bại.', 'error');
                 }
@@ -1499,7 +1827,12 @@ function deleteTask(taskId) {
                     .then(data => {
                         if (data.success) {
                             Swal.fire('Đã xóa!', 'Công việc đã được chuyển vào thùng rác.', 'success');
-                            setTimeout(() => location.reload(), 1200);
+                            setTimeout(() => {
+                                // Ghi nhớ view + tab trước khi reload
+                                localStorage.setItem('lastTab', document.querySelector('.nav-link.active').id);
+                                localStorage.setItem('lastView', currentView);
+                                location.reload();
+                            }, 1200);
                         } else {
                             Swal.fire('Lỗi!', data.message || 'Xóa thất bại.', 'error');
                         }
@@ -1541,7 +1874,12 @@ function restoreTask(taskId) {
                     .then(data => {
                         if (data.success) {
                             Swal.fire('Thành công!', 'Công việc đã được khôi phục.', 'success');
-                            setTimeout(() => location.reload(), 1200);
+                            setTimeout(() => {
+                                // Ghi nhớ view + tab trước khi reload
+                                localStorage.setItem('lastTab', document.querySelector('.nav-link.active').id);
+                                localStorage.setItem('lastView', currentView);
+                                location.reload();
+                            }, 1200);
                         } else {
                             Swal.fire('Lỗi!', data.message || 'Khôi phục thất bại.', 'error');
                         }
@@ -1595,8 +1933,11 @@ function permanentDeleteTask(taskId) {
                                 const tab = document.querySelector('.nav-link.active');
                                 if (tab?.id === 'deleted-tasks-tab')
                                     loadDeletedTasks();
-                                else
+                                else {
+                                    localStorage.setItem('lastTab', document.querySelector('.nav-link.active').id);
+                                    localStorage.setItem('lastView', currentView);
                                     location.reload();
+                                }
                             }, 1400);
                         } else {
                             Swal.fire('Lỗi!', data.message || 'Xóa vĩnh viễn thất bại.', 'error');
@@ -1833,7 +2174,12 @@ function markReminderAsRead(taskId) {
             .then(data => {
                 if (data.success) {
                     Swal.fire('Đã đọc!', 'Đã tắt nhắc việc.', 'success');
-                    setTimeout(() => location.reload(), 1200);
+                    setTimeout(() => {
+                        // Ghi nhớ view + tab trước khi reload
+                        localStorage.setItem('lastTab', document.querySelector('.nav-link.active').id);
+                        localStorage.setItem('lastView', currentView);
+                        location.reload();
+                    }, 1200);
                 } else {
                     Swal.fire('Lỗi!', data.message || 'Đọc thất bại.', 'error');
                 }
@@ -1867,6 +2213,7 @@ function switchView(viewType) {
         document.getElementById('listView').classList.add('active');
         document.getElementById('calendarView').classList.remove('active');
         initTableSorting();
+        sortTable('trang_thai', 'asc');
     } else if (viewType === 'calendar') {
         document.getElementById('viewCalendar').classList.add('active');
         document.querySelector('.kanban-board').style.display = 'none';
@@ -1985,6 +2332,7 @@ function updateTaskDeadline(taskId, newDeadline) {
             });
 }
 
+// load trang đúng view
 document.addEventListener('DOMContentLoaded', function () {
 
     // 1️⃣ Lấy trạng thái cuối cùng
@@ -2141,6 +2489,77 @@ function renderTaskHistory(historyData) {
 
     timeline.innerHTML = html;
 }
+function updateToastZIndex() {
+    var maxZ = 0;
+    $('.modal.show, .modal-backdrop').each(function () {
+        var z = parseInt($(this).css('z-index')) || 0;
+        if (z > maxZ)
+            maxZ = z;
+    });
+
+    var $container = $('#toastContainer');
+    if ($container.length === 0) {
+        $container = $('<div id="toastContainer" class="toast-container position-fixed bottom-0 end-0 p-3"></div>');
+        $('body').append($container);
+    }
+
+    // đảm bảo toast luôn trên modal/backdrop
+    var newZ = Math.max(maxZ + 30, 20000); // chọn giá trị đủ lớn
+    $container.css('z-index', newZ);
+
+    return newZ;
+}
+
+// cập nhật khi modal mở/đóng
+document.addEventListener('shown.bs.modal', updateToastZIndex);
+document.addEventListener('hidden.bs.modal', updateToastZIndex);
+
+function showToast(type, message) {
+    // đảm bảo container có z-index cao hơn modal/backdrop
+    var z = updateToastZIndex();
+
+    var map = {
+        success: 'toastSuccess',
+        error: 'toastError',
+        info: 'toastInfo',
+        warning: 'toastWarning'
+    };
+    var toastId = map[type] || 'toastInfo';
+    var $container = $('#toastContainer');
+
+    // tạo toast element nếu chưa có
+    var $toast = $('#' + toastId);
+    if ($toast.length === 0) {
+        var toastHtml =
+                '<div id="' + toastId + '" class="toast align-items-center border-0 mb-2" role="alert" aria-live="assertive" aria-atomic="true">' +
+                '<div class="d-flex">' +
+                '<div class="toast-body"></div>' +
+                '<button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>' +
+                '</div>' +
+                '</div>';
+        $toast = $(toastHtml);
+        // đảm bảo toast nằm trong container có z-index cao
+        $container.append($toast);
+    } else {
+        // nếu đã tồn tại ở body do phiên bản cũ, di chuyển vào container
+        if ($toast.parent()[0] !== $container[0]) {
+            $container.append($toast);
+        }
+    }
+
+    // đặt nội dung và z-index inline phòng trường hợp cha không áp dụng
+    $toast.find('.toast-body').text(message);
+    $toast.attr('style',
+            'background-color: #fbbf24 !important;' + // màu vàng nhạt
+            'color: #000 !important;' + // chữ đen
+            'font-weight: 600 !important;' + 
+            'z-index: ' + (z + 10) + ' !important;'
+            );
+
+    var bsToast = new bootstrap.Toast($toast[0], {delay: 2500, autohide: true});
+    bsToast.show();
+}
+
 function getApprovalBadge(status) {
     switch (status) {
         case 'Đã duyệt':

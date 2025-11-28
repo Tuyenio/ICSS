@@ -32,8 +32,8 @@ public class KNCSDL {
 
     public KNCSDL() throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
-        this.cn = DriverManager.getConnection(path, "root", "");
-        //this.cn = DriverManager.getConnection(path, "icssapp", "StrongPass!2025");
+        //this.cn = DriverManager.getConnection(path, "root", "");
+        this.cn = DriverManager.getConnection(path, "icssapp", "StrongPass!2025");
     }
 
     public ResultSet laydl(String email) throws SQLException {
@@ -713,21 +713,37 @@ public class KNCSDL {
         return null;
     }
 
+    public List<Map<String, Object>> getNguoiNhanByStepId(int stepId) throws SQLException {
+        String sql = "SELECT n.id, n.ho_ten FROM quy_trinh_nguoi_nhan q "
+                + "JOIN nhanvien n ON q.nhan_id = n.id "
+                + "WHERE q.step_id = ?";
+        PreparedStatement ps = cn.prepareStatement(sql);
+        ps.setInt(1, stepId);
+        ResultSet rs = ps.executeQuery();
+
+        List<Map<String, Object>> list = new ArrayList<>();
+        while (rs.next()) {
+            Map<String, Object> nguoi = new LinkedHashMap<>();
+            nguoi.put("id", rs.getInt("id"));
+            nguoi.put("ten", rs.getString("ho_ten"));  // 👈 đổi đúng theo cột trong DB
+            list.add(nguoi);
+        }
+        return list;
+    }
+
     public boolean updateStepById(int stepId, String name, String desc,
             String status, String start, String end) throws SQLException {
         String sql = "UPDATE cong_viec_quy_trinh SET ten_buoc = ?, mo_ta = ?, trang_thai = ?, ngay_bat_dau = ?, ngay_ket_thuc = ? WHERE id = ?";
-        PreparedStatement stmt = cn.prepareStatement(sql);
-        stmt.setString(1, name);
-        stmt.setString(2, desc);
-        stmt.setString(3, status);
-        stmt.setString(4, start);
-        stmt.setString(5, end);
-        stmt.setInt(6, stepId);
-
-        int affected = stmt.executeUpdate();
-        stmt.close();
-        cn.close();
-        return affected > 0;
+        try (PreparedStatement stmt = cn.prepareStatement(sql)) {
+            stmt.setString(1, name);
+            stmt.setString(2, desc);
+            stmt.setString(3, status);
+            stmt.setString(4, start);
+            stmt.setString(5, end);
+            stmt.setInt(6, stepId);
+            int affected = stmt.executeUpdate();
+            return affected > 0;
+        }
     }
 
     public boolean deleteStepById(int stepId) throws SQLException {
@@ -753,7 +769,6 @@ public class KNCSDL {
 
         int affected = stmt.executeUpdate();
         int newId = -1;
-
         if (affected > 0) {
             ResultSet rs = stmt.getGeneratedKeys();
             if (rs.next()) {
@@ -763,7 +778,7 @@ public class KNCSDL {
         }
 
         stmt.close();
-        cn.close();
+        // ❌ KHÔNG đóng cn ở đây
         return newId;
     }
 
@@ -5140,16 +5155,19 @@ public class KNCSDL {
         Map<String, Object> data = new HashMap<>();
         List<String> projectNames = new ArrayList<>();
         List<Double> progressValues = new ArrayList<>();
+        List<String> endDates = new ArrayList<>();
+        List<Integer> daysLeftList = new ArrayList<>();
 
         String sql = """
         SELECT
             da.ten_du_an,
+            da.ngay_ket_thuc,
             COALESCE(AVG(cvtd.phan_tram), 0) AS tien_do
         FROM du_an da
         LEFT JOIN cong_viec cv ON cv.du_an_id = da.id
         LEFT JOIN cong_viec_tien_do cvtd ON cvtd.cong_viec_id = cv.id
         WHERE da.phong_ban = ?
-        GROUP BY da.id, da.ten_du_an
+        GROUP BY da.id, da.ten_du_an, da.ngay_ket_thuc
         ORDER BY da.ten_du_an
     """;
 
@@ -5160,12 +5178,29 @@ public class KNCSDL {
                 while (rs.next()) {
                     projectNames.add(rs.getString("ten_du_an"));
                     progressValues.add(rs.getDouble("tien_do"));
+
+                    String ngayKT = rs.getString("ngay_ket_thuc");
+                    endDates.add(ngayKT);
+
+                    // TÍNH SỐ NGÀY CÒN LẠI
+                    int daysLeft = 0;
+                    if (ngayKT != null) {
+                        java.sql.Date end = java.sql.Date.valueOf(ngayKT);
+                        long now = System.currentTimeMillis();
+                        long diff = end.getTime() - now;
+
+                        daysLeft = (int) Math.ceil(diff / (1000 * 60 * 60 * 24.0));
+                    }
+                    daysLeftList.add(daysLeft);
                 }
             }
         }
 
         data.put("projectNames", projectNames);
         data.put("progressValues", progressValues);
+        data.put("endDates", endDates);
+        data.put("daysLeft", daysLeftList);
+
         return data;
     }
 
@@ -5220,6 +5255,23 @@ public class KNCSDL {
             e.printStackTrace();
             return false;
         }
+    }
+
+    public void insertNguoiNhanQuyTrinh(int stepId, int nhanId) throws SQLException {
+        String sql = "INSERT INTO quy_trinh_nguoi_nhan (step_id, nhan_id) VALUES (?, ?)";
+        PreparedStatement stmt = cn.prepareStatement(sql);
+        stmt.setInt(1, stepId);
+        stmt.setInt(2, nhanId);
+        stmt.executeUpdate();
+        stmt.close();
+    }
+
+    public void deleteNguoiNhanByStepId(int stepId) throws SQLException {
+        String sql = "DELETE FROM quy_trinh_nguoi_nhan WHERE step_id = ?";
+        PreparedStatement stmt = cn.prepareStatement(sql);
+        stmt.setInt(1, stepId);
+        stmt.executeUpdate();
+        stmt.close();
     }
 
     public void close() throws SQLException {
