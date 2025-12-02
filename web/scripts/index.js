@@ -80,118 +80,277 @@
     if (ctxTienDoDuAn) {
         const h = document.getElementById('chartDataHolder');
 
-        // DỮ LIỆU PHÒNG BAN (lấy từ JSP data-*)
-        const kyThuatProjectNames = h.dataset.ktProjectNames ? h.dataset.ktProjectNames.split('|') : [];
+        // Dữ liệu dự án hiện có (kỹ thuật / kinh doanh)
+        const kyThuatProjectNames = h.dataset.ktProjectNames ? h.dataset.ktProjectNames.split('|').filter(v => v !== '') : [];
         const kyThuatProgress = h.dataset.ktProgress ? h.dataset.ktProgress.split(',').map(Number) : [];
         const kyThuatProjectIds = h.dataset.ktProjectIds ? h.dataset.ktProjectIds.split(',').map(v => v === '' ? null : parseInt(v)) : [];
-
-        const kinhDoanhProjectNames = h.dataset.kdProjectNames ? h.dataset.kdProjectNames.split('|') : [];
-        const kinhDoanhProgress = h.dataset.kdProgress ? h.dataset.kdProgress.split(',').map(Number) : [];
-        const kinhDoanhProjectIds = h.dataset.kdProjectIds ? h.dataset.kdProjectIds.split(',').map(v => v === '' ? null : parseInt(v)) : [];
-
-        let currentChart = null;
-
-        const createProjectChart = (labels, values, endDates, daysLeft, projectIds) => {
-
-            if (currentChart)
-                currentChart.destroy();
-
-            // Tạo nhãn mới: kèm '(Còn X ngày)' hoặc '(Quá hạn Y ngày)'
-            const labelsWithDeadline = labels.map((name, i) => {
-                const d = daysLeft[i];
-                if (d < 0)
-                    return `${name} (Quá hạn ${Math.abs(d)} ngày)`;
-                return `${name} (Còn ${d} ngày)`;
-            });
-
-            // Màu tiến độ giữ nguyên
-            const colorScale = v => {
-                if (v >= 90)
-                    return '#10b981';
-                if (v >= 70)
-                    return '#3b82f6';
-                if (v >= 50)
-                    return '#f59e0b';
-                if (v >= 30)
-                    return '#f97316';
-                return '#ef4444';
-            };
-            const barColors = values.map(colorScale);
-
-            currentChart = new Chart(ctxTienDoDuAn, {
-                type: 'bar',
-                data: {
-                    labels: labelsWithDeadline,
-                    datasets: [{
-                            label: '% Tiến độ',
-                            data: values,
-                            backgroundColor: barColors,
-                            borderWidth: 0
-                        }]
-                },
-                options: {
-                    indexAxis: 'y',
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        tooltip: {
-                            callbacks: {
-                                afterLabel: (ctx) => {
-                                    const i = ctx.dataIndex;
-                                    return "Hạn kết thúc: " + (endDates[i] || '');
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-
-            // click handler: chuyển tới danh sách công việc của project được click
-            ctxTienDoDuAn.onclick = function (evt) {
-                try {
-                    const points = currentChart.getElementsAtEventForMode(evt, 'nearest', {intersect: true}, true);
-                    if (points && points.length) {
-                        const idx = points[0].index;
-                        const pid = projectIds[idx];
-                        if (pid !== undefined && pid !== null && pid !== "") {
-                            window.location.href = 'dsCongviecDuan?projectId=' + encodeURIComponent(pid);
-                        }
-                    }
-                } catch (e) {
-                    console.error('Chart click handler error', e);
-                }
-            };
-
-            const infoEl = document.getElementById('projectCountInfo');
-            if (infoEl)
-                infoEl.textContent = "Hiển thị " + labels.length + " dự án";
-        };
-
+        const kyThuatStatuses = h.dataset.ktStatuses ? h.dataset.ktStatuses.split('|').filter(v => v !== '') : [];
         const ktEndDates = h.dataset.ktEndDates ? h.dataset.ktEndDates.split("|") : [];
         const ktDaysLeft = h.dataset.ktDaysLeft ? JSON.parse(h.dataset.ktDaysLeft) : [];
-        const ktProjectIds = kyThuatProjectIds;
 
+        const kinhDoanhProjectNames = h.dataset.kdProjectNames ? h.dataset.kdProjectNames.split('|').filter(v => v !== '') : [];
+        const kinhDoanhProgress = h.dataset.kdProgress ? h.dataset.kdProgress.split(',').map(Number) : [];
+        const kinhDoanhProjectIds = h.dataset.kdProjectIds ? h.dataset.kdProjectIds.split(',').map(v => v === '' ? null : parseInt(v)) : [];
+        const kinhDoanhStatuses = h.dataset.kdStatuses ? h.dataset.kdStatuses.split('|').filter(v => v !== '') : [];
         const kdEndDates = h.dataset.kdEndDates ? h.dataset.kdEndDates.split("|") : [];
         const kdDaysLeft = h.dataset.kdDaysLeft ? JSON.parse(h.dataset.kdDaysLeft) : [];
-        const kdProjectIds = kinhDoanhProjectIds;
 
-        // Load mặc định
+        // Thứ tự hiển thị trạng thái theo yêu cầu
+        const STATUS_ORDER = ['Đang thực hiện', 'Tạm ngưng', 'Đã hoàn thành', 'Đóng dự án'];
+        const STATUS_COLOR = {
+            'Đang thực hiện': '#10b981',
+            'Tạm ngưng': '#3b82f6',
+            'Đã hoàn thành': '#f59e0b',
+            'Đóng dự án': '#ef4444'
+        };
+
+        // helper: màu theo tiến độ (0 -> đỏ, 50 -> vàng, 100 -> xanh)
+        const progressColor = (p) => {
+            const hue = Math.round((p / 100) * 120); // 0..120 (red -> green)
+            return `hsl(${hue} 75% 45%)`;
+        };
+
+        // inject minimal styles for progress fill if not present
+        if (!document.getElementById('projProgressStyles')) {
+            const s = document.createElement('style');
+            s.id = 'projProgressStyles';
+            s.textContent = `
+                .proj-name-wrap{
+                    position: relative;
+                    width: 100%;
+                    padding: 6px 10px;
+                    border-radius: 8px;
+                    overflow: hidden;
+                    background: transparent;
+                }
+                .proj-progress-fill{
+                    position: absolute;
+                    left: 0;
+                    top: 0;
+                    bottom: 0;
+                    width: 0%;
+                    z-index: 1;
+                    opacity: 0.18;
+                    border-radius: 8px;
+                    transition: width .7s ease, background-color .5s ease;
+                }
+                .proj-name-text{
+                    position: relative;
+                    z-index: 2;
+                    font-weight: 600;
+                    color: #0b1220;
+                    white-space: nowrap;
+                }
+            `;
+            document.head.appendChild(s);
+        }
+
+        // Nơi render: dùng parent của canvas (giữ canvas để không phá layout). Tạo container hiển thị danh sách.
+        const renderContainer = (canvasEl) => {
+            // tìm thẻ chứa canvas; nếu có .chart-wrapper -> dùng, ngược lại dùng parentNode
+            return canvasEl.parentElement || canvasEl.parentNode;
+        };
+
+        const renderGroupedProjects = (names, progresses, endDates, daysLeft, ids, statuses) => {
+            const container = renderContainer(ctxTienDoDuAn);
+            // wipe previous content then append a custom list; giữ canvas but hide nó
+            ctxTienDoDuAn.style.display = 'none';
+            // create wrapper
+            let wrapper = container.querySelector('.project-group-wrapper');
+            if (!wrapper) {
+                wrapper = document.createElement('div');
+                wrapper.className = 'project-group-wrapper';
+                wrapper.style.padding = '12px';
+                wrapper.style.color = '#1e293b';
+                wrapper.style.fontWeight = '500';
+                container.appendChild(wrapper);
+            }
+            wrapper.innerHTML = '';
+
+            // Build grouped map
+            const groups = {};
+            for (let i = 0; i < names.length; i++) {
+                const st = statuses[i] || 'Đang thực hiện';
+                if (!groups[st])
+                    groups[st] = [];
+                groups[st].push({
+                    id: ids[i],
+                    name: names[i],
+                    progress: typeof progresses[i] === 'number' ? Math.round(progresses[i]) : 0,
+                    endDate: endDates[i] || '',
+                    daysLeft: daysLeft && daysLeft[i] !== undefined ? daysLeft[i] : null
+                });
+            }
+
+            // Render for each status in STATUS_ORDER if exists
+            STATUS_ORDER.forEach(st => {
+                const items = groups[st];
+                if (!items || items.length === 0)
+                    return; // bỏ trạng thái không có project
+                // Section header
+                const header = document.createElement('div');
+                header.style.display = 'flex';
+                header.style.alignItems = 'center';
+                header.style.gap = '10px';
+                header.style.marginTop = '10px';
+                header.style.marginBottom = '6px';
+                const bullet = document.createElement('span');
+                bullet.style.width = '12px';
+                bullet.style.height = '12px';
+                bullet.style.borderRadius = '50%';
+                bullet.style.display = 'inline-block';
+                bullet.style.background = STATUS_COLOR[st] || '#64748b';
+                bullet.style.boxShadow = `0 0 8px ${bullet.style.background}33`;
+                const title = document.createElement('strong');
+                title.textContent = `${st}`;
+                title.style.fontSize = '1rem';
+                title.style.color = '#0f172a';
+                header.appendChild(bullet);
+                header.appendChild(title);
+                wrapper.appendChild(header);
+
+                // Items under this status
+                items.forEach(proj => {
+                    const row = document.createElement('div');
+                    row.style.display = 'flex';
+                    row.style.justifyContent = 'space-between';
+                    row.style.alignItems = 'center';
+                    row.style.padding = '8px 10px';
+                    row.style.borderRadius = '8px';
+                    row.style.cursor = 'pointer';
+                    row.style.marginBottom = '6px';
+                    row.style.background = 'rgba(15,23,42,0.02)';
+                    row.onmouseover = () => {
+                        row.style.background = 'rgba(59,130,246,0.06)';
+                    };
+                    row.onmouseleave = () => {
+                        row.style.background = 'rgba(15,23,42,0.02)';
+                    };
+                    row.onclick = () => {
+                        if (proj.id !== undefined && proj.id !== null && proj.id !== "") {
+                            window.location.href = 'dsCongviecDuan?projectId=' + encodeURIComponent(proj.id);
+                        }
+                    };
+
+                    const left = document.createElement('div');
+                    left.style.display = 'flex';
+                    left.style.gap = '10px';
+                    left.style.alignItems = 'center';
+
+                    const dot = document.createElement('span');
+                    dot.style.width = '8px';
+                    dot.style.height = '8px';
+                    dot.style.borderRadius = '50%';
+                    dot.style.display = 'inline-block';
+                    dot.style.background = STATUS_COLOR[st] || '#64748b';
+
+                    // name wrapper with progress fill
+                    const nameWrap = document.createElement('div');
+                    nameWrap.className = 'proj-name-wrap';
+                    nameWrap.style.padding = '6px 10px';
+                    nameWrap.style.borderRadius = '8px';
+                    nameWrap.style.background = 'transparent';
+                    nameWrap.style.display = 'block';
+
+                    const fill = document.createElement('div');
+                    fill.className = 'proj-progress-fill';
+                    const p = Math.min(100, Math.max(0, proj.progress || 0));
+                    fill.style.width = p + '%';
+                    fill.style.background = progressColor(p);
+                    fill.style.opacity = '0.18';
+                    fill.style.position = "absolute";
+                    fill.style.left = "0";
+                    fill.style.top = "0";
+                    fill.style.bottom = "0";
+                    fill.style.borderRadius = "8px";
+                    fill.style.zIndex = "0";
+                    row.style.position = "relative";
+                    row.prepend(fill);
+                    const nameEl = document.createElement('div');
+                    nameEl.className = 'proj-name-text';
+                    nameEl.textContent = proj.name;
+                    nameEl.style.padding = '0 6px';
+                    nameWrap.appendChild(nameEl);
+                    left.appendChild(dot);
+                    left.appendChild(nameWrap);
+                    const right = document.createElement('div');
+                    right.style.display = 'flex';
+                    right.style.flexDirection = 'column';
+                    right.style.alignItems = 'flex-end';
+                    right.style.gap = '4px';
+
+                    const pct = document.createElement('span');
+                    pct.textContent = proj.progress + '%';
+                    pct.style.fontWeight = '700';
+                    pct.style.color = STATUS_COLOR[st] || '#0b1220';
+                    right.appendChild(pct);
+
+                    const daysInfo = document.createElement('span');
+                    daysInfo.style.fontSize = '0.85rem';
+                    daysInfo.style.fontWeight = '600';
+
+                    if (proj.daysLeft > 0) {
+                        daysInfo.textContent = "Còn lại " + proj.daysLeft + " ngày";
+                        daysInfo.style.color = "#059669";
+                    } else if (proj.daysLeft === 0) {
+                        daysInfo.textContent = "Hôm nay là hạn cuối";
+                        daysInfo.style.color = "#d97706";
+                    } else {
+                        daysInfo.textContent = "Đã quá hạn " + Math.abs(proj.daysLeft) + " ngày";
+                        daysInfo.style.color = "#dc2626";
+                    }
+
+                    right.appendChild(daysInfo);
+
+                    row.appendChild(left);
+                    row.appendChild(right);
+                    wrapper.appendChild(row);
+
+                    // small animation: after append ensure width animated (in case CSS loaded after)
+                    requestAnimationFrame(() => {
+                        fill.style.width = p + '%';
+                    });
+                });
+            });
+
+            // Info footer
+            const info = document.createElement('div');
+            info.className = 'small text-muted mt-2';
+            info.style.marginTop = '10px';
+            info.textContent = `Hiển thị ${names.length} dự án`;
+            wrapper.appendChild(info);
+        };
+
+        // Wrapper to call renderGroupedProjects for selected group
+        const createProjectChart = (names, values, endDates, daysLeft, projectIds, statuses) => {
+            // Render grouped list
+            renderGroupedProjects(names, values, endDates, daysLeft, projectIds, statuses);
+        };
+
+        // Load mặc định (kỹ thuật)
         createProjectChart(
                 kyThuatProjectNames,
                 kyThuatProgress,
                 ktEndDates,
                 ktDaysLeft,
-                ktProjectIds
+                kyThuatProjectIds,
+                kyThuatStatuses
                 );
 
         // Khi đổi nhóm dự án
         const sel = document.getElementById('phongBanSelect');
         if (sel) {
             sel.addEventListener('change', function () {
+                // show/hide canvas wrapper reset
+                const wrapper = ctxTienDoDuAn.parentElement.querySelector('.project-group-wrapper');
+                if (wrapper)
+                    wrapper.remove();
+                ctxTienDoDuAn.style.display = '';
+
                 if (this.value === 'kyThuat') {
-                    createProjectChart(kyThuatProjectNames, kyThuatProgress, ktEndDates, ktDaysLeft, ktProjectIds);
+                    createProjectChart(kyThuatProjectNames, kyThuatProgress, ktEndDates, ktDaysLeft, kyThuatProjectIds, kyThuatStatuses);
                 } else {
-                    createProjectChart(kinhDoanhProjectNames, kinhDoanhProgress, kdEndDates, kdDaysLeft, kdProjectIds);
+                    createProjectChart(kinhDoanhProjectNames, kinhDoanhProgress, kdEndDates, kdDaysLeft, kinhDoanhProjectIds, kinhDoanhStatuses);
                 }
             });
         }

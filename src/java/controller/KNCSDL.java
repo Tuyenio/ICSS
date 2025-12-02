@@ -5165,24 +5165,20 @@ public class KNCSDL {
     // Lấy tiến độ dự án theo phòng ban
     public Map<String, Object> getTienDoDuAnTheoPhongBan(String phongBan) throws SQLException {
         Map<String, Object> data = new HashMap<>();
-        List<Integer> projectIds = new ArrayList<>();
-        List<String> projectNames = new ArrayList<>();
-        List<Double> progressValues = new ArrayList<>();
-        List<String> endDates = new ArrayList<>();
-        List<Integer> daysLeftList = new ArrayList<>();
+        List<Map<String, Object>> rows = new ArrayList<>();
 
         String sql = """
         SELECT
             da.id,
             da.ten_du_an,
             da.ngay_ket_thuc,
-            COALESCE(AVG(cvtd.phan_tram), 0) AS tien_do
+            COALESCE(AVG(cvtd.phan_tram), 0) AS tien_do,
+            da.trang_thai_duan
         FROM du_an da
         LEFT JOIN cong_viec cv ON cv.du_an_id = da.id
         LEFT JOIN cong_viec_tien_do cvtd ON cvtd.cong_viec_id = cv.id
         WHERE da.phong_ban = ?
-        GROUP BY da.id, da.ten_du_an, da.ngay_ket_thuc
-        ORDER BY da.ten_du_an
+        GROUP BY da.id, da.ten_du_an, da.ngay_ket_thuc, da.trang_thai_duan
     """;
 
         try (PreparedStatement stmt = cn.prepareStatement(sql)) {
@@ -5190,25 +5186,75 @@ public class KNCSDL {
 
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
-                    projectIds.add(rs.getInt("id"));
-                    projectNames.add(rs.getString("ten_du_an"));
-                    progressValues.add(rs.getDouble("tien_do"));
-
+                    Map<String, Object> r = new HashMap<>();
+                    r.put("id", rs.getInt("id"));
+                    r.put("ten", rs.getString("ten_du_an"));
+                    r.put("tien_do", rs.getDouble("tien_do"));
                     String ngayKT = rs.getString("ngay_ket_thuc");
-                    endDates.add(ngayKT);
+                    r.put("ngay_ket_thuc", ngayKT);
 
-                    // Tính số ngày còn lại
+                    // Lấy trạng thái (nếu null -> đặt "Chưa bắt đầu")
+                    String status = rs.getString("trang_thai_duan");
+                    if (status == null || status.trim().isEmpty()) {
+                        status = "Chưa bắt đầu";
+                    }
+                    r.put("trang_thai_duan", status);
+
+                    // Tính số ngày còn lại (giữ nguyên logic cũ)
                     int daysLeft = 0;
                     if (ngayKT != null) {
-                        java.sql.Date end = java.sql.Date.valueOf(ngayKT);
-                        long now = System.currentTimeMillis();
-                        long diff = end.getTime() - now;
-
-                        daysLeft = (int) Math.ceil(diff / (1000 * 60 * 60 * 24.0));
+                        try {
+                            java.sql.Date end = java.sql.Date.valueOf(ngayKT);
+                            long now = System.currentTimeMillis();
+                            long diff = end.getTime() - now;
+                            daysLeft = (int) Math.ceil(diff / (1000.0 * 60 * 60 * 24));
+                        } catch (Exception ex) {
+                            daysLeft = 0;
+                        }
                     }
-                    daysLeftList.add(daysLeft);
+                    r.put("days_left", daysLeft);
+
+                    rows.add(r);
                 }
             }
+        }
+
+        // Định nghĩa thứ tự hiển thị trạng thái
+        List<String> statusOrder = Arrays.asList("Đang thực hiện", "Chưa bắt đầu", "Đã kết thúc", "Không thể thực hiện");
+
+        // Sắp xếp rows theo statusOrder rồi theo tên dự án
+        rows.sort((a, b) -> {
+            String sa = (String) a.get("trang_thai_duan");
+            String sb = (String) b.get("trang_thai_duan");
+            int ia = statusOrder.indexOf(sa);
+            int ib = statusOrder.indexOf(sb);
+            if (ia == -1) {
+                ia = 99;
+            }
+            if (ib == -1) {
+                ib = 99;
+            }
+            if (ia != ib) {
+                return Integer.compare(ia, ib);
+            }
+            return ((String) a.get("ten")).compareToIgnoreCase((String) b.get("ten"));
+        });
+
+        // Tách thành các list song song để trả về (giữ tương thích frontend)
+        List<Integer> projectIds = new ArrayList<>();
+        List<String> projectNames = new ArrayList<>();
+        List<Double> progressValues = new ArrayList<>();
+        List<String> endDates = new ArrayList<>();
+        List<Integer> daysLeftList = new ArrayList<>();
+        List<String> projectStatuses = new ArrayList<>();
+
+        for (Map<String, Object> r : rows) {
+            projectIds.add((Integer) r.get("id"));
+            projectNames.add((String) r.get("ten"));
+            progressValues.add((Double) r.get("tien_do"));
+            endDates.add((String) r.get("ngay_ket_thuc"));
+            daysLeftList.add((Integer) r.get("days_left"));
+            projectStatuses.add((String) r.get("trang_thai_duan"));
         }
 
         data.put("projectIds", projectIds);
@@ -5216,6 +5262,7 @@ public class KNCSDL {
         data.put("progressValues", progressValues);
         data.put("endDates", endDates);
         data.put("daysLeft", daysLeftList);
+        data.put("projectStatuses", projectStatuses);
 
         return data;
     }

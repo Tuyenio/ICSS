@@ -542,10 +542,10 @@
                                         <%
                                             String status = p.get("trang_thai_duan") != null ? p.get("trang_thai_duan").toString() : "Đang thực hiện";
                                             String statusClass = "badge bg-secondary";
-                                            if ("Chưa bắt đầu".equals(status)) statusClass = "badge bg-info";
+                                            if ("Tạm ngưng".equals(status)) statusClass = "badge bg-info";
                                             else if ("Đang thực hiện".equals(status)) statusClass = "badge bg-warning text-dark";
-                                            else if ("Đã kết thúc".equals(status)) statusClass = "badge bg-success";
-                                            else if ("Không thể thực hiện".equals(status)) statusClass = "badge bg-danger";
+                                            else if ("Đã hoàn thành".equals(status)) statusClass = "badge bg-success";
+                                            else if ("Đóng dự án".equals(status)) statusClass = "badge bg-danger";
                                         %>
                                         <span class="<%= statusClass %>"><%= status %></span>
                                     </td>
@@ -627,10 +627,10 @@
                         <div class="mb-3">
                             <label class="form-label">Trạng thái dự án</label>
                             <select class="form-select" name="trang_thai_duan" required>
-                                <option value="Chưa bắt đầu">Chưa bắt đầu</option>
+                                <option value="Tạm ngưng">Tạm ngưng</option>
                                 <option value="Đang thực hiện">Đang thực hiện</option>
-                                <option value="Đã kết thúc">Đã kết thúc</option>
-                                <option value="Không thể thực hiện">Không thể thực hiện</option>
+                                <option value="Đã hoàn thành">Đã hoàn thành</option>
+                                <option value="Đóng dự án">Đóng dự án</option>
                             </select>
                         </div>
 

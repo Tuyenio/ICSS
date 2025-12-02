@@ -80,6 +80,7 @@
                 text-align: center;
                 box-shadow: 0 1px 4px #0001;
                 border: 1px solid #e9ecef;
+                cursor: pointer;
             }
 
             .fw-semibold {
@@ -169,8 +170,12 @@
         <script>
             var PAGE_TITLE = '<i class="fa-solid fa-bell me-2"></i>Thông báo quản lý';
         </script>
+        <script>
+            window.APP_CONTEXT = '<%= request.getContextPath() %>';
+        </script>
+        <!-- load jQuery BEFORE any script that uses $ -->
+        <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
     </head>
-
     <body>
         <div class="d-flex">
             <!-- Include Sidebar -->
@@ -240,8 +245,10 @@
                 </div>
             </div>
         </div>
+        <!-- load bootstrap bundle (ok as is) -->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <!-- load our JS in order: plain [notification.js](http://_vscodecontentref_/0) (uses XHR/DOM) then obf/minified script that may use jQuery -->
+        <script src="<%= request.getContextPath() %>/scripts/notification.js?v=20251105"></script>
         <script src="<%= request.getContextPath() %>/scripts/notification.obf.js?v=20251105"></script>
     </body>
-
 </html>
