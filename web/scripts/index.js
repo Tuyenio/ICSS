@@ -83,13 +83,15 @@
         // DỮ LIỆU PHÒNG BAN (lấy từ JSP data-*)
         const kyThuatProjectNames = h.dataset.ktProjectNames ? h.dataset.ktProjectNames.split('|') : [];
         const kyThuatProgress = h.dataset.ktProgress ? h.dataset.ktProgress.split(',').map(Number) : [];
+        const kyThuatProjectIds = h.dataset.ktProjectIds ? h.dataset.ktProjectIds.split(',').map(v => v === '' ? null : parseInt(v)) : [];
 
         const kinhDoanhProjectNames = h.dataset.kdProjectNames ? h.dataset.kdProjectNames.split('|') : [];
         const kinhDoanhProgress = h.dataset.kdProgress ? h.dataset.kdProgress.split(',').map(Number) : [];
+        const kinhDoanhProjectIds = h.dataset.kdProjectIds ? h.dataset.kdProjectIds.split(',').map(v => v === '' ? null : parseInt(v)) : [];
 
         let currentChart = null;
 
-        const createProjectChart = (labels, values, endDates, daysLeft) => {
+        const createProjectChart = (labels, values, endDates, daysLeft, projectIds) => {
 
             if (currentChart)
                 currentChart.destroy();
@@ -136,7 +138,7 @@
                             callbacks: {
                                 afterLabel: (ctx) => {
                                     const i = ctx.dataIndex;
-                                    return "Hạn kết thúc: " + endDates[i];
+                                    return "Hạn kết thúc: " + (endDates[i] || '');
                                 }
                             }
                         }
@@ -144,32 +146,55 @@
                 }
             });
 
-            document.getElementById('projectCountInfo').textContent =
-                    "Hiển thị " + labels.length + " dự án";
+            // click handler: chuyển tới danh sách công việc của project được click
+            ctxTienDoDuAn.onclick = function (evt) {
+                try {
+                    const points = currentChart.getElementsAtEventForMode(evt, 'nearest', {intersect: true}, true);
+                    if (points && points.length) {
+                        const idx = points[0].index;
+                        const pid = projectIds[idx];
+                        if (pid !== undefined && pid !== null && pid !== "") {
+                            window.location.href = 'dsCongviecDuan?projectId=' + encodeURIComponent(pid);
+                        }
+                    }
+                } catch (e) {
+                    console.error('Chart click handler error', e);
+                }
+            };
+
+            const infoEl = document.getElementById('projectCountInfo');
+            if (infoEl)
+                infoEl.textContent = "Hiển thị " + labels.length + " dự án";
         };
 
-        const ktEndDates = h.dataset.ktEndDates.split("|");
-        const ktDaysLeft = JSON.parse(h.dataset.ktDaysLeft);
+        const ktEndDates = h.dataset.ktEndDates ? h.dataset.ktEndDates.split("|") : [];
+        const ktDaysLeft = h.dataset.ktDaysLeft ? JSON.parse(h.dataset.ktDaysLeft) : [];
+        const ktProjectIds = kyThuatProjectIds;
 
-        const kdEndDates = h.dataset.kdEndDates.split("|");
-        const kdDaysLeft = JSON.parse(h.dataset.kdDaysLeft);
+        const kdEndDates = h.dataset.kdEndDates ? h.dataset.kdEndDates.split("|") : [];
+        const kdDaysLeft = h.dataset.kdDaysLeft ? JSON.parse(h.dataset.kdDaysLeft) : [];
+        const kdProjectIds = kinhDoanhProjectIds;
 
-// Load mặc định
+        // Load mặc định
         createProjectChart(
                 kyThuatProjectNames,
                 kyThuatProgress,
                 ktEndDates,
-                ktDaysLeft
+                ktDaysLeft,
+                ktProjectIds
                 );
 
-// Khi đổi nhóm dự án
-        document.getElementById('phongBanSelect').addEventListener('change', function () {
-            if (this.value === 'kyThuat') {
-                createProjectChart(kyThuatProjectNames, kyThuatProgress, ktEndDates, ktDaysLeft);
-            } else {
-                createProjectChart(kinhDoanhProjectNames, kinhDoanhProgress, kdEndDates, kdDaysLeft);
-            }
-        });
+        // Khi đổi nhóm dự án
+        const sel = document.getElementById('phongBanSelect');
+        if (sel) {
+            sel.addEventListener('change', function () {
+                if (this.value === 'kyThuat') {
+                    createProjectChart(kyThuatProjectNames, kyThuatProgress, ktEndDates, ktDaysLeft, ktProjectIds);
+                } else {
+                    createProjectChart(kinhDoanhProjectNames, kinhDoanhProgress, kdEndDates, kdDaysLeft, kdProjectIds);
+                }
+            });
+        }
     }
 })();
 document.getElementById("btnNhacViecAll").addEventListener("click", function () {

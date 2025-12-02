@@ -1553,7 +1553,7 @@
                     transform: translateY(0);
                 }
             }
-            
+
         </style>
     </head>
 
@@ -1610,11 +1610,25 @@
                                     </button>
                                 </div>
 
-                                <!-- Nút thêm từ Excel -->
-                                <button class="btn btn-success rounded-pill px-3" data-bs-toggle="modal"
-                                        data-bs-target="#modalExcel">
-                                    <i class="fa-solid fa-file-excel"></i> Thêm việc từ Excel
-                                </button>
+                                <!-- Nút thêm -->
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-primary rounded-pill dropdown-toggle" 
+                                            data-bs-toggle="dropdown" aria-expanded="false" id="btnAddTaskDropdown">
+                                        <i class="fa-solid fa-plus me-1"></i> Thêm công việc
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end">
+                                        <li>
+                                            <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalExcel" id="btnImportExcel">
+                                                <i class="fa-solid fa-file-excel me-2 text-success"></i> Thêm việc từ Excel
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalTask" id="btnCreateTask">
+                                                <i class="fa-solid fa-plus me-2"></i> Tạo công việc
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
 
                                 <a href="dsDuan?nhom_du_an=<%= session.getAttribute("nhom_du_an") %>" 
                                    class="btn btn-secondary rounded-pill px-3">
@@ -2106,6 +2120,7 @@
                                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                     </div>
                                     <div class="modal-body">
+                                        <input type="hidden" name="du_an_id" id="duAnHidden">
                                         <div class="mb-3">
                                             <label class="form-label"><b>Tên công việc</b></label>
                                             <input type="text" class="form-control" name="ten_cong_viec" required>

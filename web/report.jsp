@@ -235,7 +235,17 @@
                 color: white;
                 border-color: #dc3545;
             }
+            @media (max-width: 991.98px) {
+                .main-content {
+                    margin-left: 70px !important;
+                    padding: 16px;
+                }
 
+                /* Nếu sidebar đang là dạng fixed hoặc width lớn */
+                .sidebar {
+                    width: 70px !important; /* hoặc 0 nếu muốn ẩn */
+                }
+            }
         </style>
         <script>
             var PAGE_TITLE = '<i class="fa-solid fa-tasks me-2"></i>Báo cáo tổng hợp';
@@ -243,7 +253,6 @@
     </head>
 
     <body>
-        <%= "DEBUG: phongBanParam = " + phongBanParam %>
         <div class="d-flex">
             <%@ include file="sidebar.jsp" %>
             <!-- Main -->

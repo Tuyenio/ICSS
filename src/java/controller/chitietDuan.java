@@ -25,6 +25,8 @@ public class chitietDuan extends HttpServlet {
                 json.append("\"mo_ta\":\"").append(escapeJson(project.get("mo_ta"))).append("\",");
                 json.append("\"muc_do_uu_tien\":\"").append(project.get("muc_do_uu_tien")).append("\",");
                 json.append("\"lead_id\":").append(project.get("lead_id")).append(",");
+                json.append("\"trang_thai_duan\":\"").append(project.get("trang_thai_duan")).append("\",");
+                json.append("\"phong_ban\":\"").append(project.get("phong_ban")).append("\",");
                 json.append("\"nhom_du_an\":\"").append(project.get("nhom_du_an")).append("\",");
                 json.append("\"ngay_bat_dau\":\"").append(project.get("ngay_bat_dau")).append("\",");
                 json.append("\"ngay_ket_thuc\":\"").append(project.get("ngay_ket_thuc")).append("\",");

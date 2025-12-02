@@ -578,16 +578,14 @@ $('#taskForm').on('submit', function (e) {
     e.preventDefault();
 
     // Client-side validation cho trường bắt buộc
+    $('#duAnHidden').val(PROJECT_ID);
     var ten = $(this).find('[name="ten_cong_viec"]').val() || '';
-    var duAn = $(this).find('[name="du_an_id"]').val() || '';
     var nguoiGiao = $(this).find('[name="ten_nguoi_giao"]').val() || '';
     var phongBan = $(this).find('[name="ten_phong_ban"]').val() || '';
 
     var missing = [];
     if (!ten.trim())
         missing.push({field: 'ten_cong_viec', msg: 'Vui lòng nhập tên công việc'});
-    if (!duAn.trim())
-        missing.push({field: 'du_an_id', msg: 'Vui lòng chọn dự án'});
     if (!nguoiGiao.trim())
         missing.push({field: 'ten_nguoi_giao', msg: 'Vui lòng chọn người giao'});
     if (!phongBan.trim())
@@ -603,7 +601,6 @@ $('#taskForm').on('submit', function (e) {
     }
 
     const formData = new FormData(this);
-    formData.append("du_an_id", PROJECT_ID);
     let url = './themCongviec'; // luôn là thêm mới
 
     $.ajax({
@@ -2552,7 +2549,7 @@ function showToast(type, message) {
     $toast.attr('style',
             'background-color: #fbbf24 !important;' + // màu vàng nhạt
             'color: #000 !important;' + // chữ đen
-            'font-weight: 600 !important;' + 
+            'font-weight: 600 !important;' +
             'z-index: ' + (z + 10) + ' !important;'
             );
 

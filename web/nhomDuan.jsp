@@ -110,6 +110,17 @@
                 font-weight: 700;
                 color: #0d6efd;
             }
+            @media (max-width: 991.98px) {
+                .main-content {
+                    margin-left: 70px !important;
+                    padding: 16px;
+                }
+
+                /* Nếu sidebar đang là dạng fixed hoặc width lớn */
+                .sidebar {
+                    width: 70px !important; /* hoặc 0 nếu muốn ẩn */
+                }
+            }
         </style>
 
         <script>
@@ -131,29 +142,20 @@
             }
         </script>
     </head>
-
     <body>
-
         <div class="d-flex">
-
             <%@ include file="sidebar.jsp" %>
-
             <div class="flex-grow-1">
                 <%@ include file="header.jsp" %>
-
                 <%
                     Map<String, Integer> soLuongMap = (Map<String, Integer>) request.getAttribute("mapSoLuongNhom");
                     if (soLuongMap == null) soLuongMap = new HashMap<>();
                     Map<String, Map<String, Integer>> mapPB = (Map<String, Map<String, Integer>>) request.getAttribute("mapSoLuongPB");
                     if (mapPB == null) mapPB = new HashMap<>();
                 %>
-
                 <div class="main-content">
-
                     <h3 class="mb-4"><i class="fa-solid fa-layer-group me-2"></i>Nhóm Dự án</h3>
-
                     <div class="row g-4">
-
                         <!-- Template flip card -->
                         <%!
                         void renderFlipCard(JspWriter out, String ten, String icon,
@@ -212,11 +214,9 @@
                             renderFlipCard(out, "Chuyển đổi số", "fa-solid fa-rotate", soLuongMap, mapPB);
                             renderFlipCard(out, "Khác", "fa-solid fa-box-open", soLuongMap, mapPB);
                         %>
-
                     </div>
                 </div>
             </div>
         </div>
-
     </body>
 </html>

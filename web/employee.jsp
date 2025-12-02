@@ -359,8 +359,35 @@
                                         <td><%= nv.get("ten_phong_ban") %></td>
                                         <td><%= nv.get("chuc_vu") %></td>
                                         <td><%= nv.get("ngay_vao_lam") %></td>
-                                        <td><span class="badge bg-success"><%= nv.get("trang_thai_lam_viec") %></span></td>
-                                        <td><span class="badge bg-info text-dark"><%= nv.get("vai_tro") %></span></td>
+                                        <td>
+                                            <%
+                                                String trangThai = nv.get("trang_thai_lam_viec") != null ? nv.get("trang_thai_lam_viec").toString() : "";
+                                                String statusClass = "bg-secondary";
+                                                if ("Đang làm".equals(trangThai)) {
+                                                   statusClass = "bg-success";
+                                               } else if ("Tạm nghỉ".equals(trangThai)) {
+                                                   statusClass = "bg-warning text-dark";
+                                               } else if ("Nghỉ việc".equals(trangThai)) {
+                                                    statusClass = "bg-danger";
+                                                }
+                                            %>
+                                            <span class="badge <%= statusClass %>"><%= trangThai %></span>
+                                        </td>
+                                        <td>
+                                            <%
+                                                String vaitro = nv.get("vai_tro") != null ? nv.get("vai_tro").toString() : "";
+                                                String statusClass2 = "bg-secondary";
+                                                if ("Nhân viên".equals(vaitro)) {
+                                                   statusClass2 = "bg-info text-dark";
+                                               } else if ("Quản lý".equals(vaitro)) {
+                                                   statusClass2 = "bg-warning text-dark";
+                                               } else if ("Admin".equals(vaitro)) {
+                                                    statusClass2 = "bg-danger";
+                                                }
+                                            %>
+                                            <span class="badge <%= statusClass2 %>"><%= vaitro %></span>
+                                        </td>
+
                                         <td>
                                             <button class="btn btn-sm btn-warning edit-emp-btn"
                                                     data-id="<%= nv.get("id") %>"

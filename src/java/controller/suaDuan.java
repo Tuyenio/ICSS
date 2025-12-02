@@ -6,6 +6,7 @@ import java.io.*;
 import java.sql.Date;
 
 public class suaDuan extends HttpServlet {
+
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
@@ -27,21 +28,23 @@ public class suaDuan extends HttpServlet {
         String leadIdStr = req.getParameter("lead_id");
         String nhomDuAn = req.getParameter("nhom_du_an");
         String phongBan = req.getParameter("phong_ban");
-
+        String trangthaida = req.getParameter("trang_thai_duan");
         int leadId = (leadIdStr != null && !leadIdStr.isEmpty()) ? Integer.parseInt(leadIdStr) : 0;
 
         String ngayBatDauStr = req.getParameter("ngay_bat_dau");
         String ngayKetThucStr = req.getParameter("ngay_ket_thuc");
 
         Date ngayBatDau = null, ngayKetThuc = null;
-        if (ngayBatDauStr != null && !ngayBatDauStr.isEmpty())
+        if (ngayBatDauStr != null && !ngayBatDauStr.isEmpty()) {
             ngayBatDau = Date.valueOf(ngayBatDauStr);
-        if (ngayKetThucStr != null && !ngayKetThucStr.isEmpty())
+        }
+        if (ngayKetThucStr != null && !ngayKetThucStr.isEmpty()) {
             ngayKetThuc = Date.valueOf(ngayKetThucStr);
+        }
 
         try (PrintWriter out = resp.getWriter()) {
             KNCSDL kn = new KNCSDL();
-            boolean success = kn.updateProject(id, tenDuAn, moTa, uuTien, leadId, nhomDuAn, phongBan, ngayBatDau, ngayKetThuc);
+            boolean success = kn.updateProject(id, tenDuAn, moTa, uuTien, leadId, nhomDuAn, phongBan, ngayBatDau, ngayKetThuc,trangthaida);
 
             if (success) {
                 out.print("{\"success\":true}");

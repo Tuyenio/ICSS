@@ -113,6 +113,13 @@ public class suaCongviec extends HttpServlet {
                             ok = db.updateDeadline(taskId, newDeadline);
                             msg = ok ? "Đã cập nhật deadline" : "Cập nhật deadline thất bại";
                             lichSuMoTa = "Cập nhật deadline thành: " + newDeadline;
+                            if (ok) {
+                                try {
+                                    db.capNhatTrangThaiTuTienDo(taskId);
+                                } catch (Exception ex) {
+                                    ex.printStackTrace();
+                                }
+                            }
                         } else {
                             ok = false;
                             msg = "Deadline không hợp lệ";
@@ -182,6 +189,13 @@ public class suaCongviec extends HttpServlet {
 
             if (chiUploadFile) {
                 db.updateFileCongViec(taskId, fileFinal);
+                // Cập nhật trạng thái ngay sau khi thay đổi file (nếu file ảnh hưởng tiến độ/hạn)
+                try {
+                    db.capNhatTrangThaiTuTienDo(taskId);
+                } catch (Exception ex) {
+                    // không block response nếu cập nhật trạng thái thất bại
+                    ex.printStackTrace();
+                }
                 // Ghi log upload file
                 if (userId > 0 && !filePaths.isEmpty()) {
                     String fileNames = filePaths.stream()
@@ -223,7 +237,12 @@ public class suaCongviec extends HttpServlet {
 
                 // 2: Cập nhật task
                 db.updateTask(taskId, ten, moTa, ngaybd, han, uuTien, giaoId, phongId, trangThai, tailieu, fileFinal);
-
+                // Cập nhật trạng thái dựa trên tiến độ/quy trình/hạn ngay sau khi update task
+                try {
+                    db.capNhatTrangThaiTuTienDo(taskId);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
                 // 3: Cập nhật người nhận
                 List<Integer> danhSachIdNhan = db.layIdTuDanhSachTen(dsTenNguoiNhan);
                 db.capNhatDanhSachNguoiNhan(taskId, danhSachIdNhan);
@@ -289,8 +308,13 @@ public class suaCongviec extends HttpServlet {
                     }
 
                     // So sánh người nhận
-                    if (!safeStringEquals(nguoiNhanCu, dsTenNguoiNhan)) {
-                        thayDoiList.add("👥 Đổi người nhận: '" + (nguoiNhanCu != null && !nguoiNhanCu.isEmpty() ? nguoiNhanCu : "(chưa có)") + "' → '" + dsTenNguoiNhan + "'");
+                    String nguoiNhanCuNorm = normalizeRecipientList(nguoiNhanCu);
+                    String nguoiNhanMoiNorm = normalizeRecipientList(dsTenNguoiNhan);
+
+                    if (!safeStringEquals(nguoiNhanCuNorm, nguoiNhanMoiNorm)) {
+                        thayDoiList.add("👥 Đổi người nhận: '"
+                                + (nguoiNhanCuNorm != null && !nguoiNhanCuNorm.isEmpty() ? nguoiNhanCuNorm : "(chưa có)")
+                                + "' → '" + nguoiNhanMoiNorm + "'");
                     }
 
                     // So sánh tài liệu
@@ -339,6 +363,13 @@ public class suaCongviec extends HttpServlet {
             return false;
         }
         return a.trim().equals(b.trim());
+    }
+
+    private String normalizeRecipientList(String s) {
+        if (s == null) {
+            return null;
+        }
+        return s.replaceAll("\\s*,\\s*", ",").trim();
     }
 
     private boolean isNumeric(String str) {

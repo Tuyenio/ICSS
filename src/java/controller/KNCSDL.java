@@ -32,8 +32,8 @@ public class KNCSDL {
 
     public KNCSDL() throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
-        //this.cn = DriverManager.getConnection(path, "root", "");
-        this.cn = DriverManager.getConnection(path, "icssapp", "StrongPass!2025");
+        this.cn = DriverManager.getConnection(path, "root", "");
+        //this.cn = DriverManager.getConnection(path, "icssapp", "StrongPass!2025");
     }
 
     public ResultSet laydl(String email) throws SQLException {
@@ -844,97 +844,104 @@ public class KNCSDL {
     public void capNhatTrangThaiTuTienDo(int congViecId) throws SQLException {
         String sqlTienDo = "SELECT phan_tram FROM cong_viec_tien_do WHERE cong_viec_id = ?";
         String sqlCheckQuyTrinhDangTH
-                = "SELECT COUNT(*) AS cnt "
-                + "FROM cong_viec_quy_trinh "
-                + "WHERE cong_viec_id = ? AND trang_thai = 'Đang thực hiện'";
+                = "SELECT COUNT(*) AS cnt FROM cong_viec_quy_trinh WHERE cong_viec_id = ? AND trang_thai = 'Đang thực hiện'";
         String sqlInfoCv = "SELECT han_hoan_thanh, trang_thai FROM cong_viec WHERE id = ?";
         String sqlCapNhatTrangThai = "UPDATE cong_viec SET trang_thai = ? WHERE id = ?";
 
-        try (PreparedStatement psInfo = cn.prepareStatement(sqlInfoCv); PreparedStatement ps1 = cn.prepareStatement(sqlTienDo); PreparedStatement psCheck = cn.prepareStatement(sqlCheckQuyTrinhDangTH); PreparedStatement ps2 = cn.prepareStatement(sqlCapNhatTrangThai)) {
+        try (
+                PreparedStatement psInfo = cn.prepareStatement(sqlInfoCv); PreparedStatement psTienDo = cn.prepareStatement(sqlTienDo); PreparedStatement psCheckQT = cn.prepareStatement(sqlCheckQuyTrinhDangTH); PreparedStatement psUpdate = cn.prepareStatement(sqlCapNhatTrangThai)) {
 
-            // 0) Lấy hạn + trạng thái hiện tại
+            // === 1) Lấy thông tin công việc ===
             psInfo.setInt(1, congViecId);
-            java.sql.Date han = null;
-            String trangThaiHienTai = null;
+            Date han = null;
+            String trangThaiCu = null;
+
             try (ResultSet rs = psInfo.executeQuery()) {
                 if (!rs.next()) {
                     return;
                 }
+
                 han = rs.getDate("han_hoan_thanh");
-                trangThaiHienTai = rs.getString("trang_thai");
+                trangThaiCu = rs.getString("trang_thai");
             }
 
-            // >>> NEW: Nếu đã hoàn thành (đúng hạn hoặc trước hạn) thì không đổi sang Trễ hạn
-            if ("Đã hoàn thành".equalsIgnoreCase(trangThaiHienTai)) {
+            // === 2) Lấy tiến độ ===
+            psTienDo.setInt(1, congViecId);
+            Integer percent = null;
+
+            try (ResultSet rs = psTienDo.executeQuery()) {
+                if (rs.next()) {
+                    percent = rs.getInt("phan_tram");
+                }
+            }
+
+            if (percent == null) {
                 return;
             }
 
-            // 1) Kiểm tra quá hạn
-            boolean quaHan = false;
-            if (han != null) {
-                java.time.LocalDate today = java.time.LocalDate.now();
-                quaHan = han.toLocalDate().isBefore(today);
-            }
+            String trangThaiMoi;
 
-            // 2) Nếu quá hạn -> ÉP "Trễ hạn" và dừng (KHÔNG xét % hay quy trình)
-            if (quaHan) {
-                if (!"Trễ hạn".equalsIgnoreCase(trangThaiHienTai)) {
-                    ps2.setString(1, "Trễ hạn");
-                    ps2.setInt(2, congViecId);
-                    ps2.executeUpdate();
-                }
-                return; // sẽ chạy lại logic thường khi hạn được gia hạn
-            }
-
-            // 3) Không quá hạn -> chạy logic gốc (percent + có quy trình đang TH)
-            ps1.setInt(1, congViecId);
-            Integer percent = null;
-            try (ResultSet rs = ps1.executeQuery()) {
-                if (!rs.next()) {
-                    return; // Không có bản ghi tiến độ -> thôi khỏi cập nhật
-                }
-                percent = rs.getInt("phan_tram");
-            }
-
-            String trangThai;
-            if (percent == 0) {
-                // nếu %==0 mà có bất kỳ quy trình Đang thực hiện -> Đang thực hiện
-                psCheck.setInt(1, congViecId);
-                int coQuyTrinhDangTH = 0;
-                try (ResultSet rs2 = psCheck.executeQuery()) {
-                    if (rs2.next()) {
-                        coQuyTrinhDangTH = rs2.getInt("cnt");
-                    }
-                }
-                trangThai = (coQuyTrinhDangTH > 0) ? "Đang thực hiện" : "Chưa bắt đầu";
-            } else if (percent >= 100) {
-                trangThai = "Đã hoàn thành";
+            // === (A) ƯU TIÊN CAO NHẤT: HOÀN THÀNH ===
+            if (percent >= 100) {
+                trangThaiMoi = "Đã hoàn thành";
             } else {
-                trangThai = "Đang thực hiện";
-            }
-
-            // Sau khi cập nhật trạng thái, cập nhật thời gian tương ứng nếu cần
-            if (!trangThai.equalsIgnoreCase(trangThaiHienTai)) {
-                ps2.setString(1, trangThai);
-                ps2.setInt(2, congViecId);
-                ps2.executeUpdate();
-
-                if ("Đang thực hiện".equalsIgnoreCase(trangThai) && "Chưa bắt đầu".equalsIgnoreCase(trangThaiHienTai)) {
-                    try (PreparedStatement psUpdateStart = cn.prepareStatement(
-                            "UPDATE cong_viec SET ngay_bat_dau = CURRENT_DATE WHERE id = ? AND ngay_bat_dau IS NULL"
-                    )) {
-                        psUpdateStart.setInt(1, congViecId);
-                        psUpdateStart.executeUpdate();
-                    }
+                // === (B) KIỂM TRA QUÁ HẠN ===
+                boolean quaHan = false;
+                if (han != null) {
+                    LocalDate today = LocalDate.now();
+                    quaHan = han.toLocalDate().isBefore(today);
                 }
 
-                if ("Đã hoàn thành".equalsIgnoreCase(trangThai)) {
-                    try (PreparedStatement psUpdateDone = cn.prepareStatement(
-                            "UPDATE cong_viec SET ngay_hoan_thanh = CURRENT_DATE WHERE id = ? AND ngay_hoan_thanh IS NULL"
-                    )) {
-                        psUpdateDone.setInt(1, congViecId);
-                        psUpdateDone.executeUpdate();
+                if (quaHan) {
+                    trangThaiMoi = "Trễ hạn";
+                } else {
+                    // === (C) CHƯA QUÁ HẠN → XÉT TIẾN ĐỘ ===
+                    if (percent == 0) {
+                        psCheckQT.setInt(1, congViecId);
+
+                        int dangTH = 0;
+                        try (ResultSet rs = psCheckQT.executeQuery()) {
+                            if (rs.next()) {
+                                dangTH = rs.getInt("cnt");
+                            }
+                        }
+
+                        trangThaiMoi = (dangTH > 0) ? "Đang thực hiện" : "Chưa bắt đầu";
+                    } else {
+                        trangThaiMoi = "Đang thực hiện";
                     }
+                }
+            }
+
+            // === 3) NẾU KHÔNG THAY ĐỔI TRẠNG THÁI → THOÁT ===
+            if (trangThaiMoi.equalsIgnoreCase(trangThaiCu)) {
+                return;
+            }
+
+            // === 4) CẬP NHẬT TRẠNG THÁI ===
+            psUpdate.setString(1, trangThaiMoi);
+            psUpdate.setInt(2, congViecId);
+            psUpdate.executeUpdate();
+
+            // === 5) CẬP NHẬT NGÀY BẮT ĐẦU (nếu mới chuyển sang Đang thực hiện) ===
+            if ("Đang thực hiện".equalsIgnoreCase(trangThaiMoi)
+                    && "Chưa bắt đầu".equalsIgnoreCase(trangThaiCu)) {
+
+                try (PreparedStatement ps = cn.prepareStatement(
+                        "UPDATE cong_viec SET ngay_bat_dau = CURRENT_DATE WHERE id = ? AND ngay_bat_dau IS NULL"
+                )) {
+                    ps.setInt(1, congViecId);
+                    ps.executeUpdate();
+                }
+            }
+
+            // === 6) CẬP NHẬT NGÀY HOÀN THÀNH (nếu mới chuyển sang Đã hoàn thành) ===
+            if ("Đã hoàn thành".equalsIgnoreCase(trangThaiMoi)) {
+                try (PreparedStatement ps = cn.prepareStatement(
+                        "UPDATE cong_viec SET ngay_hoan_thanh = CURRENT_DATE WHERE id = ? AND ngay_hoan_thanh IS NULL"
+                )) {
+                    ps.setInt(1, congViecId);
+                    ps.executeUpdate();
                 }
             }
         }
@@ -3625,7 +3632,7 @@ public class KNCSDL {
 
         StringBuilder sql = new StringBuilder(
                 "SELECT da.id, da.ten_du_an, da.mo_ta, da.lead_id, da.muc_do_uu_tien, da.nhom_du_an, da.phong_ban, "
-                + "da.ngay_bat_dau, da.ngay_ket_thuc, "
+                + "da.ngay_bat_dau, da.trang_thai_duan, da.ngay_ket_thuc, "
                 + "COALESCE(AVG(cvtd.phan_tram), 0) AS tien_do, "
                 + "nv.ho_ten AS lead_ten, nv.avatar_url AS lead_avatar "
                 + "FROM du_an da "
@@ -3699,10 +3706,9 @@ public class KNCSDL {
             row.put("phong_ban", rs.getString("phong_ban"));
             row.put("lead_ten", rs.getString("lead_ten"));
             row.put("lead_avatar", rs.getString("lead_avatar"));
-
+            row.put("trang_thai_duan", rs.getString("trang_thai_duan"));
             list.add(row);
         }
-
         return list;
     }
 
@@ -3909,6 +3915,8 @@ public class KNCSDL {
                     project.put("muc_do_uu_tien", rs.getString("muc_do_uu_tien"));
                     project.put("lead_id", rs.getInt("lead_id"));
                     project.put("nhom_du_an", rs.getString("nhom_du_an"));
+                    project.put("trang_thai_duan", rs.getString("trang_thai_duan"));
+                    project.put("phong_ban", rs.getString("phong_ban"));
 
                     // Format ngày
                     java.sql.Date ngayBatDau = rs.getDate("ngay_bat_dau");
@@ -3971,8 +3979,8 @@ public class KNCSDL {
             String nhomDuAn, String phongBan,
             Date ngayBatDau, Date ngayKetThuc) throws SQLException {
 
-        String sql = "INSERT INTO du_an (ten_du_an, mo_ta, muc_do_uu_tien, lead_id, nhom_du_an, phong_ban, ngay_bat_dau, ngay_ket_thuc) "
-                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO du_an (ten_du_an, mo_ta, muc_do_uu_tien, lead_id, nhom_du_an, phong_ban, ngay_bat_dau, ngay_ket_thuc, trang_thai_duan) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'Đang thực hiện')";
 
         try (PreparedStatement ps = cn.prepareStatement(sql)) {
             ps.setString(1, tenDuAn);
@@ -3990,10 +3998,11 @@ public class KNCSDL {
     public boolean updateProject(int id, String tenDuAn, String moTa,
             String uuTien, int leadId,
             String nhomDuAn, String phongBan,
-            Date ngayBatDau, Date ngayKetThuc) throws SQLException {
+            Date ngayBatDau, Date ngayKetThuc,
+            String trangThaiDuAn) throws SQLException {
 
         String sql = "UPDATE du_an SET ten_du_an=?, mo_ta=?, muc_do_uu_tien=?, lead_id=?, nhom_du_an=?, phong_ban=?, "
-                + "ngay_bat_dau=?, ngay_ket_thuc=? WHERE id=?";
+                + "ngay_bat_dau=?, ngay_ket_thuc=?, trang_thai_duan=? WHERE id=?";
 
         try (PreparedStatement ps = cn.prepareStatement(sql)) {
             ps.setString(1, tenDuAn);
@@ -4004,7 +4013,9 @@ public class KNCSDL {
             ps.setString(6, phongBan);
             ps.setDate(7, ngayBatDau);
             ps.setDate(8, ngayKetThuc);
-            ps.setInt(9, id);
+            ps.setString(9, trangThaiDuAn);
+            ps.setInt(10, id);
+
             return ps.executeUpdate() > 0;
         }
     }
@@ -4674,6 +4685,7 @@ public class KNCSDL {
                     task.put("id", rs.getInt("id"));
                     task.put("ten_cong_viec", rs.getString("ten_cong_viec"));
                     task.put("mo_ta", rs.getString("mo_ta"));
+                    task.put("ngay_bat_dau", rs.getString("ngay_bat_dau"));
                     task.put("han_hoan_thanh", rs.getString("han_hoan_thanh"));
                     task.put("muc_do_uu_tien", rs.getString("muc_do_uu_tien"));
                     task.put("nguoi_giao_id", rs.getInt("nguoi_giao_id"));
@@ -5153,6 +5165,7 @@ public class KNCSDL {
     // Lấy tiến độ dự án theo phòng ban
     public Map<String, Object> getTienDoDuAnTheoPhongBan(String phongBan) throws SQLException {
         Map<String, Object> data = new HashMap<>();
+        List<Integer> projectIds = new ArrayList<>();
         List<String> projectNames = new ArrayList<>();
         List<Double> progressValues = new ArrayList<>();
         List<String> endDates = new ArrayList<>();
@@ -5160,6 +5173,7 @@ public class KNCSDL {
 
         String sql = """
         SELECT
+            da.id,
             da.ten_du_an,
             da.ngay_ket_thuc,
             COALESCE(AVG(cvtd.phan_tram), 0) AS tien_do
@@ -5176,13 +5190,14 @@ public class KNCSDL {
 
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
+                    projectIds.add(rs.getInt("id"));
                     projectNames.add(rs.getString("ten_du_an"));
                     progressValues.add(rs.getDouble("tien_do"));
 
                     String ngayKT = rs.getString("ngay_ket_thuc");
                     endDates.add(ngayKT);
 
-                    // TÍNH SỐ NGÀY CÒN LẠI
+                    // Tính số ngày còn lại
                     int daysLeft = 0;
                     if (ngayKT != null) {
                         java.sql.Date end = java.sql.Date.valueOf(ngayKT);
@@ -5196,6 +5211,7 @@ public class KNCSDL {
             }
         }
 
+        data.put("projectIds", projectIds);
         data.put("projectNames", projectNames);
         data.put("progressValues", progressValues);
         data.put("endDates", endDates);

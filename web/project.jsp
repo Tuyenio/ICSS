@@ -488,6 +488,7 @@
                                     <th>Lead</th>
                                     <th>Nhóm</th>
                                     <th>Phòng ban</th>
+                                    <th>Trạng thái</th>
                                     <th class="sortable" data-sort="uutien">Ưu tiên</th>
                                     <th class="sortable" data-sort="ngaybatdau">Ngày bắt đầu</th>
                                     <th class="sortable" data-sort="ngayketthuc">Ngày kết thúc</th>
@@ -537,6 +538,17 @@
                                     </td>
                                     <td><%= p.get("nhom_du_an") %></td>
                                     <td><%= p.get("phong_ban") != null ? p.get("phong_ban") : "Chưa phân" %></td>
+                                    <td>
+                                        <%
+                                            String status = p.get("trang_thai_duan") != null ? p.get("trang_thai_duan").toString() : "Đang thực hiện";
+                                            String statusClass = "badge bg-secondary";
+                                            if ("Chưa bắt đầu".equals(status)) statusClass = "badge bg-info";
+                                            else if ("Đang thực hiện".equals(status)) statusClass = "badge bg-warning text-dark";
+                                            else if ("Đã kết thúc".equals(status)) statusClass = "badge bg-success";
+                                            else if ("Không thể thực hiện".equals(status)) statusClass = "badge bg-danger";
+                                        %>
+                                        <span class="<%= statusClass %>"><%= status %></span>
+                                    </td>
                                     <td><span class="badge <%= priorityClass %>"><%= priority %></span></td>
                                     <td><%= p.get("ngay_bat_dau") %></td>
                                     <td><%= p.get("ngay_ket_thuc") %></td>
@@ -609,6 +621,16 @@
                                 <option value="Cao">Cao</option>
                                 <option value="Trung bình">Trung bình</option>
                                 <option value="Thấp">Thấp</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Trạng thái dự án</label>
+                            <select class="form-select" name="trang_thai_duan" required>
+                                <option value="Chưa bắt đầu">Chưa bắt đầu</option>
+                                <option value="Đang thực hiện">Đang thực hiện</option>
+                                <option value="Đã kết thúc">Đã kết thúc</option>
+                                <option value="Không thể thực hiện">Không thể thực hiện</option>
                             </select>
                         </div>
 

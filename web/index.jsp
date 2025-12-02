@@ -877,13 +877,15 @@
             List<Double> dashboardProgressValues = (List<Double>) tienDoKyThuat.getOrDefault("progressValues", Collections.emptyList());
             List<String> dashboardEndDates = (List<String>) tienDoKyThuat.getOrDefault("endDates", Collections.emptyList());
             List<Integer> dashboardDaysLeft = (List<Integer>) tienDoKyThuat.getOrDefault("daysLeft", Collections.emptyList());
+            List<Integer> dashboardProjectIds = (List<Integer>) tienDoKyThuat.getOrDefault("projectIds", Collections.emptyList());
 
             List<String> anNinhEndDates = (List<String>) tienDoKinhDoanh.getOrDefault("endDates", Collections.emptyList());
             List<Integer> anNinhDaysLeft = (List<Integer>) tienDoKinhDoanh.getOrDefault("daysLeft", Collections.emptyList());
             
             List<String> anNinhProjectNames = (List<String>) tienDoKinhDoanh.getOrDefault("projectNames", Collections.emptyList());
             List<Double> anNinhProgressValues = (List<Double>) tienDoKinhDoanh.getOrDefault("progressValues", Collections.emptyList());
-            
+            List<Integer> anNinhProjectIds = (List<Integer>) tienDoKinhDoanh.getOrDefault("projectIds", Collections.emptyList());
+
             String dashboardProjectNamesAttr = String.join("|", dashboardProjectNames);
             StringBuilder dashboardProgressAttr = new StringBuilder();
             for(int i=0;i<dashboardProgressValues.size();i++){ 
@@ -896,6 +898,18 @@
             for(int i=0;i<anNinhProgressValues.size();i++){ 
                 if(i>0) anNinhProgressAttr.append(','); 
                 anNinhProgressAttr.append(anNinhProgressValues.get(i)); 
+            }
+
+            StringBuilder dashboardProjectIdsAttr = new StringBuilder();
+            for (int i = 0; i < dashboardProjectIds.size(); i++) {
+                if (i > 0) dashboardProjectIdsAttr.append(',');
+                dashboardProjectIdsAttr.append(dashboardProjectIds.get(i));
+            }
+
+            StringBuilder anNinhProjectIdsAttr = new StringBuilder();
+            for (int i = 0; i < anNinhProjectIds.size(); i++) {
+                if (i > 0) anNinhProjectIdsAttr.append(',');
+                anNinhProjectIdsAttr.append(anNinhProjectIds.get(i));
             }
             
             // (Removed personnel composition chart)
@@ -913,10 +927,11 @@
              data-di-muon="<%= soLanDiMuon %>"
              data-kt-project-names="<%= dashboardProjectNamesAttr %>"
              data-kt-progress="<%= dashboardProgressAttr.toString() %>"
+             data-kt-project-ids="<%= dashboardProjectIdsAttr.toString() %>"
              data-kd-project-names="<%= anNinhProjectNamesAttr %>"
+             data-kd-project-ids="<%= anNinhProjectIdsAttr.toString() %>"
              data-kt-end-dates="<%= String.join("|", dashboardEndDates) %>"
              data-kt-days-left="<%= dashboardDaysLeft.toString() %>"
-
              data-kd-end-dates="<%= String.join("|", anNinhEndDates) %>"
              data-kd-days-left="<%= anNinhDaysLeft.toString() %>"
              data-kd-progress="<%= anNinhProgressAttr.toString() %>"></div>

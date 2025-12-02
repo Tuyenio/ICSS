@@ -217,7 +217,7 @@ function editProject(projectId) {
             $("select[name='phong_ban']").val(project.phong_ban);
             // 🔥 Load Lead dự án
             $("select[name='lead_id']").val(project.lead_id);
-
+            $("select[name='trang_thai_duan']").val(project.trang_thai_duan);
             $("#modalProject").modal("show");
         } else {
             showToast('error', project.error || "Không lấy được dữ liệu dự án");

@@ -55,6 +55,44 @@
             inset 0 1px 0 rgba(255, 255, 255, 0.15),
             0 0 0 1px rgba(255, 255, 255, 0.1);
     }
+    /* Toggle state for touch/responsive devices */
+    .sidebar.expanded {
+        width: 260px !important;
+    }
+
+    .sidebar.expanded .sidebar-nav a span {
+        opacity: 1 !important;
+    }
+
+    .sidebar-toggle-btn{
+        display: none;
+        position: absolute;
+        /* placed at bottom under the menu on small screens */
+        right: 10px;
+        bottom: 18px;
+        width: 56px;
+        height: 56px;
+        border-radius: 12px;
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.06);
+        color: #fff;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        cursor:pointer;
+        z-index:1101;
+        box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+        transition: transform 0.25s ease, background 0.25s;
+        font-size: 1.4rem; /* bigger arrow to match menu icons */
+    }
+
+    .sidebar-toggle-btn .fa-chevron-right{
+        transition: transform 0.25s ease;
+    }
+
+    .sidebar.expanded .sidebar-toggle-btn .fa-chevron-right{
+        transform: rotate(180deg);
+    }
 
     .sidebar .sidebar-title {
         font-size: 1.8rem;
@@ -251,6 +289,39 @@
         }
     }
 
+    .sidebar-toggle-btn {
+        display: none !important;
+        position: static !important;
+        margin: 10px auto !important;
+    }
+
+    /* Chỉ hiển thị trên màn hình mobile < 992px */
+    @media (max-width: 992px) {
+        .sidebar-toggle-btn {
+            display: flex !important;
+            width: 46px;
+            height: 46px;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            backdrop-filter: blur(6px);
+            transition: .3s ease;
+        }
+
+        .sidebar-toggle-btn i {
+            color: #fff;
+            font-size: 1.2rem;
+            transition: transform .3s ease;
+        }
+
+        .sidebar.expanded .sidebar-toggle-btn i {
+            transform: rotate(180deg);
+        }
+    }
+
     @media (max-width: 992px) {
         .sidebar {
             width: 76px;
@@ -332,40 +403,45 @@
 
     boolean isQLChamCong = uri.contains("dsChamCong") || currentPath.equals("attendance.jsp");
     boolean isUserChamCong = uri.contains("userChamCong") || currentPath.equals("chamcong.jsp");
-%>
+        %>
 
-<li class="has-submenu <%= isChamCongGroup ? "open" : "" %>">
+        <li class="has-submenu <%= isChamCongGroup ? "open" : "" %>">
 
-    <a href="#" class="submenu-toggle <%= isChamCongGroup ? "active" : "" %>">
-        <i class="fa-solid fa-calendar-check"></i><span>Chấm công</span>
-        <i class="fa-solid fa-chevron-down ms-auto small"></i>
-    </a>
-
-    <ul class="submenu" style="<%= isChamCongGroup ? "display:block;" : "display:none;" %>">
-
-        <!-- Quản lý chấm công -->
-        <li>
-            <a href="dsChamCong" class="<%= isQLChamCong ? "active" : "" %>">
-                <i class="fa-solid fa-list"></i><span>Quản lý chấm công</span>
-            </a>
-        </li>
-
-        <!-- Chấm công cá nhân -->
-        <li>
-            <a href="userChamCong" class="<%= isUserChamCong ? "active" : "" %>">
+            <a href="#" class="submenu-toggle <%= isChamCongGroup ? "active" : "" %>">
                 <i class="fa-solid fa-calendar-check"></i><span>Chấm công</span>
+                <i class="fa-solid fa-chevron-down ms-auto small"></i>
             </a>
-        </li>
 
-    </ul>
-</li>
+            <ul class="submenu" style="<%= isChamCongGroup ? "display:block;" : "display:none;" %>">
+
+                <!-- Quản lý chấm công -->
+                <li>
+                    <a href="dsChamCong" class="<%= isQLChamCong ? "active" : "" %>">
+                        <i class="fa-solid fa-list"></i><span>Quản lý chấm công</span>
+                    </a>
+                </li>
+
+                <!-- Chấm công cá nhân -->
+                <li>
+                    <a href="userChamCong" class="<%= isUserChamCong ? "active" : "" %>">
+                        <i class="fa-solid fa-calendar-check"></i><span>Chấm công</span>
+                    </a>
+                </li>
+
+            </ul>
+        </li>
 
         <li><a href="dsLichtrinh" class="<%= currentPath.equals("calendar.jsp") ? "active" : "" %>">
                 <i class="fa-solid fa-calendar-days"></i><span>Lịch trình</span></a></li>
 
         <li><a href="svBaocao" class="<%= currentPath.equals("report.jsp") ? "active" : "" %>">
                 <i class="fa-solid fa-chart-column"></i><span>Báo cáo</span></a></li>
+        <div class="sidebar-toggle-btn">
+            <i class="fa-solid fa-chevron-right"></i>
+        </div>
     </ul>
+    <!-- responsive toggle button: moved down under the menu; visible only on small screens -->
+
 </nav>
 <script>
     $(document).on("click", ".submenu-toggle", function (e) {
@@ -375,5 +451,20 @@
 
         parent.toggleClass("open");
         parent.find(".submenu").slideToggle(250);
+    });
+
+    // toggle sidebar expansion on small screens when arrow clicked
+    $(document).on('click', '.sidebar-toggle-btn', function (e) {
+        e.stopPropagation();
+        $('.sidebar').toggleClass('expanded');
+    });
+
+    // close when clicking outside (only on small screens)
+    $(document).on('click touchstart', function (e) {
+        if (window.innerWidth <= 992) {
+            if (!$(e.target).closest('.sidebar').length) {
+                $('.sidebar').removeClass('expanded');
+            }
+        }
     });
 </script>

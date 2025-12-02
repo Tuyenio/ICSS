@@ -5,7 +5,7 @@
 %>
 
 <style>
-    /* PREMIUM SIDEBAR DESIGN - Nâng cấp giống sidebar.jsp */
+    /* PREMIUM SIDEBAR DESIGN */
     .sidebar {
         min-height: 100vh;
         background: linear-gradient(145deg,
@@ -54,6 +54,44 @@
             0 30px 60px rgba(0, 0, 0, 0.3),
             inset 0 1px 0 rgba(255, 255, 255, 0.15),
             0 0 0 1px rgba(255, 255, 255, 0.1);
+    }
+    /* Toggle state for touch/responsive devices */
+    .sidebar.expanded {
+        width: 260px !important;
+    }
+
+    .sidebar.expanded .sidebar-nav a span {
+        opacity: 1 !important;
+    }
+
+    .sidebar-toggle-btn{
+        display: none;
+        position: absolute;
+        /* placed at bottom under the menu on small screens */
+        right: 10px;
+        bottom: 18px;
+        width: 56px;
+        height: 56px;
+        border-radius: 12px;
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.06);
+        color: #fff;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        cursor:pointer;
+        z-index:1101;
+        box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+        transition: transform 0.25s ease, background 0.25s;
+        font-size: 1.4rem; /* bigger arrow to match menu icons */
+    }
+
+    .sidebar-toggle-btn .fa-chevron-right{
+        transition: transform 0.25s ease;
+    }
+
+    .sidebar.expanded .sidebar-toggle-btn .fa-chevron-right{
+        transform: rotate(180deg);
     }
 
     .sidebar .sidebar-title {
@@ -216,10 +254,71 @@
         filter: brightness(1.1);
     }
 
+    .sidebar-nav .has-submenu .submenu {
+        list-style: none;
+        padding-left: 42px;
+        margin-top: 4px;
+        display: none;
+    }
+
+    .sidebar-nav .submenu li a {
+        padding: 12px 18px;
+        font-size: 0.95rem;
+        opacity: 0.85;
+        border-radius: 12px;
+    }
+
+    .sidebar-nav .submenu li a:hover {
+        background: rgba(255, 255, 255, 0.12);
+        opacity: 1;
+        transform: translateX(6px);
+    }
+
+    .submenu-toggle .fa-chevron-down {
+        transition: transform 0.3s ease;
+    }
+
+    .has-submenu.open > a .fa-chevron-down {
+        transform: rotate(-180deg);
+    }
+
     /* RESPONSIVE DESIGN */
     @media (max-width: 1200px) {
         .sidebar {
             width: 240px;
+        }
+    }
+
+    .sidebar-toggle-btn {
+        display: none !important;
+        position: static !important;
+        margin: 10px auto !important;
+    }
+
+    /* Chỉ hiển thị trên màn hình mobile < 992px */
+    @media (max-width: 992px) {
+        .sidebar-toggle-btn {
+            display: flex !important;
+            width: 46px;
+            height: 46px;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            backdrop-filter: blur(6px);
+            transition: .3s ease;
+        }
+
+        .sidebar-toggle-btn i {
+            color: #fff;
+            font-size: 1.2rem;
+            transition: transform .3s ease;
+        }
+
+        .sidebar.expanded .sidebar-toggle-btn i {
+            transform: rotate(180deg);
         }
     }
 
@@ -296,5 +395,22 @@
 
         <li><a href="userLuong" class="<%= currentPath.equals("user_salary.jsp") ? "active" : "" %>">
                 <i class="fa-solid fa-money-bill"></i><span>Lương & KPI</span></a></li>
+        <div class="sidebar-toggle-btn">
+            <i class="fa-solid fa-chevron-right"></i>
+        </div>
     </ul>
 </nav>
+<script>
+    $(document).on('click', '.sidebar-toggle-btn', function (e) {
+        e.stopPropagation();
+        $('.sidebar').toggleClass('expanded');
+    });
+
+    $(document).on('click touchstart', function (e) {
+        if (window.innerWidth <= 992) {
+            if (!$(e.target).closest('.sidebar').length) {
+                $('.sidebar').removeClass('expanded');
+            }
+        }
+    });
+</script>
