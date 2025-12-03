@@ -98,10 +98,10 @@
         // Thứ tự hiển thị trạng thái theo yêu cầu
         const STATUS_ORDER = ['Đang thực hiện', 'Tạm ngưng', 'Đã hoàn thành', 'Đóng dự án'];
         const STATUS_COLOR = {
-            'Đang thực hiện': '#10b981',
-            'Tạm ngưng': '#3b82f6',
-            'Đã hoàn thành': '#f59e0b',
-            'Đóng dự án': '#ef4444'
+            'Đang thực hiện': '#0284C7', // blue-600
+            'Tạm ngưng': '#F59E0B', // amber-500
+            'Đã hoàn thành': '#16A34A', // green-600
+            'Đóng dự án': '#DC2626'         // red-600
         };
 
         // helper: màu theo tiến độ (0 -> đỏ, 50 -> vàng, 100 -> xanh)
@@ -215,10 +215,10 @@
                     row.style.display = 'flex';
                     row.style.justifyContent = 'space-between';
                     row.style.alignItems = 'center';
-                    row.style.padding = '8px 10px';
+                    row.style.padding = '2px 4px';
                     row.style.borderRadius = '8px';
                     row.style.cursor = 'pointer';
-                    row.style.marginBottom = '6px';
+                    row.style.marginBottom = '3px';
                     row.style.background = 'rgba(15,23,42,0.02)';
                     row.onmouseover = () => {
                         row.style.background = 'rgba(59,130,246,0.06)';

@@ -542,8 +542,8 @@
                                         <%
                                             String status = p.get("trang_thai_duan") != null ? p.get("trang_thai_duan").toString() : "Đang thực hiện";
                                             String statusClass = "badge bg-secondary";
-                                            if ("Tạm ngưng".equals(status)) statusClass = "badge bg-info";
-                                            else if ("Đang thực hiện".equals(status)) statusClass = "badge bg-warning text-dark";
+                                            if ("Tạm ngưng".equals(status)) statusClass = "badge bg-warning text-dark";
+                                            else if ("Đang thực hiện".equals(status)) statusClass = "badge bg-info";
                                             else if ("Đã hoàn thành".equals(status)) statusClass = "badge bg-success";
                                             else if ("Đóng dự án".equals(status)) statusClass = "badge bg-danger";
                                         %>

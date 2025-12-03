@@ -1,6 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <div class="header d-flex align-items-center justify-content-between px-4 py-2 shadow-sm" 
-     style="min-height:72px; position:sticky; top:0; z-index:999; margin-left:260px; 
+     style="min-height:72px; position:sticky; top:0; z-index:999;
             background: linear-gradient(135deg, 
                 rgba(255, 255, 255, 0.25) 0%,
                 rgba(255, 255, 255, 0.15) 100%

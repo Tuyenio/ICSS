@@ -172,14 +172,14 @@ window.location.href = './apiThongbao';
                 }
                 }
 
+                // Trong hàm startPolling, comment để disable
                 function startPolling() {
-                if (pollTimer) return;
-                        pollOnce();
-                        pollTimer = setInterval(() => {
-                        // pause when page hidden
+                    if (pollTimer) return;
+                    pollOnce();  // Uncomment
+                    pollTimer = setInterval(() => {
                         if (document.hidden) return;
-                                pollOnce();
-                        }, POLL_INTERVAL);
+                        pollOnce();
+                    }, POLL_INTERVAL);
                 }
 
                 function stopPolling() {
@@ -196,11 +196,10 @@ window.location.href = './apiThongbao';
                                 stop: stopPolling,
                                 requestPermission: ensurePermission
                         };
-                        // auto start on load
+                        // Comment auto start
                         if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', startPolling);
-                } else {
-                startPolling();
-                }
-
+                            document.addEventListener('DOMContentLoaded', startPolling);
+                        } else {
+                            startPolling();
+                        }
                 })();

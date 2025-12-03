@@ -1,15 +1,15 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
 <div class="header d-flex align-items-center justify-content-between px-4 py-2 shadow-sm"
-     style="min-height:72px; position:sticky; top:0; z-index:999; margin-left:260px;
-            background: linear-gradient(135deg,
-                rgba(255, 255, 255, 0.25) 0%,
-                rgba(255, 255, 255, 0.15) 100%
-            );
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);">
+     style="min-height:72px; position:sticky; top:0; z-index:999;
+             background: linear-gradient(135deg,
+                 rgba(255, 255, 255, 0.25) 0%,
+                 rgba(255, 255, 255, 0.15) 100%
+             );
+             backdrop-filter: blur(20px);
+             -webkit-backdrop-filter: blur(20px);
+             border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);">
     <div class="d-flex align-items-center gap-3">
         <span class="fs-4 fw-bold" id="pageTitle"
               style="background: linear-gradient(135deg, #667eea, #764ba2);
@@ -86,6 +86,8 @@
     </div>
 </div>
 <script>
-    var contextPath = '<%= request.getContextPath() %>';
+    // expose app root consistently like admin side
+    window.contextPath = '<%= request.getContextPath() %>';
+    window.APP_CONTEXT = '<%= request.getContextPath() %>';
 </script>
 <script src="<%= request.getContextPath() %>/scripts/user_header.js?v=20251105"></script>

@@ -110,6 +110,22 @@
                 animation: pulse 1.2s infinite alternate;
             }
 
+            /* notification unread dot */
+            .notif-dot {
+                width: 10px;
+                height: 10px;
+                border-radius: 50%;
+                display: inline-block;
+                margin-right: 8px;
+                background: #ef4444; /* red */
+                box-shadow: 0 0 8px #ef4444aa;
+                vertical-align: middle;
+                animation: notif-pulse 1s infinite;
+            }
+            /* hide dot for read items */
+            .list-group-item.is-read .notif-dot {
+                display: none;
+            }
             @keyframes pulse {
                 0% {
                     filter: brightness(1);
@@ -118,6 +134,11 @@
                 100% {
                     filter: brightness(1.2);
                 }
+            }
+            @keyframes notif-pulse {
+                0% { transform: scale(1); opacity: 1; }
+                50% { transform: scale(1.25); opacity: 0.7; }
+                100% { transform: scale(1); opacity: 1; }
             }
 
             @media (max-width: 1200px) {
@@ -185,8 +206,12 @@
                 <%@ include file="header.jsp" %>
                 <div class="main-content">
                     <div class="main-box mb-3">
-                        <h3 class="mb-0"><i class="fa-solid fa-bell me-2"></i>Thông báo quản lý</h3>
-                        <ul class="list-group" id="notificationList">
+                        <h3 class="mb-0">
+                            <i class="fa-solid fa-bell me-2"></i>Thông báo quản lý
+                            <!-- NEW: Đọc tất cả -->
+                            <button id="markAllBtn" class="btn btn-sm btn-outline-primary ms-3" type="button">Đọc tất cả</button>
+                        </h3>
+                        <ul class="list-group" id="adminNotificationList">
                             <%
                                 List ds = (List) request.getAttribute("dsThongBao");
                                 if (ds != null && !ds.isEmpty()) {
@@ -219,6 +244,7 @@
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
                                         <i class="<%= iconClass %> me-2"></i>
+                                       <span class="notif-dot" aria-hidden="true"></span>
                                         <span class="fw-semibold"><%= tieuDe %></span>
                                         <div class="text-muted small">
                                             <%= noiDung %><br>
@@ -249,6 +275,5 @@
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
         <!-- load our JS in order: plain [notification.js](http://_vscodecontentref_/0) (uses XHR/DOM) then obf/minified script that may use jQuery -->
         <script src="<%= request.getContextPath() %>/scripts/notification.js?v=20251105"></script>
-        <script src="<%= request.getContextPath() %>/scripts/notification.obf.js?v=20251105"></script>
     </body>
 </html>
