@@ -50,6 +50,18 @@ function debugTabState() {
     console.log('- archived: Lưu trữ');
     console.log('- deleted: Thùng rác');
 }
+function saveAndReload() {
+    try {
+        const activeTab = document.querySelector('.nav-link.active');
+        if (activeTab && activeTab.id) {
+            localStorage.setItem('lastTab', activeTab.id);
+        }
+        localStorage.setItem('lastView', currentView || 'kanban');
+    } catch (e) {
+        // ignore any DOM/read errors
+    }
+    location.reload();
+}
 
 // Hiển thị danh sách file ngay khi chọn
 document.getElementById('taskFiles').addEventListener('change', function () {
@@ -86,9 +98,7 @@ document.getElementById('btnSaveTask').addEventListener('click', function () {
                     showToast('success', '✅ Cập nhật công việc thành công!');
                     // Ẩn modal và làm mới danh sách (tuỳ theo bạn xử lý)
                     bootstrap.Modal.getInstance(document.getElementById('modalTaskDetail')).hide();
-                    localStorage.setItem('lastTab', document.querySelector('.nav-link.active').id);
-                    localStorage.setItem('lastView', currentView);
-                    location.reload();
+                    saveAndReload();
                 } else {
                     showToast('error', data.message || '❌ Lỗi khi cập nhật');
                 }
@@ -319,22 +329,49 @@ document.addEventListener("DOMContentLoaded", function () {
         modal.querySelector('[name="tai_lieu_cv"]').value = tailieu;
 
         // === Hiển thị / ẩn phần gia hạn công việc ===
-        const extensionSection = document.getElementById('extensionSection');
-        const giaHanForm = document.getElementById('giaHanForm');
-        const btnGiaHan = document.getElementById('btnGiaHan');
+        const adminBox = document.getElementById("extensionSectionAdmin");
+        const adminForm = document.getElementById("adminGiaHanForm");
+        const adminBtn = document.getElementById("btnAdminGiaHan");
 
-        if (extensionSection && btnGiaHan) {
-            if (trangthai.toLowerCase().includes('trễ hạn')) {
-                // 👉 Nếu là công việc trễ hạn → hiển thị phần gia hạn
-                extensionSection.style.display = 'block';
-                giaHanForm.style.display = 'none'; // ẩn form con
-                btnGiaHan.innerHTML = '<i class="fa-solid fa-clock"></i> Gia hạn công việc';
-                btnGiaHan.classList.remove('btn-secondary');
-                btnGiaHan.classList.add('btn-warning');
-            } else {
-                // 👉 Nếu không phải trễ hạn → ẩn hoàn toàn
-                extensionSection.style.display = 'none';
-                giaHanForm.style.display = 'none';
+        const userBox = document.getElementById("extensionSectionUser");
+        const userForm = document.getElementById("userGiaHanForm");
+        const userBtn = document.getElementById("btnUserGiaHan");
+
+        const isOverdue = trangthai.toLowerCase().includes("trễ hạn");
+
+// --- RESET mặc định ---
+        if (adminBox)
+            adminBox.style.display = "none";
+        if (userBox)
+            userBox.style.display = "none";
+        if (adminForm)
+            adminForm.style.display = "none";
+        if (userForm)
+            userForm.style.display = "none";
+
+// --- Nếu công việc trễ hạn → hiển thị đúng form theo vai trò ---
+        if (isOverdue) {
+
+            // Nếu admin đăng nhập → chỉ hiển thị box của admin
+            if (adminBox) {
+                adminBox.style.display = "block";
+
+                if (adminBtn) {
+                    adminBtn.onclick = function () {
+                        adminForm.style.display = "block";
+                    };
+                }
+            }
+
+            // Nếu là user → hiển thị form user
+            if (userBox) {
+                userBox.style.display = "block";
+
+                if (userBtn) {
+                    userBtn.onclick = function () {
+                        userForm.style.display = "block";
+                    };
+                }
             }
         }
 
@@ -908,9 +945,17 @@ function renderProcessSteps() {
                             statusBadge.text(newStatus).removeClass().addClass('task-status badge bg-success');
                         }
 
-                        // di chuyển card vào cột "completed"
-                        var completedCol = $('.kanban-col.completed').first();
-                        if (completedCol.length) {
+                        // tìm tab pane chứa card (archived / deleted / active)
+                        var parentTab = card.closest('.tab-pane');
+                        var completedCol = $();
+                        if (parentTab && parentTab.length) {
+                            completedCol = parentTab.find('.kanban-col.completed').first();
+                        }
+                        // nếu không tìm thấy trong same tab, fallback về global
+                        if (!completedCol || completedCol.length === 0) {
+                            completedCol = $('.kanban-col.completed').first();
+                        }
+                        if (completedCol && completedCol.length) {
                             completedCol.append(card);
                         }
                     }
@@ -1512,49 +1557,6 @@ document.addEventListener("DOMContentLoaded", function () {
     updateAllTaskProgressBars();
 });
 
-
-
-// ====== TAB NAVIGATION ======
-document.addEventListener('DOMContentLoaded', function () {
-    // Xử lý click tab để load dữ liệu và cập nhật currentTabState
-    const activeTab = document.getElementById('active-tasks-tab');
-    const archivedTab = document.getElementById('archived-tasks-tab');
-    const deletedTab = document.getElementById('deleted-tasks-tab');
-
-    // Tab Công việc (active)
-    if (activeTab) {
-        activeTab.addEventListener('shown.bs.tab', function () {
-            currentTabState = 'active';
-            console.log('Đang ở tab: Công việc (active)');
-        });
-    }
-
-    // Tab Lưu trữ (archived)
-    if (archivedTab) {
-        archivedTab.addEventListener('shown.bs.tab', function () {
-            currentTabState = 'archived';
-            console.log('Đang ở tab: Lưu trữ (archived)');
-            loadArchivedTasks();
-        });
-    }
-
-    // Tab Thùng rác (deleted)
-    if (deletedTab) {
-        deletedTab.addEventListener('shown.bs.tab', function () {
-            currentTabState = 'deleted';
-            console.log('Đang ở tab: Thùng rác (deleted)');
-            loadDeletedTasks();
-        });
-    }
-
-    // Thêm keyboard navigation cho tabs
-    document.addEventListener('keydown', function (e) {
-        if (e.key === 'Tab' && e.target.classList.contains('nav-link')) {
-            e.target.focus();
-        }
-    });
-});
-
 // ====== LOAD ARCHIVED TASKS ======
 function loadArchivedTasks() {
     const container = document.querySelector('.archived-tasks-container');
@@ -1751,9 +1753,7 @@ function archiveTask(taskId) {
                             Swal.fire('Thành công!', 'Công việc đã được lưu trữ.', 'success');
                             setTimeout(() => {
                                 // Ghi nhớ view + tab trước khi reload
-                                localStorage.setItem('lastTab', document.querySelector('.nav-link.active').id);
-                                localStorage.setItem('lastView', currentView);
-                                location.reload();
+                                saveAndReload();
                             }, 1200);
                         } else {
                             Swal.fire('Lỗi!', data.message || 'Lưu trữ thất bại.', 'error');
@@ -1783,9 +1783,7 @@ function remindTask(taskId) {
                     Swal.fire('Thành công!', 'Nhắc việc thành công.', 'success');
                     setTimeout(() => {
                         // Ghi nhớ view + tab trước khi reload
-                        localStorage.setItem('lastTab', document.querySelector('.nav-link.active').id);
-                        localStorage.setItem('lastView', currentView);
-                        location.reload();
+                        saveAndReload();
                     }, 1200);
                 } else {
                     Swal.fire('Lỗi!', data.message || 'Lưu trữ thất bại.', 'error');
@@ -1826,9 +1824,7 @@ function deleteTask(taskId) {
                             Swal.fire('Đã xóa!', 'Công việc đã được chuyển vào thùng rác.', 'success');
                             setTimeout(() => {
                                 // Ghi nhớ view + tab trước khi reload
-                                localStorage.setItem('lastTab', document.querySelector('.nav-link.active').id);
-                                localStorage.setItem('lastView', currentView);
-                                location.reload();
+                                saveAndReload();
                             }, 1200);
                         } else {
                             Swal.fire('Lỗi!', data.message || 'Xóa thất bại.', 'error');
@@ -1931,9 +1927,7 @@ function permanentDeleteTask(taskId) {
                                 if (tab?.id === 'deleted-tasks-tab')
                                     loadDeletedTasks();
                                 else {
-                                    localStorage.setItem('lastTab', document.querySelector('.nav-link.active').id);
-                                    localStorage.setItem('lastView', currentView);
-                                    location.reload();
+                                    saveAndReload();
                                 }
                             }, 1400);
                         } else {
@@ -1946,117 +1940,6 @@ function permanentDeleteTask(taskId) {
                     });
         }
     });
-}
-
-// ====== TAB NAVIGATION ======
-document.addEventListener('DOMContentLoaded', function () {
-    // Xử lý click tab để load dữ liệu
-    const archivedTab = document.getElementById('archived-tasks-tab');
-    const deletedTab = document.getElementById('deleted-tasks-tab');
-
-    if (archivedTab) {
-        archivedTab.addEventListener('shown.bs.tab', function () {
-            loadArchivedTasks();
-        });
-    }
-
-    if (deletedTab) {
-        deletedTab.addEventListener('shown.bs.tab', function () {
-            loadDeletedTasks();
-        });
-    }
-});
-
-// ====== LOAD ARCHIVED TASKS ======
-function loadArchivedTasks() {
-    const container = document.querySelector('.archived-tasks-container');
-    const kanbanBoard = container.querySelector('.kanban-board');
-
-    // Hiển thị loading
-    kanbanBoard.querySelectorAll('.kanban-col').forEach(col => {
-        const placeholder = col.querySelector('.text-center');
-        if (placeholder) {
-            placeholder.innerHTML = '<i class="fa-solid fa-spinner fa-spin fa-2x mb-2"></i><p>Đang tải...</p>';
-        }
-    });
-
-    fetch('./locCongviec', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: 'tinh_trang=Lưu trữ&view=archived&tabState=archived'
-    })
-            .then(res => res.text())
-            .then(html => {
-                if (html.trim()) {
-                    renderArchivedTasks(html);
-                } else {
-                    resetArchivedPlaceholders();
-                }
-            })
-            .catch(err => {
-                console.error(err);
-                kanbanBoard.querySelectorAll('.kanban-col').forEach(col => {
-                    const placeholder = col.querySelector('.text-center');
-                    if (placeholder) {
-                        placeholder.innerHTML = '<i class="fa-solid fa-exclamation-triangle fa-2x mb-2 text-danger"></i><p class="text-danger">Lỗi khi tải dữ liệu</p>';
-                    }
-                });
-            });
-}
-
-// ====== LOAD DELETED TASKS ======
-function loadDeletedTasks() {
-    const container = document.querySelector('.deleted-tasks-container');
-    const kanbanBoard = container.querySelector('.kanban-board');
-
-    // Hiển thị loading
-    kanbanBoard.querySelectorAll('.kanban-col').forEach(col => {
-        const placeholder = col.querySelector('.text-center');
-        if (placeholder) {
-            placeholder.innerHTML = '<i class="fa-solid fa-spinner fa-spin fa-2x mb-2"></i><p>Đang tải...</p>';
-        }
-    });
-
-    fetch('./locCongviec', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: 'tinh_trang=Đã xóa&view=deleted&tabState=deleted'
-    })
-            .then(res => res.text())
-            .then(html => {
-                if (html.trim()) {
-                    renderDeletedTasks(html);
-                } else {
-                    resetDeletedPlaceholders();
-                }
-            })
-            .catch(err => {
-                console.error(err);
-                kanbanBoard.querySelectorAll('.kanban-col').forEach(col => {
-                    const placeholder = col.querySelector('.text-center');
-                    if (placeholder) {
-                        placeholder.innerHTML = '<i class="fa-solid fa-exclamation-triangle fa-2x mb-2 text-danger"></i><p class="text-danger">Lỗi khi tải dữ liệu</p>';
-                    }
-                });
-            });
-}
-
-// ====== RENDER ARCHIVED TASKS ======
-function renderArchivedTasks(html) {
-    // Placeholder cho việc render archived tasks
-    resetArchivedPlaceholders();
-    showToast('info', 'Đã tải công việc lưu trữ');
-}
-
-// ====== RENDER DELETED TASKS ======
-function renderDeletedTasks(html) {
-    // Placeholder cho việc render deleted tasks
-    resetDeletedPlaceholders();
-    showToast('info', 'Đã tải thùng rác');
 }
 
 // ====== RESET PLACEHOLDERS ======
@@ -2173,9 +2056,7 @@ function markReminderAsRead(taskId) {
                     Swal.fire('Đã đọc!', 'Đã tắt nhắc việc.', 'success');
                     setTimeout(() => {
                         // Ghi nhớ view + tab trước khi reload
-                        localStorage.setItem('lastTab', document.querySelector('.nav-link.active').id);
-                        localStorage.setItem('lastView', currentView);
-                        location.reload();
+                        saveAndReload();
                     }, 1200);
                 } else {
                     Swal.fire('Lỗi!', data.message || 'Đọc thất bại.', 'error');
@@ -2193,30 +2074,81 @@ function markReminderAsRead(taskId) {
 let currentView = 'kanban';
 let calendar = null;
 
+// Hàm lưu trạng thái vào localStorage
+function saveViewState(view) {
+    localStorage.setItem('taskViewMode', view);
+}
+
+function saveTabState(tab) {
+    localStorage.setItem('taskTabState', tab);
+}
+
+// Hàm lấy trạng thái từ localStorage
+function getViewState() {
+    return localStorage.getItem('taskViewMode') || 'kanban';
+}
+
+function getTabState() {
+    return localStorage.getItem('taskTabState') || 'active';
+}
+
 function switchView(viewType) {
+    saveViewState(viewType);
     currentView = viewType;
 
-    // Update button states
-    document.querySelectorAll('.view-mode-toggle .btn').forEach(btn => btn.classList.remove('active'));
+    console.log('🔄 Switching to view:', viewType);
 
+    // Lấy các containers
+    const kanbanContainer = document.querySelector('.kanban-view-container');
+    const listContainer = document.querySelector('.list-view-container');
+    const calendarContainer = document.querySelector('.calendar-view-container');
+
+    // Ẩn tất cả views
+    if (kanbanContainer) {
+        kanbanContainer.classList.remove('active');
+        kanbanContainer.style.display = 'none';
+    }
+    if (listContainer) {
+        listContainer.classList.remove('active');
+        listContainer.style.display = 'none';
+    }
+    if (calendarContainer) {
+        calendarContainer.classList.remove('active');
+        calendarContainer.style.display = 'none';
+    }
+
+    // Hiển thị view được chọn
     if (viewType === 'kanban') {
-        document.getElementById('viewKanban').classList.add('active');
-        document.querySelector('.kanban-board').style.display = 'grid';
-        document.getElementById('listView').classList.remove('active');
-        document.getElementById('calendarView').classList.remove('active');
+        if (kanbanContainer) {
+            kanbanContainer.classList.add('active');
+            kanbanContainer.style.display = 'block';
+        }
+        console.log('✅ Kanban view activated');
     } else if (viewType === 'list') {
-        document.getElementById('viewList').classList.add('active');
-        document.querySelector('.kanban-board').style.display = 'none';
-        document.getElementById('listView').classList.add('active');
-        document.getElementById('calendarView').classList.remove('active');
-        initTableSorting();
-        sortTable('trang_thai', 'asc');
+        if (listContainer) {
+            listContainer.classList.add('active');
+            listContainer.style.display = 'block';
+        }
+        // Initialize table sorting
+        setTimeout(() => {
+            initTableSorting();
+            sortTable('trang_thai', 'asc');
+        }, 100);
+        console.log('✅ List view activated');
     } else if (viewType === 'calendar') {
-        document.getElementById('viewCalendar').classList.add('active');
-        document.querySelector('.kanban-board').style.display = 'none';
-        document.getElementById('listView').classList.remove('active');
-        document.getElementById('calendarView').classList.add('active');
-        initCalendar();
+        if (calendarContainer) {
+            calendarContainer.classList.add('active');
+            calendarContainer.style.display = 'block';
+        }
+        // Initialize calendar
+        setTimeout(() => {
+            if (typeof initCalendar === 'function') {
+                initCalendar();
+            } else {
+                console.error('❌ initCalendar function not found');
+            }
+        }, 100);
+        console.log('✅ Calendar view activated');
     }
 }
 
@@ -2329,60 +2261,161 @@ function updateTaskDeadline(taskId, newDeadline) {
             });
 }
 
+// ====== DROPDOWN NAVIGATION HANDLERS ======
+document.addEventListener('DOMContentLoaded', function () {
+    // Tab Dropdown Handler
+    const tabDropdownItems = document.querySelectorAll('#tabDropdown + .dropdown-menu .dropdown-item');
+    const tabDropdownBtn = document.getElementById('tabDropdown');
+    const tabDropdownIcon = document.getElementById('tabDropdownIcon');
+    const tabDropdownText = document.getElementById('tabDropdownText');
+
+    tabDropdownItems.forEach(item => {
+        item.addEventListener('click', function (e) {
+            e.preventDefault();
+
+            const tab = this.getAttribute('data-tab');
+            const icon = this.getAttribute('data-icon');
+            const text = this.getAttribute('data-text');
+
+            // Remove active từ tất cả items
+            tabDropdownItems.forEach(i => i.classList.remove('active'));
+
+            // Add active cho item được chọn
+            this.classList.add('active');
+
+            // Update button text và icon
+            tabDropdownIcon.className = `fa-solid ${icon}`;
+            tabDropdownText.textContent = text;
+
+            // Save state
+            saveTabState(tab);
+            currentTabState = tab;
+
+            // Load nội dung tương ứng
+            if (tab === 'active') {
+                document.getElementById('active-tasks').classList.add('show', 'active');
+                document.getElementById('archived-tasks').classList.remove('show', 'active');
+                document.getElementById('deleted-tasks').classList.remove('show', 'active');
+            } else if (tab === 'archived') {
+                document.getElementById('active-tasks').classList.remove('show', 'active');
+                document.getElementById('archived-tasks').classList.add('show', 'active');
+                document.getElementById('deleted-tasks').classList.remove('show', 'active');
+                loadArchivedTasks();
+            } else if (tab === 'deleted') {
+                document.getElementById('active-tasks').classList.remove('show', 'active');
+                document.getElementById('archived-tasks').classList.remove('show', 'active');
+                document.getElementById('deleted-tasks').classList.add('show', 'active');
+                loadDeletedTasks();
+            }
+        });
+    });
+
+    // View Mode Dropdown Handler
+    const viewDropdownItems = document.querySelectorAll('#viewDropdown + .dropdown-menu .dropdown-item');
+    const viewDropdownBtn = document.getElementById('viewDropdown');
+    const viewDropdownIcon = document.getElementById('viewDropdownIcon');
+    const viewDropdownText = document.getElementById('viewDropdownText');
+
+    viewDropdownItems.forEach(item => {
+        item.addEventListener('click', function (e) {
+            e.preventDefault();
+
+            const view = this.getAttribute('data-view');
+            const icon = this.getAttribute('data-icon');
+            const text = this.getAttribute('data-text');
+
+            // Remove active từ tất cả items
+            viewDropdownItems.forEach(i => i.classList.remove('active'));
+
+            // Add active cho item được chọn
+            this.classList.add('active');
+
+            // Update button text và icon
+            viewDropdownIcon.className = `fa-solid ${icon}`;
+            viewDropdownText.textContent = text;
+
+            // Switch view
+            switchView(view);
+        });
+    });
+
+    // Khôi phục trạng thái đã lưu khi load trang
+    const savedView = getViewState();
+    const savedTab = getTabState();
+
+    // Khôi phục tab
+    const savedTabItem = document.querySelector(`[data-tab="${savedTab}"]`);
+    if (savedTabItem) {
+        savedTabItem.click();
+    }
+
+    // Khôi phục view
+    const savedViewItem = document.querySelector(`[data-view="${savedView}"]`);
+    if (savedViewItem) {
+        savedViewItem.click();
+    }
+});
+
 // load trang đúng view
 document.addEventListener('DOMContentLoaded', function () {
+    // Khôi phục trạng thái đã lưu khi load trang
+    const savedView = getViewState();
+    const savedTab = getTabState();
 
-    // 1️⃣ Lấy trạng thái cuối cùng
-    const lastTab = localStorage.getItem('lastTab') || 'active-tasks-tab';
-    const lastView = localStorage.getItem('lastView') || 'kanban';
-    console.log('🔸 lastTab:', lastTab, '🔸 lastView:', lastView);
+    console.log('🔸 Khôi phục - savedTab:', savedTab, 'savedView:', savedView);
 
-    // 2️⃣ Kích hoạt lại tab đã lưu
-    const tabButton = document.getElementById(lastTab);
-    if (tabButton) {
-        const tabInstance = bootstrap.Tab.getOrCreateInstance(tabButton);
-        tabInstance.show();
+    // Khôi phục tab state
+    currentTabState = savedTab;
 
-        if (lastTab.includes('archived'))
-            currentTabState = 'archived';
-        else if (lastTab.includes('deleted'))
-            currentTabState = 'deleted';
-        else
-            currentTabState = 'active';
+    // Khôi phục tab UI
+    const savedTabItem = document.querySelector(`[data-tab="${savedTab}"]`);
+    if (savedTabItem) {
+        // Update dropdown button
+        const icon = savedTabItem.getAttribute('data-icon');
+        const text = savedTabItem.getAttribute('data-text');
+        document.getElementById('tabDropdownIcon').className = `fa-solid ${icon}`;
+        document.getElementById('tabDropdownText').textContent = text;
+
+        // Update active state
+        document.querySelectorAll('#tabDropdown + .dropdown-menu .dropdown-item').forEach(i => i.classList.remove('active'));
+        savedTabItem.classList.add('active');
+
+        // Show correct tab content
+        if (savedTab === 'active') {
+            document.getElementById('active-tasks').classList.add('show', 'active');
+            document.getElementById('archived-tasks').classList.remove('show', 'active');
+            document.getElementById('deleted-tasks').classList.remove('show', 'active');
+        } else if (savedTab === 'archived') {
+            document.getElementById('active-tasks').classList.remove('show', 'active');
+            document.getElementById('archived-tasks').classList.add('show', 'active');
+            document.getElementById('deleted-tasks').classList.remove('show', 'active');
+            loadArchivedTasks();
+        } else if (savedTab === 'deleted') {
+            document.getElementById('active-tasks').classList.remove('show', 'active');
+            document.getElementById('archived-tasks').classList.remove('show', 'active');
+            document.getElementById('deleted-tasks').classList.add('show', 'active');
+            loadDeletedTasks();
+        }
     }
 
-    // 3️⃣ Khôi phục dạng xem
+    // Khôi phục view UI
+    const savedViewItem = document.querySelector(`[data-view="${savedView}"]`);
+    if (savedViewItem) {
+        // Update dropdown button
+        const icon = savedViewItem.getAttribute('data-icon');
+        const text = savedViewItem.getAttribute('data-text');
+        document.getElementById('viewDropdownIcon').className = `fa-solid ${icon}`;
+        document.getElementById('viewDropdownText').textContent = text;
+
+        // Update active state
+        document.querySelectorAll('#viewDropdown + .dropdown-menu .dropdown-item').forEach(i => i.classList.remove('active'));
+        savedViewItem.classList.add('active');
+    }
+
+    // Khôi phục dạng xem
     if (typeof switchView === 'function') {
-        switchView(lastView);
+        switchView(savedView);
     }
-
-    // 4️⃣ Ghi nhớ khi người dùng chuyển tab
-    const tabButtons = document.querySelectorAll('#taskViewTabs .nav-link');
-    tabButtons.forEach(btn => {
-        btn.addEventListener('shown.bs.tab', e => {
-            const newTabId = e.target.id;
-            localStorage.setItem('lastTab', newTabId);
-
-            if (newTabId.includes('archived'))
-                currentTabState = 'archived';
-            else if (newTabId.includes('deleted'))
-                currentTabState = 'deleted';
-            else
-                currentTabState = 'active';
-
-            console.log('🟢 Đang ở tab:', e.target.textContent.trim(), `(${currentTabState})`);
-        });
-    });
-
-    // 5️⃣ Ghi nhớ khi người dùng đổi view
-    document.querySelectorAll('.view-mode-toggle .btn').forEach(btn => {
-        btn.addEventListener('click', function () {
-            const newView = this.id.replace('view', '').toLowerCase();
-            localStorage.setItem('lastView', newView);
-            console.log('🟢 Đổi view:', newView);
-            switchView(newView);
-        });
-    });
 });
 
 // ====== XỬ LÝ LOAD LỊCH SỬ CÔNG VIỆC ======
@@ -2568,3 +2601,119 @@ function getApprovalBadge(status) {
             return 'bg-secondary';
     }
 }
+document.addEventListener("DOMContentLoaded", function () {
+    const btn = document.getElementById("btnUserGiaHan");
+    const form = document.getElementById("userGiaHanForm");
+    const confirm = document.getElementById("btnUserConfirmGiaHan");
+    const cancel = document.getElementById("btnUserCancelGiaHan");
+
+    if (!btn)
+        return;  // user không có form admin → không chạy đoạn này
+
+    btn.addEventListener("click", () => {
+        form.style.display = form.style.display === "none" ? "block" : "none";
+    });
+
+    cancel.addEventListener("click", () => form.style.display = "none");
+
+    confirm.addEventListener("click", function () {
+        const taskId = document.querySelector('[name="task_id"]').value;
+        const date = document.getElementById("userNgayGiaHan").value;
+        const lydo = document.getElementById("userLyDoGiaHan").value;
+
+        fetch('./suaCongviec', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: new URLSearchParams({
+                action: 'extend',
+                task_id: taskId,
+                ngay_gia_han: date,
+                ly_do_gia_han: lydo
+            })
+        })
+                .then(r => r.json())
+                .then(d => {
+                    if (d.success) {
+                        showToast('success', 'Yêu cầu gia hạn đã gửi');
+                        form.style.display = "none";
+                    } else
+                        showToast('error', d.message);
+                });
+    });
+});
+document.addEventListener("click", function (e) {
+    // đảm bảo ngăn submit form mặc định và xử lý an toàn
+    if (e.target && e.target.id === "btnApproveExtend") {
+        e.preventDefault();
+        const taskIdEl = document.querySelector('[name="task_id"]');
+        const taskId = taskIdEl ? taskIdEl.value : null;
+        const newDeadlineEl = document.getElementById('requestedExtendDate');
+        const newDeadline = newDeadlineEl ? newDeadlineEl.value : null;
+
+        if (!taskId || !newDeadline) {
+            showToast('error', 'Không tìm thấy ID hoặc ngày gia hạn để duyệt.');
+            return;
+        }
+
+        fetch('./suaCongviec', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: new URLSearchParams({
+                action: 'approveextend',
+                task_id: String(taskId),
+                new_deadline: String(newDeadline)
+            }).toString()
+        })
+                .then(r => r.json())
+                .then(d => {
+                    if (d && d.success) {
+                        showToast('success', 'Đã duyệt gia hạn');
+                        // Option A: reload an toàn
+                        setTimeout(() => {
+                            window.location.href = '/ICSS/dsCongviec';
+                        }, 700);
+                    } else {
+                        showToast('error', d && d.message ? d.message : 'Duyệt thất bại');
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    showToast('error', 'Lỗi kết nối server.');
+                });
+    }
+});
+document.addEventListener("DOMContentLoaded", function () {
+    const btn = document.getElementById("btnAdminGiaHan");
+    const form = document.getElementById("adminGiaHanForm");
+    const confirm = document.getElementById("btnAdminXacNhanGiaHan");
+
+    if (!btn)
+        return; // admin không có form user → không chạy đoạn kia
+
+    btn.addEventListener("click", () => {
+        form.style.display = form.style.display === "none" ? "block" : "none";
+    });
+
+    confirm.addEventListener("click", function () {
+        const taskId = document.querySelector('[name="task_id"]').value;
+        const date = document.getElementById("adminNgayGiaHan").value;
+
+        fetch('./suaCongviec', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: new URLSearchParams({
+                action: 'approveextend',
+                task_id: taskId,
+                new_deadline: date
+            })
+        })
+                .then(r => r.json())
+                .then(d => {
+                    if (d.success) {
+                        showToast('success', 'Đã duyệt gia hạn');
+                        window.location.href = '/ICSS/dsCongviec';
+                    } else
+                        showToast('error', d.message);
+                });
+    });
+});

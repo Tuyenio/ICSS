@@ -53,7 +53,17 @@ public class xoaQuytrinh extends HttpServlet {
                 if (deleted) {
                     db = new KNCSDL();
                     for (int nhanId : danhSachIdNhan) {
-                        db.insertThongBao(nhanId, tieuDeTB, noiDungTB, "Cập nhật");
+                        String role = db.getVaiTroById(nhanId);
+                        String link = "";
+
+                        // 🔥 Nếu là Admin hoặc Quản lý → vào giao diện Admin
+                        if (role != null && (role.equalsIgnoreCase("Admin") || role.equalsIgnoreCase("Quản lý"))) {
+                            link = "dsCongviec?taskId=" + congViecId;
+                        } else {
+                            // 🔥 Ngược lại nhân viên dùng giao diện của NV
+                            link = "dsCongviecNV?taskId=" + congViecId;
+                        }
+                        db.insertThongBao(nhanId, tieuDeTB, noiDungTB, "Cập nhật", link);
                     }
 
                     // Ghi log lịch sử CHI TIẾT
@@ -128,7 +138,8 @@ public class xoaQuytrinh extends HttpServlet {
                     String noiDungTB = "Công việc: " + tencv + " vừa được thêm quy trình mới";
 
                     for (int nhanId : danhSachIdNhan) {
-                        db.insertThongBao(nhanId, tieuDeTB, noiDungTB, "Cập nhật");
+                        String duongDan = "dsCongviec?taskId=" + congViecId;
+                        db.insertThongBao(nhanId, tieuDeTB, noiDungTB, "Cập nhật", duongDan);
                     }
 
                     // 🔹 Ghi log lịch sử chi tiết

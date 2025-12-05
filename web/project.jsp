@@ -384,6 +384,11 @@
                 content: "\f0dd"; /* down arrow */
                 opacity: 1;
             }
+            .inline-select {
+                width: 130px;
+                padding: 3px 6px;
+                font-size: 0.85rem;
+            }
 
         </style>
         <script>
@@ -538,7 +543,7 @@
                                     </td>
                                     <td><%= p.get("nhom_du_an") %></td>
                                     <td><%= p.get("phong_ban") != null ? p.get("phong_ban") : "Chưa phân" %></td>
-                                    <td>
+                                    <td class="editable-status" data-id="<%= p.get("id") %>">
                                         <%
                                             String status = p.get("trang_thai_duan") != null ? p.get("trang_thai_duan").toString() : "Đang thực hiện";
                                             String statusClass = "badge bg-secondary";
@@ -549,7 +554,7 @@
                                         %>
                                         <span class="<%= statusClass %>"><%= status %></span>
                                     </td>
-                                    <td><span class="badge <%= priorityClass %>"><%= priority %></span></td>
+                                    <td class="editable-priority" data-id="<%= p.get("id") %>"><span class="badge <%= priorityClass %>"><%= priority %></span></td>
                                     <td><%= p.get("ngay_bat_dau") %></td>
                                     <td><%= p.get("ngay_ket_thuc") %></td>
 
@@ -769,9 +774,7 @@
                 </div>
             </div>
         </div>
-        <script>
-            const USER_PERMISSIONS = <%= session.getAttribute("quyen") %>;
-        </script>
+        <script>const USER_PERMISSIONS = <%= session.getAttribute("quyen") %>;</script>
         <script src="<%= request.getContextPath() %>/scripts/project.js?v=20251105"></script>
     </body>
 </html>

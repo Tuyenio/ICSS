@@ -29,15 +29,25 @@ public class dsCongviecNV extends HttpServlet {
             KNCSDL kn = new KNCSDL();
             HttpSession session = request.getSession();
             String email = (String) session.getAttribute("userEmail");
+            String taskIdStr = request.getParameter("taskId");
+            if (taskIdStr != null && !taskIdStr.trim().isEmpty()) {
 
-            // Lấy công việc hiện tại của nhân viên
+                int taskId = Integer.parseInt(taskIdStr);
+
+                List<Map<String, Object>> oneTaskList = kn.getTaskByIdLikeList(taskId);
+
+                request.setAttribute("taskList", oneTaskList);
+                request.setAttribute("archivedTaskList", new ArrayList<>());
+                request.setAttribute("deletedTaskList", new ArrayList<>());
+
+                request.getRequestDispatcher("/user_task.jsp").forward(request, response);
+                return;
+            }
             List<Map<String, Object>> taskList = kn.getAllTasksNV(email, 0);
 
-            // Lấy công việc lưu trữ
             List<Map<String, Object>> archivedTaskList
                     = kn.getTasksByTinhTrang(email, 0, "Lưu trữ");
 
-            // Lấy công việc đã xoá
             List<Map<String, Object>> deletedTaskList
                     = kn.getTasksByTinhTrang(email, 0, "Đã xóa");
 

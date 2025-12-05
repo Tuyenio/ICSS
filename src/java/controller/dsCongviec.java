@@ -23,6 +23,11 @@ public class dsCongviec extends HttpServlet {
             KNCSDL kn = new KNCSDL();
             HttpSession session = request.getSession();
             String email = (String) session.getAttribute("userEmail");
+            String taskIdStr = request.getParameter("taskId");
+            Integer taskId = null;
+            if (taskIdStr != null && !taskIdStr.trim().isEmpty()) {
+                taskId = Integer.parseInt(taskIdStr);
+            }
 
             // 🟢 Tham số lọc
             String trangThai = request.getParameter("trangThai");
@@ -38,16 +43,32 @@ public class dsCongviec extends HttpServlet {
             List<Map<String, Object>> taskList;
             List<Map<String, Object>> archivedTaskList;
             List<Map<String, Object>> deletedTaskList;
+            if (taskId != null) {
+
+                // Trả về list<map> giống hệt lấy theo phòng ban
+                taskList = kn.getTaskByIdLikeList(taskId);
+
+                // Lưu trữ & thùng rác không cần khi mở theo ID
+                archivedTaskList = new ArrayList<>();
+                deletedTaskList = new ArrayList<>();
+
+                request.setAttribute("taskList", taskList);
+                request.setAttribute("archivedTaskList", archivedTaskList);
+                request.setAttribute("deletedTaskList", deletedTaskList);
+                request.setAttribute("selectedTrangThai", null);
+                request.setAttribute("selectedPhongBan", null);
+
+                request.getRequestDispatcher("/task.jsp").forward(request, response);
+                return;
+            }
 
             // 🟢 Ưu tiên lọc theo PHÒNG BAN
             if (phongBanId != null) {
                 taskList = kn.getTasksByDepartment(email, phongBanId);
-            }
-            // 🔹 Nếu lọc theo TRẠNG THÁI
+            } // 🔹 Nếu lọc theo TRẠNG THÁI
             else if (trangThai != null && !trangThai.trim().isEmpty()) {
                 taskList = kn.getTasksByStatus(email, 0, trangThai);
-            }
-            // 🔹 Không filter → lấy tất cả
+            } // 🔹 Không filter → lấy tất cả
             else {
                 taskList = kn.getAllTasksByProject(email, 0);
             }

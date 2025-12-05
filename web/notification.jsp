@@ -136,9 +136,18 @@
                 }
             }
             @keyframes notif-pulse {
-                0% { transform: scale(1); opacity: 1; }
-                50% { transform: scale(1.25); opacity: 0.7; }
-                100% { transform: scale(1); opacity: 1; }
+                0% {
+                    transform: scale(1);
+                    opacity: 1;
+                }
+                50% {
+                    transform: scale(1.25);
+                    opacity: 0.7;
+                }
+                100% {
+                    transform: scale(1);
+                    opacity: 1;
+                }
             }
 
             @media (max-width: 1200px) {
@@ -244,13 +253,25 @@
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
                                         <i class="<%= iconClass %> me-2"></i>
-                                       <span class="notif-dot" aria-hidden="true"></span>
+                                        <span class="notif-dot" aria-hidden="true"></span>
                                         <span class="fw-semibold"><%= tieuDe %></span>
                                         <div class="text-muted small">
                                             <%= noiDung %><br>
                                             <span class="badge bg-light text-dark me-1"><%= loai %></span>
                                             <i class="fa-regular fa-clock me-1"></i><%= esc(timeStr) %>
                                         </div>
+                                    </div>
+                                    <div class="mt-2">
+                                        <%
+                                            String link = (row.get("duong_dan") != null) ? row.get("duong_dan").toString() : "";
+                                            if (!link.isEmpty()) {
+                                        %>
+                                        <a href="<%= link %>" class="btn btn-sm btn-info mt-2">
+                                            <i class="fa-solid fa-eye"></i> Xem chi tiết
+                                        </a>
+                                        <%
+                                            }
+                                        %>
                                     </div>
                                     <span class="badge <%= (daDoc != null && daDoc) ? "bg-success" : "bg-danger" %> rounded-pill badge-status">
                                         <%= (daDoc != null && daDoc) ? "Đã đọc" : "Mới" %>
@@ -271,7 +292,7 @@
                 </div>
             </div>
         </div>
-        <!-- load bootstrap bundle (ok as is) -->
+
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
         <!-- load our JS in order: plain [notification.js](http://_vscodecontentref_/0) (uses XHR/DOM) then obf/minified script that may use jQuery -->
         <script src="<%= request.getContextPath() %>/scripts/notification.js?v=20251105"></script>

@@ -28,8 +28,11 @@ public class AuthFilter implements Filter {
             "/xoaLichTrinh",
             "/xoaCongviec",
             "/themPhongban",
+            "dsCongviecDuan",
             "/locNhanvien",
             "/dsnhanvien",
+            "dsCongviec",
+            "dsNhomduan",
             "/dsPhongban",
             "/dsDuan",
             "/dsChamCong",
@@ -90,15 +93,16 @@ public class AuthFilter implements Filter {
         String role = ((String) session.getAttribute("vaiTro")).toLowerCase();
 
         // ✅ Nếu là nhân viên, chặn truy cập vào các trang admin
+        String cleanUri = uri.split("\\?")[0]; // Bỏ query string
+
         if (!"admin".equalsIgnoreCase(role) && !"quản lý".equalsIgnoreCase(role)) {
             for (String page : ADMIN_PAGES) {
-                if (uri.endsWith(page) || uri.equals(req.getContextPath() + page)) {
+                if (cleanUri.endsWith(page) || cleanUri.equals(req.getContextPath() + page)) {
                     res.sendRedirect(req.getContextPath() + "/404.jsp");
                     return;
                 }
             }
         }
-
         chain.doFilter(request, response);
     }
 }

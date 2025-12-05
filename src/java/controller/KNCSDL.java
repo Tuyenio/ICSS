@@ -32,8 +32,8 @@ public class KNCSDL {
 
     public KNCSDL() throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
-        this.cn = DriverManager.getConnection(path, "root", "");
-        //this.cn = DriverManager.getConnection(path, "icssapp", "StrongPass!2025");
+        //this.cn = DriverManager.getConnection(path, "root", "");
+        this.cn = DriverManager.getConnection(path, "icssapp", "StrongPass!2025");
     }
 
     public ResultSet laydl(String email) throws SQLException {
@@ -1296,6 +1296,18 @@ public class KNCSDL {
         ResultSet rs = ps.executeQuery();
         if (rs.next()) {
             return rs.getString("vai_tro");
+        }
+        return null;
+    }
+
+    public String getVaiTroById(int userId) throws SQLException {
+        String sql = "SELECT vai_tro FROM nhanvien WHERE id = ?";
+        try (PreparedStatement ps = cn.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getString("vai_tro");
+            }
         }
         return null;
     }
@@ -3374,7 +3386,7 @@ public class KNCSDL {
     public List<Map<String, Object>> getDanhSachThongBao(Integer nguoiNhanId, Integer limit, Integer offset) throws SQLException {
         List<Map<String, Object>> ds = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
-                "SELECT id, tieu_de, noi_dung, nguoi_nhan_id, loai_thong_bao, da_doc, ngay_tao "
+                "SELECT id, tieu_de, noi_dung, nguoi_nhan_id, duong_dan, loai_thong_bao, da_doc, ngay_tao "
                 + "FROM thong_bao "
         );
         List<Object> params = new ArrayList<>();
@@ -3407,6 +3419,7 @@ public class KNCSDL {
                     row.put("noi_dung", rs.getString("noi_dung"));
                     row.put("nguoi_nhan_id", rs.getInt("nguoi_nhan_id"));
                     row.put("loai_thong_bao", rs.getString("loai_thong_bao"));
+                    row.put("duong_dan", rs.getString("duong_dan"));
                     row.put("da_doc", rs.getBoolean("da_doc"));
                     row.put("ngay_tao", rs.getTimestamp("ngay_tao"));
                     ds.add(row);
@@ -3446,15 +3459,16 @@ public class KNCSDL {
         return 0;
     }
 
-    // Thêm 1 thông báo
-    public int insertThongBao(int nguoiNhanId, String tieuDe, String noiDung, String loai) throws SQLException {
-        String sql = "INSERT INTO thong_bao (tieu_de, noi_dung, nguoi_nhan_id, loai_thong_bao, da_doc, ngay_doc, ngay_tao) "
-                + "VALUES (?, ?, ?, ?, 0, NOW(), NOW())";
+    public int insertThongBao(int nguoiNhanId, String tieuDe, String noiDung, String loai, String duongDan) throws SQLException {
+        String sql = "INSERT INTO thong_bao (tieu_de, noi_dung, nguoi_nhan_id, loai_thong_bao, duong_dan, da_doc, ngay_doc, ngay_tao) "
+                + "VALUES (?, ?, ?, ?, ?, 0, NOW(), NOW())";
+
         try (PreparedStatement ps = cn.prepareStatement(sql)) {
             ps.setString(1, tieuDe);
             ps.setString(2, noiDung);
             ps.setInt(3, nguoiNhanId);
             ps.setString(4, loai);
+            ps.setString(5, duongDan);
             return ps.executeUpdate();
         }
     }
@@ -3793,6 +3807,70 @@ public class KNCSDL {
         }
 
         return list;
+    }
+
+    public List<Map<String, Object>> getTaskByIdLikeList(int taskId) throws SQLException {
+        List<Map<String, Object>> tasks = new ArrayList<>();
+
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT cv.id, cv.du_an_id, cv.ten_cong_viec, cv.mo_ta, cv.muc_do_uu_tien, cv.trang_thai, ")
+                .append("cv.tai_lieu_cv, cv.file_tai_lieu, cv.ngay_bat_dau, cv.trang_thai_duyet, cv.ly_do_duyet, cv.ngay_gia_han, cv.han_hoan_thanh, cv.nhac_viec, ")
+                .append("ng1.ho_ten AS nguoi_giao_ten, ")
+                .append("GROUP_CONCAT(DISTINCT ng2.ho_ten ORDER BY ng2.ho_ten SEPARATOR ', ') AS nguoi_nhan_ten, ")
+                .append("MAX(td.phan_tram) AS phan_tram, ")
+                .append("da.ten_du_an AS ten_du_an, ")
+                .append("pb.ten_phong AS ten_phong ")
+                .append("FROM cong_viec cv ")
+                .append("LEFT JOIN nhanvien ng1 ON cv.nguoi_giao_id = ng1.id ")
+                .append("LEFT JOIN cong_viec_nguoi_nhan cvnn ON cv.id = cvnn.cong_viec_id ")
+                .append("LEFT JOIN nhanvien ng2 ON cvnn.nhan_vien_id = ng2.id ")
+                .append("LEFT JOIN cong_viec_tien_do td ON cv.id = td.cong_viec_id ")
+                .append("LEFT JOIN phong_ban pb ON cv.phong_ban_id = pb.id ")
+                .append("LEFT JOIN du_an da ON cv.du_an_id = da.id ")
+                .append("WHERE cv.id = ? AND cv.tinh_trang IS NULL ")
+                .append("GROUP BY cv.id");
+
+        try (PreparedStatement stmt = cn.prepareStatement(sql.toString())) {
+            stmt.setInt(1, taskId);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+
+                    Map<String, Object> task = new HashMap<>();
+
+                    task.put("id", rs.getInt("id"));
+                    task.put("du_an_id", rs.getInt("du_an_id"));
+                    task.put("ten_du_an", rs.getString("ten_du_an"));
+
+                    task.put("ten_cong_viec", rs.getString("ten_cong_viec"));
+                    task.put("mo_ta", rs.getString("mo_ta"));
+
+                    task.put("nguoi_giao_id", rs.getString("nguoi_giao_ten"));
+                    task.put("nguoi_nhan_ten", rs.getString("nguoi_nhan_ten"));
+
+                    task.put("phan_tram", rs.getString("phan_tram"));
+                    task.put("phong_ban_id", rs.getString("ten_phong"));
+
+                    task.put("muc_do_uu_tien", rs.getString("muc_do_uu_tien"));
+                    task.put("trang_thai", rs.getString("trang_thai"));
+
+                    task.put("tai_lieu_cv", rs.getString("tai_lieu_cv"));
+                    task.put("file_tai_lieu", rs.getString("file_tai_lieu"));
+
+                    task.put("han_hoan_thanh", rs.getDate("han_hoan_thanh"));
+                    task.put("ngay_bat_dau", rs.getDate("ngay_bat_dau"));
+                    task.put("ngay_gia_han", rs.getDate("ngay_gia_han"));
+                    task.put("nhac_viec", rs.getString("nhac_viec"));
+
+                    task.put("trang_thai_duyet", rs.getString("trang_thai_duyet"));
+                    task.put("ly_do_duyet", rs.getString("ly_do_duyet"));
+
+                    tasks.add(task);
+                }
+            }
+        }
+
+        return tasks;
     }
 
     public List<Map<String, Object>> getAllTasksByProject(String email, int projectId) throws SQLException {
@@ -4798,12 +4876,12 @@ public class KNCSDL {
 
             if (updated > 0) {
                 // Ghi lịch sử (tái sử dụng hàm có sẵn)
-                String note = "Gia hạn công việc đến " + ngayGiaHan;
-                themLichSuCongViec(taskId, userId != null ? userId : 0, note);
-
-                result.put("success", true);
-                result.put("message", "Gia hạn thành công");
-                result.put("ngayGiaHan", ngayGiaHan);
+//                String note = "Gia hạn công việc đến " + ngayGiaHan;
+//                themLichSuCongViec(taskId, userId != null ? userId : 0, note);
+//
+//                result.put("success", true);
+//                result.put("message", "Gia hạn thành công");
+//                result.put("ngayGiaHan", ngayGiaHan);
             } else {
                 result.put("success", false);
                 result.put("message", "Không tìm thấy công việc hoặc không thể cập nhật");

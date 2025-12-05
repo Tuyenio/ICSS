@@ -51,13 +51,15 @@ public class themNhanvien extends HttpServlet {
                 // Nếu là Giám đốc -> gửi thông báo cho Trưởng phòng của phòng ban mới
                 int truongPhongId = kn.getTruongPhongIdByTenPhong(tenPhongBan);
                 if (truongPhongId > 0) {
-                    kn.insertThongBao(truongPhongId, tieuDeTB, noiDungTB, "Nhân viên mới");
+                    String duongDan = "dsnhanvien";
+                    kn.insertThongBao(truongPhongId, tieuDeTB, noiDungTB, "Nhân viên mới",duongDan);
                 }
             } else if ("Quản lý".equalsIgnoreCase(vaiTroDangNhap)) {
                 // Nếu là Quản lý -> gửi thông báo cho Giám đốc
                 int giamDocId = kn.getGiamDocId(); // Bạn cần viết hàm này trong KNCSDL
                 if (giamDocId > 0) {
-                    kn.insertThongBao(giamDocId, tieuDeTB, noiDungTB, "Nhân viên mới");
+                    String duongDan = "dsnhanvien";
+                    kn.insertThongBao(giamDocId, tieuDeTB, noiDungTB, "Nhân viên mới",duongDan);
                 }
             }
 

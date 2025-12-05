@@ -9,8 +9,8 @@ import jakarta.servlet.http.*;
 
 @MultipartConfig(
         fileSizeThreshold = 1024 * 1024,
-        maxFileSize = 20 * 1024 * 1024,      // 20MB
-        maxRequestSize = 100 * 1024 * 1024   // 100MB
+        maxFileSize = 20 * 1024 * 1024, // 20MB
+        maxRequestSize = 100 * 1024 * 1024 // 100MB
 )
 public class themCongviec extends HttpServlet {
 
@@ -185,13 +185,19 @@ public class themCongviec extends HttpServlet {
                     if (tenNhan.isEmpty()) {
                         continue;
                     }
-
                     int nhanId = db.getNhanVienIdByName(tenNhan);
                     if (nhanId > 0) {
                         db.addNguoiNhan(taskId, nhanId);
                         String tieuDeTB = "Công việc mới";
                         String noiDungTB = "Bạn được giao công việc: " + ten + ". Hạn: " + han + ".";
-                        db.insertThongBao(nhanId, tieuDeTB, noiDungTB, "Công việc mới");
+                        String role = db.getVaiTroById(nhanId);
+                        String link = "";
+                        if (role != null && (role.equalsIgnoreCase("Admin") || role.equalsIgnoreCase("Quản lý"))) {
+                            link = "dsCongviec?taskId=" + taskId;
+                        } else {
+                            link = "dsCongviecNV?taskId=" + taskId;
+                        }
+                        db.insertThongBao(nhanId, tieuDeTB, noiDungTB, "Công việc mới", link);
                     }
                 }
             }

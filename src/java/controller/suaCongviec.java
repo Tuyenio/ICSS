@@ -130,6 +130,58 @@ public class suaCongviec extends HttpServlet {
                         out.print("{\"success\":" + ok + ",\"message\":\"" + msg + "\"}");
                         return;
                     }
+                    case "extend": {
+                        String newGiaHan = request.getParameter("ngay_gia_han");
+                        String lyDoGiaHan = request.getParameter("ly_do_gia_han");
+
+                        Map<String, Object> taskInfo = db.getCongViecById(taskId);
+                        String tenCV = taskInfo != null && taskInfo.get("ten_cong_viec") != null
+                                ? taskInfo.get("ten_cong_viec").toString()
+                                : ("#" + taskId);
+
+                        // ❗ KHÔNG UPDATE deadline ở đây nữa
+                        boolean updated = true; // chỉ để flow không lỗi
+
+                        // Ghi lịch sử yêu cầu gia hạn
+                        if (userId > 0) {
+                            db.themLichSuCongViec(taskId, userId,
+                                    "Yêu cầu gia hạn đến: " + newGiaHan
+                                    + (lyDoGiaHan != null && !lyDoGiaHan.isEmpty() ? (" | Lý do: " + lyDoGiaHan) : "")
+                            );
+                        }
+
+                        // Gửi thông báo tới user ID = 4 để DUYỆT
+                        try {
+                            String tieuDeTB = "Yêu cầu gia hạn: " + tenCV;
+                            String noiDung = "Công việc \"" + tenCV + "\" yêu cầu gia hạn đến: " + newGiaHan;
+                            if (lyDoGiaHan != null && !lyDoGiaHan.trim().isEmpty()) {
+                                noiDung += " | Lý do: " + lyDoGiaHan;
+                            }
+
+                            // user 4 bấm duyệt → mở giao diện chi tiết để xử lý
+                            String link = "dsCongviec?taskId=" + taskId + "&duyet_gia_han=1" + "&ngay_gia_han=" + newGiaHan;
+                            db.insertThongBao(4, tieuDeTB, noiDung, "Gia hạn", link);
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                        }
+
+                        out.print("{\"success\": true, \"message\": \"Đã gửi yêu cầu gia hạn để duyệt\"}");
+                        return;
+                    }
+                    case "approveextend": {
+                        String newDeadline = request.getParameter("new_deadline");
+                        boolean ok2 = db.updateDeadline(taskId, newDeadline);
+                        db.giaHanCongViec(taskId, newDeadline, userId);
+
+                        if (ok2 && userId > 0) {
+                            db.themLichSuCongViec(taskId, userId, "Duyệt gia hạn đến: " + newDeadline);
+                        }
+
+                        out.print("{\"success\":" + ok2 + ",\"message\":\""
+                                + (ok2 ? "Đã duyệt gia hạn" : "Duyệt thất bại")
+                                + "\"}");
+                        return;
+                    }
                 }
 
                 // Ghi log lịch sử cho các action khác (archive, delete, restore)
@@ -251,7 +303,17 @@ public class suaCongviec extends HttpServlet {
                 for (int nhanId : danhSachIdNhan) {
                     String tieuDeTB = "Cập nhật công việc";
                     String noiDungTB = "Công việc: " + ten + " vừa được cập nhật mới";
-                    db.insertThongBao(nhanId, tieuDeTB, noiDungTB, "Cập nhật");
+                    String role = db.getVaiTroById(nhanId);
+                    String link = "";
+
+                    // 🔥 Nếu là Admin hoặc Quản lý → vào giao diện Admin
+                    if (role != null && (role.equalsIgnoreCase("Admin") || role.equalsIgnoreCase("Quản lý"))) {
+                        link = "dsCongviec?taskId=" + taskId;
+                    } else {
+                        // 🔥 Ngược lại nhân viên dùng giao diện của NV
+                        link = "dsCongviecNV?taskId=" + taskId;
+                    }
+                    db.insertThongBao(nhanId, tieuDeTB, noiDungTB, "Cập nhật", link);
                 }
 
                 // 5: Ghi lịch sử thay đổi CHI TIẾT từng trường

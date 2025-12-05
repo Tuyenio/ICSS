@@ -82,7 +82,17 @@ public class apiDanhgiaCV extends HttpServlet {
                 // Gửi cho tất cả người nhận của công việc
                 List<Integer> danhSachNguoiNhan = db.getDanhSachNguoiNhanId(congViecId);
                 for (int nhanId : danhSachNguoiNhan) {
-                    db.insertThongBao(nhanId, tieuDeTB, noiDungTB, "Đánh giá");
+                    String role = db.getVaiTroById(nhanId);
+                    String link = "";
+
+                    // 🔥 Nếu là Admin hoặc Quản lý → vào giao diện Admin
+                    if (role != null && (role.equalsIgnoreCase("Admin") || role.equalsIgnoreCase("Quản lý"))) {
+                        link = "dsCongviec?taskId=" + congViecId;
+                    } else {
+                        // 🔥 Ngược lại nhân viên dùng giao diện của NV
+                        link = "dsCongviecNV?taskId=" + congViecId;
+                    }
+                    db.insertThongBao(nhanId, tieuDeTB, noiDungTB, "Đánh giá", link);
                 }
 
                 // Ghi log lịch sử

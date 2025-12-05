@@ -3,7 +3,6 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <!DOCTYPE html>
 <html lang="vi">
-
     <head>
         <meta charset="UTF-8">
         <link rel="icon" type="image/png" href="Img/logoics.png">
@@ -375,6 +374,73 @@
                 font-size: 0.9rem;
             }
 
+            /* DROPDOWN STYLES */
+            .custom-dropdown .dropdown-toggle {
+                border-radius: 12px;
+                font-weight: 600;
+                padding: 10px 20px;
+                transition: all 0.3s ease;
+                border: 2px solid #0dcaf0;
+                background: linear-gradient(135deg, #0dcaf0, #4f46e5);
+                color: white;
+                box-shadow: 0 4px 15px rgba(13, 202, 240, 0.4);
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .custom-dropdown .dropdown-toggle:hover {
+                background: linear-gradient(135deg, #4f46e5, #0dcaf0);
+                transform: translateY(-2px);
+                box-shadow: 0 6px 20px rgba(13, 202, 240, 0.5);
+            }
+
+            .custom-dropdown .dropdown-toggle::after {
+                margin-left: 8px;
+            }
+
+            .custom-dropdown .dropdown-menu {
+                border-radius: 12px;
+                border: 2px solid #e2e8f0;
+                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+                padding: 8px;
+                margin-top: 8px;
+                min-width: 200px;
+            }
+
+            .custom-dropdown .dropdown-item {
+                border-radius: 8px;
+                padding: 10px 16px;
+                font-weight: 500;
+                transition: all 0.2s ease;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                color: #1e293b;
+            }
+
+            .custom-dropdown .dropdown-item:hover {
+                background: linear-gradient(90deg, rgba(13, 202, 240, 0.1), rgba(79, 70, 229, 0.1));
+                transform: translateX(4px);
+                color: #0dcaf0;
+            }
+
+            .custom-dropdown .dropdown-item.active {
+                background: linear-gradient(135deg, #0dcaf0, #4f46e5);
+                color: white;
+            }
+
+            .custom-dropdown .dropdown-item i {
+                width: 20px;
+                text-align: center;
+                font-size: 0.95rem;
+            }
+
+            .dropdown-divider {
+                margin: 8px 0;
+                border-top: 1px solid #e2e8f0;
+            }
+
             /* LIST VIEW STYLES */
             .list-view-container {
                 display: none;
@@ -514,14 +580,16 @@
             }
 
             .task-table tbody tr.task-row--alert::before {
-                content: '🔔';
                 position: absolute;
                 left: 8px;
-                top: 50%;
-                transform: translateY(-50%);
-                font-size: 1rem;
-                animation: bellPulse 2s infinite;
-                z-index: 1;
+                top: 10%;
+                height: 80%;
+                width: 6px;
+                background: linear-gradient(180deg, #b8001f, #ff3b47);
+                border-radius: 4px;
+                box-shadow: 0 0 12px rgba(220,53,69,0.18);
+                animation: pulse 1.6s infinite;
+                z-index: 2;
             }
 
             .task-table tbody tr.task-row--alert td:first-child {
@@ -530,13 +598,13 @@
 
             @keyframes rowBlink {
                 0%, 100% {
-                    background: rgba(220, 53, 69, 0.05);
-                    box-shadow: inset 0 0 0 1px rgba(220, 53, 69, 0);
+                    background: rgba(220, 53, 69, 0.18);  /* đỏ đậm hơn */
+                    box-shadow: inset 0 0 0 1px rgba(220, 53, 69, 0.25);
                 }
                 50% {
-                    background: rgba(220, 53, 69, 0.12);
-                    box-shadow: inset 0 0 0 2px rgba(220, 53, 69, 0.3),
-                        0 4px 12px rgba(220, 53, 69, 0.2);
+                    background: rgba(220, 53, 69, 0.32); /* đỏ nháy mạnh hơn */
+                    box-shadow: inset 0 0 0 2px rgba(220, 53, 69, 0.45),
+                        0 4px 12px rgba(220, 53, 69, 0.35);
                 }
             }
 
@@ -621,15 +689,11 @@
             }
 
             .kanban-view-container {
-                display: block;
+                display: none;
             }
 
             .kanban-view-container.active {
                 display: block;
-            }
-
-            .kanban-view-container:not(.active) {
-                display: none;
             }
 
             .task-nav-tabs .nav-link:before {
@@ -1552,7 +1616,6 @@
                     transform: translateY(0);
                 }
             }
-            
         </style>
     </head>
 
@@ -1569,46 +1632,70 @@
                             <div class="d-flex align-items-center gap-3">
                                 <h3 class="mb-0"><i class="fa-solid fa-tasks me-2"></i>Quản lý Công việc</h3>
 
-                                <!-- Các tab điều hướng -->
-                                <ul class="nav nav-pills task-nav-tabs" id="taskViewTabs" role="tablist">
-                                    <li class="nav-item" role="presentation">
-                                        <button class="nav-link active" id="active-tasks-tab" data-bs-toggle="pill" 
-                                                data-bs-target="#active-tasks" type="button" role="tab">
-                                            <i class="fa-solid fa-list-check me-1"></i>Công việc
-                                        </button>
-                                    </li>
-                                    <li class="nav-item" role="presentation">
-                                        <button class="nav-link" id="archived-tasks-tab" data-bs-toggle="pill" 
-                                                data-bs-target="#archived-tasks" type="button" role="tab">
-                                            <i class="fa-solid fa-archive me-1"></i>Lưu trữ
-                                        </button>
-                                    </li>
-                                    <li class="nav-item" role="presentation">
-                                        <button class="nav-link" id="deleted-tasks-tab" data-bs-toggle="pill" 
-                                                data-bs-target="#deleted-tasks" type="button" role="tab">
-                                            <i class="fa-solid fa-trash me-1"></i>Thùng rác
-                                        </button>
-                                    </li>
-                                </ul>
+                                <!-- Tab Dropdown -->
+                                <div class="dropdown custom-dropdown">
+                                    <button class="btn dropdown-toggle" type="button" id="tabDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fa-solid fa-list-check" id="tabDropdownIcon"></i>
+                                        <span id="tabDropdownText">Công việc</span>
+                                    </button>
+                                    <ul class="dropdown-menu" aria-labelledby="tabDropdown">
+                                        <li>
+                                            <a class="dropdown-item active" href="#" data-tab="active" data-icon="fa-list-check" data-text="Công việc">
+                                                <i class="fa-solid fa-list-check"></i>
+                                                <span>Công việc</span>
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" href="#" data-tab="archived" data-icon="fa-archive" data-text="Lưu trữ">
+                                                <i class="fa-solid fa-archive"></i>
+                                                <span>Lưu trữ</span>
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" href="#" data-tab="deleted" data-icon="fa-trash" data-text="Thùng rác">
+                                                <i class="fa-solid fa-trash"></i>
+                                                <span>Thùng rác</span>
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" href="#" data-tab="pending" data-icon="fa-hourglass-half" data-text="Chờ xét duyệt">
+                                                <i class="fa-solid fa-hourglass-half"></i>
+                                                <span>Chờ xét duyệt</span>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+
+                                <!-- View Mode Dropdown -->
+                                <div class="dropdown custom-dropdown">
+                                    <button class="btn dropdown-toggle" type="button" id="viewDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fa-solid fa-grip-vertical" id="viewDropdownIcon"></i>
+                                        <span id="viewDropdownText">Kanban</span>
+                                    </button>
+                                    <ul class="dropdown-menu" aria-labelledby="viewDropdown">
+                                        <li>
+                                            <a class="dropdown-item active" href="#" data-view="kanban" data-icon="fa-grip-vertical" data-text="Kanban">
+                                                <i class="fa-solid fa-grip-vertical"></i>
+                                                <span>Kanban</span>
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" href="#" data-view="list" data-icon="fa-list" data-text="Danh sách">
+                                                <i class="fa-solid fa-list"></i>
+                                                <span>Danh sách</span>
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" href="#" data-view="calendar" data-icon="fa-calendar" data-text="Lịch">
+                                                <i class="fa-solid fa-calendar"></i>
+                                                <span>Lịch</span>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
                             </div>
 
                             <div class="d-flex gap-2 align-items-center">
-                                <!-- Toggle View Mode -->
-                                <div class="btn-group view-mode-toggle" role="group">
-                                    <button type="button" class="btn btn-outline-primary active" id="viewKanban" 
-                                            onclick="switchView('kanban')" title="Xem dạng bảng">
-                                        <i class="fa-solid fa-grip-vertical"></i> Kanban
-                                    </button>
-                                    <button type="button" class="btn btn-outline-primary" id="viewList" 
-                                            onclick="switchView('list')" title="Xem dạng danh sách">
-                                        <i class="fa-solid fa-list"></i> Danh sách
-                                    </button>
-                                    <button type="button" class="btn btn-outline-primary" id="viewCalendar" 
-                                            onclick="switchView('calendar')" title="Xem dạng lịch">
-                                        <i class="fa-solid fa-calendar"></i> Lịch
-                                    </button>
-                                </div>
-
                                 <!-- Nút thêm từ Excel -->
                                 <button class="btn btn-success rounded-pill px-3" data-bs-toggle="modal"
                                         data-bs-target="#modalExcel">
@@ -1682,113 +1769,116 @@
                                 priorityBadge.put("Thấp", "bg-success");
                             %>
 
-                            <div class="kanban-board">
-                                <% for (String status : trangThaiLabels.keySet()) { 
-                                       String columnClass = "";
-                                       if ("Chưa bắt đầu".equals(status)) columnClass = "not-started";
-                                       else if ("Đang thực hiện".equals(status)) columnClass = "in-progress";
-                                       else if ("Đã hoàn thành".equals(status)) columnClass = "completed";
-                                       else if ("Trễ hạn".equals(status)) columnClass = "late";
-                                %>
-                                <div class="kanban-col <%= columnClass %>">
-                                    <% if ("Chưa bắt đầu".equals(status)) { %>
-                                    <h5><i class="fa-solid fa-hourglass-start"></i> <%= trangThaiLabels.get(status) %></h5>
-                                    <% }else if("Đang thực hiện".equals(status)) { %>
-                                    <h5><i class="fa-solid fa-spinner"></i> <%= trangThaiLabels.get(status) %></h5>
-                                    <% }else if("Đã hoàn thành".equals(status)) { %>
-                                    <h5><i class="fa-solid fa-check-circle"></i> <%= trangThaiLabels.get(status) %></h5> 
-                                    <% }else if("Trễ hạn".equals(status)) { %>
-                                    <h5><i class="fa-solid fa-exclamation-triangle"></i> <%= trangThaiLabels.get(status) %></h5>
-                                    <% } %>   
-                                    <% if ("Chưa bắt đầu".equals(status)) { %>
-                                    <button class="btn btn-outline-secondary kanban-add-btn" data-bs-toggle="modal"
-                                            data-bs-target="#modalTask">
-                                        <i class="fa-solid fa-plus"></i> Thêm task
-                                    </button>
-                                    <% } %>
-                                    <% for (Map<String, Object> task : taskList) {
-                                           if (status.equals(task.get("trang_thai"))) {
-                                           // Kiểm tra xem task có được nhắc nhở hay không
-                                        Object nhacNho = task.get("nhac_viec");
-                                        boolean hasReminder = false;
-
-                                        if (nhacNho != null) {
-                                            try {
-                                                int value = Integer.parseInt(nhacNho.toString());
-                                                hasReminder = (value == 1);
-                                            } catch (NumberFormatException e) {
-                                                hasReminder = false;
-                                            }
-                                        }
-                                        
-                                        // Trạng thái duyệt
-                                        String trangThaiDuyet = task.get("trang_thai_duyet") != null ? task.get("trang_thai_duyet").toString() : "Chưa duyệt";
-                                        String duyetBadgeClass = "badge-chua-duyet";
-                                        if ("Đã duyệt".equals(trangThaiDuyet)) duyetBadgeClass = "badge-da-duyet";
-                                        else if ("Từ chối".equals(trangThaiDuyet)) duyetBadgeClass = "badge-tu-choi";
+                            <!-- ==================== KANBAN VIEW ==================== -->
+                            <div class="kanban-view-container active">
+                                <div class="kanban-board">
+                                    <% for (String status : trangThaiLabels.keySet()) { 
+                                           String columnClass = "";
+                                           if ("Chưa bắt đầu".equals(status)) columnClass = "not-started";
+                                           else if ("Đang thực hiện".equals(status)) columnClass = "in-progress";
+                                           else if ("Đã hoàn thành".equals(status)) columnClass = "completed";
+                                           else if ("Trễ hạn".equals(status)) columnClass = "late";
                                     %>
-                                    <div class="kanban-task <%= hasReminder ? "task--alert" : "" %>" data-task-id="<%= task.get("id") %>">
-                                        <div class="task-content" 
-                                             data-bs-toggle="modal" 
-                                             data-bs-target="#modalTaskDetail"
-                                             data-id="<%= task.get("id") %>"
-                                             data-ten="<%= task.get("ten_cong_viec") %>"
-                                             data-ten_du_an="<%= task.get("ten_du_an") %>"
-                                             data-mo-ta="<%= task.get("mo_ta") %>"
-                                             data-ngay-bat-dau="<%= task.get("ngay_bat_dau") %>"
-                                             data-han="<%= task.get("han_hoan_thanh") %>"
-                                             data-ngay-gia-han="<%= task.get("ngay_gia_han") %>"
-                                             data-uu-tien="<%= task.get("muc_do_uu_tien") %>"
-                                             data-ten_nguoi_giao="<%= task.get("nguoi_giao_id") %>"
-                                             data-ten_nguoi_nhan="<%= task.get("nguoi_nhan_ten") %>"
-                                             data-ten_phong_ban="<%= task.get("phong_ban_id") %>"
-                                             data-trang-thai="<%= task.get("trang_thai") %>"
-                                             data-trang-thai-duyet="<%= trangThaiDuyet %>"
-                                             data-tai_lieu_cv="<%= task.get("tai_lieu_cv") %>"
-                                             data-file_tai_lieu="<%= task.get("file_tai_lieu") %>">
-                                            <% if (hasReminder) { %>
-                                            <div class="task-reminder-bell" title="Công việc đang được nhắc nhở">
-                                                <i class="fa-solid fa-bell"></i>
-                                            </div>
-                                            <% } %>
-                                            <div class="task-title"><%= task.get("ten_cong_viec") %></div>
-                                            <div class="task-meta">Người giao: <b><%= task.get("nguoi_giao_id") %></b><br>Người nhận: <b><%= task.get("nguoi_nhan_ten") %></b></div>
-                                            <span class="task-priority badge <%= priorityBadge.getOrDefault(task.get("muc_do_uu_tien"), "bg-secondary") %>"><%= task.get("muc_do_uu_tien") %></span>
-                                            <span class="task-status badge <%= badgeClass.getOrDefault(status, "bg-secondary") %>"><%= trangThaiLabels.get(status) %></span>
-                                            <span class="badge <%= duyetBadgeClass %> ms-1"><%= trangThaiDuyet %></span>
-                                            <%
-                                                Object p = task.get("phan_tram");
-                                                int percent = 0;
-                                                if (p != null) {
-                                                    try {
-                                                        percent = Integer.parseInt(p.toString());
-                                                    } catch (NumberFormatException e) {
-                                                        percent = 0;
-                                                    }
+                                    <div class="kanban-col <%= columnClass %>">
+                                        <% if ("Chưa bắt đầu".equals(status)) { %>
+                                        <h5><i class="fa-solid fa-hourglass-start"></i> <%= trangThaiLabels.get(status) %></h5>
+                                        <% }else if("Đang thực hiện".equals(status)) { %>
+                                        <h5><i class="fa-solid fa-spinner"></i> <%= trangThaiLabels.get(status) %></h5>
+                                        <% }else if("Đã hoàn thành".equals(status)) { %>
+                                        <h5><i class="fa-solid fa-check-circle"></i> <%= trangThaiLabels.get(status) %></h5> 
+                                        <% }else if("Trễ hạn".equals(status)) { %>
+                                        <h5><i class="fa-solid fa-exclamation-triangle"></i> <%= trangThaiLabels.get(status) %></h5>
+                                        <% } %>   
+                                        <% if ("Chưa bắt đầu".equals(status)) { %>
+                                        <button class="btn btn-outline-secondary kanban-add-btn" data-bs-toggle="modal"
+                                                data-bs-target="#modalTask">
+                                            <i class="fa-solid fa-plus"></i> Thêm task
+                                        </button>
+                                        <% } %>
+                                        <% for (Map<String, Object> task : taskList) {
+                                               if (status.equals(task.get("trang_thai"))) {
+                                               // Kiểm tra xem task có được nhắc nhở hay không
+                                            Object nhacNho = task.get("nhac_viec");
+                                            boolean hasReminder = false;
+
+                                            if (nhacNho != null) {
+                                                try {
+                                                    int value = Integer.parseInt(nhacNho.toString());
+                                                    hasReminder = (value == 1);
+                                                } catch (NumberFormatException e) {
+                                                    hasReminder = false;
                                                 }
-                                            %>
-                                            <div class="progress">
-                                                <div class="progress-bar <%= badgeClass.getOrDefault(status, "bg-secondary") %>"
-                                                     style="width: <%= percent %>%;">
+                                            }
+                                        
+                                            // Trạng thái duyệt
+                                            String trangThaiDuyet = task.get("trang_thai_duyet") != null ? task.get("trang_thai_duyet").toString() : "Chưa duyệt";
+                                            String duyetBadgeClass = "badge-chua-duyet";
+                                            if ("Đã duyệt".equals(trangThaiDuyet)) duyetBadgeClass = "badge-da-duyet";
+                                            else if ("Từ chối".equals(trangThaiDuyet)) duyetBadgeClass = "badge-tu-choi";
+                                        %>
+                                        <div class="kanban-task <%= hasReminder ? "task--alert" : "" %>" data-task-id="<%= task.get("id") %>">
+                                            <div class="task-content" 
+                                                 data-bs-toggle="modal" 
+                                                 data-bs-target="#modalTaskDetail"
+                                                 data-id="<%= task.get("id") %>"
+                                                 data-ten="<%= task.get("ten_cong_viec") %>"
+                                                 data-ten_du_an="<%= task.get("ten_du_an") %>"
+                                                 data-mo-ta="<%= task.get("mo_ta") %>"
+                                                 data-ngay-bat-dau="<%= task.get("ngay_bat_dau") %>"
+                                                 data-han="<%= task.get("han_hoan_thanh") %>"
+                                                 data-ngay-gia-han="<%= task.get("ngay_gia_han") %>"
+                                                 data-uu-tien="<%= task.get("muc_do_uu_tien") %>"
+                                                 data-ten_nguoi_giao="<%= task.get("nguoi_giao_id") %>"
+                                                 data-ten_nguoi_nhan="<%= task.get("nguoi_nhan_ten") %>"
+                                                 data-ten_phong_ban="<%= task.get("phong_ban_id") %>"
+                                                 data-trang-thai="<%= task.get("trang_thai") %>"
+                                                 data-trang-thai-duyet="<%= trangThaiDuyet %>"
+                                                 data-tai_lieu_cv="<%= task.get("tai_lieu_cv") %>"
+                                                 data-file_tai_lieu="<%= task.get("file_tai_lieu") %>">
+                                                <% if (hasReminder) { %>
+                                                <div class="task-reminder-bell" title="Công việc đang được nhắc nhở">
+                                                    <i class="fa-solid fa-bell"></i>
+                                                </div>
+                                                <% } %>
+                                                <div class="task-title"><%= task.get("ten_cong_viec") %></div>
+                                                <div class="task-meta">Người giao: <b><%= task.get("nguoi_giao_id") %></b><br>Người nhận: <b><%= task.get("nguoi_nhan_ten") %></b></div>
+                                                <span class="task-priority badge <%= priorityBadge.getOrDefault(task.get("muc_do_uu_tien"), "bg-secondary") %>"><%= task.get("muc_do_uu_tien") %></span>
+                                                <span class="task-status badge <%= badgeClass.getOrDefault(status, "bg-secondary") %>"><%= trangThaiLabels.get(status) %></span>
+                                                <span class="badge <%= duyetBadgeClass %> ms-1"><%= trangThaiDuyet %></span>
+                                                <%
+                                                    Object p = task.get("phan_tram");
+                                                    int percent = 0;
+                                                    if (p != null) {
+                                                        try {
+                                                            percent = Integer.parseInt(p.toString());
+                                                        } catch (NumberFormatException e) {
+                                                            percent = 0;
+                                                        }
+                                                    }
+                                                %>
+                                                <div class="progress">
+                                                    <div class="progress-bar <%= badgeClass.getOrDefault(status, "bg-secondary") %>"
+                                                         style="width: <%= percent %>%;">
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Nút 3 chấm -->
+                                            <div class="task-actions">
+                                                <button class="task-dots-btn" type="button" data-stop-modal="true">
+                                                    <i class="fa-solid fa-ellipsis-vertical"></i>
+                                                </button>
+                                                <div class="task-actions-dropdown">
+                                                    <button class="task-action-item archive" data-task-id="<%= task.get("id") %>" data-action="archive"><i class="fa-solid fa-archive"></i> Lưu trữ</button>
+                                                    <button class="task-action-item remind" data-task-id="<%= task.get("id") %>" data-action="remind"><i class="fa-solid fa-bell"></i> Nhắc việc</button>
+                                                    <button class="task-action-item delete" data-task-id="<%= task.get("id") %>" data-action="delete"><i class="fa-solid fa-trash"></i> Xóa</button>
                                                 </div>
                                             </div>
                                         </div>
-
-                                        <!-- Nút 3 chấm -->
-                                        <div class="task-actions">
-                                            <button class="task-dots-btn" type="button" data-stop-modal="true">
-                                                <i class="fa-solid fa-ellipsis-vertical"></i>
-                                            </button>
-                                            <div class="task-actions-dropdown">
-                                                <button class="task-action-item archive" data-task-id="<%= task.get("id") %>" data-action="archive"><i class="fa-solid fa-archive"></i> Lưu trữ</button>
-                                                <button class="task-action-item remind" data-task-id="<%= task.get("id") %>" data-action="remind"><i class="fa-solid fa-bell"></i> Nhắc việc</button>
-                                                <button class="task-action-item delete" data-task-id="<%= task.get("id") %>" data-action="delete"><i class="fa-solid fa-trash"></i> Xóa</button>
-                                            </div>
-                                        </div>
+                                        <% }} %>
                                     </div>
-                                    <% }} %>
+                                    <% } %>
                                 </div>
-                                <% } %>
                             </div>
 
                             <!-- ==================== LIST VIEW ==================== -->
@@ -1942,26 +2032,49 @@
                                          data-trang-thai="<%= task.get("trang_thai") %>"
                                          data-tai_lieu_cv="<%= task.get("tai_lieu_cv") %>"
                                          data-file_tai_lieu="<%= task.get("file_tai_lieu") %>">
-                                        <div class="task-title"><%= task.get("ten_cong_viec") %></div>
-                                        <div class="task-meta">Người giao: <b><%= task.get("nguoi_giao_id") %></b><br>
-                                            Người nhận: <b><%= task.get("nguoi_nhan_ten") %></b></div>
 
-                                        <span class="task-priority badge <%= priorityBadge.getOrDefault(task.get("muc_do_uu_tien"), "bg-secondary") %>">
-                                            <%= task.get("muc_do_uu_tien") %>
-                                        </span>
+                                        <!-- Gọi modal giống tab active: bọc nội dung trong .task-content có data-bs-toggle -->
+                                        <div class="task-content"
+                                             data-bs-toggle="modal"
+                                             data-bs-target="#modalTaskDetail"
+                                             data-id="<%= task.get("id") %>"
+                                             data-ten="<%= task.get("ten_cong_viec") %>"
+                                             data-ten_du_an="<%= task.get("ten_du_an") %>"
+                                             data-mo-ta="<%= task.get("mo_ta") %>"
+                                             data-ngay-bat-dau="<%= task.get("ngay_bat_dau") %>"
+                                             data-han="<%= task.get("han_hoan_thanh") %>"
+                                             data-ngay-gia-han="<%= task.get("ngay_gia_han") %>"
+                                             data-uu-tien="<%= task.get("muc_do_uu_tien") %>"
+                                             data-ten_nguoi_giao="<%= task.get("nguoi_giao_id") %>"
+                                             data-ten_nguoi_nhan="<%= task.get("nguoi_nhan_ten") %>"
+                                             data-ten_phong_ban="<%= task.get("phong_ban_id") %>"
+                                             data-trang-thai="<%= task.get("trang_thai") %>"
+                                             data-trang-thai-duyet="<%= task.get("trang_thai_duyet") != null ? task.get("trang_thai_duyet").toString() : "Chưa duyệt" %>"
+                                             data-tai_lieu_cv="<%= task.get("tai_lieu_cv") %>"
+                                             data-file_tai_lieu="<%= task.get("file_tai_lieu") %>">
 
-                                        <!-- Gắn nhãn Lưu trữ -->
-                                        <span class="task-status badge bg-secondary">Lưu trữ</span>
+                                            <div class="task-title"><%= task.get("ten_cong_viec") %></div>
+                                            <div class="task-meta">Người giao: <b><%= task.get("nguoi_giao_id") %></b><br>
+                                                Người nhận: <b><%= task.get("nguoi_nhan_ten") %></b></div>
 
-                                        <%
-                                          Object p = task.get("phan_tram");
-                                          int percent = 0;
-                                          if (p != null) { try { percent = Integer.parseInt(p.toString()); } catch (NumberFormatException e) { percent = 0; } }
-                                        %>
-                                        <div class="progress">
-                                            <div class="progress-bar bg-secondary" style="width:<%= percent %>%"></div>
+                                            <span class="task-priority badge <%= priorityBadge.getOrDefault(task.get("muc_do_uu_tien"), "bg-secondary") %>">
+                                                <%= task.get("muc_do_uu_tien") %>
+                                            </span>
+
+                                            <!-- Gắn nhãn Lưu trữ -->
+                                            <span class="task-status badge bg-secondary">Lưu trữ</span>
+
+                                            <%
+                                              Object p = task.get("phan_tram");
+                                              int percent = 0;
+                                              if (p != null) { try { percent = Integer.parseInt(p.toString()); } catch (NumberFormatException e) { percent = 0; } }
+                                            %>
+                                            <div class="progress">
+                                                <div class="progress-bar bg-secondary" style="width:<%= percent %>%"></div>
+                                            </div>
                                         </div>
 
+                                        <!-- Nút actions giữ nguyên -->
                                         <div class="task-actions">
                                             <button class="task-dots-btn" type="button">
                                                 <i class="fa-solid fa-ellipsis-vertical"></i>
@@ -2044,24 +2157,44 @@
                                          data-tai_lieu_cv="<%= task.get("tai_lieu_cv") %>"
                                          data-file_tai_lieu="<%= task.get("file_tai_lieu") %>">
 
-                                        <div class="task-title"><%= task.get("ten_cong_viec") %></div>
-                                        <div class="task-meta">
-                                            Người giao: <b><%= task.get("nguoi_giao_id") %></b><br>
-                                            Người nhận: <b><%= task.get("nguoi_nhan_ten") %></b>
-                                        </div>
+                                        <div class="task-content"
+                                             data-bs-toggle="modal"
+                                             data-bs-target="#modalTaskDetail"
+                                             data-id="<%= task.get("id") %>"
+                                             data-ten="<%= task.get("ten_cong_viec") %>"
+                                             data-ten_du_an="<%= task.get("ten_du_an") %>"
+                                             data-mo-ta="<%= task.get("mo_ta") %>"
+                                             data-ngay-bat-dau="<%= task.get("ngay_bat_dau") %>"
+                                             data-han="<%= task.get("han_hoan_thanh") %>"
+                                             data-ngay-gia-han="<%= task.get("ngay_gia_han") %>"
+                                             data-uu-tien="<%= task.get("muc_do_uu_tien") %>"
+                                             data-ten_nguoi_giao="<%= task.get("nguoi_giao_id") %>"
+                                             data-ten_nguoi_nhan="<%= task.get("nguoi_nhan_ten") %>"
+                                             data-ten_phong_ban="<%= task.get("phong_ban_id") %>"
+                                             data-trang-thai="<%= task.get("trang_thai") %>"
+                                             data-trang-thai-duyet="<%= task.get("trang_thai_duyet") != null ? task.get("trang_thai_duyet").toString() : "Chưa duyệt" %>"
+                                             data-tai_lieu_cv="<%= task.get("tai_lieu_cv") %>"
+                                             data-file_tai_lieu="<%= task.get("file_tai_lieu") %>">
 
-                                        <span class="task-priority badge <%= priorityBadge.getOrDefault(task.get("muc_do_uu_tien"), "bg-secondary") %>">
-                                            <%= task.get("muc_do_uu_tien") %>
-                                        </span>
-                                        <span class="task-status badge bg-danger">Đã xóa</span>
+                                            <div class="task-title"><%= task.get("ten_cong_viec") %></div>
+                                            <div class="task-meta">
+                                                Người giao: <b><%= task.get("nguoi_giao_id") %></b><br>
+                                                Người nhận: <b><%= task.get("nguoi_nhan_ten") %></b>
+                                            </div>
 
-                                        <%
-                                          Object p = task.get("phan_tram");
-                                          int percent = 0;
-                                          if (p != null) { try { percent = Integer.parseInt(p.toString()); } catch (NumberFormatException e) { percent = 0; } }
-                                        %>
-                                        <div class="progress">
-                                            <div class="progress-bar bg-danger" style="width:<%= percent %>%"></div>
+                                            <span class="task-priority badge <%= priorityBadge.getOrDefault(task.get("muc_do_uu_tien"), "bg-secondary") %>">
+                                                <%= task.get("muc_do_uu_tien") %>
+                                            </span>
+                                            <span class="task-status badge bg-danger">Đã xóa</span>
+
+                                            <%
+                                              Object p = task.get("phan_tram");
+                                              int percent = 0;
+                                              if (p != null) { try { percent = Integer.parseInt(p.toString()); } catch (NumberFormatException e) { percent = 0; } }
+                                            %>
+                                            <div class="progress">
+                                                <div class="progress-bar bg-danger" style="width:<%= percent %>%"></div>
+                                            </div>
                                         </div>
 
                                         <div class="task-actions">
@@ -2094,6 +2227,149 @@
                                 <% } // end for status %>
                             </div>
                         </div>
+                        <!-- Tab Chờ xét duyệt -->
+                        <div class="tab-pane fade" id="pending-tasks" role="tabpanel">
+
+                            <%
+                              List<Map<String, Object>> pendingTaskList =
+                                  (List<Map<String, Object>>) request.getAttribute("pendingTaskList");
+                              if (pendingTaskList == null) pendingTaskList = new ArrayList<>();
+                            %>
+
+                            <div class="kanban-board">
+
+                                <% for (String status : trangThaiLabels.keySet()) {
+                                     String columnClass = "";
+                                     if ("Chưa bắt đầu".equals(status)) columnClass = "not-started";
+                                     else if ("Đang thực hiện".equals(status)) columnClass = "in-progress";
+                                     else if ("Đã hoàn thành".equals(status)) columnClass = "completed";
+                                     else if ("Trễ hạn".equals(status)) columnClass = "late";
+                                %>
+
+                                <div class="kanban-col <%= columnClass %> pending-col">
+
+                                    <% if ("Chưa bắt đầu".equals(status)) { %>
+                                    <h5><i class="fa-solid fa-hourglass-start"></i> <%= trangThaiLabels.get(status) %></h5>
+                                    <% } else if ("Đang thực hiện".equals(status)) { %>
+                                    <h5><i class="fa-solid fa-spinner"></i> <%= trangThaiLabels.get(status) %></h5>
+                                    <% } else if ("Đã hoàn thành".equals(status)) { %>
+                                    <h5><i class="fa-solid fa-check-circle"></i> <%= trangThaiLabels.get(status) %></h5>
+                                    <% } else { %>
+                                    <h5><i class="fa-solid fa-exclamation-triangle"></i> <%= trangThaiLabels.get(status) %></h5>
+                                    <% } %>
+
+                                    <%
+                                      boolean hasAny = false;
+                                      for (Map<String, Object> task : pendingTaskList) {
+
+                                          String tStatus = (String) task.get("trang_thai");
+                                          String tTinhTrang = (String) task.get("tinh_trang_duyet");
+
+                                          // Chỉ lấy công việc đang chờ duyệt
+                                          if (status.equals(tStatus) && "Chờ xét duyệt".equalsIgnoreCase(tTinhTrang)) {
+                                              hasAny = true;
+
+                                              Object nhacNho = task.get("nhac_viec");
+                                              boolean hasReminder = false;
+                                              if (nhacNho != null) {
+                                                  try { hasReminder = Integer.parseInt(nhacNho.toString()) == 1; }
+                                                  catch (Exception e) { hasReminder = false; }
+                                              }
+
+                                              String trangThaiDuyet = task.get("trang_thai_duyet") != null
+                                                  ? task.get("trang_thai_duyet").toString() : "Chờ xét duyệt";
+
+                                              String duyetBadgeClass = "badge-chua-duyet";
+                                              if ("Đã duyệt".equals(trangThaiDuyet)) duyetBadgeClass = "badge-da-duyet";
+                                              else if ("Từ chối".equals(trangThaiDuyet)) duyetBadgeClass = "badge-tu-choi";
+                                    %>
+
+                                    <div class="kanban-task pending-task <%= hasReminder ? "task--alert" : "" %>"
+                                         data-task-id="<%= task.get("id") %>">
+
+                                        <div class="task-content"
+                                             data-bs-toggle="modal"
+                                             data-bs-target="#modalTaskDetail"
+                                             data-id="<%= task.get("id") %>"
+                                             data-ten="<%= task.get("ten_cong_viec") %>"
+                                             data-ten_du_an="<%= task.get("ten_du_an") %>"
+                                             data-mo-ta="<%= task.get("mo_ta") %>"
+                                             data-ngay-bat-dau="<%= task.get("ngay_bat_dau") %>"
+                                             data-han="<%= task.get("han_hoan_thanh") %>"
+                                             data-ngay-gia-han="<%= task.get("ngay_gia_han") %>"
+                                             data-uu-tien="<%= task.get("muc_do_uu_tien") %>"
+                                             data-ten_nguoi_giao="<%= task.get("nguoi_giao_id") %>"
+                                             data-ten_nguoi_nhan="<%= task.get("nguoi_nhan_ten") %>"
+                                             data-ten_phong_ban="<%= task.get("phong_ban_id") %>"
+                                             data-trang-thai="<%= task.get("trang_thai") %>"
+                                             data-trang-thai-duyet="<%= trangThaiDuyet %>"
+                                             data-tai_lieu_cv="<%= task.get("tai_lieu_cv") %>"
+                                             data-file_tai_lieu="<%= task.get("file_tai_lieu") %>">
+
+                                            <div class="task-title"><%= task.get("ten_cong_viec") %></div>
+
+                                            <div class="task-meta">
+                                                Người giao: <b><%= task.get("nguoi_giao_id") %></b><br>
+                                                Người nhận: <b><%= task.get("nguoi_nhan_ten") %></b>
+                                            </div>
+
+                                            <span class="task-priority badge <%= priorityBadge.getOrDefault(task.get("muc_do_uu_tien"), "bg-secondary") %>">
+                                                <%= task.get("muc_do_uu_tien") %>
+                                            </span>
+
+                                            <span class="task-status badge bg-info">Chờ xét duyệt</span>
+
+                                            <span class="badge <%= duyetBadgeClass %> ms-1"><%= trangThaiDuyet %></span>
+
+                                            <%
+                                              Object p = task.get("phan_tram");
+                                              int percent = 0;
+                                              if (p != null) {
+                                                  try { percent = Integer.parseInt(p.toString()); }
+                                                  catch (Exception e) { percent = 0; }
+                                              }
+                                            %>
+
+                                            <div class="progress">
+                                                <div class="progress-bar bg-info" style="width:<%= percent %>%;"></div>
+                                            </div>
+
+                                        </div>
+
+                                        <div class="task-actions">
+                                            <button class="task-dots-btn" type="button">
+                                                <i class="fa-solid fa-ellipsis-vertical"></i>
+                                            </button>
+
+                                            <div class="task-actions-dropdown">
+                                                <button class="task-action-item approve" type="button"
+                                                        data-task-id="<%= task.get("id") %>" data-action="approve">
+                                                    <i class="fa-solid fa-check"></i><span>Duyệt</span>
+                                                </button>
+                                                <button class="task-action-item reject" type="button"
+                                                        data-task-id="<%= task.get("id") %>" data-action="reject">
+                                                    <i class="fa-solid fa-xmark"></i><span>Từ chối</span>
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                    </div>
+
+                                    <% } } // end loop %>
+
+                                    <% if (!hasAny) { %>
+                                    <div class="text-center text-muted py-3">
+                                        <i class="fa-solid fa-hourglass-half fa-2x mb-2"></i>
+                                        <p>Không có công việc chờ xét duyệt</p>
+                                    </div>
+                                    <% } %>
+
+                                </div>
+
+                                <% } // end for statuses %>
+
+                            </div>
+                        </div>   
 
                         <!-- Modal tạo/sửa task -->
                         <div class="modal fade" id="modalTask" tabindex="-1">
@@ -2229,26 +2505,79 @@
                                                     </div>
                                                 </div>
 
-                                                <!-- Phần gia hạn công việc (hiển thị khi quá hạn) -->
-                                                <div id="extensionSection" class="alert alert-warning mb-2" style="display: none;">
+                                                <%
+                                                String role = (session.getAttribute("vaiTro") != null)
+                                                              ? session.getAttribute("vaiTro").toString()
+                                                              : "";
+
+                                                boolean isAdmin = role.equalsIgnoreCase("Admin");
+                                                %>
+                                                <!-- FORM DÀNH CHO ADMIN (Duyệt trực tiếp) -->
+                                                <% if (isAdmin) { %>
+                                                <div id="extensionSectionAdmin" class="alert alert-warning mb-2" style="display:none;">
                                                     <div class="d-flex justify-content-between align-items-center">
                                                         <div>
                                                             <i class="fa-solid fa-exclamation-triangle"></i>
                                                             <strong>Công việc đã quá hạn!</strong>
                                                         </div>
-                                                        <button type="button" class="btn btn-sm btn-warning" id="btnGiaHan">
+                                                        <button type="button" class="btn btn-sm btn-warning" id="btnAdminGiaHan">
                                                             <i class="fa-solid fa-clock"></i> Gia hạn công việc
                                                         </button>
                                                     </div>
-                                                    <div id="giaHanForm" style="display: none;" class="mt-3">
+                                                    <div id="adminGiaHanForm" style="display:none;" class="mt-3">
                                                         <label class="form-label"><b>Ngày gia hạn mới</b></label>
-                                                        <input type="date" class="form-control mb-2" id="ngayGiaHan">
-                                                        <button type="button" class="btn btn-sm btn-success" id="btnXacNhanGiaHan">
+                                                        <input type="date" class="form-control mb-2" id="adminNgayGiaHan">
+                                                        <button type="button" class="btn btn-sm btn-success" id="btnAdminXacNhanGiaHan">
                                                             <i class="fa-solid fa-check"></i> Xác nhận gia hạn
                                                         </button>
                                                     </div>
                                                 </div>
+                                                <% } else { %>
+                                                <!-- CHO USER -->
+                                                <div id="extensionSectionUser" class="alert alert-warning mb-2" style="display:none;">
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <div>
+                                                            <i class="fa-solid fa-exclamation-triangle"></i>
+                                                            <strong>Công việc đã quá hạn!</strong>
+                                                        </div>
+                                                        <button type="button" class="btn btn-sm btn-warning" id="btnUserGiaHan">
+                                                            <i class="fa-solid fa-clock"></i> Gia hạn công việc
+                                                        </button>
+                                                    </div>
 
+                                                    <div id="userGiaHanForm" style="display:none; margin-top:10px;">
+                                                        <div class="mb-2">
+                                                            <label class="form-label"><b>Ngày gia hạn</b></label>
+                                                            <input type="date" id="userNgayGiaHan" class="form-control">
+                                                        </div>
+                                                        <div class="mb-2">
+                                                            <label class="form-label"><b>Lý do gia hạn</b></label>
+                                                            <textarea id="userLyDoGiaHan" class="form-control" rows="3"></textarea>
+                                                        </div>
+                                                        <div class="text-end">
+                                                            <button type="button" id="btnUserConfirmGiaHan" class="btn btn-warning">Xác nhận</button>
+                                                            <button type="button" id="btnUserCancelGiaHan" class="btn btn-secondary">Huỷ</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <% } %>
+
+                                                <%
+                                                int userId = (session.getAttribute("userId") != null) ? 
+                                                              Integer.parseInt(session.getAttribute("userId").toString()) : 0;
+
+                                                String duyetGiaHan = request.getParameter("duyet_gia_han");
+                                                String ngayGiaHan = request.getParameter("ngay_gia_han");   // ngày user yêu cầu
+                                                %>
+
+                                                <% if (userId == 4 && "1".equals(duyetGiaHan)) { %>
+                                                <div class="alert alert-info">
+                                                    <b>Yêu cầu gia hạn:</b>
+                                                    <span><%= ngayGiaHan %></span>
+                                                    <input type="hidden" id="requestedExtendDate" value="<%= ngayGiaHan %>">
+                                                    <button type="button" class="btn btn-success btn-sm" id="btnApproveExtend">Duyệt gia hạn</button>
+                                                </div>
+                                                <% } %>
                                                 <div class="row">
                                                     <div class="col-md-4 mb-2">
                                                         <label class="form-label"><b>Người giao</b></label>
@@ -2286,7 +2615,6 @@
                                                 </div>
                                             </form>
                                         </div>
-
                                         <hr>
 
                                         <!-- PHẦN 2: TIẾN ĐỘ -->
@@ -2538,7 +2866,7 @@
                             trangThai: '<%= task.get("trang_thai") %>',
                             trangThaiDuyet: '<%= task.get("trang_thai_duyet") != null ? task.get("trang_thai_duyet").toString() : "" %>',
                             lyDoDuyet: '<%= task.get("ly_do_duyet") != null ? task.get("ly_do_duyet").toString().replace("'", "\\'") : "" %>',
-                            moTa: '<%= task.get("mo_ta") != null ? task.get("mo_ta").toString().replace("'", "\\'").replace("\n", " ") : "" %>',
+                            moTa: '<%= task.get("mo_ta") != null ? task.get("mo_ta").toString().replace("'", "\\'").replace("\r", "\\r").replace("\n", "\\n") : "" %>',
                             taiLieu: '<%= task.get("tai_lieu_cv") %>',
                             fileTaiLieu: '<%= task.get("file_tai_lieu") %>'
                         }

@@ -131,7 +131,9 @@ public class apiTaskSteps extends HttpServlet {
                         String[] arr = processNguoiNhan.split(",");
                         for (String sId : arr) {
                             sId = sId.trim();
-                            if (sId.isEmpty()) continue;
+                            if (sId.isEmpty()) {
+                                continue;
+                            }
                             try {
                                 int nhanId = Integer.parseInt(sId);
                                 dbNN.insertNguoiNhanQuyTrinh(stepId, nhanId);
@@ -143,11 +145,14 @@ public class apiTaskSteps extends HttpServlet {
                         ex.printStackTrace();
                     } finally {
                         if (dbNN != null) {
-                            try { dbNN.close(); } catch (Exception ignore) {}
+                            try {
+                                dbNN.close();
+                            } catch (Exception ignore) {
+                            }
                         }
                     }
                 }
-                
+
                 db = new KNCSDL();
                 int congviecId = db.getCongViecIdByBuocId(stepId);
                 String tencv = db.getTenCongViecById(congviecId);
@@ -157,7 +162,17 @@ public class apiTaskSteps extends HttpServlet {
                 String noiDungTB = "Công việc: " + tencv + " vừa được cập nhật quy trình mới";
 
                 for (int nhanId : danhSachNguoiNhan) {
-                    db.insertThongBao(nhanId, tieuDeTB, noiDungTB, "Cập nhật");
+                    String role = db.getVaiTroById(nhanId);
+                    String link = "";
+
+                    // 🔥 Nếu là Admin hoặc Quản lý → vào giao diện Admin
+                    if (role != null && (role.equalsIgnoreCase("Admin") || role.equalsIgnoreCase("Quản lý"))) {
+                        link = "dsCongviec?taskId=" + congviecId;
+                    } else {
+                        // 🔥 Ngược lại nhân viên dùng giao diện của NV
+                        link = "dsCongviecNV?taskId=" + congviecId;
+                    }
+                    db.insertThongBao(nhanId, tieuDeTB, noiDungTB, "Cập nhật", link);
                 }
 
                 // Ghi log lịch sử CHI TIẾT từng trường
