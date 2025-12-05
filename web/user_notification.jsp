@@ -2,9 +2,7 @@
 <%@ page import="java.util.*, java.text.SimpleDateFormat" %>
 <!DOCTYPE html>
 <html lang="vi">
-
     <%!
-        // Escape HTML đơn giản
         private String esc(Object o) {
             if (o == null) return "";
             String s = String.valueOf(o);
@@ -110,7 +108,6 @@
                 animation: pulse 1.2s infinite alternate;
             }
 
-            /* notification unread dot */
             .notif-dot {
                 width: 10px;
                 height: 10px;
@@ -196,6 +193,31 @@
                     font-size: 1.2rem;
                 }
             }
+            .list-item-right {
+                display: flex;
+                flex-direction: row;    /* ← xếp ngang */
+                align-items: center;    /* căn giữa theo chiều dọc */
+                gap: 12px;              /* khoảng cách giữa 2 nút */
+                min-width: 200px;       /* rộng hơn để không bị xuống dòng */
+                justify-content: flex-end;
+            }
+
+            .btn-view-detail {
+                padding: 4px 14px !important;
+                min-width: 150px;   /* ← nút dài hơn */
+                text-align: center;
+            }
+
+            .badge-status {
+                padding: 8px 16px !important;
+                font-size: 0.95rem;
+            }
+
+            .text-muted.small {
+                white-space: normal;
+                word-wrap: break-word;
+                max-width: 440px; /* tùy chỉnh để không quá dài */
+            }
         </style>
         <script>
             var PAGE_TITLE = '<i class="fa-solid fa-bell me-2"></i>Thông báo quản lý';
@@ -203,7 +225,6 @@
         <script>
             window.APP_CONTEXT = '<%= request.getContextPath() %>';
         </script>
-        <!-- load jQuery BEFORE any script that uses $ -->
         <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
     </head>
     <body>
@@ -245,9 +266,9 @@
                                         }
                             %>
                             <%
-                        // --- bổ sung ngay trước <li> ---
-                        int idTB = ((Number) row.get("id")).intValue();
-                        String itemClass = (daDoc != null && daDoc) ? "is-read" : "is-unread";
+                                int idTB = ((Number) row.get("id")).intValue();
+                                String itemClass = (daDoc != null && daDoc) ? "is-read" : "is-unread";
+                                String link = (row.get("duong_dan") != null) ? row.get("duong_dan").toString() : "";
                             %>
                             <li class="list-group-item <%= itemClass %>" data-id="<%= idTB %>">
                                 <div class="d-flex justify-content-between align-items-center">
@@ -261,24 +282,20 @@
                                             <i class="fa-regular fa-clock me-1"></i><%= esc(timeStr) %>
                                         </div>
                                     </div>
-                                    <div class="mt-2">
-                                        <%
-                                            String link = (row.get("duong_dan") != null) ? row.get("duong_dan").toString() : "";
-                                            if (!link.isEmpty()) {
-                                        %>
-                                        <a href="<%= link %>" class="btn btn-sm btn-info mt-2">
+                                    <div class="list-item-right">
+                                        <% if (!link.isEmpty()) { %>
+                                        <a href="<%= link %>" class="btn btn-info btn-view-detail">
                                             <i class="fa-solid fa-eye"></i> Xem chi tiết
                                         </a>
-                                        <%
-                                            }
-                                        %>
+                                        <% } %>
+
+                                        <span class="badge <%= (daDoc != null && daDoc) ? "bg-success" : "bg-danger" %> 
+                                              rounded-pill badge-status">
+                                            <%= (daDoc != null && daDoc) ? "Đã đọc" : "Mới" %>
+                                        </span>
                                     </div>
-                                    <span class="badge <%= (daDoc != null && daDoc) ? "bg-success" : "bg-danger" %> rounded-pill badge-status">
-                                        <%= (daDoc != null && daDoc) ? "Đã đọc" : "Mới" %>
-                                    </span>
                                 </div>
                             </li>
-
                             <%
                                     } // end for
                                 } else {
@@ -292,9 +309,7 @@
                 </div>
             </div>
         </div>
-
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-        <!-- load our JS in order: plain [notification.js](http://_vscodecontentref_/0) (uses XHR/DOM) then obf/minified script that may use jQuery -->
         <script src="<%= request.getContextPath() %>/scripts/user_nofi.js?v=20251105"></script>
     </body>
 </html>

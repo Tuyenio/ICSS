@@ -19,7 +19,7 @@ public class apiNhanvien extends HttpServlet {
             HttpSession session = request.getSession();
             String email = (String) session.getAttribute("userEmail");
             KNCSDL kn = new KNCSDL(); // Đảm bảo KNCSDL đã kết nối DB
-            ResultSet rs = kn.laydl(email); // Giả sử truy vấn SELECT id, ho_ten FROM nhan_vien
+            ResultSet rs = kn.laydlAZ(email); // Giả sử truy vấn SELECT id, ho_ten FROM nhan_vien
 
             while (rs.next()) {
                 int id = rs.getInt("id");

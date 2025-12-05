@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package controller;
 
 import jakarta.servlet.http.HttpSession;
@@ -21,10 +17,6 @@ import static org.apache.poi.ss.usermodel.CellType.STRING;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Row;
 
-/**
- *
- * @author Admin
- */
 public class KNCSDL {
 
     Connection cn;
@@ -55,6 +47,26 @@ public class KNCSDL {
                 .append("WHEN nv.chuc_vu = 'Nhân viên' THEN 3 ")
                 .append("WHEN nv.chuc_vu = 'Thực tập sinh' THEN 4 ")
                 .append("ELSE 4 END, nv.ho_ten ASC");
+
+        PreparedStatement stmt = this.cn.prepareStatement(sql.toString());
+        return stmt.executeQuery();
+    }
+
+    public ResultSet laydlAZ(String email) throws SQLException {
+        if (email == null || email.trim().isEmpty()) {
+            return null;
+        }
+
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT nv.id, nv.ho_ten, nv.email, nv.mat_khau, nv.so_dien_thoai, ")
+                .append("nv.gioi_tinh, nv.ngay_sinh, nv.phong_ban_id, pb.ten_phong AS ten_phong_ban, ")
+                .append("nv.chuc_vu, nv.ngay_vao_lam, nv.trang_thai_lam_viec, nv.vai_tro, nv.avatar_url ")
+                .append("FROM nhanvien nv ")
+                .append("LEFT JOIN phong_ban pb ON nv.phong_ban_id = pb.id ")
+                .append("WHERE nv.trang_thai_lam_viec = 'Đang làm' ");  // ✅ Chỉ lấy nhân viên đang làm
+
+        // 🔹 Sắp xếp theo tên A → Z
+        sql.append("ORDER BY nv.ho_ten ASC");
 
         PreparedStatement stmt = this.cn.prepareStatement(sql.toString());
         return stmt.executeQuery();
@@ -5264,21 +5276,27 @@ public class KNCSDL {
 
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
+                    int id = rs.getInt("id");
+
+                    // 👉 Bỏ qua dự án có ID = 1
+                    if (id == 1) {
+                        continue;
+                    }
+
                     Map<String, Object> r = new HashMap<>();
-                    r.put("id", rs.getInt("id"));
+                    r.put("id", id);
                     r.put("ten", rs.getString("ten_du_an"));
                     r.put("tien_do", rs.getDouble("tien_do"));
+
                     String ngayKT = rs.getString("ngay_ket_thuc");
                     r.put("ngay_ket_thuc", ngayKT);
 
-                    // Lấy trạng thái (nếu null -> đặt "Chưa bắt đầu")
                     String status = rs.getString("trang_thai_duan");
                     if (status == null || status.trim().isEmpty()) {
                         status = "Chưa bắt đầu";
                     }
                     r.put("trang_thai_duan", status);
 
-                    // Tính số ngày còn lại (giữ nguyên logic cũ)
                     int daysLeft = 0;
                     if (ngayKT != null) {
                         try {
