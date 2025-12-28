@@ -5286,7 +5286,8 @@ public class KNCSDL {
                     Map<String, Object> r = new HashMap<>();
                     r.put("id", id);
                     r.put("ten", rs.getString("ten_du_an"));
-                    r.put("tien_do", rs.getDouble("tien_do"));
+                    double tiendoValue = rs.getDouble("tien_do");
+                    r.put("tien_do", tiendoValue);
 
                     String ngayKT = rs.getString("ngay_ket_thuc");
                     r.put("ngay_ket_thuc", ngayKT);
@@ -5295,10 +5296,29 @@ public class KNCSDL {
                     if (status == null || status.trim().isEmpty()) {
                         status = "Chưa bắt đầu";
                     }
+
+                    // ✅ KIỂM TRA VÀ TỰ ĐỘNG CẬP NHẬT TRẠNG THÁI DỰ ÁN
+                    // Nếu tiến độ >= 99.5% (coi như 100%) và trạng thái không phải "Đã hoàn thành"
+                    // Thì tự động cập nhật trạng thái thành "Đã hoàn thành"
+                    if (tiendoValue >= 99.5 && !status.equals("Đã hoàn thành")) {
+                        try {
+                            String updateSql = "UPDATE du_an SET trang_thai_duan = ? WHERE id = ?";
+                            try (PreparedStatement updateStmt = cn.prepareStatement(updateSql)) {
+                                updateStmt.setString(1, "Đã hoàn thành");
+                                updateStmt.setInt(2, id);
+                                updateStmt.executeUpdate();
+                            }
+                            status = "Đã hoàn thành";
+                        } catch (Exception ex) {
+                            // Nếu cập nhật thất bại, vẫn lấy status từ database
+                            ex.printStackTrace();
+                        }
+                    }
                     r.put("trang_thai_duan", status);
 
+                    // Chỉ tính daysLeft nếu dự án chưa hoàn thành hoàn toàn (< 100%)
                     int daysLeft = 0;
-                    if (ngayKT != null) {
+                    if (tiendoValue < 99.5 && ngayKT != null) {
                         try {
                             java.sql.Date end = java.sql.Date.valueOf(ngayKT);
                             long now = System.currentTimeMillis();
@@ -5441,6 +5461,509 @@ public class KNCSDL {
 
     private String escapeJson(String message) {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+    // ===================================
+    // QUẢN LÝ THƯ VIỆN TÀI LIỆU
+    // ===================================
+    /**
+     * Lấy danh sách tất cả tài liệu (chỉ tài liệu đang hoạt động)
+     */
+    public List<TaiLieu> getAllTaiLieu() throws SQLException {
+        List<TaiLieu> list = new ArrayList<>();
+        String sql = "SELECT tl.*, nv.ho_ten as ten_nguoi_tao, nv.avatar_url as avatar_nguoi_tao "
+                + "FROM tai_lieu tl "
+                + "LEFT JOIN nhanvien nv ON tl.nguoi_tao_id = nv.id "
+                + "WHERE tl.trang_thai = 'Hoạt động' "
+                + "ORDER BY tl.ngay_tao DESC";
+
+        try (PreparedStatement stmt = cn.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                TaiLieu tl = new TaiLieu();
+                tl.setId(rs.getInt("id"));
+                tl.setTenTaiLieu(rs.getString("ten_tai_lieu"));
+                tl.setLoaiTaiLieu(rs.getString("loai_tai_lieu"));
+                tl.setMoTa(rs.getString("mo_ta"));
+                tl.setFileName(rs.getString("file_name"));
+                tl.setFilePath(rs.getString("file_path"));
+                tl.setFileSize(rs.getLong("file_size"));
+                tl.setFileType(rs.getString("file_type"));
+                tl.setNguoiTaoId(rs.getInt("nguoi_tao_id"));
+                tl.setNgayTao(rs.getTimestamp("ngay_tao"));
+                tl.setNgayCapNhat(rs.getTimestamp("ngay_cap_nhat"));
+                tl.setTrangThai(rs.getString("trang_thai"));
+                tl.setLuotXem(rs.getInt("luot_xem"));
+                tl.setLuotTai(rs.getInt("luot_tai"));
+                tl.setTenNguoiTao(rs.getString("ten_nguoi_tao"));
+                tl.setAvatarNguoiTao(rs.getString("avatar_nguoi_tao"));
+                list.add(tl);
+            }
+        }
+        return list;
+    }
+
+    /**
+     * Lấy tài liệu theo ID
+     */
+    public TaiLieu getTaiLieuById(int id) throws SQLException {
+        String sql = "SELECT tl.*, nv.ho_ten as ten_nguoi_tao, nv.avatar_url as avatar_nguoi_tao "
+                + "FROM tai_lieu tl "
+                + "LEFT JOIN nhanvien nv ON tl.nguoi_tao_id = nv.id "
+                + "WHERE tl.id = ?";
+
+        try (PreparedStatement stmt = cn.prepareStatement(sql)) {
+            stmt.setInt(1, id);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    TaiLieu tl = new TaiLieu();
+                    tl.setId(rs.getInt("id"));
+                    tl.setTenTaiLieu(rs.getString("ten_tai_lieu"));
+                    tl.setLoaiTaiLieu(rs.getString("loai_tai_lieu"));
+                    tl.setMoTa(rs.getString("mo_ta"));
+                    tl.setFileName(rs.getString("file_name"));
+                    tl.setFilePath(rs.getString("file_path"));
+                    tl.setFileSize(rs.getLong("file_size"));
+                    tl.setFileType(rs.getString("file_type"));
+                    tl.setNguoiTaoId(rs.getInt("nguoi_tao_id"));
+                    tl.setNgayTao(rs.getTimestamp("ngay_tao"));
+                    tl.setNgayCapNhat(rs.getTimestamp("ngay_cap_nhat"));
+                    tl.setTrangThai(rs.getString("trang_thai"));
+                    tl.setLuotXem(rs.getInt("luot_xem"));
+                    tl.setLuotTai(rs.getInt("luot_tai"));
+                    tl.setTenNguoiTao(rs.getString("ten_nguoi_tao"));
+                    tl.setAvatarNguoiTao(rs.getString("avatar_nguoi_tao"));
+                    return tl;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Thêm tài liệu mới
+     */
+    public int insertTaiLieu(TaiLieu tl) throws SQLException {
+        String sql = "INSERT INTO tai_lieu (nhom_tai_lieu_id, ten_tai_lieu, loai_tai_lieu, mo_ta, file_name, "
+                + "file_path, file_size, file_type, nguoi_tao_id) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+        try (PreparedStatement stmt = cn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            stmt.setInt(1, tl.getNhomTaiLieuId());
+            stmt.setString(2, tl.getTenTaiLieu());
+            stmt.setString(3, tl.getLoaiTaiLieu());
+            stmt.setString(4, tl.getMoTa());
+            stmt.setString(5, tl.getFileName());
+            stmt.setString(6, tl.getFilePath());
+            stmt.setLong(7, tl.getFileSize());
+            stmt.setString(8, tl.getFileType());
+            stmt.setInt(9, tl.getNguoiTaoId());
+
+            int affectedRows = stmt.executeUpdate();
+            if (affectedRows > 0) {
+                try (ResultSet rs = stmt.getGeneratedKeys()) {
+                    if (rs.next()) {
+                        return rs.getInt(1);
+                    }
+                }
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * Cập nhật thông tin tài liệu
+     */
+    public boolean updateTaiLieu(TaiLieu tl) throws SQLException {
+        String sql = "UPDATE tai_lieu SET ten_tai_lieu = ?, loai_tai_lieu = ?, mo_ta = ? "
+                + "WHERE id = ?";
+
+        try (PreparedStatement stmt = cn.prepareStatement(sql)) {
+            stmt.setString(1, tl.getTenTaiLieu());
+            stmt.setString(2, tl.getLoaiTaiLieu());
+            stmt.setString(3, tl.getMoTa());
+            stmt.setInt(4, tl.getId());
+
+            return stmt.executeUpdate() > 0;
+        }
+    }
+
+    /**
+     * Xóa tài liệu (soft delete)
+     */
+    public boolean deleteTaiLieu(int id) throws SQLException {
+        String sql = "UPDATE tai_lieu SET trang_thai = 'Đã xóa' WHERE id = ?";
+
+        try (PreparedStatement stmt = cn.prepareStatement(sql)) {
+            stmt.setInt(1, id);
+            return stmt.executeUpdate() > 0;
+        }
+    }
+
+    /**
+     * Tăng lượt xem tài liệu
+     */
+    public void incrementLuotXem(int id) throws SQLException {
+        String sql = "UPDATE tai_lieu SET luot_xem = luot_xem + 1 WHERE id = ?";
+        try (PreparedStatement stmt = cn.prepareStatement(sql)) {
+            stmt.setInt(1, id);
+            stmt.executeUpdate();
+        }
+    }
+
+    /**
+     * Tăng lượt tải tài liệu
+     */
+    public void incrementLuotTai(int id) throws SQLException {
+        String sql = "UPDATE tai_lieu SET luot_tai = luot_tai + 1 WHERE id = ?";
+        try (PreparedStatement stmt = cn.prepareStatement(sql)) {
+            stmt.setInt(1, id);
+            stmt.executeUpdate();
+        }
+    }
+
+    /**
+     * Tìm kiếm tài liệu theo từ khóa
+     */
+    public List<TaiLieu> searchTaiLieu(String keyword) throws SQLException {
+        List<TaiLieu> list = new ArrayList<>();
+        String sql = "SELECT tl.*, nv.ho_ten as ten_nguoi_tao, nv.avatar_url as avatar_nguoi_tao "
+                + "FROM tai_lieu tl "
+                + "LEFT JOIN nhanvien nv ON tl.nguoi_tao_id = nv.id "
+                + "WHERE tl.trang_thai = 'Hoạt động' "
+                + "AND (tl.ten_tai_lieu LIKE ? OR tl.mo_ta LIKE ? OR tl.loai_tai_lieu LIKE ?) "
+                + "ORDER BY tl.ngay_tao DESC";
+
+        try (PreparedStatement stmt = cn.prepareStatement(sql)) {
+            String searchPattern = "%" + keyword + "%";
+            stmt.setString(1, searchPattern);
+            stmt.setString(2, searchPattern);
+            stmt.setString(3, searchPattern);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    TaiLieu tl = new TaiLieu();
+                    tl.setId(rs.getInt("id"));
+                    tl.setTenTaiLieu(rs.getString("ten_tai_lieu"));
+                    tl.setLoaiTaiLieu(rs.getString("loai_tai_lieu"));
+                    tl.setMoTa(rs.getString("mo_ta"));
+                    tl.setFileName(rs.getString("file_name"));
+                    tl.setFilePath(rs.getString("file_path"));
+                    tl.setFileSize(rs.getLong("file_size"));
+                    tl.setFileType(rs.getString("file_type"));
+                    tl.setNguoiTaoId(rs.getInt("nguoi_tao_id"));
+                    tl.setNgayTao(rs.getTimestamp("ngay_tao"));
+                    tl.setNgayCapNhat(rs.getTimestamp("ngay_cap_nhat"));
+                    tl.setTrangThai(rs.getString("trang_thai"));
+                    tl.setLuotXem(rs.getInt("luot_xem"));
+                    tl.setLuotTai(rs.getInt("luot_tai"));
+                    tl.setTenNguoiTao(rs.getString("ten_nguoi_tao"));
+                    tl.setAvatarNguoiTao(rs.getString("avatar_nguoi_tao"));
+                    list.add(tl);
+                }
+            }
+        }
+        return list;
+    }
+
+    public List<TaiLieu> searchTaiLieu(String keyword, String loai) throws SQLException {
+        List<TaiLieu> list = new ArrayList<>();
+
+        String sql
+                = "SELECT tl.*, nv.ho_ten AS ten_nguoi_tao, nv.avatar_url AS avatar_nguoi_tao "
+                + "FROM tai_lieu tl "
+                + "LEFT JOIN nhanvien nv ON tl.nguoi_tao_id = nv.id "
+                + "WHERE tl.trang_thai = 'Hoạt động' "
+                + "AND (tl.ten_tai_lieu LIKE ? OR tl.mo_ta LIKE ?) "
+                + "AND tl.loai_tai_lieu = ? "
+                + "ORDER BY tl.ngay_tao DESC";
+
+        try (PreparedStatement stmt = cn.prepareStatement(sql)) {
+            String pattern = "%" + keyword + "%";
+            stmt.setString(1, pattern);
+            stmt.setString(2, pattern);
+            stmt.setString(3, loai);
+
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                TaiLieu tl = new TaiLieu();
+                list.add(tl);
+            }
+        }
+        return list;
+    }
+
+    /**
+     * Lấy danh sách loại tài liệu duy nhất
+     */
+    public List<String> getLoaiTaiLieuList() throws SQLException {
+        List<String> list = new ArrayList<>();
+        String sql = "SELECT DISTINCT loai_tai_lieu FROM tai_lieu "
+                + "WHERE trang_thai = 'Hoạt động' AND loai_tai_lieu IS NOT NULL "
+                + "ORDER BY loai_tai_lieu";
+
+        try (PreparedStatement stmt = cn.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                list.add(rs.getString("loai_tai_lieu"));
+            }
+        }
+        return list;
+    }
+
+    /**
+     * Lọc tài liệu theo loại
+     */
+    public List<TaiLieu> getTaiLieuByLoai(String loai) throws SQLException {
+        List<TaiLieu> list = new ArrayList<>();
+        String sql = "SELECT tl.*, nv.ho_ten as ten_nguoi_tao, nv.avatar_url as avatar_nguoi_tao "
+                + "FROM tai_lieu tl "
+                + "LEFT JOIN nhanvien nv ON tl.nguoi_tao_id = nv.id "
+                + "WHERE tl.trang_thai = 'Hoạt động' AND tl.loai_tai_lieu = ? "
+                + "ORDER BY tl.ngay_tao DESC";
+
+        try (PreparedStatement stmt = cn.prepareStatement(sql)) {
+            stmt.setString(1, loai);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    TaiLieu tl = new TaiLieu();
+                    tl.setId(rs.getInt("id"));
+                    tl.setTenTaiLieu(rs.getString("ten_tai_lieu"));
+                    tl.setLoaiTaiLieu(rs.getString("loai_tai_lieu"));
+                    tl.setMoTa(rs.getString("mo_ta"));
+                    tl.setFileName(rs.getString("file_name"));
+                    tl.setFilePath(rs.getString("file_path"));
+                    tl.setFileSize(rs.getLong("file_size"));
+                    tl.setFileType(rs.getString("file_type"));
+                    tl.setNguoiTaoId(rs.getInt("nguoi_tao_id"));
+                    tl.setNgayTao(rs.getTimestamp("ngay_tao"));
+                    tl.setNgayCapNhat(rs.getTimestamp("ngay_cap_nhat"));
+                    tl.setTrangThai(rs.getString("trang_thai"));
+                    tl.setLuotXem(rs.getInt("luot_xem"));
+                    tl.setLuotTai(rs.getInt("luot_tai"));
+                    tl.setTenNguoiTao(rs.getString("ten_nguoi_tao"));
+                    tl.setAvatarNguoiTao(rs.getString("avatar_nguoi_tao"));
+                    list.add(tl);
+                }
+            }
+        }
+        return list;
+    }
+
+    // =============== METHODS CHO NHÓM TÀI LIỆU ===============
+    
+    /**
+     * Lấy tất cả nhóm tài liệu
+     */
+    public List<NhomTaiLieu> getAllNhomTaiLieu() throws SQLException {
+        List<NhomTaiLieu> list = new ArrayList<>();
+        String sql = "SELECT ntl.*, nv.ho_ten as ten_nguoi_tao, "
+                + "(SELECT COUNT(*) FROM tai_lieu WHERE nhom_tai_lieu_id = ntl.id AND trang_thai = 'Hoạt động') as so_luong_tai_lieu "
+                + "FROM nhom_tai_lieu ntl "
+                + "LEFT JOIN nhanvien nv ON ntl.nguoi_tao_id = nv.id "
+                + "WHERE ntl.trang_thai = 'Hoạt động' "
+                + "ORDER BY ntl.thu_tu, ntl.ten_nhom";
+
+        try (PreparedStatement stmt = cn.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                NhomTaiLieu ntl = new NhomTaiLieu();
+                ntl.setId(rs.getInt("id"));
+                ntl.setTenNhom(rs.getString("ten_nhom"));
+                ntl.setMoTa(rs.getString("mo_ta"));
+                ntl.setIcon(rs.getString("icon"));
+                ntl.setMauSac(rs.getString("mau_sac"));
+                ntl.setNguoiTaoId(rs.getInt("nguoi_tao_id"));
+                ntl.setNgayTao(rs.getTimestamp("ngay_tao"));
+                ntl.setNgayCapNhat(rs.getTimestamp("ngay_cap_nhat"));
+                ntl.setTrangThai(rs.getString("trang_thai"));
+                ntl.setThuTu(rs.getInt("thu_tu"));
+                ntl.setTenNguoiTao(rs.getString("ten_nguoi_tao"));
+                ntl.setSoLuongTaiLieu(rs.getInt("so_luong_tai_lieu"));
+                list.add(ntl);
+            }
+        }
+        return list;
+    }
+
+    /**
+     * Lấy nhóm tài liệu theo ID
+     */
+    public NhomTaiLieu getNhomTaiLieuById(int id) throws SQLException {
+        String sql = "SELECT ntl.*, nv.ho_ten as ten_nguoi_tao, "
+                + "(SELECT COUNT(*) FROM tai_lieu WHERE nhom_tai_lieu_id = ntl.id AND trang_thai = 'Hoạt động') as so_luong_tai_lieu "
+                + "FROM nhom_tai_lieu ntl "
+                + "LEFT JOIN nhanvien nv ON ntl.nguoi_tao_id = nv.id "
+                + "WHERE ntl.id = ?";
+
+        try (PreparedStatement stmt = cn.prepareStatement(sql)) {
+            stmt.setInt(1, id);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    NhomTaiLieu ntl = new NhomTaiLieu();
+                    ntl.setId(rs.getInt("id"));
+                    ntl.setTenNhom(rs.getString("ten_nhom"));
+                    ntl.setMoTa(rs.getString("mo_ta"));
+                    ntl.setIcon(rs.getString("icon"));
+                    ntl.setMauSac(rs.getString("mau_sac"));
+                    ntl.setNguoiTaoId(rs.getInt("nguoi_tao_id"));
+                    ntl.setNgayTao(rs.getTimestamp("ngay_tao"));
+                    ntl.setNgayCapNhat(rs.getTimestamp("ngay_cap_nhat"));
+                    ntl.setTrangThai(rs.getString("trang_thai"));
+                    ntl.setThuTu(rs.getInt("thu_tu"));
+                    ntl.setTenNguoiTao(rs.getString("ten_nguoi_tao"));
+                    ntl.setSoLuongTaiLieu(rs.getInt("so_luong_tai_lieu"));
+                    return ntl;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Thêm nhóm tài liệu mới
+     */
+    public int insertNhomTaiLieu(NhomTaiLieu ntl) throws SQLException {
+        String sql = "INSERT INTO nhom_tai_lieu (ten_nhom, mo_ta, icon, mau_sac, nguoi_tao_id, thu_tu) "
+                + "VALUES (?, ?, ?, ?, ?, ?)";
+
+        try (PreparedStatement stmt = cn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            stmt.setString(1, ntl.getTenNhom());
+            stmt.setString(2, ntl.getMoTa());
+            stmt.setString(3, ntl.getIcon());
+            stmt.setString(4, ntl.getMauSac());
+            stmt.setInt(5, ntl.getNguoiTaoId());
+            stmt.setInt(6, ntl.getThuTu());
+
+            int affectedRows = stmt.executeUpdate();
+            if (affectedRows > 0) {
+                try (ResultSet rs = stmt.getGeneratedKeys()) {
+                    if (rs.next()) {
+                        return rs.getInt(1);
+                    }
+                }
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * Cập nhật nhóm tài liệu
+     */
+    public boolean updateNhomTaiLieu(NhomTaiLieu ntl) throws SQLException {
+        String sql = "UPDATE nhom_tai_lieu SET ten_nhom = ?, mo_ta = ?, icon = ?, mau_sac = ?, thu_tu = ? "
+                + "WHERE id = ?";
+
+        try (PreparedStatement stmt = cn.prepareStatement(sql)) {
+            stmt.setString(1, ntl.getTenNhom());
+            stmt.setString(2, ntl.getMoTa());
+            stmt.setString(3, ntl.getIcon());
+            stmt.setString(4, ntl.getMauSac());
+            stmt.setInt(5, ntl.getThuTu());
+            stmt.setInt(6, ntl.getId());
+
+            return stmt.executeUpdate() > 0;
+        }
+    }
+
+    /**
+     * Xóa nhóm tài liệu (soft delete)
+     */
+    public boolean deleteNhomTaiLieu(int id) throws SQLException {
+        String sql = "UPDATE nhom_tai_lieu SET trang_thai = 'Đã xóa' WHERE id = ?";
+
+        try (PreparedStatement stmt = cn.prepareStatement(sql)) {
+            stmt.setInt(1, id);
+            return stmt.executeUpdate() > 0;
+        }
+    }
+
+    /**
+     * Lấy tất cả tài liệu theo nhóm
+     */
+    public List<TaiLieu> getTaiLieuByNhomId(int nhomId) throws SQLException {
+        List<TaiLieu> list = new ArrayList<>();
+        String sql = "SELECT tl.*, nv.ho_ten as ten_nguoi_tao, nv.avatar_url as avatar_nguoi_tao, ntl.ten_nhom as ten_nhom_tai_lieu "
+                + "FROM tai_lieu tl "
+                + "LEFT JOIN nhanvien nv ON tl.nguoi_tao_id = nv.id "
+                + "LEFT JOIN nhom_tai_lieu ntl ON tl.nhom_tai_lieu_id = ntl.id "
+                + "WHERE tl.trang_thai = 'Hoạt động' AND tl.nhom_tai_lieu_id = ? "
+                + "ORDER BY tl.ngay_tao DESC";
+
+        try (PreparedStatement stmt = cn.prepareStatement(sql)) {
+            stmt.setInt(1, nhomId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    TaiLieu tl = new TaiLieu();
+                    tl.setId(rs.getInt("id"));
+                    tl.setNhomTaiLieuId(rs.getInt("nhom_tai_lieu_id"));
+                    tl.setTenTaiLieu(rs.getString("ten_tai_lieu"));
+                    tl.setLoaiTaiLieu(rs.getString("loai_tai_lieu"));
+                    tl.setMoTa(rs.getString("mo_ta"));
+                    tl.setFileName(rs.getString("file_name"));
+                    tl.setFilePath(rs.getString("file_path"));
+                    tl.setFileSize(rs.getLong("file_size"));
+                    tl.setFileType(rs.getString("file_type"));
+                    tl.setNguoiTaoId(rs.getInt("nguoi_tao_id"));
+                    tl.setNgayTao(rs.getTimestamp("ngay_tao"));
+                    tl.setNgayCapNhat(rs.getTimestamp("ngay_cap_nhat"));
+                    tl.setTrangThai(rs.getString("trang_thai"));
+                    tl.setLuotXem(rs.getInt("luot_xem"));
+                    tl.setLuotTai(rs.getInt("luot_tai"));
+                    tl.setTenNguoiTao(rs.getString("ten_nguoi_tao"));
+                    tl.setAvatarNguoiTao(rs.getString("avatar_nguoi_tao"));
+                    tl.setTenNhomTaiLieu(rs.getString("ten_nhom_tai_lieu"));
+                    list.add(tl);
+                }
+            }
+        }
+        return list;
+    }
+
+    /**
+     * Tìm kiếm tài liệu theo từ khóa trong một nhóm
+     */
+    public List<TaiLieu> searchTaiLieuInNhom(int nhomId, String keyword) throws SQLException {
+        List<TaiLieu> list = new ArrayList<>();
+        String sql = "SELECT tl.*, nv.ho_ten as ten_nguoi_tao, nv.avatar_url as avatar_nguoi_tao, ntl.ten_nhom as ten_nhom_tai_lieu "
+                + "FROM tai_lieu tl "
+                + "LEFT JOIN nhanvien nv ON tl.nguoi_tao_id = nv.id "
+                + "LEFT JOIN nhom_tai_lieu ntl ON tl.nhom_tai_lieu_id = ntl.id "
+                + "WHERE tl.trang_thai = 'Hoạt động' AND tl.nhom_tai_lieu_id = ? "
+                + "AND (tl.ten_tai_lieu LIKE ? OR tl.mo_ta LIKE ? OR tl.loai_tai_lieu LIKE ?) "
+                + "ORDER BY tl.ngay_tao DESC";
+
+        try (PreparedStatement stmt = cn.prepareStatement(sql)) {
+            String searchPattern = "%" + keyword + "%";
+            stmt.setInt(1, nhomId);
+            stmt.setString(2, searchPattern);
+            stmt.setString(3, searchPattern);
+            stmt.setString(4, searchPattern);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    TaiLieu tl = new TaiLieu();
+                    tl.setId(rs.getInt("id"));
+                    tl.setNhomTaiLieuId(rs.getInt("nhom_tai_lieu_id"));
+                    tl.setTenTaiLieu(rs.getString("ten_tai_lieu"));
+                    tl.setLoaiTaiLieu(rs.getString("loai_tai_lieu"));
+                    tl.setMoTa(rs.getString("mo_ta"));
+                    tl.setFileName(rs.getString("file_name"));
+                    tl.setFilePath(rs.getString("file_path"));
+                    tl.setFileSize(rs.getLong("file_size"));
+                    tl.setFileType(rs.getString("file_type"));
+                    tl.setNguoiTaoId(rs.getInt("nguoi_tao_id"));
+                    tl.setNgayTao(rs.getTimestamp("ngay_tao"));
+                    tl.setNgayCapNhat(rs.getTimestamp("ngay_cap_nhat"));
+                    tl.setTrangThai(rs.getString("trang_thai"));
+                    tl.setLuotXem(rs.getInt("luot_xem"));
+                    tl.setLuotTai(rs.getInt("luot_tai"));
+                    tl.setTenNguoiTao(rs.getString("ten_nguoi_tao"));
+                    tl.setAvatarNguoiTao(rs.getString("avatar_nguoi_tao"));
+                    tl.setTenNhomTaiLieu(rs.getString("ten_nhom_tai_lieu"));
+                    list.add(tl);
+                }
+            }
+        }
+        return list;
     }
 
 }

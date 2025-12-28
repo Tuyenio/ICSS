@@ -54,8 +54,13 @@ public class AuthFilter implements Filter {
         String uri = req.getRequestURI();
         HttpSession session = req.getSession(false);
 
+        if (uri.startsWith(req.getContextPath() + "/api/")) {
+            chain.doFilter(request, response);
+            return;
+        }
+
         // ✅ Bỏ qua kiểm tra login, file tĩnh
-        boolean isLoginPage = uri.endsWith("login.jsp") || uri.contains("/Dangnhap") || uri.contains("/LoginServlet");
+        boolean isLoginPage = uri.endsWith("login.jsp") || uri.contains("/Dangnhap") || uri.contains("/LoginServlet")|| uri.contains("/home");
         boolean isResource = uri.contains("/assets/") || uri.contains("/css/") || uri.contains("/js/") || uri.contains("/images/");
         boolean isStatic = uri.matches(".*(\\.css|\\.js|\\.png|\\.jpg|\\.jpeg|\\.gif|\\.ico|\\.json|\\.webmanifest|\\.svg|\\.mp4|\\.woff2?)$");
 

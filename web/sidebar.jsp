@@ -436,6 +436,9 @@
 
         <li><a href="svBaocao" class="<%= currentPath.equals("report.jsp") ? "active" : "" %>">
                 <i class="fa-solid fa-chart-column"></i><span>Báo cáo</span></a></li>
+
+        <li><a href="dsTailieu" class="<%= currentPath.equals("documents.jsp") ? "active" : "" %>">
+                <i class="fa-solid fa-folder-open"></i><span>Thư viện tài liệu</span></a></li>
         <div class="sidebar-toggle-btn">
             <i class="fa-solid fa-chevron-right"></i>
         </div>

@@ -285,22 +285,37 @@
                     pct.style.color = STATUS_COLOR[st] || '#0b1220';
                     right.appendChild(pct);
 
-                    const daysInfo = document.createElement('span');
-                    daysInfo.style.fontSize = '0.85rem';
-                    daysInfo.style.fontWeight = '600';
-
-                    if (proj.daysLeft > 0) {
-                        daysInfo.textContent = "Còn lại " + proj.daysLeft + " ngày";
-                        daysInfo.style.color = "#059669";
-                    } else if (proj.daysLeft === 0) {
-                        daysInfo.textContent = "Hôm nay là hạn cuối";
-                        daysInfo.style.color = "#d97706";
+                    // ✅ KIỂM TRA: Nếu tiến độ = 100% thì hiển thị badge "Đã hoàn thành" thay vì daysInfo
+                    if (proj.progress >= 100) {
+                        const completedBadge = document.createElement('span');
+                        completedBadge.textContent = '✓ Hoàn thành';
+                        completedBadge.style.fontSize = '0.75rem';
+                        completedBadge.style.fontWeight = '700';
+                        completedBadge.style.color = '#16A34A';
+                        completedBadge.style.background = 'rgba(22, 163, 74, 0.1)';
+                        completedBadge.style.padding = '3px 8px';
+                        completedBadge.style.borderRadius = '12px';
+                        completedBadge.style.display = 'inline-block';
+                        completedBadge.style.whiteSpace = 'nowrap';
+                        right.appendChild(completedBadge);
                     } else {
-                        daysInfo.textContent = "Đã quá hạn " + Math.abs(proj.daysLeft) + " ngày";
-                        daysInfo.style.color = "#dc2626";
-                    }
+                        // Nếu chưa 100% thì hiển thị thông tin ngày còn lại / quá hạn
+                        const daysInfo = document.createElement('span');
+                        daysInfo.style.fontSize = '0.85rem';
+                        daysInfo.style.fontWeight = '600';
 
-                    right.appendChild(daysInfo);
+                        if (proj.daysLeft > 0) {
+                            daysInfo.textContent = "Còn lại " + proj.daysLeft + " ngày";
+                            daysInfo.style.color = "#059669";
+                        } else if (proj.daysLeft === 0) {
+                            daysInfo.textContent = "Hôm nay là hạn cuối";
+                            daysInfo.style.color = "#d97706";
+                        } else {
+                            daysInfo.textContent = "Đã quá hạn " + Math.abs(proj.daysLeft) + " ngày";
+                            daysInfo.style.color = "#dc2626";
+                        }
+                        right.appendChild(daysInfo);
+                    }
 
                     row.appendChild(left);
                     row.appendChild(right);
