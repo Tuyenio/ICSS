@@ -270,6 +270,28 @@ public class DocumentServlet extends HttpServlet {
             int result = kn.insertTaiLieu(taiLieu);
             if (result > 0) {
                 request.setAttribute("success", "Tải lên tài liệu thành công!");
+                
+                // ✅ Gửi thông báo nếu tài liệu thuộc nhóm "Biên bản họp nội bộ" (nhomId = 9)
+                if (nhomId == 9) {
+                    try {
+                        // Lấy danh sách ID nhân viên có chức vụ Giám đốc hoặc Trưởng phòng
+                        List<Integer> nguoiNhanIds = kn.getNhanVienGiamDocVaTruongPhong();
+                        
+                        // Tạo nội dung thông báo
+                        String tieuDe = "Biên bản họp nội bộ mới";
+                        String noiDung = "Tài liệu '" + tenTaiLieu.trim() + "' đã được thêm vào Biên bản họp nội bộ. Vui lòng xem chi tiết.";
+                        String loai = "Tài liệu";
+                        String duongDan = "dsTailieu?nhomId=9";
+                        
+                        // Gửi thông báo cho từng người
+                        for (Integer nguoiNhanId : nguoiNhanIds) {
+                            kn.insertThongBao(nguoiNhanId, tieuDe, noiDung, loai, duongDan);
+                        }
+                    } catch (Exception ex) {
+                        // Không dừng quá trình nếu gửi thông báo thất bại
+                        ex.printStackTrace();
+                    }
+                }
             } else {
                 request.setAttribute("error", "Không thể lưu thông tin tài liệu!");
             }

@@ -73,14 +73,16 @@
 
         <style>
             body {
-                background: linear-gradient(135deg, #1e293b, #0f172a);
+                background: linear-gradient(135deg, #8B0000, #DC143C, #FF6347);
                 font-family: 'Segoe UI', sans-serif;
-                height: 100vh;
+                min-height: 100vh;
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 margin: 0;
                 padding: 10px;
+                overflow-y: auto;
+                overflow-x: hidden;
             }
 
             .login-container {
@@ -105,7 +107,7 @@
                 height: 100%;
                 border-radius: 20px;
                 padding: 2px;
-                background: linear-gradient(90deg, #ff7e5f, #feb47b, #86a8e7, #7f7fd5);
+                background: linear-gradient(90deg, #FFD700, #FF0000, #FFD700, #FF6347, #FFD700);
                 background-size: 400% 400%;
                 animation: moveBorder 6s linear infinite;
                 z-index: 2;
@@ -138,7 +140,8 @@
                 width: 250px;
                 max-width: 90%;
                 margin-bottom: 20px;
-                animation: float 3s ease-in-out infinite;
+                animation: float 3s ease-in-out infinite, glow 2s ease-in-out infinite;
+                filter: drop-shadow(0 4px 12px rgba(255, 215, 0, 0.5));
             }
 
             @keyframes float {
@@ -147,6 +150,15 @@
                 }
                 50% {
                     transform: translateY(-10px);
+                }
+            }
+
+            @keyframes glow {
+                0%, 100% {
+                    filter: drop-shadow(0 4px 12px rgba(255, 215, 0, 0.5));
+                }
+                50% {
+                    filter: drop-shadow(0 8px 20px rgba(220, 20, 60, 0.6));
                 }
             }
 
@@ -159,27 +171,33 @@
 
             .info-box {
                 flex: 1;
-                background: linear-gradient(135deg, #e0e7ff, #c7d2fe);
+                background: linear-gradient(135deg, #FFE5E5, #FFD6D6);
                 border-radius: 10px;
                 padding: 20px;
-                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+                box-shadow: 0 4px 10px rgba(220, 20, 60, 0.2);
                 display: flex;
                 justify-content: center;
                 align-items: center;
                 transition: transform 0.3s, box-shadow 0.3s;
                 cursor: pointer;
+                border: 2px solid #FFD700;
             }
 
             .info-box:hover {
-                transform: scale(1.05);
-                box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+                transform: scale(1.05) translateY(-5px);
+                box-shadow: 0 8px 25px rgba(220, 20, 60, 0.4);
+                background: linear-gradient(135deg, #FFD700, #FFA500);
             }
 
             .info-box h6 {
                 font-weight: bold;
                 margin: 0;
-                color: #4f46e5;
+                color: #DC143C;
                 text-align: center;
+            }
+
+            .info-box:hover h6 {
+                color: #8B0000;
             }
 
             .modal-content {
@@ -198,7 +216,7 @@
             }
 
             .login-right {
-                background: linear-gradient(145deg, #4f46e5, #0ea5e9);
+                background: linear-gradient(145deg, #DC143C, #FF6347, #FF4500);
                 color: white;
                 align-items: stretch;
             }
@@ -218,26 +236,33 @@
                 border-radius: 10px;
                 padding: 14px;
                 font-size: 16px;
-                transition: box-shadow 0.3s;
+                transition: box-shadow 0.3s, transform 0.2s, border-color 0.3s;
+                border: 2px solid rgba(255, 215, 0, 0.3);
+                background: rgba(255, 255, 255, 0.95);
             }
 
             .form-control:focus {
-                box-shadow: 0 0 10px rgba(78, 115, 223, 0.5);
+                box-shadow: 0 0 15px rgba(255, 215, 0, 0.6), 0 0 25px rgba(220, 20, 60, 0.3);
+                border-color: #FFD700;
+                transform: scale(1.02);
+                background: #fff;
             }
 
             .btn-login {
-                background: #ffffff;
+                background: #FFD700;
                 border: none;
                 border-radius: 10px;
                 padding: 14px;
-                color: #0ea5e9;
+                color: #DC143C;
                 font-weight: bold;
                 transition: background 0.3s, transform 0.2s;
+                box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
             }
             .btn-login:hover {
-                background: #38bdf8;
+                background: #FFA500;
                 color: white;
                 transform: scale(1.05);
+                box-shadow: 0 6px 20px rgba(255, 165, 0, 0.6);
             }
 
             .remember-forgot {
@@ -255,16 +280,20 @@
             /* Responsive cho mobile */
             @media (max-width: 768px) {
                 body {
-                    padding: 0;
-                    background: #0f172a !important;
+                    padding: 20px 0;
+                    background: linear-gradient(135deg, #8B0000, #DC143C, #FF6347) !important;
+                    min-height: 100vh;
+                    height: auto;
+                    align-items: flex-start;
                 }
 
                 .login-container {
                     flex-direction: column !important;
                     max-width: 100%;
-                    margin: 0 10px;
+                    margin: 20px 10px;
                     border-radius: 14px;
                     box-shadow: none !important;
+                    min-height: auto;
                 }
 
                 .login-container::before {
@@ -319,498 +348,533 @@
                     font-size: 15px;
                 }
 
-                /* Giảm độ phô hiệu ứng giáng sinh trên mobile */
-                .santa-flight,
-                .xmas-tree,
-                .santa-hat,
-                .snowman,
-                .gift {
-                    transform: scale(0.7) !important;
-                    opacity: 0.8;
+                /* Giảm độ phô hiệu ứng tết trên mobile */
+                .tet-lantern,
+                .tet-peach-blossom,
+                .tet-envelope,
+                .tet-horse,
+                .tet-couplet {
+                    transform: scale(0.6) !important;
+                    opacity: 0.7;
                 }
 
                 /* tránh che nội dung */
-                .snowman {
-                    bottom: 4px !important;
-                    right: 4px !important;
+                .tet-horse {
+                    bottom: 8% !important;
+                }
+
+                .tet-couplet {
+                    font-size: 12px !important;
+                    width: 50px !important;
+                    height: 200px !important;
+                    padding: 10px 5px !important;
                 }
             }
         </style>
         <style>
-            /* gentle snowy background overlay (subtle) */
-            .xmas-theme body,
-            body.xmas {
-                background: linear-gradient(135deg, #071129 10%, #08293a 60%);
+            /* ========== TẾT NGUYÊN ĐÁN 2026 THEME ========== */
+
+            /* Nền gradient đỏ vàng cho không khí tết */
+            .tet-theme body,
+            body.tet {
+                background: linear-gradient(135deg, #8B0000 0%, #DC143C 50%, #FF6347 100%);
+                position: relative;
             }
 
-            /* overlay container for decorations */
-            #xmasOverlay {
+            /* Overlay container for decorations */
+            #tetOverlay {
                 pointer-events: none;
                 position: fixed;
                 inset: 0;
-                z-index: 1050; /* above page but below any modal (modal z-index > 1050) */
+                z-index: 1050;
             }
 
-            /* falling snowflakes */
-            .snowflake {
+            /* ===== HOA ĐÀO / HOA MAI RƠI ===== */
+            .peach-blossom {
                 position: absolute;
                 top: -10%;
-                color: rgba(255,255,255,0.9);
-                font-size: 12px;
+                font-size: 20px;
                 user-select: none;
                 will-change: transform, opacity;
-                animation: fall linear infinite;
-                text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+                animation: fallBlossom linear infinite;
+                filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
             }
-            @keyframes fall {
+            @keyframes fallBlossom {
                 to {
-                    transform: translateY(120vh) rotate(360deg);
+                    transform: translateY(120vh) rotate(720deg);
+                    opacity: 0;
                 }
             }
 
-            /* subtle bokeh lights top-right */
-            .xmas-lights {
+            /* ===== PHÁO HOA ===== */
+            .firework {
+                position: absolute;
+                width: 4px;
+                height: 4px;
+                border-radius: 50%;
+                animation: explode 2s ease-out infinite;
+            }
+            @keyframes explode {
+                0% {
+                    transform: translate(0, 0) scale(1);
+                    opacity: 1;
+                }
+                100% {
+                    transform: translate(var(--tx), var(--ty)) scale(0);
+                    opacity: 0;
+                }
+            }
+
+            /* ===== ĐÈN LỒNG ĐỎ ===== */
+            .tet-lanterns {
                 position: absolute;
                 top: 8px;
                 right: 8px;
-                display:flex;
-                gap: 6px;
+                display: flex;
+                gap: 20px;
                 z-index: 1060;
                 pointer-events: none;
             }
-            .xmas-lights .bulb {
-                width: 10px;
-                height: 10px;
-                border-radius: 50%;
-                box-shadow: 0 0 8px rgba(0,0,0,0.25);
-                opacity: 0.95;
-                animation: blink 2s infinite ease-in-out;
-            }
-            .xmas-lights .bulb:nth-child(1){
-                background:#ff4d4f;
-                animation-delay:0s;
-            }
-            .xmas-lights .bulb:nth-child(2){
-                background:#ffd666;
-                animation-delay:0.3s;
-            }
-            .xmas-lights .bulb:nth-child(3){
-                background:#73d13d;
-                animation-delay:0.6s;
-            }
-            .xmas-lights .bulb:nth-child(4){
-                background:#69c0ff;
-                animation-delay:0.9s;
-            }
-            @keyframes blink {
-                0%,100%{
-                    transform: scale(0.9);
-                    opacity:0.7
-                }
-                50%{
-                    transform: scale(1.15);
-                    opacity:1
-                }
-            }
-
-            /* small floating ornament near logo */
-            .xmas-ornament {
-                position: absolute;
-                left: calc(50% - 460px);
-                top: calc(50% - 230px);
-                width: 60px;
+            .lantern {
+                width: 40px;
                 height: 60px;
-                border-radius: 50%;
-                background: radial-gradient(circle at 30% 25%, #fff8, #ff6b6b 40%, #c53d3d 100%);
-                box-shadow: 0 6px 18px rgba(0,0,0,0.25), inset 0 -6px 18px rgba(255,255,255,0.08);
-                display:flex;
-                align-items:center;
-                justify-content:center;
-                transform-origin: center;
-                animation: sway 4s ease-in-out infinite;
-                z-index: 1060;
-                pointer-events: none;
-            }
-            @keyframes sway {
-                0%{
-                    transform: translateY(0) rotate(-6deg);
-                }
-                50%{
-                    transform: translateY(6px) rotate(6deg);
-                }
-                100%{
-                    transform: translateY(0) rotate(-6deg);
-                }
-            }
-
-            /* toggle control (bottom-left) to disable decorations */
-            #xmasToggle {
-                position: fixed;
-                left: 12px;
-                bottom: 12px;
-                z-index: 20000;
-                background: rgba(255,255,255,0.93);
-                border-radius: 24px;
-                padding: 6px 10px;
-                box-shadow: 0 6px 18px rgba(0,0,0,0.12);
-                cursor: pointer;
-                font-size: 13px;
-                display:flex;
-                gap: 8px;
-                align-items: center;
-            }
-            #xmasToggle .dot {
-                width: 10px;
-                height: 10px;
-                border-radius: 50%;
-                background: #ff6b6b;
-                box-shadow: 0 0 6px #ff6b6b;
-            }
-
-            /* ==== NEW: trees, santa, snowman, gifts ==== */
-            .xmas-tree {
-                position: fixed;
-                bottom: 10px;
-                width: 90px;
-                height: 130px;
-                z-index: 1060;
-                pointer-events: none;
-                transform-origin: bottom center;
-                animation: treeSway 6s ease-in-out infinite;
-                filter: drop-shadow(0 6px 10px rgba(0,0,0,0.35));
-            }
-            .xmas-tree.small {
-                width: 60px;
-                height: 90px;
-                bottom: 20px;
-            }
-            .tree-graphic {
-                width:100%;
-                height:100%;
-                background: linear-gradient(#0b6623, #1b8c47);
-                clip-path: polygon(50% 0%, 62% 19%, 80% 24%, 65% 40%, 78% 55%, 58% 52%, 68% 72%, 50% 62%, 32% 72%, 42% 52%, 22% 55%, 35% 40%, 20% 24%, 38% 19%);
-                border-radius: 8px;
+                background: linear-gradient(180deg, #FF0000, #8B0000);
+                border-radius: 8px 8px 12px 12px;
                 position: relative;
-                overflow: visible;
+                animation: swingLantern 3s ease-in-out infinite;
+                box-shadow: 0 4px 15px rgba(255, 0, 0, 0.5),
+                    inset 0 -10px 20px rgba(0, 0, 0, 0.3);
             }
-            .tree-graphic::after{
-                content:'';
-                position:absolute;
-                bottom:-12px;
-                left:44%;
-                width:12%;
-                height:18px;
-                background:#6b3e1d;
-                border-radius:3px;
+            .lantern::before {
+                content: attr(data-text);
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+
+                font-family: "KaiTi", "STKaiti", "SimSun", serif;
+                font-size: 26px;
+                font-weight: bold;
+
+                color: #FFD700;
+                text-shadow:
+                    0 2px 4px rgba(0,0,0,.6),
+                    0 0 8px rgba(255,215,0,.6);
             }
-            @keyframes treeSway {
-                0%,100%{
+            .lantern::after {
+                content: '';
+                position: absolute;
+                bottom: -15px;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 2px;
+                height: 15px;
+                background: #FFD700;
+            }
+            .lantern-tassel {
+                position: absolute;
+                bottom: -25px;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 8px;
+                height: 10px;
+                background: #FFD700;
+                clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+            }
+            @keyframes swingLantern {
+                0%, 100% {
+                    transform: rotate(-8deg);
+                }
+                50% {
+                    transform: rotate(8deg);
+                }
+            }
+
+            /* ===== CÂU ĐỐI TẾT ===== */
+            .tet-couplet {
+                position: fixed;
+                width: 65px;
+                height: 260px;
+                background: linear-gradient(180deg, #DC143C, #8B0000);
+                border: 3px solid #FFD700;
+                border-radius: 4px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 18px;
+                color: #FFD700;
+                font-weight: bold;
+                writing-mode: vertical-lr;   /* TRÁI → PHẢI */
+                text-orientation: upright;
+                padding: 20px 10px;
+                box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+                z-index: 1060;
+                pointer-events: none;
+                animation: coupletSway 4s ease-in-out infinite;
+                letter-spacing: 8px;
+                line-height: 1.2;
+            }
+            .tet-couplet.left {
+                left: 20px;
+                top: 15%;
+            }
+            .tet-couplet.right {
+                right: 20px;
+                top: 15%;
+            }
+            @keyframes coupletSway {
+                0%, 100% {
                     transform: rotate(-2deg);
                 }
-                50%{
+                50% {
                     transform: rotate(2deg);
                 }
             }
 
-            /* twinkling lights on trees */
-            .tree-lights {
-                position:absolute;
-                inset:10% 5% 20% 5%;
-                pointer-events:none;
+            /* ===== HOA ĐÀO / HOA MAI - CÂY ===== */
+            .tet-peach-blossom {
+                position: fixed;
+                width: 120px;
+                height: 180px;
+                z-index: 1060;
+                pointer-events: none;
+                animation: treeSway 5s ease-in-out infinite;
+                filter: drop-shadow(0 4px 10px rgba(0,0,0,0.3));
             }
-            .tree-lights span {
-                position:absolute;
-                width:8px;
-                height:8px;
-                border-radius:50%;
-                box-shadow: 0 0 8px currentColor;
-                animation: twinkle 2.5s infinite ease-in-out;
-                opacity: 0.95;
+            .tet-peach-blossom.left {
+                bottom: 20px;
+                left: 30px;
             }
-            @keyframes twinkle {
-                0%,100%{
-                    transform: scale(0.8);
-                    opacity:0.6
+            .tet-peach-blossom.right {
+                bottom: 20px;
+                right: 30px;
+            }
+            @keyframes treeSway {
+                0%, 100% {
+                    transform: rotate(-3deg);
                 }
-                50%{
-                    transform: scale(1.2);
-                    opacity:1
+                50% {
+                    transform: rotate(3deg);
                 }
             }
 
-            /* Santa sleigh flying across */
-            .santa-flight {
+            /* ===== LÌ XÌ / BAO LÌ XÌ ===== */
+            .tet-envelope {
                 position: fixed;
-                top: 12%;
-                right: -20%;
-                z-index: 1070;
-                width: 220px;
-                height: 80px;
+                width: 70px;
+                height: 45px;
+                background: linear-gradient(135deg, #FF0000, #DC143C);
+                border: 2px solid #FFD700;
+                border-radius: 4px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 14px;
+                color: #FFD700;
+                font-weight: bold;
+                box-shadow: 0 4px 15px rgba(255, 0, 0, 0.4);
+                z-index: 1060;
                 pointer-events: none;
-                transform: translateX(0);
-                animation: flyAcross 18s linear infinite;
-                filter: drop-shadow(0 8px 18px rgba(0,0,0,0.45));
+                animation: envelopeBounce 3s ease-in-out infinite;
             }
-            @keyframes flyAcross {
+            .tet-envelope::before {
+                content: 'Lì Xì';
+            }
+            .tet-envelope.e1 {
+                left: 15%;
+                bottom: 30px;
+                animation-delay: 0s;
+            }
+            .tet-envelope.e2 {
+                left: 25%;
+                bottom: 50px;
+                animation-delay: 0.5s;
+            }
+            .tet-envelope.e3 {
+                right: 20%;
+                bottom: 40px;
+                animation-delay: 0.3s;
+            }
+            @keyframes envelopeBounce {
+                0%, 100% {
+                    transform: translateY(0) rotate(-5deg);
+                }
+                50% {
+                    transform: translateY(-12px) rotate(5deg);
+                }
+            }
+
+            /* ===== CON NGỰA (NĂM NGỌA 2026) CHẠY ===== */
+            .tet-horse {
+                position: fixed;
+                bottom: 15%;
+                right: -25%;
+                width: 200px;
+                height: 150px;
+                z-index: 1070;
+                pointer-events: none;
+                animation: horseRun 15s linear infinite;
+                filter: drop-shadow(0 8px 20px rgba(0,0,0,0.4));
+            }
+            @keyframes horseRun {
                 0% {
                     right: -30%;
-                    transform: translateY(0) rotate(-6deg)
+                    transform: translateY(0) scaleX(1);
                 }
                 50% {
                     right: 60%;
-                    transform: translateY(-18px) rotate(0deg)
+                    transform: translateY(-15px) scaleX(1);
                 }
                 100% {
-                    right: 110%;
-                    transform: translateY(0) rotate(6deg)
+                    right: 115%;
+                    transform: translateY(0) scaleX(1);
                 }
             }
 
-            /* Santa hat on logo (small, positioned near .login-left img) */
-            .santa-hat {
+            /* ===== CONFETTI VÀNG ĐỎ ===== */
+            .confetti {
                 position: absolute;
-                width: 48px;
-                height: 48px;
-                z-index: 1075;
-                pointer-events: none;
-                transform-origin: bottom left;
-                animation: hatBounce 3.2s ease-in-out infinite;
-                left: calc(50% - 525px); /* tuned to where logo appears; adjust if needed */
-                top: calc(50% - 290px);
+                width: 10px;
+                height: 10px;
+                background: #FFD700;
+                top: -10%;
+                animation: confettiFall linear infinite;
             }
-            @keyframes hatBounce {
-                0%,100%{
-                    transform: translateY(0)
-                }
-                50%{
-                    transform: translateY(-6px)
+            .confetti:nth-child(odd) {
+                background: #FF0000;
+            }
+            @keyframes confettiFall {
+                to {
+                    transform: translateY(120vh) rotate(360deg);
+                    opacity: 0;
                 }
             }
 
-            /* snowman */
-            .snowman {
+            /* ===== TOGGLE BUTTON ===== */
+            #tetToggle {
                 position: fixed;
-                bottom: 14px;
-                right: 18px;
-                width: 92px;
-                height: 140px;
-                z-index: 1060;
-                pointer-events: none;
-                animation: snowmanBob 4s ease-in-out infinite;
-                filter: drop-shadow(0 6px 12px rgba(0,0,0,0.4));
+                left: 12px;
+                bottom: 12px;
+                z-index: 20000;
+                background: linear-gradient(135deg, #FFD700, #FFA500);
+                border-radius: 24px;
+                padding: 8px 14px;
+                box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4);
+                cursor: pointer;
+                font-size: 13px;
+                display: flex;
+                gap: 8px;
+                align-items: center;
+                font-weight: 600;
+                color: #8B0000;
+                border: 2px solid #FF0000;
             }
-            @keyframes snowmanBob {
-                0%,100%{
-                    transform: translateY(0)
+            #tetToggle .dot {
+                width: 12px;
+                height: 12px;
+                border-radius: 50%;
+                background: #FF0000;
+                box-shadow: 0 0 8px #FF0000;
+                animation: pulse 2s infinite;
+            }
+            @keyframes pulse {
+                0%, 100% {
+                    transform: scale(1);
+                    opacity: 1;
                 }
-                50%{
-                    transform: translateY(-8px)
-                }
-            }
-
-            /* small gift boxes */
-            .gift {
-                position: fixed;
-                bottom: 8px;
-                width: 46px;
-                height: 40px;
-                z-index: 1060;
-                pointer-events: none;
-                animation: giftBounce 3.6s ease-in-out infinite;
-            }
-            .gift.g1 {
-                left: 16%;
-                animation-delay: 0s;
-            }
-            .gift.g2 {
-                left: 26%;
-                animation-delay: 0.5s;
-            }
-            .gift.g3 {
-                right: 14%;
-                animation-delay: 0.2s;
-            }
-            @keyframes giftBounce {
-                0%,100%{
-                    transform: translateY(0)
-                }
-                50%{
-                    transform: translateY(-6px)
+                50% {
+                    transform: scale(1.2);
+                    opacity: 0.8;
                 }
             }
 
-            /* ensure overlay decorations are hidden when xmas disabled */
-            body:not(.xmas) #xmasOverlay > .decoration {
+            /* Hide decorations when disabled */
+            body:not(.tet) #tetOverlay > .decoration {
                 display: none;
             }
         </style>
         <!-- ====== end festive ====== -->
     </head>
     <body>
-        <!-- Xmas overlay and controls -->
-        <div id="xmasOverlay" aria-hidden="true">
-            <div class="xmas-lights" aria-hidden="true">
-                <div class="bulb"></div><div class="bulb"></div><div class="bulb"></div><div class="bulb"></div>
-            </div>
-            <div class="xmas-ornament" aria-hidden="true" title="Merry Christmas">
-                <!-- simple SVG snowflake icon -->
-                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="M12 2v4M12 18v4M4.2 6.2l2.8 2.8M17 15l2.8 2.8M2 12h4M18 12h4M4.2 17.8L7 15M17 9l2.8-2.8" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-            </div>
-
-            <!-- ==== NEW DECORATIONS (decorations have class .decoration so toggle CSS can hide them) ==== -->
-            <div class="decoration santa-flight" aria-hidden="true" title="Santa is coming">
-                <!-- simple Santa + sleigh SVG -->
-                <svg viewBox="0 0 640 240" width="100%" height="100%" fill="none" aria-hidden="true">
-                <g transform="scale(0.3)">
-                <path d="M870 140c-40-10-90-30-130-50-40-20-80-45-120-60-30-12-60-20-90-25" stroke="#222" stroke-width="6" fill="none"/>
-                <g transform="translate(350,30)">
-                <circle cx="80" cy="40" r="28" fill="#fff"/>
-                <path d="M20 90c70-10 160-10 230 0" stroke="#b33" stroke-width="18" stroke-linecap="round"/>
-                <rect x="-10" y="100" width="300" height="24" rx="10" fill="#6b3e1d"/>
-                <!-- sleigh hint -->
-                <path d="M-20 132 q40 20 120 20" stroke="#222" stroke-width="10" fill="none" stroke-linecap="round"/>
-                </g>
-                </g>
-                </svg>
-            </div>
-
-            <div class="decoration xmas-tree" style="left:18px;" aria-hidden="true">
-                <div class="tree-graphic">
-                    <div class="tree-lights">
-                        <span style="left:18%; top:8%; color:#ffd700; animation-delay:0.1s"></span>
-                        <span style="left:58%; top:20%; color:#ff4d4f; animation-delay:0.6s"></span>
-                        <span style="left:34%; top:38%; color:#69c0ff; animation-delay:1.1s"></span>
-                        <span style="left:64%; top:56%; color:#73d13d; animation-delay:1.8s"></span>
-                    </div>
+        <!-- Tet overlay and controls -->
+        <div id="tetOverlay" aria-hidden="true">
+            <!-- Đèn lồng đỏ -->
+            <div class="tet-lanterns" aria-hidden="true">
+                <div class="lantern" data-text="Phúc">
+                    <div class="lantern-tassel"></div>
+                </div>
+                <div class="lantern" style="animation-delay: 0.5s;" data-text="Lộc">
+                    <div class="lantern-tassel"></div>
+                </div>
+                <div class="lantern" style="animation-delay: 1s;" data-text="Thọ">
+                    <div class="lantern-tassel"></div>
                 </div>
             </div>
 
-            <div class="decoration xmas-tree small" style="left:120px;" aria-hidden="true">
-                <div class="tree-graphic">
-                    <div class="tree-lights">
-                        <span style="left:28%; top:12%; color:#ffd666; animation-delay:0.2s"></span>
-                        <span style="left:52%; top:40%; color:#ff6b6b; animation-delay:0.9s"></span>
-                    </div>
-                </div>
-            </div>
+            <!-- Câu đối tết -->
+            <div class="decoration tet-couplet left" aria-hidden="true">2026</div>
+            <div class="decoration tet-couplet right" aria-hidden="true">2026</div>
 
-            <div class="decoration snowman" aria-hidden="true" title="Snowman">
-                <!-- simple snowman SVG -->
+            <!-- Cây hoa đào / mai -->
+            <div class="decoration tet-peach-blossom left" aria-hidden="true">
                 <svg viewBox="0 0 120 180" width="100%" height="100%" aria-hidden="true">
-                <g transform="translate(10,10)">
-                <circle cx="50" cy="120" r="30" fill="#fff" stroke="#ddd"/>
-                <circle cx="50" cy="80" r="22" fill="#fff" stroke="#ddd"/>
-                <circle cx="50" cy="48" r="16" fill="#fff" stroke="#ddd"/>
-                <rect x="18" y="44" width="64" height="10" rx="2" fill="#b33"/>
-                <circle cx="44" cy="46" r="2" fill="#000"/>
-                <circle cx="56" cy="46" r="2" fill="#000"/>
-                <path d="M50 54 q6 6 12 0" stroke="#000" stroke-width="2" fill="none"/>
-                <line x1="28" y1="80" x2="10" y2="70" stroke="#6b3e1d" stroke-width="3"/>
-                <line x1="72" y1="80" x2="90" y2="70" stroke="#6b3e1d" stroke-width="3"/>
+                <!-- Thân cây -->
+                <path d="M60 180 L60 40 Q58 35 62 30 L58 25" stroke="#5D4037" stroke-width="6" fill="none"/>
+                <path d="M60 100 L75 90" stroke="#5D4037" stroke-width="4" fill="none"/>
+                <path d="M60 80 L45 70" stroke="#5D4037" stroke-width="4" fill="none"/>
+                <path d="M60 50 L70 45" stroke="#5D4037" stroke-width="3" fill="none"/>
+
+                <!-- Hoa đào -->
+                <circle cx="45" cy="70" r="8" fill="#FFB3BA" opacity="0.9"/>
+                <circle cx="43" cy="68" r="3" fill="#FF69B4"/>
+                <circle cx="75" cy="90" r="7" fill="#FFB3BA" opacity="0.9"/>
+                <circle cx="74" cy="88" r="3" fill="#FF1493"/>
+                <circle cx="70" cy="45" r="9" fill="#FFB3BA" opacity="0.9"/>
+                <circle cx="68" cy="43" r="3" fill="#FF69B4"/>
+                <circle cx="62" cy="30" r="10" fill="#FFB3BA" opacity="0.9"/>
+                <circle cx="60" cy="28" r="4" fill="#FF1493"/>
+                <circle cx="58" cy="25" r="8" fill="#FFB3BA" opacity="0.9"/>
+                <circle cx="56" cy="23" r="3" fill="#FF69B4"/>
+                </svg>
+            </div>
+
+            <div class="decoration tet-peach-blossom right" aria-hidden="true">
+                <svg viewBox="0 0 120 180" width="100%" height="100%" aria-hidden="true">
+                <!-- Thân cây mai -->
+                <path d="M60 180 L60 40 Q62 35 58 30 L62 25" stroke="#8B7355" stroke-width="6" fill="none"/>
+                <path d="M60 100 L45 90" stroke="#8B7355" stroke-width="4" fill="none"/>
+                <path d="M60 80 L75 70" stroke="#8B7355" stroke-width="4" fill="none"/>
+                <path d="M60 50 L50 45" stroke="#8B7355" stroke-width="3" fill="none"/>
+
+                <!-- Hoa mai vàng -->
+                <g transform="translate(45, 90)">
+                <circle r="10" fill="#FFD700" opacity="0.9"/>
+                <circle cx="-6" cy="-6" r="3" fill="#FFA500"/>
+                <circle cx="6" cy="-6" r="3" fill="#FFA500"/>
+                <circle cx="-6" cy="6" r="3" fill="#FFA500"/>
+                <circle cx="6" cy="6" r="3" fill="#FFA500"/>
+                <circle cx="0" cy="0" r="2" fill="#FF8C00"/>
+                </g>
+                <g transform="translate(75, 70)">
+                <circle r="9" fill="#FFD700" opacity="0.9"/>
+                <circle cx="-5" cy="-5" r="2.5" fill="#FFA500"/>
+                <circle cx="5" cy="-5" r="2.5" fill="#FFA500"/>
+                <circle cx="-5" cy="5" r="2.5" fill="#FFA500"/>
+                <circle cx="5" cy="5" r="2.5" fill="#FFA500"/>
+                </g>
+                <g transform="translate(50, 45)">
+                <circle r="11" fill="#FFD700" opacity="0.9"/>
+                <circle cx="-6" cy="-6" r="3" fill="#FFA500"/>
+                <circle cx="6" cy="-6" r="3" fill="#FFA500"/>
+                <circle cx="-6" cy="6" r="3" fill="#FFA500"/>
+                <circle cx="6" cy="6" r="3" fill="#FFA500"/>
+                <circle cx="0" cy="0" r="2" fill="#FF8C00"/>
+                </g>
+                <g transform="translate(62, 30)">
+                <circle r="10" fill="#FFD700" opacity="0.9"/>
+                <circle cx="-5" cy="-5" r="3" fill="#FFA500"/>
+                <circle cx="5" cy="-5" r="3" fill="#FFA500"/>
+                <circle cx="-5" cy="5" r="3" fill="#FFA500"/>
+                <circle cx="5" cy="5" r="3" fill="#FFA500"/>
                 </g>
                 </svg>
             </div>
 
-            <div class="decoration gift g1" aria-hidden="true" title="Gift 1">
-                <svg viewBox="0 0 80 72" width="100%" height="100%">
-                <rect x="8" y="18" width="64" height="44" rx="4" fill="#ff7eb6" stroke="#d33"/>
-                <rect x="36" y="6" width="8" height="56" fill="#fff2" />
-                <rect x="8" y="28" width="64" height="8" fill="#fff4"/>
-                </svg>
-            </div>
-
-            <div class="decoration gift g2" aria-hidden="true" title="Gift 2">
-                <svg viewBox="0 0 80 72" width="100%" height="100%">
-                <rect x="8" y="18" width="64" height="44" rx="4" fill="#69c0ff" stroke="#0a7"/>
-                <rect x="36" y="6" width="8" height="56" fill="#fff2" />
-                </svg>
-            </div>
-
-            <div class="decoration gift g3" aria-hidden="true" title="Gift 3">
-                <svg viewBox="0 0 80 72" width="100%" height="100%">
-                <rect x="8" y="18" width="64" height="44" rx="4" fill="#ffd666" stroke="#b96"/>
-                <rect x="36" y="6" width="8" height="56" fill="#fff2" />
-                </svg>
-            </div>
-
-            <!-- small Santa hat sitting near the logo -->
-            <div class="decoration santa-hat" aria-hidden="true" title="Santa hat">
-                <svg viewBox="0 0 64 64" width="100%" height="100%" aria-hidden="true">
-                <path d="M6 30 q10 -18 26 -18 q12 0 26 18 q-20 6 -52 0z" fill="#d33"/>
-                <path d="M4 32 q28 14 56 0" fill="#fff"/>
-                <circle cx="56" cy="12" r="6" fill="#fff"/>
-                </svg>
-            </div>
-
+            <!-- Bao lì xì -->
+            <div class="decoration tet-envelope e1" aria-hidden="true"></div>
+            <div class="decoration tet-envelope e2" aria-hidden="true"></div>
+            <div class="decoration tet-envelope e3" aria-hidden="true"></div>
         </div>
 
-        <button id="xmasToggle" title="Bật/Tắt hiệu ứng Giáng sinh" aria-pressed="true">
-            <span class="dot"></span><span style="font-weight:600;">Giáng sinh</span>
+        <button id="tetToggle" title="Bật/Tắt hiệu ứng Tết" aria-pressed="true">
+            <span class="dot"></span><span>Tết Nguyên Đán 2026</span>
         </button>
+
         <script>
             (function () {
-                const overlay = document.getElementById('xmasOverlay');
-                const toggle = document.getElementById('xmasToggle');
+                const overlay = document.getElementById('tetOverlay');
+                const toggle = document.getElementById('tetToggle');
                 const htmlEl = document.documentElement;
                 const bodyEl = document.body || htmlEl;
                 let enabled = true;
 
-                // create snowflakes
-                function createSnowflakes(count) {
-                    overlay.querySelectorAll('.snowflake').forEach(n => n.remove());
-                    const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
+                // Tạo hoa đào/mai rơi
+                function createBlossoms(count) {
+                    overlay.querySelectorAll('.peach-blossom').forEach(n => n.remove());
+                    const blossoms = ['🌸', '🌺', '🏵️', '💮'];
                     for (let i = 0; i < count; i++) {
-                        const s = document.createElement('div');
-                        s.className = 'snowflake';
-                        s.style.left = Math.random() * 100 + '%';
-                        const size = 8 + Math.random() * 16;
-                        s.style.fontSize = size + 'px';
-                        const delay = Math.random() * -20;
-                        const dur = 8 + Math.random() * 18;
-                        s.style.animationDuration = dur + 's';
-                        s.style.animationDelay = delay + 's';
-                        s.style.opacity = 0.6 + Math.random() * 0.4;
-                        s.innerHTML = '❄';
-                        overlay.appendChild(s);
+                        const b = document.createElement('div');
+                        b.className = 'peach-blossom';
+                        b.style.left = Math.random() * 100 + '%';
+                        const size = 16 + Math.random() * 12;
+                        b.style.fontSize = size + 'px';
+                        const delay = Math.random() * -15;
+                        const dur = 10 + Math.random() * 15;
+                        b.style.animationDuration = dur + 's';
+                        b.style.animationDelay = delay + 's';
+                        b.style.opacity = 0.7 + Math.random() * 0.3;
+                        b.innerHTML = blossoms[Math.floor(Math.random() * blossoms.length)];
+                        overlay.appendChild(b);
                     }
                 }
 
-                // make small random twinkles for tree-lights (in case some browsers remove CSS animation)
-                function reviveTreeLights() {
-                    overlay.querySelectorAll('.tree-lights span').forEach((el, idx) => {
-                        el.style.animationDelay = (idx * 0.3 + Math.random()).toFixed(2) + 's';
-                    });
+                // Tạo confetti vàng đỏ
+                function createConfetti(count) {
+                    overlay.querySelectorAll('.confetti').forEach(n => n.remove());
+                    for (let i = 0; i < count; i++) {
+                        const c = document.createElement('div');
+                        c.className = 'confetti';
+                        c.style.left = Math.random() * 100 + '%';
+                        const delay = Math.random() * -10;
+                        const dur = 5 + Math.random() * 10;
+                        c.style.animationDuration = dur + 's';
+                        c.style.animationDelay = delay + 's';
+                        overlay.appendChild(c);
+                    }
                 }
 
-                // optional: reposition santa-hat to sit above actual logo on different viewport sizes
-                function positionHatNearLogo() {
-                    const logo = document.querySelector('.login-left img');
-                    const hat = document.querySelector('.santa-hat');
-                    if (!logo || !hat)
-                        return;
-                    const r = logo.getBoundingClientRect();
-                    hat.style.left = (r.left + r.width * 0.62) + 'px';
-                    hat.style.top = (r.top - r.height * 0.18) + 'px';
-                    hat.style.width = Math.max(36, Math.min(64, r.width * 0.24)) + 'px';
+                // Tạo pháo hoa
+                function createFireworks() {
+                    const colors = ['#FFD700', '#FF0000', '#FF6347', '#FFA500', '#FF1493'];
+                    setInterval(() => {
+                        if (!enabled)
+                            return;
+                        const container = document.createElement('div');
+                        container.style.position = 'absolute';
+                        container.style.left = (20 + Math.random() * 60) + '%';
+                        container.style.top = (10 + Math.random() * 30) + '%';
+                        overlay.appendChild(container);
+
+                        for (let i = 0; i < 30; i++) {
+                            const particle = document.createElement('div');
+                            particle.className = 'firework';
+                            const angle = (Math.PI * 2 * i) / 30;
+                            const velocity = 50 + Math.random() * 50;
+                            particle.style.setProperty('--tx', Math.cos(angle) * velocity + 'px');
+                            particle.style.setProperty('--ty', Math.sin(angle) * velocity + 'px');
+                            particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+                            container.appendChild(particle);
+                        }
+
+                        setTimeout(() => container.remove(), 2000);
+                    }, 3000);
                 }
 
                 function setEnabled(v) {
                     enabled = !!v;
                     if (enabled) {
-                        // add class to both body and html to match CSS selectors
-                        htmlEl.classList.add('xmas');
-                        bodyEl.classList.add('xmas');
-                        createSnowflakes(36);
-                        reviveTreeLights();
-                        positionHatNearLogo();
+                        htmlEl.classList.add('tet');
+                        bodyEl.classList.add('tet');
+                        createBlossoms(25);
+                        createConfetti(20);
+                        createFireworks();
                         toggle.setAttribute('aria-pressed', 'true');
-                        toggle.querySelector('.dot').style.background = '#ff6b6b';
+                        toggle.querySelector('.dot').style.background = '#FF0000';
                     } else {
-                        htmlEl.classList.remove('xmas');
-                        bodyEl.classList.remove('xmas');
-                        overlay.querySelectorAll('.snowflake').forEach(n => n.remove());
+                        htmlEl.classList.remove('tet');
+                        bodyEl.classList.remove('tet');
+                        overlay.querySelectorAll('.peach-blossom').forEach(n => n.remove());
+                        overlay.querySelectorAll('.confetti').forEach(n => n.remove());
                         toggle.setAttribute('aria-pressed', 'false');
                         toggle.querySelector('.dot').style.background = '#999';
                     }
@@ -819,14 +883,14 @@
                 toggle.addEventListener('click', function () {
                     setEnabled(!enabled);
                     try {
-                        localStorage.setItem('xmasEnabled', enabled ? '1' : '0');
+                        localStorage.setItem('tetEnabled', enabled ? '1' : '0');
                     } catch (e) {
                     }
                 });
 
-                // restore preference
+                // Restore preference
                 try {
-                    const pref = localStorage.getItem('xmasEnabled');
+                    const pref = localStorage.getItem('tetEnabled');
                     if (pref !== null)
                         setEnabled(pref === '1');
                     else
@@ -835,15 +899,12 @@
                     setEnabled(true);
                 }
 
-                // recreate when resize for better distribution
                 window.addEventListener('resize', function () {
                     if (enabled) {
-                        createSnowflakes(36);
-                        positionHatNearLogo();
+                        createBlossoms(25);
+                        createConfetti(20);
                     }
                 });
-                // initial position
-                window.addEventListener('load', positionHatNearLogo);
             })();
         </script>
         <script>
@@ -881,8 +942,8 @@
                 </div>
             </div>
             <div class="login-right">
-                <h3>Welcome ICS HRM</h3>
-                <p class="text-muted">Sign in to continue</p>
+                <h3>🎊 Chúc Mừng Năm Mới 2026 🎊</h3>
+                <p class="text-muted">Vạn sự như ý - An khang thịnh vượng</p>
                 <% if (!errorMsg.isEmpty()) { %>
                 <div class="alert alert-danger py-2 mb-3" role="alert">
                     <%= errorMsg %>

@@ -3485,6 +3485,44 @@ public class KNCSDL {
         }
     }
 
+    /**
+     * Lấy danh sách ID nhân viên theo chức vụ
+     * @param chucVu Chức vụ cần lọc (VD: "Giám đốc", "Trưởng phòng")
+     * @return Danh sách ID nhân viên
+     */
+    public List<Integer> getNhanVienIdsByChucVu(String chucVu) throws SQLException {
+        List<Integer> ids = new ArrayList<>();
+        String sql = "SELECT id FROM nhanvien WHERE chuc_vu = ? AND trang_thai_lam_viec = 'Đang làm'";
+        
+        try (PreparedStatement ps = cn.prepareStatement(sql)) {
+            ps.setString(1, chucVu);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    ids.add(rs.getInt("id"));
+                }
+            }
+        }
+        return ids;
+    }
+
+    /**
+     * Lấy danh sách ID nhân viên có chức vụ Giám đốc hoặc Trưởng phòng
+     * @return Danh sách ID nhân viên
+     */
+    public List<Integer> getNhanVienGiamDocVaTruongPhong() throws SQLException {
+        List<Integer> ids = new ArrayList<>();
+        String sql = "SELECT id FROM nhanvien WHERE chuc_vu IN ('Giám đốc', 'Trưởng phòng') AND trang_thai_lam_viec = 'Đang làm'";
+        
+        try (PreparedStatement ps = cn.prepareStatement(sql)) {
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    ids.add(rs.getInt("id"));
+                }
+            }
+        }
+        return ids;
+    }
+
     public List<Integer> getDanhSachNguoiNhanId(int congViecId) throws SQLException {
         List<Integer> ids = new ArrayList<>();
         String sql = "SELECT nhan_vien_id FROM cong_viec_nguoi_nhan WHERE cong_viec_id = ?";
@@ -5297,10 +5335,13 @@ public class KNCSDL {
                         status = "Chưa bắt đầu";
                     }
 
-                    // ✅ KIỂM TRA VÀ TỰ ĐỘNG CẬP NHẬT TRẠNG THÁI DỰ ÁN
-                    // Nếu tiến độ >= 99.5% (coi như 100%) và trạng thái không phải "Đã hoàn thành"
-                    // Thì tự động cập nhật trạng thái thành "Đã hoàn thành"
-                    if (tiendoValue >= 99.5 && !status.equals("Đã hoàn thành")) {
+                    // ✅ KIỂM TRA VÀ TỰ ĐỘNG CẬP NHẬT TRẠNG THÁI DỰ ÁN (2 CHIỀU)
+                    // Chỉ xử lý 2 trạng thái: "Đang thực hiện" và "Đã hoàn thành"
+                    // Không động vào "Tạm ngưng" và "Đóng dự án"
+                    
+                    // Logic 1: Nếu tiến độ >= 99.5% (coi như 100%) và đang ở trạng thái "Đang thực hiện"
+                    // Thì tự động chuyển sang "Đã hoàn thành"
+                    if (tiendoValue >= 99.5 && status.equals("Đang thực hiện")) {
                         try {
                             String updateSql = "UPDATE du_an SET trang_thai_duan = ? WHERE id = ?";
                             try (PreparedStatement updateStmt = cn.prepareStatement(updateSql)) {
@@ -5309,6 +5350,22 @@ public class KNCSDL {
                                 updateStmt.executeUpdate();
                             }
                             status = "Đã hoàn thành";
+                        } catch (Exception ex) {
+                            // Nếu cập nhật thất bại, vẫn lấy status từ database
+                            ex.printStackTrace();
+                        }
+                    }
+                    // Logic 2: Nếu tiến độ < 99.5% (chưa đến 100%) và đang ở trạng thái "Đã hoàn thành"
+                    // Thì tự động chuyển về "Đang thực hiện" (vì có thêm việc mới)
+                    else if (tiendoValue < 99.5 && status.equals("Đã hoàn thành")) {
+                        try {
+                            String updateSql = "UPDATE du_an SET trang_thai_duan = ? WHERE id = ?";
+                            try (PreparedStatement updateStmt = cn.prepareStatement(updateSql)) {
+                                updateStmt.setString(1, "Đang thực hiện");
+                                updateStmt.setInt(2, id);
+                                updateStmt.executeUpdate();
+                            }
+                            status = "Đang thực hiện";
                         } catch (Exception ex) {
                             // Nếu cập nhật thất bại, vẫn lấy status từ database
                             ex.printStackTrace();
