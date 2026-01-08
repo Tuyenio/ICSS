@@ -4842,6 +4842,57 @@ ALTER TABLE `tai_lieu`
 --
 ALTER TABLE `thong_bao`
   ADD CONSTRAINT `thong_bao_ibfk_1` FOREIGN KEY (`nguoi_nhan_id`) REFERENCES `nhanvien` (`id`) ON DELETE CASCADE;
+
+-- --------------------------------------------------------
+
+--
+-- Cấu trúc bảng cho bảng `don_nghi_phep`
+--
+
+CREATE TABLE IF NOT EXISTS `don_nghi_phep` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `nhan_vien_id` int(11) NOT NULL,
+  `loai_phep` varchar(50) DEFAULT 'annual',
+  `ngay_bat_dau` date NOT NULL,
+  `ngay_ket_thuc` date NOT NULL,
+  `so_ngay` decimal(4,1) NOT NULL,
+  `ly_do` text,
+  `ghi_chu` text,
+  `trang_thai` varchar(20) DEFAULT 'cho_duyet',
+  `nguoi_tao_id` int(11),
+  `nguoi_duyet_id` int(11),
+  `ly_do_tu_choi` text,
+  `thoi_gian_tao` timestamp DEFAULT CURRENT_TIMESTAMP,
+  `thoi_gian_duyet` timestamp NULL,
+  PRIMARY KEY (`id`),
+  KEY `nhan_vien_id` (`nhan_vien_id`),
+  KEY `nguoi_tao_id` (`nguoi_tao_id`),
+  KEY `nguoi_duyet_id` (`nguoi_duyet_id`),
+  CONSTRAINT `don_nghi_phep_ibfk_1` FOREIGN KEY (`nhan_vien_id`) REFERENCES `nhanvien` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `don_nghi_phep_ibfk_2` FOREIGN KEY (`nguoi_tao_id`) REFERENCES `nhanvien` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `don_nghi_phep_ibfk_3` FOREIGN KEY (`nguoi_duyet_id`) REFERENCES `nhanvien` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Cấu trúc bảng cho bảng `ngay_phep_nam`
+--
+
+CREATE TABLE IF NOT EXISTS `ngay_phep_nam` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `nhan_vien_id` int(11) NOT NULL,
+  `nam` int(4) NOT NULL,
+  `tong_ngay_phep` decimal(4,1) DEFAULT 12.0,
+  `ngay_phep_da_dung` decimal(4,1) DEFAULT 0.0,
+  `ngay_phep_con_lai` decimal(4,1) DEFAULT 12.0,
+  `ngay_cap_nhat` timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `unique_nv_nam` (`nhan_vien_id`, `nam`),
+  KEY `nhan_vien_id` (`nhan_vien_id`),
+  CONSTRAINT `ngay_phep_nam_ibfk_1` FOREIGN KEY (`nhan_vien_id`) REFERENCES `nhanvien` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

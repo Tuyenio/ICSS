@@ -24,8 +24,8 @@ public class KNCSDL {
 
     public KNCSDL() throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
-        //this.cn = DriverManager.getConnection(path, "root", "");
-        this.cn = DriverManager.getConnection(path, "icssapp", "StrongPass!2025");
+        this.cn = DriverManager.getConnection(path, "root", "");
+        //this.cn = DriverManager.getConnection(path, "icssapp", "StrongPass!2025");
     }
 
     public ResultSet laydl(String email) throws SQLException {
@@ -6021,6 +6021,378 @@ public class KNCSDL {
             }
         }
         return list;
+    }
+
+    // ============================================
+    // QUẢN LÝ ĐƠN XIN NGHỈ PHÉP
+    // ============================================
+
+    /**
+     * Lấy danh sách tất cả đơn nghỉ phép (cho Admin)
+     */
+    public List<Map<String, Object>> getAllDonNghiPhep(String trangThai, int thang, int nam) throws SQLException {
+        List<Map<String, Object>> list = new ArrayList<>();
+        
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT d.*, nv.ho_ten AS ten_nhan_vien, nv.email AS email_nhan_vien, ");
+        sql.append("nv.avatar_url, pb.ten_phong AS ten_phong_ban, ");
+        sql.append("nd.ho_ten AS ten_nguoi_duyet ");
+        sql.append("FROM don_nghi_phep d ");
+        sql.append("LEFT JOIN nhanvien nv ON d.nhan_vien_id = nv.id ");
+        sql.append("LEFT JOIN phong_ban pb ON nv.phong_ban_id = pb.id ");
+        sql.append("LEFT JOIN nhanvien nd ON d.nguoi_duyet_id = nd.id ");
+        sql.append("WHERE 1=1 ");
+        
+        if (trangThai != null && !trangThai.isEmpty() && !trangThai.equals("all")) {
+            sql.append("AND d.trang_thai = ? ");
+        }
+        if (thang > 0 && nam > 0) {
+            sql.append("AND (MONTH(d.ngay_bat_dau) = ? OR MONTH(d.ngay_ket_thuc) = ?) ");
+            sql.append("AND (YEAR(d.ngay_bat_dau) = ? OR YEAR(d.ngay_ket_thuc) = ?) ");
+        }
+        sql.append("ORDER BY d.thoi_gian_tao DESC");
+        
+        try (PreparedStatement stmt = cn.prepareStatement(sql.toString())) {
+            int paramIndex = 1;
+            if (trangThai != null && !trangThai.isEmpty() && !trangThai.equals("all")) {
+                stmt.setString(paramIndex++, trangThai);
+            }
+            if (thang > 0 && nam > 0) {
+                stmt.setInt(paramIndex++, thang);
+                stmt.setInt(paramIndex++, thang);
+                stmt.setInt(paramIndex++, nam);
+                stmt.setInt(paramIndex++, nam);
+            }
+            
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> don = new HashMap<>();
+                    don.put("id", rs.getInt("id"));
+                    don.put("nhan_vien_id", rs.getInt("nhan_vien_id"));
+                    don.put("ten_nhan_vien", rs.getString("ten_nhan_vien"));
+                    don.put("email_nhan_vien", rs.getString("email_nhan_vien"));
+                    don.put("avatar_url", rs.getString("avatar_url"));
+                    don.put("ten_phong_ban", rs.getString("ten_phong_ban"));
+                    don.put("loai_phep", rs.getString("loai_phep"));
+                    don.put("ngay_bat_dau", rs.getDate("ngay_bat_dau"));
+                    don.put("ngay_ket_thuc", rs.getDate("ngay_ket_thuc"));
+                    don.put("so_ngay", rs.getBigDecimal("so_ngay"));
+                    don.put("ly_do", rs.getString("ly_do"));
+                    don.put("trang_thai", rs.getString("trang_thai"));
+                    don.put("ly_do_tu_choi", rs.getString("ly_do_tu_choi"));
+                    don.put("nguoi_duyet_id", rs.getInt("nguoi_duyet_id"));
+                    don.put("ten_nguoi_duyet", rs.getString("ten_nguoi_duyet"));
+                    don.put("thoi_gian_tao", rs.getTimestamp("thoi_gian_tao"));
+                    don.put("thoi_gian_duyet", rs.getTimestamp("thoi_gian_duyet"));
+                    don.put("ghi_chu", rs.getString("ghi_chu"));
+                    list.add(don);
+                }
+            }
+        }
+        return list;
+    }
+
+    /**
+     * Lấy danh sách đơn nghỉ phép của nhân viên cụ thể
+     */
+    public List<Map<String, Object>> getDonNghiPhepByNhanVien(int nhanVienId) throws SQLException {
+        List<Map<String, Object>> list = new ArrayList<>();
+        
+        String sql = "SELECT d.*, nd.ho_ten AS ten_nguoi_duyet "
+                + "FROM don_nghi_phep d "
+                + "LEFT JOIN nhanvien nd ON d.nguoi_duyet_id = nd.id "
+                + "WHERE d.nhan_vien_id = ? "
+                + "ORDER BY d.thoi_gian_tao DESC";
+        
+        try (PreparedStatement stmt = cn.prepareStatement(sql)) {
+            stmt.setInt(1, nhanVienId);
+            
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> don = new HashMap<>();
+                    don.put("id", rs.getInt("id"));
+                    don.put("loai_phep", rs.getString("loai_phep"));
+                    don.put("ngay_bat_dau", rs.getDate("ngay_bat_dau"));
+                    don.put("ngay_ket_thuc", rs.getDate("ngay_ket_thuc"));
+                    don.put("so_ngay", rs.getBigDecimal("so_ngay"));
+                    don.put("ly_do", rs.getString("ly_do"));
+                    don.put("trang_thai", rs.getString("trang_thai"));
+                    don.put("ly_do_tu_choi", rs.getString("ly_do_tu_choi"));
+                    don.put("ten_nguoi_duyet", rs.getString("ten_nguoi_duyet"));
+                    don.put("thoi_gian_tao", rs.getTimestamp("thoi_gian_tao"));
+                    don.put("thoi_gian_duyet", rs.getTimestamp("thoi_gian_duyet"));
+                    don.put("ghi_chu", rs.getString("ghi_chu"));
+                    list.add(don);
+                }
+            }
+        }
+        return list;
+    }
+
+    /**
+     * Tạo đơn xin nghỉ phép mới
+     */
+    public int taoDonNghiPhep(int nhanVienId, String loaiPhep, java.sql.Date ngayBatDau, 
+            java.sql.Date ngayKetThuc, double soNgay, String lyDo, Integer nguoiTaoId, String ghiChu) throws SQLException {
+        
+        String sql = "INSERT INTO don_nghi_phep (nhan_vien_id, loai_phep, ngay_bat_dau, ngay_ket_thuc, "
+                + "so_ngay, ly_do, trang_thai, nguoi_tao_id, ghi_chu) VALUES (?, ?, ?, ?, ?, ?, 'cho_duyet', ?, ?)";
+        
+        try (PreparedStatement stmt = cn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            stmt.setInt(1, nhanVienId);
+            stmt.setString(2, loaiPhep);
+            stmt.setDate(3, ngayBatDau);
+            stmt.setDate(4, ngayKetThuc);
+            stmt.setDouble(5, soNgay);
+            stmt.setString(6, lyDo);
+            if (nguoiTaoId != null) {
+                stmt.setInt(7, nguoiTaoId);
+            } else {
+                stmt.setNull(7, java.sql.Types.INTEGER);
+            }
+            stmt.setString(8, ghiChu);
+            
+            int affectedRows = stmt.executeUpdate();
+            if (affectedRows > 0) {
+                try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
+                    if (generatedKeys.next()) {
+                        return generatedKeys.getInt(1);
+                    }
+                }
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * Duyệt đơn nghỉ phép
+     */
+    public boolean duyetDonNghiPhep(int donId, int nguoiDuyetId) throws SQLException {
+        String sql = "UPDATE don_nghi_phep SET trang_thai = 'da_duyet', nguoi_duyet_id = ?, "
+                + "thoi_gian_duyet = NOW() WHERE id = ? AND trang_thai = 'cho_duyet'";
+        
+        try (PreparedStatement stmt = cn.prepareStatement(sql)) {
+            stmt.setInt(1, nguoiDuyetId);
+            stmt.setInt(2, donId);
+            return stmt.executeUpdate() > 0;
+        }
+    }
+
+    /**
+     * Từ chối đơn nghỉ phép
+     */
+    public boolean tuChoiDonNghiPhep(int donId, int nguoiDuyetId, String lyDoTuChoi) throws SQLException {
+        String sql = "UPDATE don_nghi_phep SET trang_thai = 'tu_choi', nguoi_duyet_id = ?, "
+                + "ly_do_tu_choi = ?, thoi_gian_duyet = NOW() WHERE id = ? AND trang_thai = 'cho_duyet'";
+        
+        try (PreparedStatement stmt = cn.prepareStatement(sql)) {
+            stmt.setInt(1, nguoiDuyetId);
+            stmt.setString(2, lyDoTuChoi);
+            stmt.setInt(3, donId);
+            return stmt.executeUpdate() > 0;
+        }
+    }
+
+    /**
+     * Lấy thông tin chi tiết đơn nghỉ phép
+     */
+    public Map<String, Object> getDonNghiPhepById(int donId) throws SQLException {
+        String sql = "SELECT d.*, nv.ho_ten AS ten_nhan_vien, nv.email AS email_nhan_vien, "
+                + "nv.avatar_url, pb.ten_phong AS ten_phong_ban, nd.ho_ten AS ten_nguoi_duyet "
+                + "FROM don_nghi_phep d "
+                + "LEFT JOIN nhanvien nv ON d.nhan_vien_id = nv.id "
+                + "LEFT JOIN phong_ban pb ON nv.phong_ban_id = pb.id "
+                + "LEFT JOIN nhanvien nd ON d.nguoi_duyet_id = nd.id "
+                + "WHERE d.id = ?";
+        
+        try (PreparedStatement stmt = cn.prepareStatement(sql)) {
+            stmt.setInt(1, donId);
+            
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    Map<String, Object> don = new HashMap<>();
+                    don.put("id", rs.getInt("id"));
+                    don.put("nhan_vien_id", rs.getInt("nhan_vien_id"));
+                    don.put("ten_nhan_vien", rs.getString("ten_nhan_vien"));
+                    don.put("email_nhan_vien", rs.getString("email_nhan_vien"));
+                    don.put("avatar_url", rs.getString("avatar_url"));
+                    don.put("ten_phong_ban", rs.getString("ten_phong_ban"));
+                    don.put("loai_phep", rs.getString("loai_phep"));
+                    don.put("ngay_bat_dau", rs.getDate("ngay_bat_dau"));
+                    don.put("ngay_ket_thuc", rs.getDate("ngay_ket_thuc"));
+                    don.put("so_ngay", rs.getBigDecimal("so_ngay"));
+                    don.put("ly_do", rs.getString("ly_do"));
+                    don.put("trang_thai", rs.getString("trang_thai"));
+                    don.put("ly_do_tu_choi", rs.getString("ly_do_tu_choi"));
+                    don.put("ten_nguoi_duyet", rs.getString("ten_nguoi_duyet"));
+                    don.put("thoi_gian_tao", rs.getTimestamp("thoi_gian_tao"));
+                    don.put("thoi_gian_duyet", rs.getTimestamp("thoi_gian_duyet"));
+                    don.put("ghi_chu", rs.getString("ghi_chu"));
+                    return don;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Lấy thông tin ngày phép của nhân viên trong năm
+     */
+    public Map<String, Object> getNgayPhepNam(int nhanVienId, int nam) throws SQLException {
+        // Kiểm tra nếu chưa có bản ghi thì tạo mới
+        String checkSql = "SELECT * FROM ngay_phep_nam WHERE nhan_vien_id = ? AND nam = ?";
+        try (PreparedStatement checkStmt = cn.prepareStatement(checkSql)) {
+            checkStmt.setInt(1, nhanVienId);
+            checkStmt.setInt(2, nam);
+            
+            try (ResultSet rs = checkStmt.executeQuery()) {
+                if (rs.next()) {
+                    Map<String, Object> result = new HashMap<>();
+                    result.put("id", rs.getInt("id"));
+                    result.put("nhan_vien_id", rs.getInt("nhan_vien_id"));
+                    result.put("nam", rs.getInt("nam"));
+                    result.put("tong_ngay_phep", rs.getBigDecimal("tong_ngay_phep"));
+                    result.put("ngay_phep_da_dung", rs.getBigDecimal("ngay_phep_da_dung"));
+                    result.put("ngay_phep_con_lai", rs.getBigDecimal("ngay_phep_con_lai"));
+                    return result;
+                }
+            }
+        }
+        
+        // Nếu chưa có, tạo bản ghi mới với số ngày phép mặc định
+        String insertSql = "INSERT INTO ngay_phep_nam (nhan_vien_id, nam, tong_ngay_phep, ngay_phep_da_dung, ngay_phep_con_lai) "
+                + "VALUES (?, ?, 12.0, 0.0, 12.0)";
+        try (PreparedStatement insertStmt = cn.prepareStatement(insertSql)) {
+            insertStmt.setInt(1, nhanVienId);
+            insertStmt.setInt(2, nam);
+            insertStmt.executeUpdate();
+        }
+        
+        // Lấy lại dữ liệu sau khi insert
+        try (PreparedStatement stmt = cn.prepareStatement(checkSql)) {
+            stmt.setInt(1, nhanVienId);
+            stmt.setInt(2, nam);
+            
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    Map<String, Object> result = new HashMap<>();
+                    result.put("id", rs.getInt("id"));
+                    result.put("nhan_vien_id", rs.getInt("nhan_vien_id"));
+                    result.put("nam", rs.getInt("nam"));
+                    result.put("tong_ngay_phep", rs.getBigDecimal("tong_ngay_phep"));
+                    result.put("ngay_phep_da_dung", rs.getBigDecimal("ngay_phep_da_dung"));
+                    result.put("ngay_phep_con_lai", rs.getBigDecimal("ngay_phep_con_lai"));
+                    return result;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Hủy đơn xin nghỉ phép (chỉ hủy được đơn chờ duyệt)
+     */
+    public boolean huyDonNghiPhep(int donId) throws SQLException {
+        String sql = "UPDATE don_nghi_phep SET trang_thai = 'da_huy' WHERE id = ? AND trang_thai = 'cho_duyet'";
+        
+        try (PreparedStatement stmt = cn.prepareStatement(sql)) {
+            stmt.setInt(1, donId);
+            return stmt.executeUpdate() > 0;
+        }
+    }
+
+    /**
+     * Cập nhật số ngày phép đã dùng từ ID đơn (tính tổng từ các đơn đã duyệt)
+     */
+    public boolean capNhatNgayPhepDaDung(int donId) throws SQLException {
+        // Lấy thông tin đơn
+        String getDonSql = "SELECT nhan_vien_id, so_ngay, ngay_bat_dau FROM don_nghi_phep WHERE id = ?";
+        
+        try (PreparedStatement getStmt = cn.prepareStatement(getDonSql)) {
+            getStmt.setInt(1, donId);
+            
+            try (ResultSet rs = getStmt.executeQuery()) {
+                if (rs.next()) {
+                    int nhanVienId = rs.getInt("nhan_vien_id");
+                    double soNgay = rs.getDouble("so_ngay");
+                    Date ngayBatDau = rs.getDate("ngay_bat_dau");
+                    
+                    // Tính năm từ ngày bắt đầu
+                    Calendar cal = Calendar.getInstance();
+                    cal.setTime(new java.util.Date(ngayBatDau.getTime()));
+                    int nam = cal.get(Calendar.YEAR);
+                    
+                    // Cập nhật ngày phép đã dùng
+                    String updateSql = "UPDATE ngay_phep_nam SET "
+                            + "ngay_phep_da_dung = ngay_phep_da_dung + ?, "
+                            + "ngay_phep_con_lai = tong_ngay_phep - (ngay_phep_da_dung + ?) "
+                            + "WHERE nhan_vien_id = ? AND nam = ?";
+                    
+                    try (PreparedStatement updateStmt = cn.prepareStatement(updateSql)) {
+                        updateStmt.setDouble(1, soNgay);
+                        updateStmt.setDouble(2, soNgay);
+                        updateStmt.setInt(3, nhanVienId);
+                        updateStmt.setInt(4, nam);
+                        return updateStmt.executeUpdate() > 0;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Cập nhật số ngày phép đã dùng theo ID nhân viên và năm
+     */
+    public boolean capNhatNgayPhepDaDung(int nhanVienId, int nam, double soNgayThemVao) throws SQLException {
+        String sql = "UPDATE ngay_phep_nam SET "
+                + "ngay_phep_da_dung = ngay_phep_da_dung + ?, "
+                + "ngay_phep_con_lai = tong_ngay_phep - (ngay_phep_da_dung + ?) "
+                + "WHERE nhan_vien_id = ? AND nam = ?";
+        
+        try (PreparedStatement stmt = cn.prepareStatement(sql)) {
+            stmt.setDouble(1, soNgayThemVao);
+            stmt.setDouble(2, soNgayThemVao);
+            stmt.setInt(3, nhanVienId);
+            stmt.setInt(4, nam);
+            return stmt.executeUpdate() > 0;
+        }
+    }
+
+    /**
+     * Đếm số đơn nghỉ phép theo trạng thái
+     */
+    public Map<String, Integer> thongKeDonNghiPhep() throws SQLException {
+        Map<String, Integer> stats = new HashMap<>();
+        
+        String sql = "SELECT trang_thai, COUNT(*) as so_luong FROM don_nghi_phep GROUP BY trang_thai";
+        
+        try (PreparedStatement stmt = cn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                stats.put(rs.getString("trang_thai"), rs.getInt("so_luong"));
+            }
+        }
+        
+        // Đảm bảo có đủ các key
+        stats.putIfAbsent("cho_duyet", 0);
+        stats.putIfAbsent("da_duyet", 0);
+        stats.putIfAbsent("tu_choi", 0);
+        
+        return stats;
+    }
+
+    /**
+     * Xóa đơn nghỉ phép (chỉ được xóa đơn đang chờ duyệt)
+     */
+    public boolean xoaDonNghiPhep(int donId, int nhanVienId) throws SQLException {
+        String sql = "DELETE FROM don_nghi_phep WHERE id = ? AND nhan_vien_id = ? AND trang_thai = 'cho_duyet'";
+        
+        try (PreparedStatement stmt = cn.prepareStatement(sql)) {
+            stmt.setInt(1, donId);
+            stmt.setInt(2, nhanVienId);
+            return stmt.executeUpdate() > 0;
+        }
     }
 
 }
