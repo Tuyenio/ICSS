@@ -87,7 +87,8 @@ public class apiNghiPhep extends HttpServlet {
                     break;
                     
                 case "duyetDon":
-                    if ("Quản lý nhân sự".equals(role) || "Admin".equals(role)) {
+                    if ("Quản lý".equals(role) || "Admin".equals(role) || 
+                        "Trưởng phòng".equals(role) || "Giám đốc".equals(role)) {
                         duyetDon(request, response, out, kn, email);
                     } else {
                         out.print("{\"success\":false,\"message\":\"Không có quyền duyệt\"}");
@@ -95,7 +96,8 @@ public class apiNghiPhep extends HttpServlet {
                     break;
                     
                 case "tuChoiDon":
-                    if ("Quản lý nhân sự".equals(role) || "Admin".equals(role)) {
+                    if ("Quản lý".equals(role) || "Admin".equals(role) || 
+                        "Trưởng phòng".equals(role) || "Giám đốc".equals(role)) {
                         tuChoiDon(request, response, out, kn, email);
                     } else {
                         out.print("{\"success\":false,\"message\":\"Không có quyền từ chối\"}");

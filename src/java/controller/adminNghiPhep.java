@@ -26,13 +26,17 @@ public class adminNghiPhep extends HttpServlet {
             String email = (String) session.getAttribute("userEmail");
             String vaiTro = (String) session.getAttribute("vaiTro");
             
-            // Kiểm tra đăng nhập và vai trò admin
+            // Kiểm tra đăng nhập
             if (email == null) {
                 response.sendRedirect("login.jsp");
                 return;
             }
             
-            if (!"admin".equalsIgnoreCase(vaiTro)) {
+            // Kiểm tra vai trò: chỉ Admin, Quản lý, Trưởng phòng, Giám đốc mới được vào
+            if (vaiTro == null || (!vaiTro.equalsIgnoreCase("admin") && 
+                !vaiTro.equalsIgnoreCase("Quản lý") && 
+                !vaiTro.equalsIgnoreCase("Trưởng phòng") &&
+                !vaiTro.equalsIgnoreCase("Giám đốc"))) {
                 response.sendRedirect("index.jsp");
                 return;
             }
