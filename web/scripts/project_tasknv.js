@@ -1152,12 +1152,14 @@ function showEditStepModal(idx) {
                   <input type="text" class="form-control" name="stepLinkTaiLieu" value="${step.linkTaiLieu || ''}" placeholder="https://...">
                   <small class="text-muted">Link tài liệu tham khảo (Google Drive, Dropbox, v.v.)</small>
                 </div>
-                <div class="mb-2">
-                  <label class="form-label">File tài liệu</label>
-                  <input type="file" class="form-control" name="stepFileTaiLieu" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx" multiple>
-                  <small class="text-muted">Chọn một hoặc nhiều file để thêm</small>
-                  ${step.fileTaiLieu ? `<div class="mt-2"><small><strong>File hiện tại:</strong><br>${step.fileTaiLieu.split(';').map(f => f.trim()).filter(Boolean).map(f => f.split('/').pop()).join(', ')}</small></div>` : '<div class="mt-2"><small class="text-muted">Chưa có file nào</small></div>'}
-                </div>
+                                <div class="mb-2">
+                                    <label class="form-label">File tài liệu hiện tại</label>
+                                    <div id="currentStepFiles" class="mb-2"></div>
+                                    <input type="hidden" name="file_tai_lieu_cu" id="fileTaiLieuCuEdit" value="${step.fileTaiLieu || ''}">
+                                    <label class="form-label">Thêm file mới</label>
+                                    <input type="file" class="form-control" name="stepFileTaiLieu" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx" multiple>
+                                    <small class="text-muted">Chọn một hoặc nhiều file để thêm vào file hiện tại</small>
+                                </div>
               </div>
               <div class="modal-footer">
                 <button type="submit" class="btn btn-primary rounded-pill">Cập nhật</button>
@@ -1178,6 +1180,51 @@ function showEditStepModal(idx) {
         $(modalEl).css('z-index', parseInt($(parentModal).css('z-index')) + 20);
         $('.modal-backdrop').last().css('z-index', parseInt($(parentModal).css('z-index')) + 10);
     }
+
+    // Hiển thị danh sách file hiện tại từng dòng kèm nút xoá
+    var filesContainer = $(modalEl).find('#currentStepFiles');
+    var hiddenFilesInput = $(modalEl).find('#fileTaiLieuCuEdit');
+
+    function renderCurrentFiles(filesStr) {
+        filesContainer.empty();
+        var files = (filesStr || '').split(';').map(function (f) {
+            return f.trim();
+        }).filter(Boolean);
+
+        if (files.length === 0) {
+            filesContainer.append('<small class="text-muted">Chưa có file nào</small>');
+            return;
+        }
+
+        files.forEach(function (f, fileIdx) {
+            var fileName = f.split('/').pop();
+            var row = ''
+                    + '<div class="d-flex align-items-center mb-1 p-2 border rounded">'
+                    + '  <i class="fa-solid fa-file me-2"></i>'
+                    + '  <a href="' + f + '" target="_blank" class="flex-grow-1 text-truncate">' + fileName + '</a>'
+                    + '  <button type="button" class="btn btn-sm btn-outline-danger ms-2 btn-remove-file" data-file-idx="' + fileIdx + '">' 
+                    + '    <i class="fa-solid fa-xmark"></i>'
+                    + '  </button>'
+                    + '</div>';
+            filesContainer.append(row);
+        });
+    }
+
+    renderCurrentFiles(hiddenFilesInput.val());
+
+    $(modalEl).on('click', '.btn-remove-file', function () {
+        var fileIdx = parseInt($(this).data('file-idx'), 10);
+        var files = (hiddenFilesInput.val() || '').split(';').map(function (f) {
+            return f.trim();
+        }).filter(Boolean);
+
+        if (!isNaN(fileIdx) && fileIdx >= 0 && fileIdx < files.length) {
+            files.splice(fileIdx, 1);
+            var updated = files.join(';');
+            hiddenFilesInput.val(updated);
+            renderCurrentFiles(updated);
+        }
+    });
 
     // --- populate người nhận ban đầu ---
     (function populateEditReceivers() {
@@ -1228,6 +1275,8 @@ function showEditStepModal(idx) {
     $('#formEditStepStatus').on('submit', function (e) {
         e.preventDefault();
 
+        var currentFilesStr = $(modalEl).find('#fileTaiLieuCuEdit').val() || '';
+
         // cập nhật object lokal
         processSteps[idx] = {
             id: $(this).find('[name="stepid"]').val(),
@@ -1237,7 +1286,7 @@ function showEditStepModal(idx) {
             start: $(this).find('[name="stepStart"]').val(),
             end: $(this).find('[name="stepEnd"]').val(),
             linkTaiLieu: $(this).find('[name="stepLinkTaiLieu"]').val(),
-            fileTaiLieu: step.fileTaiLieu || '',
+            fileTaiLieu: currentFilesStr,
             // lưu tên người nhận tạm thời
             receivers: (function () {
                 var names = ($('#nguoiNhanEditHidden').val() || '').split(',').map(s => s.trim()).filter(Boolean);
@@ -1269,6 +1318,7 @@ function showEditStepModal(idx) {
         formData.append('end', processSteps[idx].end);
         formData.append('link_tai_lieu', processSteps[idx].linkTaiLieu || '');
         formData.append('process_nguoi_nhan', nguoiNhanIds.join(','));
+        formData.append('file_tai_lieu_cu', currentFilesStr);
         
         // Thêm tất cả file nếu có
         var fileInput = $(e.target).find('[name="stepFileTaiLieu"]')[0];
@@ -1416,7 +1466,7 @@ $('#formAddProcessStep').on('submit', function (e) {
     formData.append('task_id', taskId);
     formData.append('name', step.name);
     formData.append('desc', step.desc);
-    formData.append('status', step.status);
+    formData.append('stepStatus', step.status);
     formData.append('start', step.start);
     formData.append('end', step.end);
     formData.append('link_tai_lieu', step.linkTaiLieu || '');
@@ -1436,8 +1486,36 @@ $('#formAddProcessStep').on('submit', function (e) {
         data: formData,
         processData: false,
         contentType: false,
-        success: function (newStepId) {
-            step.id = newStepId;
+        success: function (resp) {
+            var data = resp;
+            if (typeof resp === 'string') {
+                try {
+                    data = JSON.parse(resp);
+                } catch (e) {
+                    data = resp;
+                }
+            }
+
+            if (data && data.success === false) {
+                showToast('error', data.message || 'Thêm bước thất bại');
+                return;
+            }
+
+            var newId = (data && data.id) ? data.id : resp;
+            step.id = newId;
+            if (data && data.fileTaiLieu) {
+                step.fileTaiLieu = data.fileTaiLieu;
+            }
+            if (data && data.linkTaiLieu !== undefined) {
+                step.linkTaiLieu = data.linkTaiLieu;
+            }
+            if (data && data.name) {
+                step.name = data.name;
+            }
+            if (data && data.desc) {
+                step.desc = data.desc;
+            }
+
             processSteps.push(step);
             renderProcessSteps();
             $('#modalAddProcessStep').modal('hide');

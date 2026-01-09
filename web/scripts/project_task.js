@@ -1099,10 +1099,11 @@ function showEditStepModal(idx) {
 
     // Tạo HTML modal (thêm phần chọn người nhận)
     var modalHtml = `
-        <div class="modal fade" id="modalEditStepStatus" tabindex="-1">
+        <div class="modal fade" id="modalEditStepStatus" tabindex="-1" data-step-idx="${idx}">
           <div class="modal-dialog">
             <form class="modal-content" id="formEditStepStatus">
               <input type="hidden" name="stepid" value="${step.id}">
+              <input type="hidden" name="stepIdx" value="${idx}">
               <div class="modal-header">
                 <h5 class="modal-title">
                   <i class="fa-solid fa-pen"></i> Chỉnh sửa bước quy trình
@@ -1153,10 +1154,23 @@ function showEditStepModal(idx) {
                   <small class="text-muted">Link tài liệu tham khảo (Google Drive, Dropbox, v.v.)</small>
                 </div>
                 <div class="mb-2">
-                  <label class="form-label">File tài liệu</label>
+                  <label class="form-label">File tài liệu hiện tại</label>
+                  <div id="currentStepFiles" class="mb-2">
+                    ${step.fileTaiLieu ? step.fileTaiLieu.split(';').map(f => f.trim()).filter(Boolean).map((f, idx) => {
+                        var fileName = f.split('/').pop();
+                        return `<div class="d-flex align-items-center mb-1 p-2 border rounded">
+                                  <i class="fa-solid fa-file me-2"></i>
+                                  <a href="${f}" target="_blank" class="flex-grow-1 text-truncate">${fileName}</a>
+                                  <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeStepFile(${idx})">
+                                    <i class="fa-solid fa-trash"></i>
+                                  </button>
+                                </div>`;
+                      }).join('') : '<small class="text-muted">Chưa có file nào</small>'}
+                  </div>
+                  <input type="hidden" name="file_tai_lieu_cu" id="fileTaiLieuCu" value="${step.fileTaiLieu || ''}">
+                  <label class="form-label">Thêm file mới</label>
                   <input type="file" class="form-control" name="stepFileTaiLieu" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx" multiple>
-                  <small class="text-muted">Chọn một hoặc nhiều file để thêm</small>
-                  ${step.fileTaiLieu ? `<div class="mt-2"><small><strong>File hiện tại:</strong><br>${step.fileTaiLieu.split(';').map(f => f.trim()).filter(Boolean).map(f => f.split('/').pop()).join(', ')}</small></div>` : '<div class="mt-2"><small class="text-muted">Chưa có file nào</small></div>'}
+                  <small class="text-muted">Chọn một hoặc nhiều file để thêm vào file hiện tại</small>
                 </div>
               </div>
               <div class="modal-footer">
@@ -1228,16 +1242,32 @@ function showEditStepModal(idx) {
     $('#formEditStepStatus').on('submit', function (e) {
         e.preventDefault();
 
-        // cập nhật object lokal
-        processSteps[idx] = {
+        // ✅ Lấy idx từ hidden input thay vì dùng closure variable
+        var stepIdx = $(this).find('[name="stepIdx"]').val();
+        if (!stepIdx || isNaN(stepIdx)) {
+            showToast('error', 'Lỗi: Không xác định được bước quy trình');
+            return;
+        }
+        stepIdx = parseInt(stepIdx);
+
+        // Lấy giá trị từ form input trước khi gửi
+        var formName = $(this).find('[name="stepName"]').val();
+        var formDesc = $(this).find('[name="stepDesc"]').val();
+        var formStatus = $(this).find('[name="stepStatus"]').val();
+        var formStart = $(this).find('[name="stepStart"]').val();
+        var formEnd = $(this).find('[name="stepEnd"]').val();
+        var formLinkTaiLieu = $(this).find('[name="stepLinkTaiLieu"]').val();
+        
+        // cập nhật object lokal (sau này dùng khi render)
+        processSteps[stepIdx] = {
             id: $(this).find('[name="stepid"]').val(),
-            name: $(this).find('[name="stepName"]').val(),
-            desc: $(this).find('[name="stepDesc"]').val(),
-            status: $(this).find('[name="stepStatus"]').val(),
-            start: $(this).find('[name="stepStart"]').val(),
-            end: $(this).find('[name="stepEnd"]').val(),
-            linkTaiLieu: $(this).find('[name="stepLinkTaiLieu"]').val(),
-            fileTaiLieu: step.fileTaiLieu || '',
+            name: formName,
+            desc: formDesc,
+            status: formStatus,
+            start: formStart,
+            end: formEnd,
+            linkTaiLieu: formLinkTaiLieu,
+            fileTaiLieu: $(this).find('[name="file_tai_lieu_cu"]').val() || '',  // ✅ Lấy từ hidden input
             // lưu tên người nhận tạm thời
             receivers: (function () {
                 var names = ($('#nguoiNhanEditHidden').val() || '').split(',').map(s => s.trim()).filter(Boolean);
@@ -1261,16 +1291,20 @@ function showEditStepModal(idx) {
 
         // Gửi cập nhật về server kèm process_nguoi_nhan (IDs) và file (nếu có)
         var formData = new FormData();
-        formData.append('step_id', processSteps[idx].id);
-        formData.append('name', processSteps[idx].name);
-        formData.append('desc', processSteps[idx].desc);
-        formData.append('status', processSteps[idx].status);
-        formData.append('start', processSteps[idx].start);
-        formData.append('end', processSteps[idx].end);
-        formData.append('link_tai_lieu', processSteps[idx].linkTaiLieu || '');
+        formData.append('step_id', processSteps[stepIdx].id);  // ✅ Sửa: stepIdx thay vì idx
+        formData.append('name', $(e.target).find('[name="stepName"]').val());  // ✅ Lấy từ form input
+        formData.append('desc', $(e.target).find('[name="stepDesc"]').val());  // ✅ Lấy từ form input
+        formData.append('stepStatus', $(e.target).find('[name="stepStatus"]').val());  // ✅ Gửi stepStatus
+        formData.append('start', $(e.target).find('[name="stepStart"]').val());  // ✅ Lấy từ form input
+        formData.append('end', $(e.target).find('[name="stepEnd"]').val());    // ✅ Lấy từ form input
+        formData.append('link_tai_lieu', $(e.target).find('[name="stepLinkTaiLieu"]').val() || '');  // ✅ Lấy từ form input
         formData.append('process_nguoi_nhan', nguoiNhanIds.join(','));
         
-        // Thêm tất cả file nếu có
+        // Gửi file_tai_lieu_cu (file còn lại sau khi xóa)
+        var fileTaiLieuCu = $('#fileTaiLieuCu').val() || '';
+        formData.append('file_tai_lieu_cu', fileTaiLieuCu);
+        
+        // Thêm tất cả file mới nếu có
         var fileInput = $(e.target).find('[name="stepFileTaiLieu"]')[0];
         if (fileInput && fileInput.files && fileInput.files.length > 0) {
             for (var i = 0; i < fileInput.files.length; i++) {
@@ -1282,18 +1316,38 @@ function showEditStepModal(idx) {
             url: './apiTaskSteps',
             method: 'POST',
             data: formData,
+            dataType: 'json',  // ✅ Thêm dataType
             processData: false,
             contentType: false,
             success: function (response) {
+                // Check nếu response có success flag
+                if (response && response.success === false) {
+                    showToast('error', 'Cập nhật bước thất bại: ' + (response.message || 'Lỗi không xác định'));
+                    return;
+                }
+                
                 // Cập nhật fileTaiLieu nếu server trả về
                 if (response && response.fileTaiLieu) {
-                    processSteps[idx].fileTaiLieu = response.fileTaiLieu;
+                    processSteps[stepIdx].fileTaiLieu = response.fileTaiLieu;  // ✅ Sửa: stepIdx thay vì idx
                 }
                 renderProcessSteps();
                 showToast('success', 'Cập nhật bước thành công');
             },
-            error: function () {
-                showToast('error', 'Cập nhật bước thất bại');
+            error: function (xhr, status, err) {
+                console.error('AJAX Error:', xhr, status, err);
+                var errorMsg = 'Cập nhật bước thất bại';
+                try {
+                    var respText = xhr.responseText;
+                    if (respText) {
+                        var respJson = JSON.parse(respText);
+                        if (respJson && respJson.message) {
+                            errorMsg = respJson.message;
+                        }
+                    }
+                } catch (e) {
+                    errorMsg = 'Lỗi kết nối server (' + (xhr.status || 'unknown') + ')';
+                }
+                showToast('error', errorMsg);
             }
         });
     });
@@ -1317,6 +1371,37 @@ function showEditStepModal(idx) {
         }
     });
 }
+
+// Xóa file khỏi danh sách file hiện tại của step
+window.removeStepFile = function (idx) {
+    var fileTaiLieuCu = $('#fileTaiLieuCu').val();
+    var files = fileTaiLieuCu.split(';').map(f => f.trim()).filter(Boolean);
+    
+    if (idx >= 0 && idx < files.length) {
+        files.splice(idx, 1);
+        $('#fileTaiLieuCu').val(files.join(';'));
+        
+        // Re-render danh sách file
+        var container = $('#currentStepFiles');
+        container.empty();
+        
+        if (files.length === 0) {
+            container.append('<small class="text-muted">Chưa có file nào</small>');
+        } else {
+            files.forEach(function(f, newIdx) {
+                var fileName = f.split('/').pop();
+                var html = `<div class="d-flex align-items-center mb-1 p-2 border rounded">
+                              <i class="fa-solid fa-file me-2"></i>
+                              <a href="${f}" target="_blank" class="flex-grow-1 text-truncate">${fileName}</a>
+                              <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeStepFile(${newIdx})">
+                                <i class="fa-solid fa-trash"></i>
+                              </button>
+                            </div>`;
+                container.append(html);
+            });
+        }
+    }
+};
 
 window.removeProcessStep = function (idx) {
     var step = processSteps[idx];

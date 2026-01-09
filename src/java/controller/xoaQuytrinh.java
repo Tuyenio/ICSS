@@ -13,6 +13,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.Part;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -35,6 +36,8 @@ import java.nio.file.StandardCopyOption;
 public class xoaQuytrinh extends HttpServlet {
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        request.setCharacterEncoding("UTF-8");
+        response.setCharacterEncoding("UTF-8");
         String action = request.getParameter("action");
 
         if ("delete".equals(action)) {
@@ -120,22 +123,26 @@ public class xoaQuytrinh extends HttpServlet {
             String congViecIdStr = request.getParameter("task_id");
             String tenBuoc = request.getParameter("name");
             String moTa = request.getParameter("desc");
-            String trangThai = request.getParameter("status");
+            String trangThai = request.getParameter("stepStatus");  // ✅ Sửa: lấy từ stepStatus chứ không phải status
             String ngayBatDau = request.getParameter("start");
             String ngayKetThuc = request.getParameter("end");
             String linkTaiLieu = request.getParameter("link_tai_lieu");
             String nguoiNhanStr = request.getParameter("process_nguoi_nhan");
 
-            // Xử lý file upload
+            // ✅ Xử lý multiple file upload
             String fileTaiLieu = "";
-            Part filePart = null;
+            List<Part> fileParts = new ArrayList<>();
             try {
-                filePart = request.getPart("file_tai_lieu");
+                for (Part part : request.getParts()) {
+                    if ("file_tai_lieu".equals(part.getName()) && part.getSize() > 0) {
+                        fileParts.add(part);
+                    }
+                }
             } catch (Exception e) {
                 // Không có file upload
             }
 
-            if (filePart != null && filePart.getSize() > 0) {
+            if (!fileParts.isEmpty()) {
                 String uploadPath = System.getenv("ICSS_UPLOAD_DIR");
                 if (uploadPath == null || uploadPath.trim().isEmpty()) {
                     uploadPath = "D:/uploads";
@@ -146,25 +153,34 @@ public class xoaQuytrinh extends HttpServlet {
                     uploadDir.mkdirs();
                 }
 
-                String originalFileName = Paths.get(filePart.getSubmittedFileName()).getFileName().toString();
-                String destFileName = sanitizeFileName(originalFileName);
+                // Xử lý từng file
+                for (Part filePart : fileParts) {
+                    String originalFileName = Paths.get(filePart.getSubmittedFileName()).getFileName().toString();
+                    String destFileName = sanitizeFileName(originalFileName);
 
-                File destFile = new File(uploadPath, destFileName);
-                if (destFile.exists()) {
-                    String name_part = destFileName;
-                    String ext = "";
-                    int dot = destFileName.lastIndexOf('.');
-                    if (dot > 0) {
-                        name_part = destFileName.substring(0, dot);
-                        ext = destFileName.substring(dot);
+                    File destFile = new File(uploadPath, destFileName);
+                    if (destFile.exists()) {
+                        String name_part = destFileName;
+                        String ext = "";
+                        int dot = destFileName.lastIndexOf('.');
+                        if (dot > 0) {
+                            name_part = destFileName.substring(0, dot);
+                            ext = destFileName.substring(dot);
+                        }
+                        destFileName = name_part + "_" + System.currentTimeMillis() + ext;
+                        destFile = new File(uploadPath, destFileName);
                     }
-                    destFileName = name_part + "_" + System.currentTimeMillis() + ext;
-                    destFile = new File(uploadPath, destFileName);
-                }
 
-                try (InputStream input = filePart.getInputStream()) {
-                    Files.copy(input, destFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                    fileTaiLieu = destFileName;
+                    try (InputStream input = filePart.getInputStream()) {
+                        Files.copy(input, destFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                    }
+                    
+                    // Thêm vào danh sách file (cách nhau bởi ;)
+                    if (!fileTaiLieu.isEmpty()) {
+                        fileTaiLieu = fileTaiLieu + ";" + destFileName;
+                    } else {
+                        fileTaiLieu = destFileName;
+                    }
                 }
             }
 
@@ -218,8 +234,9 @@ public class xoaQuytrinh extends HttpServlet {
                     }
 
                     if (userId > 0) {
-                        StringBuilder logMsg = new StringBuilder("➕ Thêm tiến độ mới: '" + tenBuoc + "'");
-                        logMsg.append(" | Trạng thái: ").append(trangThai);
+                        StringBuilder logMsg = new StringBuilder("➕ Thêm tiến độ mới: '");
+                        logMsg.append(tenBuoc != null ? tenBuoc : "");
+                        logMsg.append("' | Trạng thái: ").append(trangThai != null ? trangThai : "");
                         if (ngayBatDau != null && !ngayBatDau.isEmpty()) {
                             logMsg.append(" | Ngày bắt đầu: ").append(ngayBatDau);
                         }
@@ -232,16 +249,37 @@ public class xoaQuytrinh extends HttpServlet {
                         }
                         db.themLichSuCongViec(congViecId, userId, logMsg.toString());
                     }
+
+                    response.setContentType("application/json; charset=UTF-8");
                     response.setStatus(HttpServletResponse.SC_OK);
+
+                    String safeLink = (linkTaiLieu != null) ? linkTaiLieu : "";
+                    String safeFile = (fileTaiLieu != null) ? fileTaiLieu : "";
+
+                    StringBuilder sb = new StringBuilder();
+                    sb.append('{');
+                    sb.append("\"success\":true,");
+                    sb.append("\"id\":").append(newId).append(',');
+                    sb.append("\"fileTaiLieu\":\"").append(escapeJson(safeFile)).append("\",");
+                    sb.append("\"name\":\"").append(escapeJson(tenBuoc != null ? tenBuoc : "")).append("\",");
+                    sb.append("\"desc\":\"").append(escapeJson(moTa != null ? moTa : "")).append("\",");
+                    sb.append("\"status\":\"").append(escapeJson(trangThai != null ? trangThai : "")).append("\",");
+                    sb.append("\"start\":\"").append(escapeJson(ngayBatDau != null ? ngayBatDau : "")).append("\",");
+                    sb.append("\"end\":\"").append(escapeJson(ngayKetThuc != null ? ngayKetThuc : "")).append("\",");
+                    sb.append("\"linkTaiLieu\":\"").append(escapeJson(safeLink)).append("\"");
+                    sb.append('}');
+                    response.getWriter().write(sb.toString());
                     db.close();
                 } else {
                     response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                    response.getWriter().write("Không thể thêm bước.");
+                    response.setContentType("application/json; charset=UTF-8");
+                    response.getWriter().write("{\"success\":false,\"message\":\"Không thể thêm bước\"}");
                 }
             } catch (Exception e) {
                 response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                response.setContentType("application/json; charset=UTF-8");
                 e.printStackTrace();
-                response.getWriter().write("Lỗi máy chủ");
+                response.getWriter().write("{\"success\":false,\"message\":\"Lỗi máy chủ\"}");
             }
             return;
         }
@@ -273,4 +311,11 @@ public class xoaQuytrinh extends HttpServlet {
         return cleaned;
     }// </editor-fold>
 
+    private String escapeJson(String input) {
+        if (input == null) return "";
+        return input.replace("\\", "\\\\")
+                .replace("\"", "\\\"")
+                .replace("\n", "\\n")
+                .replace("\r", "\\r");
+    }
 }

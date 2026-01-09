@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.*;
 import java.net.URLDecoder;
+import java.net.URLEncoder;
 
 public class DownloadFileServlet extends HttpServlet {
 
@@ -49,9 +50,11 @@ public class DownloadFileServlet extends HttpServlet {
             return;
         }
 
-        // Thiết lập header tải file
+        // Thiết lập header tải file (giữ nguyên dấu tiếng Việt)
         resp.setContentType("application/octet-stream");
-        resp.setHeader("Content-Disposition", "attachment; filename=\"" + file.getName() + "\"");
+        String utf8Name = file.getName();
+        String encodedName = java.net.URLEncoder.encode(utf8Name, "UTF-8").replaceAll("\\+", "%20");
+        resp.setHeader("Content-Disposition", "attachment; filename=\"" + utf8Name + "\"; filename*=UTF-8''" + encodedName);
         resp.setContentLengthLong(file.length());
 
         try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file));

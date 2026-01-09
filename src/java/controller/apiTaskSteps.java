@@ -113,22 +113,31 @@ public class apiTaskSteps extends HttpServlet {
         String stepIdStr = request.getParameter("step_id");
         String name = request.getParameter("name");
         String desc = request.getParameter("desc");
-        String status = request.getParameter("status");
+        String status = request.getParameter("stepStatus");  // ✅ Sửa: lấy từ stepStatus thay vì status
+        if (status == null || status.isEmpty()) {
+            status = request.getParameter("status");  // Fallback: nếu stepStatus không có, thử status
+        }
         String start = request.getParameter("start");
         String end = request.getParameter("end");
         String linkTaiLieu = request.getParameter("link_tai_lieu");
+        String fileTaiLieuCu = request.getParameter("file_tai_lieu_cu"); // Danh sách file còn lại sau khi xóa
         
-        // Xử lý file upload
-        String fileTaiLieu = request.getParameter("file_tai_lieu"); // Giá trị cũ từ DB
-        Part filePart = null;
+        // ✅ Xử lý multiple file upload
+        String fileTaiLieu = fileTaiLieuCu != null ? fileTaiLieuCu : ""; // Bắt đầu từ danh sách file còn lại
+        List<Part> fileParts = new ArrayList<>();
         try {
-            filePart = request.getPart("file_tai_lieu"); // File mới upload
+            // Lấy tất cả parts có tên "file_tai_lieu"
+            for (Part part : request.getParts()) {
+                if ("file_tai_lieu".equals(part.getName()) && part.getSize() > 0) {
+                    fileParts.add(part);
+                }
+            }
         } catch (Exception e) {
-            // Không có file upload, giữ nguyên giá trị cũ
+            // Không có file upload
         }
         
         // Nếu có file mới upload
-        if (filePart != null && filePart.getSize() > 0) {
+        if (!fileParts.isEmpty()) {
             String uploadPath = System.getenv("ICSS_UPLOAD_DIR");
             if (uploadPath == null || uploadPath.trim().isEmpty()) {
                 uploadPath = "D:/uploads"; // fallback
@@ -139,40 +148,52 @@ public class apiTaskSteps extends HttpServlet {
                 uploadDir.mkdirs();
             }
             
-            String originalFileName = Paths.get(filePart.getSubmittedFileName()).getFileName().toString();
-            String destFileName = sanitizeFileName(originalFileName);
-            
-            // Thêm timestamp nếu file đã tồn tại
-            File destFile = new File(uploadPath, destFileName);
-            if (destFile.exists()) {
-                String name_part = destFileName;
-                String ext = "";
-                int dot = destFileName.lastIndexOf('.');
-                if (dot > 0) {
-                    name_part = destFileName.substring(0, dot);
-                    ext = destFileName.substring(dot);
+            // Xử lý từng file mới upload
+            for (Part filePart : fileParts) {
+                String originalFileName = Paths.get(filePart.getSubmittedFileName()).getFileName().toString();
+                String destFileName = sanitizeFileName(originalFileName);
+                
+                // Thêm timestamp nếu file đã tồn tại
+                File destFile = new File(uploadPath, destFileName);
+                if (destFile.exists()) {
+                    String name_part = destFileName;
+                    String ext = "";
+                    int dot = destFileName.lastIndexOf('.');
+                    if (dot > 0) {
+                        name_part = destFileName.substring(0, dot);
+                        ext = destFileName.substring(dot);
+                    }
+                    destFileName = name_part + "_" + System.currentTimeMillis() + ext;
+                    destFile = new File(uploadPath, destFileName);
                 }
-                destFileName = name_part + "_" + System.currentTimeMillis() + ext;
-                destFile = new File(uploadPath, destFileName);
-            }
-            
-            // Lưu file
-            try (InputStream input = filePart.getInputStream()) {
-                Files.copy(input, destFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-            }
-            
-            // Cập nhật fileTaiLieu thành tên file mới
-            // Nếu đã có file cũ, thêm vào danh sách (cách nhau bởi ;)
-            if (fileTaiLieu != null && !fileTaiLieu.isEmpty() && !fileTaiLieu.equals("null")) {
-                fileTaiLieu = fileTaiLieu + ";" + destFileName;
-            } else {
-                fileTaiLieu = destFileName;
+                
+                // Lưu file
+                try (InputStream input = filePart.getInputStream()) {
+                    Files.copy(input, destFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                }
+                
+                // Thêm vào danh sách file (cách nhau bởi ;)
+                if (fileTaiLieu != null && !fileTaiLieu.isEmpty() && !fileTaiLieu.equals("null")) {
+                    fileTaiLieu = fileTaiLieu + ";" + destFileName;
+                } else {
+                    fileTaiLieu = destFileName;
+                }
             }
         }
 
         if (stepIdStr == null || name == null || status == null) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            out.print("{\"success\":false,\"message\":\"Thiếu thông tin bắt buộc.\"}");
+            // Debug: log tất cả parameter
+            System.out.println("❌ DEBUG apiTaskSteps.doPost - Thiếu param:");
+            System.out.println("  stepIdStr: " + stepIdStr);
+            System.out.println("  name: " + name);
+            System.out.println("  desc: " + desc);
+            System.out.println("  status: " + status);
+            System.out.println("  start: " + start);
+            System.out.println("  end: " + end);
+            System.out.println("  linkTaiLieu: " + linkTaiLieu);
+            System.out.println("  fileTaiLieuCu: " + fileTaiLieuCu);
+            out.print("{\"success\":false,\"message\":\"Thiếu thông tin bắt buộc: stepId=" + stepIdStr + ", name=" + name + ", status=" + status + "\"}");
             return;
         }
 
@@ -197,8 +218,10 @@ public class apiTaskSteps extends HttpServlet {
                 linkTaiLieu = (oldLink != null && !oldLink.toString().equals("null")) ? oldLink.toString() : "";
             }
             
-            // Nếu không upload file mới, giữ nguyên dữ liệu cũ
-            if (fileTaiLieu == null || (fileTaiLieu.isEmpty() && filePart == null)) {
+            // Nếu không upload file mới, giữ nguyên fileTaiLieu (đã set từ fileTaiLieuCu hoặc file mới)
+            // fileTaiLieu đã được xử lý từ fileParts ở trên, không cần kiểm tra thêm
+            // Nếu fileTaiLieu vẫn rỗng và không có fileTaiLieuCu, lấy từ DB
+            if ((fileTaiLieu == null || fileTaiLieu.isEmpty())) {
                 Object oldFile = stepCu != null ? stepCu.get("tai_lieu_file") : null;
                 fileTaiLieu = (oldFile != null && !oldFile.toString().equals("null")) ? oldFile.toString() : "";
             }
