@@ -431,6 +431,37 @@
             </ul>
         </li>
 
+        <%-- Nghỉ phép (với submenu giống Chấm công) --%>
+        <%
+            boolean isNghiPhepGroup = currentPath.equals("leave_management.jsp") || currentPath.equals("admin_leave.jsp");
+            boolean isQLNghiPhep = currentPath.equals("leave_management.jsp");
+            boolean isAdminNghiPhep = currentPath.equals("admin_leave.jsp");
+        %>
+        <li class="has-submenu <%= isNghiPhepGroup ? "open" : "" %>">
+            <a href="#" class="submenu-toggle <%= isNghiPhepGroup ? "active" : "" %>">
+                <i class="fa-solid fa-calendar-xmark"></i><span>Nghỉ phép</span>
+                <i class="fa-solid fa-chevron-down ms-auto small"></i>
+            </a>
+
+            <ul class="submenu" style="<%= isNghiPhepGroup ? "display:block;" : "display:none;" %>">
+
+                <!-- Quản lý nghỉ phép -->
+                <li>
+                    <a href="dsNghiPhep" class="<%= isQLNghiPhep ? "active" : "" %>">
+                        <i class="fa-solid fa-list"></i><span>Quản lý nghỉ phép</span>
+                    </a>
+                </li>
+
+                <!-- Nghỉ phép (Admin tạo đơn) -->
+                <li>
+                    <a href="adminNghiPhep" class="<%= isAdminNghiPhep ? "active" : "" %>">
+                        <i class="fa-solid fa-calendar-xmark"></i><span>Nghỉ phép</span>
+                    </a>
+                </li>
+
+            </ul>
+        </li>
+
         <li><a href="dsLichtrinh" class="<%= currentPath.equals("calendar.jsp") ? "active" : "" %>">
                 <i class="fa-solid fa-calendar-days"></i><span>Lịch trình</span></a></li>
 
