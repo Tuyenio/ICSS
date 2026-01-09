@@ -2606,6 +2606,9 @@
 
                                                 <div class="mb-2">
                                                     <label class="form-label"><b>Tài liệu công việc (Link Driver)</b></label>
+                                                    <div id="linkTaiLieuContainer" class="mb-2">
+                                                        <small class="text-muted">Chưa có link tài liệu</small>
+                                                    </div>
                                                     <input type="text" class="form-control" name="tai_lieu_cv">
                                                 </div>
                                                 <div class="mb-2">
@@ -2815,6 +2818,16 @@
                                                 <label class="form-label">Ngày kết thúc</label>
                                                 <input type="date" class="form-control" name="stepEnd">
                                             </div>
+                                        </div>
+                                        <div class="mb-2">
+                                            <label class="form-label">Link tài liệu</label>
+                                            <input type="text" class="form-control" name="stepLinkTaiLieu" placeholder="https://...">
+                                            <small class="text-muted">Link tài liệu tham khảo (Google Drive, Dropbox, v.v.)</small>
+                                        </div>
+                                        <div class="mb-2">
+                                            <label class="form-label">File tài liệu</label>
+                                            <input type="file" class="form-control" name="stepFileTaiLieu" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx" multiple>
+                                            <small class="text-muted">Chọn một hoặc nhiều file (PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX)</small>
                                         </div>
                                     </div>
                                     <div class="modal-footer">

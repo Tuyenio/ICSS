@@ -334,8 +334,8 @@
     </head>
 
     <body>
-        <%@ include file="sidebar.jsp" %>
-        <%@ include file="header.jsp" %>
+        <%@ include file="sidebarnv.jsp" %>
+        <%@ include file="user_header.jsp" %>
 
         <div class="main-content">
             <!-- Page Header -->
@@ -375,14 +375,14 @@
             <!-- Breadcrumb -->
             <% if (nhomId != null && nhomHienTai != null) { %>
             <div class="breadcrumb-custom">
-                <a href="dsTailieu"><i class="fa-solid fa-home me-2"></i>Trang chủ</a>
+                <a href="dsTailieuNV"><i class="fa-solid fa-home me-2"></i>Trang chủ</a>
                 <span class="mx-2">/</span>
                 <span class="text-muted"><%= nhomHienTai.getTenNhom() %></span>
             </div>
 
             <!-- Search trong nhóm -->
             <div class="search-box">
-                <form action="dsTailieu" method="get" class="row g-3">
+                <form action="dsTailieuNV" method="get" class="row g-3">
                     <input type="hidden" name="nhomId" value="<%= nhomId %>">
                     <div class="col-md-10">
                         <input type="text" name="search" class="form-control" 
@@ -400,117 +400,117 @@
 
             <!-- Nội dung chính -->
             <% if (nhomId == null) { %>
-            <!-- Hiển thị danh sách nhóm tài liệu -->
-            <% if (danhSachNhom.isEmpty()) { %>
-            <div class="empty-state">
-                <i class="fa-solid fa-folder-open"></i>
-                <h4 class="text-muted mb-2">Chưa có nhóm tài liệu nào</h4>
-                <p class="text-muted">Bắt đầu bằng cách tạo nhóm tài liệu đầu tiên</p>
-            </div>
-            <% } else { %>
-            <div class="row">
-                <% for (NhomTaiLieu nhom : danhSachNhom) { %>
-                <div class="col-md-6 col-lg-4">
-                    <div class="group-card" onclick="window.location.href = 'dsTailieu?nhomId=<%= nhom.getId() %>'">
-                        <div class="d-flex align-items-start">
-                            <div class="group-icon-box me-3" style="background: <%= nhom.getMauSac() %>15;">
-                                <i class="fa-solid <%= nhom.getIcon() %>" style="color: <%= nhom.getMauSac() %>"></i>
-                            </div>
-                            <div class="flex-grow-1">
-                                <div class="group-title"><%= nhom.getTenNhom() %></div>
-                                <% if (nhom.getMoTa() != null && !nhom.getMoTa().isEmpty()) { %>
-                                <p class="text-muted small mb-2"><%= nhom.getMoTa() %></p>
-                                <% } %>
-                                <div class="group-meta">
-                                    <span class="badge bg-primary"><%= nhom.getSoLuongTaiLieu() %> tài liệu</span>
+                <!-- Hiển thị danh sách nhóm tài liệu -->
+                <% if (danhSachNhom.isEmpty()) { %>
+                <div class="empty-state">
+                    <i class="fa-solid fa-folder-open"></i>
+                    <h4 class="text-muted mb-2">Chưa có nhóm tài liệu nào</h4>
+                    <p class="text-muted">Bắt đầu bằng cách tạo nhóm tài liệu đầu tiên</p>
+                </div>
+                <% } else { %>
+                <div class="row">
+                    <% for (NhomTaiLieu nhom : danhSachNhom) { %>
+                    <div class="col-md-6 col-lg-4">
+                        <div class="group-card" onclick="window.location.href='dsTailieuNV?nhomId=<%= nhom.getId() %>'">
+                            <div class="d-flex align-items-start">
+                                <div class="group-icon-box me-3" style="background: <%= nhom.getMauSac() %>15;">
+                                    <i class="fa-solid <%= nhom.getIcon() %>" style="color: <%= nhom.getMauSac() %>"></i>
                                 </div>
-                            </div>
-                            <div class="dropdown" onclick="event.stopPropagation()">
-                                <button class="btn btn-sm btn-light" data-bs-toggle="dropdown">
-                                    <i class="fa-solid fa-ellipsis-vertical"></i>
-                                </button>
-                                <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item" href="#" onclick="editGroup(<%= nhom.getId() %>, '<%= nhom.getTenNhom().replace("'", "\\'") %>', '<%= nhom.getMoTa() != null ? nhom.getMoTa().replace("'", "\\'") : "" %>', '<%= nhom.getIcon() %>', '<%= nhom.getMauSac() %>', <%= nhom.getThuTu() %>, '<%= nhom.getDoiTuongXem() != null ? nhom.getDoiTuongXem() : "Tất cả" %>'); return false;">
+                                <div class="flex-grow-1">
+                                    <div class="group-title"><%= nhom.getTenNhom() %></div>
+                                    <% if (nhom.getMoTa() != null && !nhom.getMoTa().isEmpty()) { %>
+                                    <p class="text-muted small mb-2"><%= nhom.getMoTa() %></p>
+                                    <% } %>
+                                    <div class="group-meta">
+                                        <span class="badge bg-primary"><%= nhom.getSoLuongTaiLieu() %> tài liệu</span>
+                                    </div>
+                                </div>
+                                <div class="dropdown" onclick="event.stopPropagation()">
+                                    <button class="btn btn-sm btn-light" data-bs-toggle="dropdown">
+                                        <i class="fa-solid fa-ellipsis-vertical"></i>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="#" onclick="editGroup(<%= nhom.getId() %>, '<%= nhom.getTenNhom().replace("'", "\\'") %>', '<%= nhom.getMoTa() != null ? nhom.getMoTa().replace("'", "\\'") : "" %>', '<%= nhom.getIcon() %>', '<%= nhom.getMauSac() %>', <%= nhom.getThuTu() %>); return false;">
                                             <i class="fa-solid fa-pen-to-square me-2"></i>Sửa
                                         </a></li>
-                                    <li><a class="dropdown-item text-danger" href="#" onclick="confirmDeleteGroup(<%= nhom.getId() %>, '<%= nhom.getTenNhom() %>'); return false;">
+                                        <li><a class="dropdown-item text-danger" href="#" onclick="confirmDeleteGroup(<%= nhom.getId() %>, '<%= nhom.getTenNhom() %>'); return false;">
                                             <i class="fa-solid fa-trash me-2"></i>Xóa
                                         </a></li>
-                                </ul>
+                                    </ul>
+                                </div>
                             </div>
                         </div>
                     </div>
+                    <% } %>
                 </div>
                 <% } %>
-            </div>
-            <% } %>
 
             <% } else { %>
-            <!-- Hiển thị danh sách tài liệu trong nhóm -->
-            <% if (danhSachTaiLieu.isEmpty()) { %>
-            <div class="empty-state">
-                <i class="fa-solid fa-file"></i>
-                <h4 class="text-muted mb-2">Chưa có tài liệu nào trong nhóm này</h4>
-                <p class="text-muted">Bắt đầu bằng cách tải lên tài liệu đầu tiên</p>
-            </div>
-            <% } else { %>
-            <div class="row">
-                <% for (TaiLieu doc : danhSachTaiLieu) { %>
-                <div class="col-12">
-                    <div class="document-card">
-                        <div class="row align-items-center">
-                            <div class="col-auto">
-                                <div class="file-icon-box" style="background: <%= doc.getFileIconColor() %>15;">
-                                    <i class="fa-solid <%= doc.getFileIcon() %>" style="color: <%= doc.getFileIconColor() %>"></i>
+                <!-- Hiển thị danh sách tài liệu trong nhóm -->
+                <% if (danhSachTaiLieu.isEmpty()) { %>
+                <div class="empty-state">
+                    <i class="fa-solid fa-file"></i>
+                    <h4 class="text-muted mb-2">Chưa có tài liệu nào trong nhóm này</h4>
+                    <p class="text-muted">Bắt đầu bằng cách tải lên tài liệu đầu tiên</p>
+                </div>
+                <% } else { %>
+                <div class="row">
+                    <% for (TaiLieu doc : danhSachTaiLieu) { %>
+                    <div class="col-12">
+                        <div class="document-card">
+                            <div class="row align-items-center">
+                                <div class="col-auto">
+                                    <div class="file-icon-box" style="background: <%= doc.getFileIconColor() %>15;">
+                                        <i class="fa-solid <%= doc.getFileIcon() %>" style="color: <%= doc.getFileIconColor() %>"></i>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="col">
-                                <div class="doc-title"><%= doc.getTenTaiLieu() %></div>
-                                <div class="doc-meta">
-                                    <% if (doc.getLoaiTaiLieu() != null) { %>
-                                    <span class="badge-custom bg-primary me-2"><%= doc.getLoaiTaiLieu() %></span>
+                                <div class="col">
+                                    <div class="doc-title"><%= doc.getTenTaiLieu() %></div>
+                                    <div class="doc-meta">
+                                        <% if (doc.getLoaiTaiLieu() != null) { %>
+                                        <span class="badge-custom bg-primary me-2"><%= doc.getLoaiTaiLieu() %></span>
+                                        <% } %>
+                                        <i class="fa-solid fa-user me-1"></i><%= doc.getTenNguoiTao() != null ? doc.getTenNguoiTao() : "Không rõ" %>
+                                        <span class="mx-2">•</span>
+                                        <i class="fa-solid fa-calendar me-1"></i><%= doc.getNgayTao() %>
+                                    </div>
+                                    <% if (doc.getMoTa() != null && !doc.getMoTa().isEmpty()) { %>
+                                    <p class="text-muted small mt-2 mb-0"><%= doc.getMoTa() %></p>
                                     <% } %>
-                                    <i class="fa-solid fa-user me-1"></i><%= doc.getTenNguoiTao() != null ? doc.getTenNguoiTao() : "Không rõ" %>
-                                    <span class="mx-2">•</span>
-                                    <i class="fa-solid fa-calendar me-1"></i><%= doc.getNgayTao() %>
+                                    <div class="mt-2">
+                                        <small class="text-muted">
+                                            <i class="fa-solid fa-database me-1"></i><%= doc.getFileSizeFormatted() %>
+                                            <span class="mx-2">•</span>
+                                            <i class="fa-solid fa-eye me-1"></i><%= doc.getLuotXem() %> lượt xem
+                                            <span class="mx-2">•</span>
+                                            <i class="fa-solid fa-download me-1"></i><%= doc.getLuotTai() %> lượt tải
+                                        </small>
+                                    </div>
                                 </div>
-                                <% if (doc.getMoTa() != null && !doc.getMoTa().isEmpty()) { %>
-                                <p class="text-muted small mt-2 mb-0"><%= doc.getMoTa() %></p>
-                                <% } %>
-                                <div class="mt-2">
-                                    <small class="text-muted">
-                                        <i class="fa-solid fa-database me-1"></i><%= doc.getFileSizeFormatted() %>
-                                        <span class="mx-2">•</span>
-                                        <i class="fa-solid fa-eye me-1"></i><%= doc.getLuotXem() %> lượt xem
-                                        <span class="mx-2">•</span>
-                                        <i class="fa-solid fa-download me-1"></i><%= doc.getLuotTai() %> lượt tải
-                                    </small>
-                                </div>
-                            </div>
-                            <div class="col-auto">
-                                <div class="btn-group" role="group">
-                                    <a href="downloadTailieu?id=<%= doc.getId() %>" 
-                                       class="btn btn-action btn-success" title="Tải xuống">
-                                        <i class="fa-solid fa-download"></i>
-                                    </a>
-                                    <button type="button" class="btn btn-action btn-warning" 
-                                            onclick="editDocument(<%= doc.getId() %>, '<%= doc.getTenTaiLieu().replace("'", "\\'") %>', '<%= doc.getLoaiTaiLieu() != null ? doc.getLoaiTaiLieu() : "" %>', '<%= doc.getMoTa() != null ? doc.getMoTa().replace("'", "\\'") : "" %>')"
-                                            title="Chỉnh sửa">
-                                        <i class="fa-solid fa-pen-to-square"></i>
-                                    </button>
-                                    <button type="button" class="btn btn-action btn-danger" 
-                                            onclick="confirmDelete(<%= doc.getId() %>, '<%= doc.getTenTaiLieu() %>', <%= nhomId %>)"
-                                            title="Xóa">
-                                        <i class="fa-solid fa-trash"></i>
-                                    </button>
+                                <div class="col-auto">
+                                    <div class="btn-group" role="group">
+                                        <a href="downloadTailieuNV?id=<%= doc.getId() %>" 
+                                           class="btn btn-action btn-success" title="Tải xuống">
+                                            <i class="fa-solid fa-download"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-action btn-warning" 
+                                                onclick="editDocument(<%= doc.getId() %>, '<%= doc.getTenTaiLieu().replace("'", "\\'") %>', '<%= doc.getLoaiTaiLieu() != null ? doc.getLoaiTaiLieu() : "" %>', '<%= doc.getMoTa() != null ? doc.getMoTa().replace("'", "\\'") : "" %>')"
+                                                title="Chỉnh sửa">
+                                            <i class="fa-solid fa-pen-to-square"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-action btn-danger" 
+                                                onclick="confirmDelete(<%= doc.getId() %>, '<%= doc.getTenTaiLieu() %>', <%= nhomId %>)"
+                                                title="Xóa">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+                    <% } %>
                 </div>
                 <% } %>
-            </div>
-            <% } %>
             <% } %>
         </div>
 
@@ -674,7 +674,7 @@
                         <h5 class="modal-title"><i class="fa-solid fa-cloud-arrow-up me-2"></i>Tải lên tài liệu mới</h5>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                     </div>
-                    <form action="uploadTailieu" method="post" enctype="multipart/form-data">
+                    <form action="uploadTailieuNV" method="post" enctype="multipart/form-data">
                         <input type="hidden" name="nhomId" value="<%= nhomId %>">
                         <div class="modal-body">
                             <div class="mb-3">
@@ -737,7 +737,7 @@
                         <h5 class="modal-title"><i class="fa-solid fa-pen-to-square me-2"></i>Chỉnh sửa tài liệu</h5>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                     </div>
-                    <form action="updateTailieu" method="post">
+                    <form action="updateTailieuNV" method="post">
                         <input type="hidden" name="id" id="editId">
                         <% if (nhomId != null) { %>
                         <input type="hidden" name="nhomId" value="<%= nhomId %>">
@@ -786,7 +786,7 @@
                 const select = document.getElementById(selectId);
                 const preview = document.getElementById(previewId);
                 const iconClass = select.value;
-
+                
                 // Get color
                 let color = '#3b82f6';
                 if (colorId) {
@@ -795,40 +795,33 @@
                         color = colorInput.value;
                     }
                 }
-
+                
                 // Update preview
                 preview.innerHTML = '<i class="fa-solid ' + iconClass + '" style="color: ' + color + ';"></i>';
             }
 
             // Update icon preview when color changes
-            $('#iconSelect').parent().parent().find('input[type="color"]').on('change', function () {
+            $('#iconSelect').parent().parent().find('input[type="color"]').on('change', function() {
                 updateIconPreview('iconSelect', 'iconPreview');
             });
 
             // Edit group function
-            function editGroup(id, ten, moTa, icon, mauSac, thuTu, doiTuongXem) {
+            function editGroup(id, ten, moTa, icon, mauSac, thuTu) {
                 $('#editGroupId').val(id);
                 $('#editGroupTen').val(ten);
                 $('#editGroupMoTa').val(moTa);
                 $('#editGroupIcon').val(icon);
                 $('#editGroupMauSac').val(mauSac);
                 $('#editGroupThuTu').val(thuTu);
-
-                // Set doiTuongXem value
-                if (doiTuongXem) {
-                    $('#editGroupDoiTuongXem').val(doiTuongXem);
-                } else {
-                    $('#editGroupDoiTuongXem').val('Tất cả');
-                }
-
+                
                 // Update icon preview
                 updateIconPreview('editGroupIcon', 'iconPreviewEdit', 'editGroupMauSac');
-
+                
                 $('#editGroupModal').modal('show');
             }
 
             // Update preview when color changes in edit modal
-            $('#editGroupMauSac').on('change', function () {
+            $('#editGroupMauSac').on('change', function() {
                 updateIconPreview('editGroupIcon', 'iconPreviewEdit', 'editGroupMauSac');
             });
 
@@ -845,7 +838,7 @@
                     cancelButtonText: 'Hủy'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        window.location.href = 'xoaNhomTailieu?id=' + id;
+                        window.location.href = 'xoaNhomTailieuNV?id=' + id;
                     }
                 });
             }
@@ -872,7 +865,7 @@
                     cancelButtonText: 'Hủy'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        window.location.href = 'deleteTailieu?id=' + id + '&nhomId=' + nhomId;
+                        window.location.href = 'deleteTailieuNV?id=' + id + '&nhomId=' + nhomId;
                     }
                 });
             }

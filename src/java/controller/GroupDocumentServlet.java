@@ -135,6 +135,7 @@ public class GroupDocumentServlet extends HttpServlet {
             String icon = request.getParameter("icon");
             String mauSac = request.getParameter("mauSac");
             String thuTuStr = request.getParameter("thuTu");
+            String doiTuongXem = request.getParameter("doiTuongXem");
 
             int thuTu = 0;
             try {
@@ -160,6 +161,7 @@ public class GroupDocumentServlet extends HttpServlet {
             ntl.setMauSac(mauSac != null && !mauSac.isEmpty() ? mauSac : "#3b82f6");
             ntl.setNguoiTaoId(userId);
             ntl.setThuTu(thuTu);
+            ntl.setDoiTuongXem(doiTuongXem != null && !doiTuongXem.isEmpty() ? doiTuongXem : "Tất cả");
 
             // Lưu vào database
             KNCSDL db = new KNCSDL();
@@ -192,6 +194,7 @@ public class GroupDocumentServlet extends HttpServlet {
             String icon = request.getParameter("icon");
             String mauSac = request.getParameter("mauSac");
             String thuTuStr = request.getParameter("thuTu");
+            String doiTuongXem = request.getParameter("doiTuongXem");
 
             // Validate
             if (idStr == null || tenNhom == null || tenNhom.trim().isEmpty()) {
@@ -217,6 +220,7 @@ public class GroupDocumentServlet extends HttpServlet {
             ntl.setMoTa(moTa);
             ntl.setIcon(icon);
             ntl.setMauSac(mauSac);
+            ntl.setDoiTuongXem(doiTuongXem != null && !doiTuongXem.isEmpty() ? doiTuongXem : "Tất cả");
             ntl.setThuTu(thuTu);
 
             // Cập nhật database

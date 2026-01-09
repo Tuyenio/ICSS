@@ -3,10 +3,11 @@ package controller;
 import java.sql.Timestamp;
 
 /**
- * Entity class đại diện cho bảng nhom_tai_lieu trong database
- * Quản lý thông tin nhóm tài liệu trong thư viện
+ * Entity class đại diện cho bảng nhom_tai_lieu trong database Quản lý thông tin
+ * nhóm tài liệu trong thư viện
  */
 public class NhomTaiLieu {
+
     private int id;
     private String tenNhom;
     private String moTa;
@@ -17,7 +18,8 @@ public class NhomTaiLieu {
     private Timestamp ngayCapNhat;
     private String trangThai;
     private int thuTu;
-    
+    private String doiTuongXem;  // Đối tượng được xem: 'Tất cả', 'Giám đốc và Trưởng phòng', 'Chỉ nhân viên'
+
     // Thông tin bổ sung từ join
     private String tenNguoiTao;
     private int soLuongTaiLieu; // Số lượng tài liệu trong nhóm
@@ -28,12 +30,13 @@ public class NhomTaiLieu {
         this.thuTu = 0;
         this.icon = "fa-folder";
         this.mauSac = "#3b82f6";
+        this.doiTuongXem = "Tất cả";
     }
 
     // Constructor đầy đủ
     public NhomTaiLieu(int id, String tenNhom, String moTa, String icon, String mauSac,
-                       int nguoiTaoId, Timestamp ngayTao, Timestamp ngayCapNhat, 
-                       String trangThai, int thuTu) {
+            int nguoiTaoId, Timestamp ngayTao, Timestamp ngayCapNhat,
+            String trangThai, int thuTu, String doiTuongXem) {
         this.id = id;
         this.tenNhom = tenNhom;
         this.moTa = moTa;
@@ -44,6 +47,7 @@ public class NhomTaiLieu {
         this.ngayCapNhat = ngayCapNhat;
         this.trangThai = trangThai;
         this.thuTu = thuTu;
+        this.doiTuongXem = doiTuongXem;
     }
 
     // Getters and Setters
@@ -143,20 +147,29 @@ public class NhomTaiLieu {
         this.soLuongTaiLieu = soLuongTaiLieu;
     }
 
+    public String getDoiTuongXem() {
+        return doiTuongXem;
+    }
+
+    public void setDoiTuongXem(String doiTuongXem) {
+        this.doiTuongXem = doiTuongXem;
+    }
+
     @Override
     public String toString() {
-        return "NhomTaiLieu{" +
-                "id=" + id +
-                ", tenNhom='" + tenNhom + '\'' +
-                ", moTa='" + moTa + '\'' +
-                ", icon='" + icon + '\'' +
-                ", mauSac='" + mauSac + '\'' +
-                ", nguoiTaoId=" + nguoiTaoId +
-                ", ngayTao=" + ngayTao +
-                ", ngayCapNhat=" + ngayCapNhat +
-                ", trangThai='" + trangThai + '\'' +
-                ", thuTu=" + thuTu +
-                ", soLuongTaiLieu=" + soLuongTaiLieu +
-                '}';
+        return "NhomTaiLieu{"
+                + "id=" + id
+                + ", tenNhom='" + tenNhom + '\''
+                + ", moTa='" + moTa + '\''
+                + ", icon='" + icon + '\''
+                + ", mauSac='" + mauSac + '\''
+                + ", nguoiTaoId=" + nguoiTaoId
+                + ", ngayTao=" + ngayTao
+                + ", ngayCapNhat=" + ngayCapNhat
+                + ", trangThai='" + trangThai + '\''
+                + ", thuTu=" + thuTu
+                + ", doiTuongXem='" + doiTuongXem + '\''
+                + ", soLuongTaiLieu=" + soLuongTaiLieu
+                + +'}';
     }
 }

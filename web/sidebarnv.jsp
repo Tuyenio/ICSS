@@ -395,6 +395,9 @@
 
         <li><a href="userLuong" class="<%= currentPath.equals("user_salary.jsp") ? "active" : "" %>">
                 <i class="fa-solid fa-money-bill"></i><span>Lương & KPI</span></a></li>
+
+        <li><a href="dsTailieuNV" class="<%= currentPath.equals("user_documents.jsp") ? "active" : "" %>">
+                <i class="fa-solid fa-folder-open"></i><span>Thư viện tài liệu</span></a></li>
         <div class="sidebar-toggle-btn">
             <i class="fa-solid fa-chevron-right"></i>
         </div>

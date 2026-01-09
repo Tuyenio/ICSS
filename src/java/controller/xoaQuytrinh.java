@@ -7,19 +7,31 @@ package controller;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.Part;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.io.File;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 
 /**
  *
  * @author Admin
  */
+@MultipartConfig(
+        fileSizeThreshold = 1024 * 1024 * 2,
+        maxFileSize = 1024 * 1024 * 50,
+        maxRequestSize = 1024 * 1024 * 100
+)
 public class xoaQuytrinh extends HttpServlet {
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -111,7 +123,50 @@ public class xoaQuytrinh extends HttpServlet {
             String trangThai = request.getParameter("status");
             String ngayBatDau = request.getParameter("start");
             String ngayKetThuc = request.getParameter("end");
-            String nguoiNhanStr = request.getParameter("process_nguoi_nhan"); // <-- danh sách người nhận
+            String linkTaiLieu = request.getParameter("link_tai_lieu");
+            String nguoiNhanStr = request.getParameter("process_nguoi_nhan");
+
+            // Xử lý file upload
+            String fileTaiLieu = "";
+            Part filePart = null;
+            try {
+                filePart = request.getPart("file_tai_lieu");
+            } catch (Exception e) {
+                // Không có file upload
+            }
+
+            if (filePart != null && filePart.getSize() > 0) {
+                String uploadPath = System.getenv("ICSS_UPLOAD_DIR");
+                if (uploadPath == null || uploadPath.trim().isEmpty()) {
+                    uploadPath = "D:/uploads";
+                }
+
+                File uploadDir = new File(uploadPath);
+                if (!uploadDir.exists()) {
+                    uploadDir.mkdirs();
+                }
+
+                String originalFileName = Paths.get(filePart.getSubmittedFileName()).getFileName().toString();
+                String destFileName = sanitizeFileName(originalFileName);
+
+                File destFile = new File(uploadPath, destFileName);
+                if (destFile.exists()) {
+                    String name_part = destFileName;
+                    String ext = "";
+                    int dot = destFileName.lastIndexOf('.');
+                    if (dot > 0) {
+                        name_part = destFileName.substring(0, dot);
+                        ext = destFileName.substring(dot);
+                    }
+                    destFileName = name_part + "_" + System.currentTimeMillis() + ext;
+                    destFile = new File(uploadPath, destFileName);
+                }
+
+                try (InputStream input = filePart.getInputStream()) {
+                    Files.copy(input, destFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                    fileTaiLieu = destFileName;
+                }
+            }
 
             int congViecId = Integer.parseInt(congViecIdStr);
 
@@ -120,12 +175,22 @@ public class xoaQuytrinh extends HttpServlet {
                 int newId = db.insertStep(congViecId, tenBuoc, moTa, trangThai, ngayBatDau, ngayKetThuc);
 
                 if (newId > 0) {
+                    // Cập nhật link và file nếu có
+                    if ((linkTaiLieu != null && !linkTaiLieu.isEmpty()) || !fileTaiLieu.isEmpty()) {
+                        db.updateStepByIdWithDocuments(newId, tenBuoc, moTa, trangThai, ngayBatDau, ngayKetThuc, 
+                            linkTaiLieu != null ? linkTaiLieu : "", fileTaiLieu);
+                    }
+
                     // 🔹 Lưu danh sách người nhận (nếu có)
                     if (nguoiNhanStr != null && !nguoiNhanStr.isEmpty()) {
                         String[] ids = nguoiNhanStr.split(",");
                         for (String idStr : ids) {
-                            int nhanId = Integer.parseInt(idStr.trim());
-                            db.insertNguoiNhanQuyTrinh(newId, nhanId); // gọi hàm mới
+                            try {
+                                int nhanId = Integer.parseInt(idStr.trim());
+                                db.insertNguoiNhanQuyTrinh(newId, nhanId);
+                            } catch (NumberFormatException ex) {
+                                // Bỏ qua id không hợp lệ
+                            }
                         }
                     }
                     db.close();
@@ -185,6 +250,27 @@ public class xoaQuytrinh extends HttpServlet {
     @Override
     public String getServletInfo() {
         return "Short description";
+    }
+
+    /**
+     * Làm sạch tên file (loại bỏ ký tự đặc biệt)
+     */
+    private String sanitizeFileName(String fileName) {
+        if (fileName == null) return "unnamed";
+        String cleaned = fileName.replaceAll("[\\\\/:*?\"<>|\\p{Cntrl}]", "_");
+        cleaned = cleaned.trim();
+        if (cleaned.length() > 250) {
+            String ext = "";
+            int dot = cleaned.lastIndexOf('.');
+            if (dot > 0) {
+                ext = cleaned.substring(dot);
+                cleaned = cleaned.substring(0, Math.min(240, dot));
+            } else {
+                cleaned = cleaned.substring(0, 240);
+            }
+            cleaned = cleaned + ext;
+        }
+        return cleaned;
     }// </editor-fold>
 
 }

@@ -24,8 +24,8 @@ public class KNCSDL {
 
     public KNCSDL() throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
-        //this.cn = DriverManager.getConnection(path, "root", "");
-        this.cn = DriverManager.getConnection(path, "icssapp", "StrongPass!2025");
+        this.cn = DriverManager.getConnection(path, "root", "");
+        //this.cn = DriverManager.getConnection(path, "icssapp", "StrongPass!2025");
     }
 
     public ResultSet laydl(String email) throws SQLException {
@@ -689,7 +689,7 @@ public class KNCSDL {
     }
 
     public ResultSet getStepsRawByTaskId(String taskId) throws SQLException {
-        String sql = "SELECT id, ten_buoc, mo_ta, trang_thai, ngay_bat_dau, ngay_ket_thuc "
+        String sql = "SELECT id, ten_buoc, mo_ta, trang_thai, ngay_bat_dau, ngay_ket_thuc, tai_lieu_link, tai_lieu_file "
                 + "FROM cong_viec_quy_trinh WHERE cong_viec_id = ? ORDER BY ngay_bat_dau ASC";
         PreparedStatement ps = cn.prepareStatement(sql);
         ps.setString(1, taskId);
@@ -703,7 +703,7 @@ public class KNCSDL {
      * @return Map chứa thông tin tiến độ
      */
     public Map<String, Object> getStepById(int stepId) throws SQLException {
-        String sql = "SELECT id, cong_viec_id, ten_buoc, mo_ta, trang_thai, ngay_bat_dau, ngay_ket_thuc "
+        String sql = "SELECT id, cong_viec_id, ten_buoc, mo_ta, trang_thai, ngay_bat_dau, ngay_ket_thuc, tai_lieu_link, tai_lieu_file "
                 + "FROM cong_viec_quy_trinh WHERE id = ?";
 
         try (PreparedStatement ps = cn.prepareStatement(sql)) {
@@ -718,6 +718,8 @@ public class KNCSDL {
                     step.put("trang_thai", rs.getString("trang_thai"));
                     step.put("ngay_bat_dau", rs.getString("ngay_bat_dau"));
                     step.put("ngay_ket_thuc", rs.getString("ngay_ket_thuc"));
+                    step.put("tai_lieu_link", rs.getString("tai_lieu_link"));
+                    step.put("tai_lieu_file", rs.getString("tai_lieu_file"));
                     return step;
                 }
             }
@@ -753,6 +755,23 @@ public class KNCSDL {
             stmt.setString(4, start);
             stmt.setString(5, end);
             stmt.setInt(6, stepId);
+            int affected = stmt.executeUpdate();
+            return affected > 0;
+        }
+    }
+
+    public boolean updateStepByIdWithDocuments(int stepId, String name, String desc,
+            String status, String start, String end, String linkTaiLieu, String fileTaiLieu) throws SQLException {
+        String sql = "UPDATE cong_viec_quy_trinh SET ten_buoc = ?, mo_ta = ?, trang_thai = ?, ngay_bat_dau = ?, ngay_ket_thuc = ?, tai_lieu_link = ?, tai_lieu_file = ? WHERE id = ?";
+        try (PreparedStatement stmt = cn.prepareStatement(sql)) {
+            stmt.setString(1, name);
+            stmt.setString(2, desc);
+            stmt.setString(3, status);
+            stmt.setString(4, start);
+            stmt.setString(5, end);
+            stmt.setString(6, linkTaiLieu);
+            stmt.setString(7, fileTaiLieu);
+            stmt.setInt(8, stepId);
             int affected = stmt.executeUpdate();
             return affected > 0;
         }
@@ -3487,13 +3506,14 @@ public class KNCSDL {
 
     /**
      * Lấy danh sách ID nhân viên theo chức vụ
+     *
      * @param chucVu Chức vụ cần lọc (VD: "Giám đốc", "Trưởng phòng")
      * @return Danh sách ID nhân viên
      */
     public List<Integer> getNhanVienIdsByChucVu(String chucVu) throws SQLException {
         List<Integer> ids = new ArrayList<>();
         String sql = "SELECT id FROM nhanvien WHERE chuc_vu = ? AND trang_thai_lam_viec = 'Đang làm'";
-        
+
         try (PreparedStatement ps = cn.prepareStatement(sql)) {
             ps.setString(1, chucVu);
             try (ResultSet rs = ps.executeQuery()) {
@@ -3507,12 +3527,13 @@ public class KNCSDL {
 
     /**
      * Lấy danh sách ID nhân viên có chức vụ Giám đốc hoặc Trưởng phòng
+     *
      * @return Danh sách ID nhân viên
      */
     public List<Integer> getNhanVienGiamDocVaTruongPhong() throws SQLException {
         List<Integer> ids = new ArrayList<>();
         String sql = "SELECT id FROM nhanvien WHERE chuc_vu IN ('Giám đốc', 'Trưởng phòng') AND trang_thai_lam_viec = 'Đang làm'";
-        
+
         try (PreparedStatement ps = cn.prepareStatement(sql)) {
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -5338,7 +5359,6 @@ public class KNCSDL {
                     // ✅ KIỂM TRA VÀ TỰ ĐỘNG CẬP NHẬT TRẠNG THÁI DỰ ÁN (2 CHIỀU)
                     // Chỉ xử lý 2 trạng thái: "Đang thực hiện" và "Đã hoàn thành"
                     // Không động vào "Tạm ngưng" và "Đóng dự án"
-                    
                     // Logic 1: Nếu tiến độ >= 99.5% (coi như 100%) và đang ở trạng thái "Đang thực hiện"
                     // Thì tự động chuyển sang "Đã hoàn thành"
                     if (tiendoValue >= 99.5 && status.equals("Đang thực hiện")) {
@@ -5354,8 +5374,7 @@ public class KNCSDL {
                             // Nếu cập nhật thất bại, vẫn lấy status từ database
                             ex.printStackTrace();
                         }
-                    }
-                    // Logic 2: Nếu tiến độ < 99.5% (chưa đến 100%) và đang ở trạng thái "Đã hoàn thành"
+                    } // Logic 2: Nếu tiến độ < 99.5% (chưa đến 100%) và đang ở trạng thái "Đã hoàn thành"
                     // Thì tự động chuyển về "Đang thực hiện" (vì có thêm việc mới)
                     else if (tiendoValue < 99.5 && status.equals("Đã hoàn thành")) {
                         try {
@@ -5602,8 +5621,8 @@ public class KNCSDL {
      */
     public int insertTaiLieu(TaiLieu tl) throws SQLException {
         String sql = "INSERT INTO tai_lieu (nhom_tai_lieu_id, ten_tai_lieu, loai_tai_lieu, mo_ta, file_name, "
-                + "file_path, file_size, file_type, nguoi_tao_id) "
-                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                + "file_path, file_size, file_type, nguoi_tao_id, doi_tuong_xem) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (PreparedStatement stmt = cn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setInt(1, tl.getNhomTaiLieuId());
@@ -5615,6 +5634,7 @@ public class KNCSDL {
             stmt.setLong(7, tl.getFileSize());
             stmt.setString(8, tl.getFileType());
             stmt.setInt(9, tl.getNguoiTaoId());
+            stmt.setString(10, tl.getDoiTuongXem() != null ? tl.getDoiTuongXem() : "Tất cả");
 
             int affectedRows = stmt.executeUpdate();
             if (affectedRows > 0) {
@@ -5807,7 +5827,6 @@ public class KNCSDL {
     }
 
     // =============== METHODS CHO NHÓM TÀI LIỆU ===============
-    
     /**
      * Lấy tất cả nhóm tài liệu
      */
@@ -5833,6 +5852,42 @@ public class KNCSDL {
                 ntl.setNgayCapNhat(rs.getTimestamp("ngay_cap_nhat"));
                 ntl.setTrangThai(rs.getString("trang_thai"));
                 ntl.setThuTu(rs.getInt("thu_tu"));
+                ntl.setDoiTuongXem(rs.getString("doi_tuong_xem"));
+                ntl.setTenNguoiTao(rs.getString("ten_nguoi_tao"));
+                ntl.setSoLuongTaiLieu(rs.getInt("so_luong_tai_lieu"));
+                list.add(ntl);
+            }
+        }
+        return list;
+    }
+
+    public List<NhomTaiLieu> getAllNhomTaiLieuNV() throws SQLException {
+        List<NhomTaiLieu> list = new ArrayList<>();
+
+        String sql = "SELECT ntl.*, nv.ho_ten AS ten_nguoi_tao, "
+                + "(SELECT COUNT(*) FROM tai_lieu "
+                + " WHERE nhom_tai_lieu_id = ntl.id AND trang_thai = 'Hoạt động') AS so_luong_tai_lieu "
+                + "FROM nhom_tai_lieu ntl "
+                + "LEFT JOIN nhanvien nv ON ntl.nguoi_tao_id = nv.id "
+                + "WHERE ntl.trang_thai = 'Hoạt động' "
+                + "AND ntl.doi_tuong_xem IN ('Tất cả', 'Chỉ nhân viên') "
+                + "ORDER BY ntl.thu_tu, ntl.ten_nhom";
+
+        try (PreparedStatement stmt = cn.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                NhomTaiLieu ntl = new NhomTaiLieu();
+                ntl.setId(rs.getInt("id"));
+                ntl.setTenNhom(rs.getString("ten_nhom"));
+                ntl.setMoTa(rs.getString("mo_ta"));
+                ntl.setIcon(rs.getString("icon"));
+                ntl.setMauSac(rs.getString("mau_sac"));
+                ntl.setNguoiTaoId(rs.getInt("nguoi_tao_id"));
+                ntl.setNgayTao(rs.getTimestamp("ngay_tao"));
+                ntl.setNgayCapNhat(rs.getTimestamp("ngay_cap_nhat"));
+                ntl.setTrangThai(rs.getString("trang_thai"));
+                ntl.setThuTu(rs.getInt("thu_tu"));
+                ntl.setDoiTuongXem(rs.getString("doi_tuong_xem"));
                 ntl.setTenNguoiTao(rs.getString("ten_nguoi_tao"));
                 ntl.setSoLuongTaiLieu(rs.getInt("so_luong_tai_lieu"));
                 list.add(ntl);
@@ -5866,6 +5921,7 @@ public class KNCSDL {
                     ntl.setNgayCapNhat(rs.getTimestamp("ngay_cap_nhat"));
                     ntl.setTrangThai(rs.getString("trang_thai"));
                     ntl.setThuTu(rs.getInt("thu_tu"));
+                    ntl.setDoiTuongXem(rs.getString("doi_tuong_xem"));
                     ntl.setTenNguoiTao(rs.getString("ten_nguoi_tao"));
                     ntl.setSoLuongTaiLieu(rs.getInt("so_luong_tai_lieu"));
                     return ntl;
@@ -5879,8 +5935,8 @@ public class KNCSDL {
      * Thêm nhóm tài liệu mới
      */
     public int insertNhomTaiLieu(NhomTaiLieu ntl) throws SQLException {
-        String sql = "INSERT INTO nhom_tai_lieu (ten_nhom, mo_ta, icon, mau_sac, nguoi_tao_id, thu_tu) "
-                + "VALUES (?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO nhom_tai_lieu (ten_nhom, mo_ta, icon, mau_sac, nguoi_tao_id, thu_tu, doi_tuong_xem) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?)";
 
         try (PreparedStatement stmt = cn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setString(1, ntl.getTenNhom());
@@ -5889,6 +5945,7 @@ public class KNCSDL {
             stmt.setString(4, ntl.getMauSac());
             stmt.setInt(5, ntl.getNguoiTaoId());
             stmt.setInt(6, ntl.getThuTu());
+            stmt.setString(7, ntl.getDoiTuongXem() != null ? ntl.getDoiTuongXem() : "Tất cả");
 
             int affectedRows = stmt.executeUpdate();
             if (affectedRows > 0) {
@@ -5906,7 +5963,7 @@ public class KNCSDL {
      * Cập nhật nhóm tài liệu
      */
     public boolean updateNhomTaiLieu(NhomTaiLieu ntl) throws SQLException {
-        String sql = "UPDATE nhom_tai_lieu SET ten_nhom = ?, mo_ta = ?, icon = ?, mau_sac = ?, thu_tu = ? "
+        String sql = "UPDATE nhom_tai_lieu SET ten_nhom = ?, mo_ta = ?, icon = ?, mau_sac = ?, thu_tu = ?, doi_tuong_xem = ? "
                 + "WHERE id = ?";
 
         try (PreparedStatement stmt = cn.prepareStatement(sql)) {
@@ -5915,7 +5972,8 @@ public class KNCSDL {
             stmt.setString(3, ntl.getIcon());
             stmt.setString(4, ntl.getMauSac());
             stmt.setInt(5, ntl.getThuTu());
-            stmt.setInt(6, ntl.getId());
+            stmt.setString(6, ntl.getDoiTuongXem() != null ? ntl.getDoiTuongXem() : "Tất cả");
+            stmt.setInt(7, ntl.getId());
 
             return stmt.executeUpdate() > 0;
         }
@@ -5965,6 +6023,7 @@ public class KNCSDL {
                     tl.setTrangThai(rs.getString("trang_thai"));
                     tl.setLuotXem(rs.getInt("luot_xem"));
                     tl.setLuotTai(rs.getInt("luot_tai"));
+                    tl.setDoiTuongXem(rs.getString("doi_tuong_xem"));
                     tl.setTenNguoiTao(rs.getString("ten_nguoi_tao"));
                     tl.setAvatarNguoiTao(rs.getString("avatar_nguoi_tao"));
                     tl.setTenNhomTaiLieu(rs.getString("ten_nhom_tai_lieu"));
@@ -6022,5 +6081,4 @@ public class KNCSDL {
         }
         return list;
     }
-
 }

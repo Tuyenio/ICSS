@@ -1014,6 +1014,31 @@ function renderProcessSteps() {
                     '<button class="btn btn-sm btn-danger ms-1" onclick="removeProcessStep(' + idx + ')">' +
                     '<i class="fa-solid fa-trash"></i></button>';
 
+            var taiLieuHtml = '';
+            if (step.linkTaiLieu || step.fileTaiLieu) {
+                taiLieuHtml = '<div class="text-muted small mt-1"><i class="fa-solid fa-paperclip"></i> Tài liệu: ';
+                if (step.linkTaiLieu && step.linkTaiLieu.trim() !== '' && step.linkTaiLieu.toLowerCase() !== 'null') {
+                    taiLieuHtml += '<a href="' + step.linkTaiLieu + '" target="_blank" class="text-decoration-none"><i class="fa-solid fa-external-link-alt me-1"></i>Link</a>';
+                }
+                if (step.linkTaiLieu && step.linkTaiLieu.trim() !== '' && step.linkTaiLieu.toLowerCase() !== 'null' && step.fileTaiLieu) {
+                    taiLieuHtml += ' | ';
+                }
+                if (step.fileTaiLieu) {
+                    var files = step.fileTaiLieu.split(';').map(f => f.trim()).filter(Boolean);
+                    if (files.length === 1) {
+                        taiLieuHtml += '<a href="downloadFile?file=' + encodeURIComponent(files[0]) + '" target="_blank" class="text-decoration-none"><i class="fa-solid fa-download me-1"></i>File</a>';
+                    } else {
+                        taiLieuHtml += '<span class="me-2"><i class="fa-solid fa-file-download me-1"></i>' + files.length + ' file:</span>';
+                        files.forEach(function(file, idx) {
+                            var fileName = file.split('/').pop();
+                            taiLieuHtml += '<a href="downloadFile?file=' + encodeURIComponent(file) + '" target="_blank" class="text-decoration-none me-2" title="' + fileName + '">';
+                            taiLieuHtml += '<i class="fa-solid fa-download"></i> ' + (idx + 1) + '</a>';
+                        });
+                    }
+                }
+                taiLieuHtml += '</div>';
+            }
+
             var html = '<li class="list-group-item d-flex justify-content-between align-items-center">' +
                     '<div>' +
                     '<b>' + step.name + '</b> ' +
@@ -1021,6 +1046,7 @@ function renderProcessSteps() {
                     '<small>' + (step.desc ? step.desc : '') + '</small>' +
                     '<div class="text-muted small"><i class="fa-solid fa-user"></i> Người nhận: ' + (receiverNames || 'Chưa có') + '</div>' +
                     '<div class="text-muted small">Từ ' + (step.start || '-') + ' đến ' + (step.end || '-') + '</div>' +
+                    taiLieuHtml +
                     '</div>' +
                     '<div>' + editBtn + deleteBtn + '</div>' +
                     '</li>';
@@ -1121,6 +1147,17 @@ function showEditStepModal(idx) {
                     <input type="date" class="form-control" name="stepEnd" value="${step.end || ''}">
                   </div>
                 </div>
+                <div class="mb-2">
+                  <label class="form-label">Link tài liệu</label>
+                  <input type="text" class="form-control" name="stepLinkTaiLieu" value="${step.linkTaiLieu || ''}" placeholder="https://...">
+                  <small class="text-muted">Link tài liệu tham khảo (Google Drive, Dropbox, v.v.)</small>
+                </div>
+                <div class="mb-2">
+                  <label class="form-label">File tài liệu</label>
+                  <input type="file" class="form-control" name="stepFileTaiLieu" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx" multiple>
+                  <small class="text-muted">Chọn một hoặc nhiều file để thêm</small>
+                  ${step.fileTaiLieu ? `<div class="mt-2"><small><strong>File hiện tại:</strong><br>${step.fileTaiLieu.split(';').map(f => f.trim()).filter(Boolean).map(f => f.split('/').pop()).join(', ')}</small></div>` : '<div class="mt-2"><small class="text-muted">Chưa có file nào</small></div>'}
+                </div>
               </div>
               <div class="modal-footer">
                 <button type="submit" class="btn btn-primary rounded-pill">Cập nhật</button>
@@ -1199,6 +1236,8 @@ function showEditStepModal(idx) {
             status: $(this).find('[name="stepStatus"]').val(),
             start: $(this).find('[name="stepStart"]').val(),
             end: $(this).find('[name="stepEnd"]').val(),
+            linkTaiLieu: $(this).find('[name="stepLinkTaiLieu"]').val(),
+            fileTaiLieu: step.fileTaiLieu || '',
             // lưu tên người nhận tạm thời
             receivers: (function () {
                 var names = ($('#nguoiNhanEditHidden').val() || '').split(',').map(s => s.trim()).filter(Boolean);
@@ -1220,20 +1259,37 @@ function showEditStepModal(idx) {
             }
         });
 
-        // Gửi cập nhật về server kèm process_nguoi_nhan (IDs)
+        // Gửi cập nhật về server kèm process_nguoi_nhan (IDs) và file (nếu có)
+        var formData = new FormData();
+        formData.append('step_id', processSteps[idx].id);
+        formData.append('name', processSteps[idx].name);
+        formData.append('desc', processSteps[idx].desc);
+        formData.append('status', processSteps[idx].status);
+        formData.append('start', processSteps[idx].start);
+        formData.append('end', processSteps[idx].end);
+        formData.append('link_tai_lieu', processSteps[idx].linkTaiLieu || '');
+        formData.append('process_nguoi_nhan', nguoiNhanIds.join(','));
+        
+        // Thêm tất cả file nếu có
+        var fileInput = $(e.target).find('[name="stepFileTaiLieu"]')[0];
+        if (fileInput && fileInput.files && fileInput.files.length > 0) {
+            for (var i = 0; i < fileInput.files.length; i++) {
+                formData.append('file_tai_lieu', fileInput.files[i]);
+            }
+        }
+        
         $.ajax({
             url: './apiTaskSteps',
             method: 'POST',
-            data: {
-                step_id: processSteps[idx].id,
-                name: processSteps[idx].name,
-                desc: processSteps[idx].desc,
-                status: processSteps[idx].status,
-                start: processSteps[idx].start,
-                end: processSteps[idx].end,
-                process_nguoi_nhan: nguoiNhanIds.join(',') // <-- gửi ID tới backend
-            },
-            success: function () {
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (response) {
+                // Cập nhật fileTaiLieu nếu server trả về
+                if (response && response.fileTaiLieu) {
+                    processSteps[idx].fileTaiLieu = response.fileTaiLieu;
+                }
+                renderProcessSteps();
                 showToast('success', 'Cập nhật bước thành công');
             },
             error: function () {
@@ -1332,7 +1388,9 @@ $('#formAddProcessStep').on('submit', function (e) {
         desc: $(this).find('[name="stepDesc"]').val(),
         status: $(this).find('[name="stepStatus"]').val(),
         start: $(this).find('[name="stepStart"]').val(),
-        end: $(this).find('[name="stepEnd"]').val()
+        end: $(this).find('[name="stepEnd"]').val(),
+        linkTaiLieu: $(this).find('[name="stepLinkTaiLieu"]').val(),
+        fileTaiLieu: ''
     };
 
     var nguoiNhanNames = ($('#nguoiNhanProcessHidden').val() || "").split(',')
@@ -1353,19 +1411,31 @@ $('#formAddProcessStep').on('submit', function (e) {
 
     step.receivers = receivers;
 
+    var formData = new FormData();
+    formData.append('action', 'add');
+    formData.append('task_id', taskId);
+    formData.append('name', step.name);
+    formData.append('desc', step.desc);
+    formData.append('status', step.status);
+    formData.append('start', step.start);
+    formData.append('end', step.end);
+    formData.append('link_tai_lieu', step.linkTaiLieu || '');
+    formData.append('process_nguoi_nhan', nguoiNhanIds.join(','));
+    
+    // Thêm tất cả file nếu có
+    var fileInput = $(this).find('[name="stepFileTaiLieu"]')[0];
+    if (fileInput && fileInput.files && fileInput.files.length > 0) {
+        for (var i = 0; i < fileInput.files.length; i++) {
+            formData.append('file_tai_lieu', fileInput.files[i]);
+        }
+    }
+
     $.ajax({
         url: './xoaQuytrinh',
         method: 'POST',
-        data: {
-            action: 'add',
-            task_id: taskId,
-            name: step.name,
-            desc: step.desc,
-            status: step.status,
-            start: step.start,
-            end: step.end,
-            process_nguoi_nhan: nguoiNhanIds.join(',') // ✅ gửi ID sang backend
-        },
+        data: formData,
+        processData: false,
+        contentType: false,
         success: function (newStepId) {
             step.id = newStepId;
             processSteps.push(step);

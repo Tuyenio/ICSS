@@ -267,6 +267,10 @@
         <servlet-name>ApiThongbaoLatest</servlet-name>
         <servlet-class>controller.ApiThongbaoLatest</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>DocumentServletNV</servlet-name>
+        <servlet-class>controller.DocumentServletNV</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>dsnhanvien</servlet-name>
         <url-pattern>/dsnhanvien</url-pattern>

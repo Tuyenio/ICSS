@@ -22,6 +22,7 @@ public class TaiLieu {
     private String trangThai;
     private int luotXem;
     private int luotTai;
+    private String doiTuongXem;  // Đối tượng được xem: 'Tất cả', 'Giám đốc và Trưởng phòng', 'Chỉ nhân viên'
     
     // Thông tin bổ sung từ join
     private String tenNguoiTao;
@@ -33,6 +34,7 @@ public class TaiLieu {
         this.trangThai = "Hoạt động";
         this.luotXem = 0;
         this.luotTai = 0;
+        this.doiTuongXem = "Tất cả";
     }
 
     // Constructor đầy đủ
@@ -200,6 +202,14 @@ public class TaiLieu {
 
     public void setTenNhomTaiLieu(String tenNhomTaiLieu) {
         this.tenNhomTaiLieu = tenNhomTaiLieu;
+    }
+
+    public String getDoiTuongXem() {
+        return doiTuongXem;
+    }
+
+    public void setDoiTuongXem(String doiTuongXem) {
+        this.doiTuongXem = doiTuongXem;
     }
 
     /**

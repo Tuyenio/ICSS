@@ -18,17 +18,13 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.UUID;
 
-/**
- * Servlet xử lý tất cả các thao tác liên quan đến Thư viện tài liệu Bao gồm:
- * Xem danh sách, Thêm, Sửa, Xóa, Tải xuống, Tìm kiếm
- */
-@WebServlet(name = "DocumentServlet", urlPatterns = {"/dsTailieu", "/uploadTailieu", "/downloadTailieu", "/deleteTailieu", "/updateTailieu"})
+@WebServlet(name = "DocumentServletNV", urlPatterns = {"/dsTailieuNV", "/uploadTailieuNV", "/downloadTailieuNV", "/deleteTailieuNV", "/updateTailieuNV"})
 @MultipartConfig(
         fileSizeThreshold = 1024 * 1024 * 2, // 2MB
         maxFileSize = 1024 * 1024 * 50, // 50MB
         maxRequestSize = 1024 * 1024 * 100 // 100MB
 )
-public class DocumentServlet extends HttpServlet {
+public class DocumentServletNV extends HttpServlet {
 
     private static final long MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
 
@@ -49,13 +45,13 @@ public class DocumentServlet extends HttpServlet {
 
         try {
             switch (path) {
-                case "/dsTailieu":
+                case "/dsTailieuNV":
                     handleListDocuments(request, response);
                     break;
-                case "/downloadTailieu":
+                case "/downloadTailieuNV":
                     handleDownloadDocument(request, response);
                     break;
-                case "/deleteTailieu":
+                case "/deleteTailieuNV":
                     handleDeleteDocument(request, response);
                     break;
                 default:
@@ -64,7 +60,7 @@ public class DocumentServlet extends HttpServlet {
         } catch (Exception e) {
             e.printStackTrace();
             request.setAttribute("error", "Có lỗi xảy ra: " + e.getMessage());
-            request.getRequestDispatcher("documents.jsp").forward(request, response);
+            request.getRequestDispatcher("user_documents.jsp").forward(request, response);
         }
     }
 
@@ -86,10 +82,10 @@ public class DocumentServlet extends HttpServlet {
 
         try {
             switch (path) {
-                case "/uploadTailieu":
+                case "/uploadTailieuNV":
                     handleUploadDocument(request, response);
                     break;
-                case "/updateTailieu":
+                case "/updateTailieuNV":
                     handleUpdateDocument(request, response);
                     break;
                 default:
@@ -98,7 +94,7 @@ public class DocumentServlet extends HttpServlet {
         } catch (Exception e) {
             e.printStackTrace();
             request.setAttribute("error", "Có lỗi xảy ra: " + e.getMessage());
-            request.getRequestDispatcher("documents.jsp").forward(request, response);
+            request.getRequestDispatcher("user_documents.jsp").forward(request, response);
         }
     }
 
@@ -123,7 +119,7 @@ public class DocumentServlet extends HttpServlet {
             }
 
             List<TaiLieu> danhSach;
-            List<NhomTaiLieu> danhSachNhom = kn.getAllNhomTaiLieu();
+            List<NhomTaiLieu> danhSachNhom = kn.getAllNhomTaiLieuNV();
 
             // Nếu có nhomId, chỉ lấy tài liệu trong nhóm đó
             if (nhomIdStr != null && !nhomIdStr.isEmpty()) {
@@ -151,7 +147,7 @@ public class DocumentServlet extends HttpServlet {
             kn.close();
         }
 
-        request.getRequestDispatcher("documents.jsp").forward(request, response);
+        request.getRequestDispatcher("user_documents.jsp").forward(request, response);
     }
 
     /**
@@ -283,7 +279,7 @@ public class DocumentServlet extends HttpServlet {
                         String tieuDe = "Biên bản họp nội bộ mới";
                         String noiDung = "Tài liệu '" + tenTaiLieu.trim() + "' đã được thêm vào Biên bản họp nội bộ. Vui lòng xem chi tiết.";
                         String loai = "Tài liệu";
-                        String duongDan = "dsTailieu?nhomId=9";
+                        String duongDan = "dsTailieuNV?nhomId=9";
                         
                         // Gửi thông báo cho từng người
                         for (Integer nguoiNhanId : nguoiNhanIds) {

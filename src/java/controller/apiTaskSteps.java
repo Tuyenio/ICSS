@@ -9,15 +9,27 @@ import java.io.IOException;
 import java.sql.*;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.Part;
+import java.io.File;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.*;
 
 /**
  *
  * @author Admin
  */
+@MultipartConfig(
+        fileSizeThreshold = 1024 * 1024 * 2, // 2MB
+        maxFileSize = 1024 * 1024 * 50, // 50MB
+        maxRequestSize = 1024 * 1024 * 100 // 100MB
+)
 public class apiTaskSteps extends HttpServlet {
 
     @Override
@@ -55,6 +67,8 @@ public class apiTaskSteps extends HttpServlet {
                 json.append("\"status\":\"").append(escapeJson(rs.getString("trang_thai"))).append("\",");
                 json.append("\"start\":\"").append(escapeJson(rs.getString("ngay_bat_dau"))).append("\",");
                 json.append("\"end\":\"").append(escapeJson(rs.getString("ngay_ket_thuc"))).append("\",");
+                json.append("\"linkTaiLieu\":\"").append(escapeJson(rs.getString("tai_lieu_link"))).append("\",");
+                json.append("\"fileTaiLieu\":\"").append(escapeJson(rs.getString("tai_lieu_file"))).append("\",");
 
                 // 🔹 Lấy danh sách người nhận cho step này
                 int stepId = rs.getInt("id");
@@ -92,7 +106,7 @@ public class apiTaskSteps extends HttpServlet {
             throws ServletException, IOException {
 
         request.setCharacterEncoding("UTF-8");
-        response.setContentType("text/plain; charset=UTF-8");
+        response.setContentType("application/json; charset=UTF-8");
 
         PrintWriter out = response.getWriter();
 
@@ -102,22 +116,94 @@ public class apiTaskSteps extends HttpServlet {
         String status = request.getParameter("status");
         String start = request.getParameter("start");
         String end = request.getParameter("end");
+        String linkTaiLieu = request.getParameter("link_tai_lieu");
+        
+        // Xử lý file upload
+        String fileTaiLieu = request.getParameter("file_tai_lieu"); // Giá trị cũ từ DB
+        Part filePart = null;
+        try {
+            filePart = request.getPart("file_tai_lieu"); // File mới upload
+        } catch (Exception e) {
+            // Không có file upload, giữ nguyên giá trị cũ
+        }
+        
+        // Nếu có file mới upload
+        if (filePart != null && filePart.getSize() > 0) {
+            String uploadPath = System.getenv("ICSS_UPLOAD_DIR");
+            if (uploadPath == null || uploadPath.trim().isEmpty()) {
+                uploadPath = "D:/uploads"; // fallback
+            }
+            
+            File uploadDir = new File(uploadPath);
+            if (!uploadDir.exists()) {
+                uploadDir.mkdirs();
+            }
+            
+            String originalFileName = Paths.get(filePart.getSubmittedFileName()).getFileName().toString();
+            String destFileName = sanitizeFileName(originalFileName);
+            
+            // Thêm timestamp nếu file đã tồn tại
+            File destFile = new File(uploadPath, destFileName);
+            if (destFile.exists()) {
+                String name_part = destFileName;
+                String ext = "";
+                int dot = destFileName.lastIndexOf('.');
+                if (dot > 0) {
+                    name_part = destFileName.substring(0, dot);
+                    ext = destFileName.substring(dot);
+                }
+                destFileName = name_part + "_" + System.currentTimeMillis() + ext;
+                destFile = new File(uploadPath, destFileName);
+            }
+            
+            // Lưu file
+            try (InputStream input = filePart.getInputStream()) {
+                Files.copy(input, destFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            }
+            
+            // Cập nhật fileTaiLieu thành tên file mới
+            // Nếu đã có file cũ, thêm vào danh sách (cách nhau bởi ;)
+            if (fileTaiLieu != null && !fileTaiLieu.isEmpty() && !fileTaiLieu.equals("null")) {
+                fileTaiLieu = fileTaiLieu + ";" + destFileName;
+            } else {
+                fileTaiLieu = destFileName;
+            }
+        }
 
         if (stepIdStr == null || name == null || status == null) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            out.print("Thiếu thông tin bắt buộc.");
+            out.print("{\"success\":false,\"message\":\"Thiếu thông tin bắt buộc.\"}");
             return;
         }
 
         try {
-            int stepId = Integer.parseInt(stepIdStr);
+            // Validate và parse stepId
+            if (stepIdStr.trim().isEmpty()) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                out.print("{\"success\":false,\"message\":\"Step ID không được rỗng.\"}");
+                return;
+            }
+            int stepId = Integer.parseInt(stepIdStr.trim());
 
             KNCSDL db = new KNCSDL();
 
             // Lấy thông tin tiến độ cũ để so sánh
             Map<String, Object> stepCu = db.getStepById(stepId);
+            
+            // ✅ FIX: Nếu không có input mới, giữ nguyên dữ liệu cũ
+            // Nếu linkTaiLieu rỗng/null, lấy giá trị cũ từ DB
+            if ((linkTaiLieu == null || linkTaiLieu.trim().isEmpty())) {
+                Object oldLink = stepCu != null ? stepCu.get("tai_lieu_link") : null;
+                linkTaiLieu = (oldLink != null && !oldLink.toString().equals("null")) ? oldLink.toString() : "";
+            }
+            
+            // Nếu không upload file mới, giữ nguyên dữ liệu cũ
+            if (fileTaiLieu == null || (fileTaiLieu.isEmpty() && filePart == null)) {
+                Object oldFile = stepCu != null ? stepCu.get("tai_lieu_file") : null;
+                fileTaiLieu = (oldFile != null && !oldFile.toString().equals("null")) ? oldFile.toString() : "";
+            }
 
-            boolean success = db.updateStepById(stepId, name, desc, status, start, end);
+            boolean success = db.updateStepByIdWithDocuments(stepId, name, desc, status, start, end, linkTaiLieu, fileTaiLieu);
 
             if (success) {
                 String processNguoiNhan = request.getParameter("process_nguoi_nhan");
@@ -226,16 +312,22 @@ public class apiTaskSteps extends HttpServlet {
                 }
 
                 response.setStatus(HttpServletResponse.SC_OK);
+                // Trả về tên file mới nếu có upload
+                if (fileTaiLieu != null && !fileTaiLieu.isEmpty()) {
+                    out.print("{\"success\":true,\"fileTaiLieu\":\"" + escapeJson(fileTaiLieu) + "\"}");
+                } else {
+                    out.print("{\"success\":true}");
+                }
 
             } else {
                 response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-                out.print("Không tìm thấy bước để cập nhật.");
+                out.print("{\"success\":false,\"message\":\"Không tìm thấy bước để cập nhật.\"}");
             }
 
         } catch (Exception e) {
             e.printStackTrace();
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            out.print("Lỗi máy chủ: " + e.getMessage());
+            out.print("{\"success\":false,\"message\":\"Lỗi máy chủ: " + escapeJson(e.getMessage()) + "\"}");
         }
     }
 
@@ -258,6 +350,29 @@ public class apiTaskSteps extends HttpServlet {
             return false;
         }
         return a.trim().equals(b.trim());
+    }
+
+    /**
+     * Làm sạch tên file (loại bỏ ký tự đặc biệt)
+     */
+    private String sanitizeFileName(String fileName) {
+        if (fileName == null) return "unnamed";
+        // Loại bỏ các ký tự cấm trên Windows/Linux và các control chars, giữ nguyên ký tự Unicode (tiếng Việt)
+        String cleaned = fileName.replaceAll("[\\\\/:*?\"<>|\\p{Cntrl}]", "_");
+        // Trim khoảng trắng đầu/cuối và giới hạn độ dài hợp lý
+        cleaned = cleaned.trim();
+        if (cleaned.length() > 250) {
+            String ext = "";
+            int dot = cleaned.lastIndexOf('.');
+            if (dot > 0) {
+                ext = cleaned.substring(dot);
+                cleaned = cleaned.substring(0, Math.min(240, dot));
+            } else {
+                cleaned = cleaned.substring(0, 240);
+            }
+            cleaned = cleaned + ext;
+        }
+        return cleaned;
     }
 
     @Override
