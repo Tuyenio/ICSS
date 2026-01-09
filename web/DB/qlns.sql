@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Máy chủ: 127.0.0.1
--- Thời gian đã tạo: Th1 07, 2026 lúc 04:25 AM
+-- Thời gian đã tạo: Th1 09, 2026 lúc 07:46 AM
 -- Phiên bản máy phục vụ: 10.4.32-MariaDB
 -- Phiên bản PHP: 8.0.30
 
@@ -20,6 +20,32 @@ SET time_zone = "+00:00";
 --
 -- Cơ sở dữ liệu: `qlns`
 --
+
+DELIMITER $$
+--
+-- Thủ tục
+--
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_tao_ngay_phep_nam_moi` (IN `p_nam` INT)   BEGIN
+    DECLARE v_so_ngay_phep DECIMAL(4,1);
+    
+    -- Lấy số ngày phép từ cấu hình
+    SELECT CAST(gia_tri AS DECIMAL(4,1)) INTO v_so_ngay_phep
+    FROM cau_hinh_he_thong 
+    WHERE ten_cau_hinh = 'annual_leave_days';
+    
+    IF v_so_ngay_phep IS NULL THEN
+        SET v_so_ngay_phep = 12.0;
+    END IF;
+    
+    -- Tạo bản ghi ngày phép cho năm mới
+    INSERT IGNORE INTO ngay_phep_nam (nhan_vien_id, nam, tong_ngay_phep, ngay_phep_da_dung, ngay_phep_con_lai)
+    SELECT id, p_nam, v_so_ngay_phep, 0.0, v_so_ngay_phep
+    FROM nhanvien 
+    WHERE trang_thai_lam_viec = 'Đang làm';
+    
+END$$
+
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -486,7 +512,7 @@ INSERT INTO `cong_viec` (`id`, `du_an_id`, `ten_cong_viec`, `mo_ta`, `han_hoan_t
 (188, 1, 'Tìm SĐT của danh sách khách hàng', 'Phúc hỗ trợ tìm SĐT', '2025-11-16', NULL, 'Cao', 11, 7, 'Đã hoàn thành', 'Chưa duyệt', NULL, 'null', '', NULL, NULL, '2025-09-30 10:27:52', '2025-11-11', '2025-11-15'),
 (190, 1, 'suppor Gpay làm việc với Hanpass và Gamapay', 'Gửi phiếu thông tin của GPay cho các đơn vị', '2025-11-16', NULL, 'Cao', 4, 8, 'Trễ hạn', 'Chưa duyệt', NULL, 'null', '', 1, NULL, '2025-09-30 10:27:52', '2025-11-11', '2025-11-15'),
 (192, 1, 'Soạn hợp đồng với phường Đồ Sơn', 'null', '2025-11-16', NULL, 'Cao', 4, 8, 'Đã hoàn thành', 'Chưa duyệt', NULL, 'null', '', NULL, NULL, '2025-09-30 10:27:52', '2025-11-11', '2025-11-15'),
-(193, 1, 'Làm lại số hotline cho facebook, zalo và các trang mạng xã hội của cty', 'null', '2025-12-31', '2025-12-31', 'Cao', 4, 1, 'Đang thực hiện', 'Chưa duyệt', NULL, 'null', '', 0, NULL, '2025-09-30 10:27:53', '2025-09-26', '2025-11-21'),
+(193, 1, 'Làm lại số hotline cho facebook, zalo và các trang mạng xã hội của cty', 'null', '2025-12-31', '2025-12-31', 'Cao', 4, 1, 'Trễ hạn', 'Chưa duyệt', NULL, 'null', '', 0, NULL, '2025-09-30 10:27:53', '2025-09-26', '2025-11-21'),
 (194, 1, 'Tuyển dụng thực tập sinh và nhân sự đề nghị', 'null', '2025-11-16', NULL, 'Cao', 4, 1, 'Trễ hạn', 'Đã duyệt', 'cần a C duyệt rồi mới triển khai', 'null', '', NULL, NULL, '2025-09-30 10:27:53', '2025-11-11', '2025-11-15'),
 (195, 1, 'Báo cáo của 10 tập đoàn lớn tại Việt Nam', 'null', '2025-11-16', '2025-11-14', 'Cao', 4, NULL, 'Đã hoàn thành', 'Chưa duyệt', NULL, 'null', '', 0, NULL, '2025-09-30 10:27:53', '2025-11-11', '2025-11-15'),
 (196, 1, 'Tối ưu hóa AI Agent', 'Nghiên cứu tối ưu các node trong workflow cùng anh Quang Anh', '2025-11-16', NULL, 'Cao', 4, NULL, 'Đã hoàn thành', 'Chưa duyệt', NULL, 'null', '', NULL, NULL, '2025-09-30 10:27:53', '2025-11-11', '2025-11-15'),
@@ -524,12 +550,12 @@ INSERT INTO `cong_viec` (`id`, `du_an_id`, `ten_cong_viec`, `mo_ta`, `han_hoan_t
 (243, 56, 'Thêm phân loại theo ngày và tuần của list công việc', 'Trong mục báo cáo nhanh, thêm phân loại theo ngày, theo tuần ', '2025-11-16', NULL, 'Cao', 4, 1, 'Đã hoàn thành', 'Chưa duyệt', NULL, 'null', '', NULL, NULL, '2025-11-17 05:56:03', '2025-11-11', '2025-11-15'),
 (244, 47, 'Trao đổi với Phòng Văn Hóa về Netzero Tours', '- Trao đổi với Cán bộ Văn hóa du lịch của Phường để tư vấn về chtr Netzero tours\r\n- Tạo nhóm có a Tim để cùng tư vấn cụ thể ', '2025-11-20', NULL, 'Trung bình', 4, 7, 'Đã hoàn thành', 'Chưa duyệt', NULL, 'null', '', 0, NULL, '2025-11-17 06:04:04', '2025-11-17', NULL),
 (245, 37, 'gửi báo giá dự toán', 'null', '2025-11-16', NULL, 'Thấp', 11, 6, 'Đã hoàn thành', 'Chưa duyệt', NULL, 'null', '', NULL, NULL, '2025-11-17 06:19:43', '2025-11-11', '2025-11-15'),
-(246, 37, 'Ký hợp đồng triển khai', 'Mục tiêu ký được hợp đồng triển khai trong năm nay. Chuẩn bị năm 2026', '2025-12-31', NULL, 'Thấp', 11, 7, 'Đang thực hiện', 'Chưa duyệt', NULL, 'null', '', 0, NULL, '2025-11-17 06:21:40', '2025-11-17', NULL),
+(246, 37, 'Ký hợp đồng triển khai', 'Mục tiêu ký được hợp đồng triển khai trong năm nay. Chuẩn bị năm 2026', '2025-12-31', NULL, 'Thấp', 11, 7, 'Trễ hạn', 'Chưa duyệt', NULL, 'null', '', 0, NULL, '2025-11-17 06:21:40', '2025-11-17', NULL),
 (247, 38, 'GỬi báo giá', 'null', '2025-11-16', NULL, 'Thấp', 11, 7, 'Đã hoàn thành', 'Chưa duyệt', NULL, 'null', '', NULL, NULL, '2025-11-17 06:29:32', '2025-11-11', '2025-11-15'),
 (248, 58, 'Đưa mini app lên hệ thống Zalo Demo', 'Chưa có sản phẩm nên chưa thể làm demo, đợi anh Trung + Dương', '2025-11-30', NULL, 'Cao', 4, 6, 'Trễ hạn', 'Chưa duyệt', NULL, 'null', '', 0, 'Lưu trữ', '2025-11-17 06:33:25', '2025-11-10', NULL),
 (249, 58, 'Chính sách giá với ECHOSS', '- Trao đổi chinh sách giá  - Trung ', '2025-11-22', NULL, 'Cao', 4, 7, 'Đã hoàn thành', 'Chưa duyệt', NULL, 'null', '', 0, NULL, '2025-11-17 06:37:40', '2025-11-17', NULL),
 (250, 58, 'Ký hợp tác với ECHOSS', 'Triển khai ký MOU và hợp đồng với ECHOSS', '2025-11-22', NULL, 'Cao', 4, 8, 'Trễ hạn', 'Chưa duyệt', NULL, 'null', '', 1, NULL, '2025-11-17 06:38:28', '2025-11-17', NULL),
-(251, 38, 'Đợi xét duyệt ngân sách', 'null', '2025-12-31', NULL, 'Thấp', 11, 7, 'Đang thực hiện', 'Chưa duyệt', NULL, 'null', '/opt/Tomcat/uploads/mobifone - Oracle Database.pdf', 0, NULL, '2025-11-17 06:40:16', '2025-11-17', '2025-11-17'),
+(251, 38, 'Đợi xét duyệt ngân sách', 'null', '2025-12-31', NULL, 'Thấp', 11, 7, 'Trễ hạn', 'Chưa duyệt', NULL, 'null', '/opt/Tomcat/uploads/mobifone - Oracle Database.pdf', 0, NULL, '2025-11-17 06:40:16', '2025-11-17', '2025-11-17'),
 (252, 39, 'Họp online xác định nhu cầu thực tế', 'null', '2025-11-30', NULL, 'Trung bình', 11, 6, 'Đã hoàn thành', 'Từ chối', 'Chưa có lí do ', 'null', '', 0, NULL, '2025-11-17 06:45:22', '2025-11-24', '2025-11-28'),
 (253, 48, 'Gặp mặt lần đầu nắm yêu cầu', 'null', '2025-11-16', NULL, 'Thấp', 11, 6, 'Đã hoàn thành', 'Chưa duyệt', NULL, 'null', '', NULL, NULL, '2025-11-17 06:49:48', '2025-11-11', '2025-11-15'),
 (254, 48, 'Khảo sát hạ tầng cơ bản', 'Khảo sát cơ bản', '2025-11-16', NULL, 'Thấp', 11, 6, 'Đã hoàn thành', 'Chưa duyệt', NULL, 'null', '', NULL, NULL, '2025-11-17 06:53:45', '2025-11-11', '2025-11-15'),
@@ -564,22 +590,22 @@ INSERT INTO `cong_viec` (`id`, `du_an_id`, `ten_cong_viec`, `mo_ta`, `han_hoan_t
 (322, 1, 'Chương trình Quà tặng Doanh nghiệp, Khách hàng Tết Dương lịch ', 'Tặng quà tri ân Doanh nghiệp và Khách hàng nhận dịp Tết Dương lịch', '2025-12-21', NULL, 'Trung bình', 4, 14, 'Trễ hạn', 'Chưa duyệt', NULL, 'https://docs.google.com/spreadsheets/d/1WMXM11O38F19niCrzXh_48IMDR4Jtcb2s9NuGc_3x7Q/edit?gid=0#gid=0', '', 0, 'Lưu trữ', '2025-11-25 07:22:39', '2025-11-21', '2025-11-25'),
 (323, 1, 'Lưu trữ Hợp đồng Đồ Sơn', 'null', '2025-11-27', NULL, 'Trung bình', 4, 14, 'Đã hoàn thành', 'Chưa duyệt', NULL, 'https://drive.google.com/drive/folders/1Tx3-qHWEEfgymFXI7KOIkN2xcMbhu36Y', '', 0, NULL, '2025-11-25 07:31:41', '2025-11-24', '2025-12-01'),
 (324, 1, 'Đánh giá Kết quả công việc', 'Tạo file đánh giá TTS cho người phụ trách đánh giá kết quả; Tổng hợp khối lượng công việc dựa trên Dashboard của các NV để tính lương', '2025-11-28', NULL, 'Trung bình', 4, 1, 'Đã hoàn thành', 'Chưa duyệt', NULL, 'null', '', 0, NULL, '2025-11-25 07:50:11', '2025-11-24', '2025-11-25'),
-(325, 1, 'Chính sách Tuyển dụng các phòng ban', 'Tạo JD tuyển dụng cho phòng kinh doanh, kỹ thuật,...', '2025-12-30', NULL, 'Trung bình', 4, 1, 'Đang thực hiện', 'Chưa duyệt', NULL, 'null', '', 1, NULL, '2025-11-25 07:58:51', '2025-11-24', NULL),
+(325, 1, 'Chính sách Tuyển dụng các phòng ban', 'Tạo JD tuyển dụng cho phòng kinh doanh, kỹ thuật,...', '2025-12-30', NULL, 'Trung bình', 4, 1, 'Trễ hạn', 'Chưa duyệt', NULL, 'null', '', 1, NULL, '2025-11-25 07:58:51', '2025-11-24', NULL),
 (326, 1, 'Chính sách giờ làm việc mới cho nhân sự', 'Chính sách phân loại công việc/ giờ làm việc dành cho những việc real time thì có mặt đúng giờ còn những công việc còn lại có thể đi trong khoảng 7-9h và về muộn ( leader phải ở vp để giám sát công việc, nv thì làm việc linh động)', '2026-03-02', '2026-03-02', 'Trung bình', 4, 1, 'Đang thực hiện', 'Đã duyệt', 'Phù hợp với đặc thù ngành hàng của công ty', 'null', '', 0, NULL, '2025-11-25 08:04:03', '2025-11-24', NULL),
-(330, 1, 'Làm app Zalo quản lý chung 1 account', 'Cần làm 1 app để nhiều người có thể dùng chung 1 nick zalo - nhu cầu của sale/mkt', '2025-12-30', NULL, 'Thấp', 4, 6, 'Chưa bắt đầu', 'Chưa duyệt', NULL, 'https://docs.google.com/document/d/1XM971jzSuQu1HVZWdRNYm13NODoCTi4L08rnsXwvxIo/edit?tab=t.0#heading=h.bx8wujqa195z', '', 0, NULL, '2025-11-25 08:45:15', '2025-11-30', NULL),
+(330, 1, 'Làm app Zalo quản lý chung 1 account', 'Cần làm 1 app để nhiều người có thể dùng chung 1 nick zalo - nhu cầu của sale/mkt', '2025-12-30', NULL, 'Thấp', 4, 6, 'Trễ hạn', 'Chưa duyệt', NULL, 'https://docs.google.com/document/d/1XM971jzSuQu1HVZWdRNYm13NODoCTi4L08rnsXwvxIo/edit?tab=t.0#heading=h.bx8wujqa195z', '', 0, NULL, '2025-11-25 08:45:15', '2025-11-30', NULL),
 (331, 60, 'Làm website Oracle Cloud VN', 'null', '2025-11-30', NULL, 'Trung bình', 4, 6, 'Đã hoàn thành', 'Chưa duyệt', NULL, 'null', '', NULL, NULL, '2025-11-27 01:38:00', '2025-01-09', '2025-11-27'),
 (332, 60, 'Làm quy trình thanh toán', 'null', '2025-11-30', NULL, 'Trung bình', 4, 6, 'Đã hoàn thành', 'Chưa duyệt', NULL, 'null', '', NULL, NULL, '2025-11-27 01:38:00', '2025-01-10', '2025-11-27'),
 (333, 60, 'Viết file quy trình chi tiết (cho admin và user)', 'null', '2025-11-30', NULL, 'Trung bình', 4, 6, 'Đã hoàn thành', 'Chưa duyệt', NULL, 'null', '', NULL, NULL, '2025-11-27 01:38:00', '2025-01-10', '2025-11-27'),
 (334, 60, 'Thêm module gửi mail (để phục vụ các chức năng cần gửi mail như xác thực tài khoản, quên mật khẩu, thông báo đăng ký cloud thành công... )', 'null', '2025-11-30', NULL, 'Trung bình', 4, 6, 'Đã hoàn thành', 'Chưa duyệt', NULL, 'null', '', NULL, NULL, '2025-11-27 01:38:01', '2025-11-15', '2025-11-27'),
-(335, 60, 'Oracle Website: Tách đăng nhập admin và user. Làm 1 màn hình mới /admin-login', 'w3t11', '2025-12-30', NULL, 'Trung bình', 4, 6, 'Đang thực hiện', 'Chưa duyệt', NULL, 'null', '', 1, NULL, '2025-11-27 01:38:01', '2025-11-15', NULL),
-(336, 60, 'Oracle: Thêm bộ đếm lượt truy cập', 'null', '2025-12-30', NULL, 'Trung bình', 4, 6, 'Đang thực hiện', 'Chưa duyệt', NULL, 'null', '', 1, NULL, '2025-11-27 01:38:01', '2025-11-15', NULL),
+(335, 60, 'Oracle Website: Tách đăng nhập admin và user. Làm 1 màn hình mới /admin-login', 'w3t11', '2025-12-30', NULL, 'Trung bình', 4, 6, 'Trễ hạn', 'Chưa duyệt', NULL, 'null', '', 1, NULL, '2025-11-27 01:38:01', '2025-11-15', NULL),
+(336, 60, 'Oracle: Thêm bộ đếm lượt truy cập', 'null', '2025-12-30', NULL, 'Trung bình', 4, 6, 'Trễ hạn', 'Chưa duyệt', NULL, 'null', '', 1, NULL, '2025-11-27 01:38:01', '2025-11-15', NULL),
 (337, 60, 'Oracle: Chức năng xác thực mail khi đăng ký.', 'Chốt xác thực bằng OTP 6 số => cần làm giới hạn số lần thử để chống brute forces. w3t11', '2025-12-30', NULL, 'Trung bình', 4, 6, 'Đã hoàn thành', 'Chưa duyệt', NULL, 'null', '', NULL, NULL, '2025-11-27 01:38:01', '2025-11-15', '2025-11-28'),
-(338, 60, 'Update Oracle Cloud theo trao đổi với HyperG: Tách màn login Admin/User, gửi mail sshkey, ...', 'null', '2025-12-30', NULL, 'Trung bình', 4, 6, 'Đang thực hiện', 'Chưa duyệt', NULL, 'null', '', 1, NULL, '2025-11-27 01:38:01', '2025-11-15', NULL),
+(338, 60, 'Update Oracle Cloud theo trao đổi với HyperG: Tách màn login Admin/User, gửi mail sshkey, ...', 'null', '2025-12-30', NULL, 'Trung bình', 4, 6, 'Trễ hạn', 'Chưa duyệt', NULL, 'null', '', 1, NULL, '2025-11-27 01:38:01', '2025-11-15', NULL),
 (339, 60, 'Oracle: Chức năng đăng nhập bằng Google', 'null', '2025-12-30', NULL, 'Trung bình', 4, 6, 'Đã hoàn thành', 'Chưa duyệt', NULL, 'null', '', NULL, NULL, '2025-11-27 01:38:01', '2025-11-15', '2025-11-28'),
-(340, 60, 'Oracle: Chức năng quên mật khẩu => Gửi mail reset mật khẩu', 'null', '2025-12-30', NULL, 'Trung bình', 4, 6, 'Đang thực hiện', 'Chưa duyệt', NULL, 'null', '', 1, NULL, '2025-11-27 01:38:01', '2025-11-15', NULL),
-(341, 60, 'Tích hợp tk ngân hàng công ty với Sepay', 'Đang đợi bên BIDV xử lý quy trình', '2026-01-30', NULL, 'Trung bình', 4, 6, 'Đang thực hiện', 'Chưa duyệt', NULL, 'null', '', 1, NULL, '2025-11-27 01:38:01', '2025-11-15', '2025-11-27'),
+(340, 60, 'Oracle: Chức năng quên mật khẩu => Gửi mail reset mật khẩu', 'null', '2025-12-30', NULL, 'Trung bình', 4, 6, 'Trễ hạn', 'Chưa duyệt', NULL, 'null', '', 1, NULL, '2025-11-27 01:38:01', '2025-11-15', NULL),
+(341, 60, 'Tích hợp tk ngân hàng công ty với Sepay', 'Đang đợi bên BIDV xử lý quy trình', '2026-01-30', NULL, 'Trung bình', 4, 6, 'Đang thực hiện', 'Chưa duyệt', NULL, 'null', '', 0, NULL, '2025-11-27 01:38:01', '2025-11-15', '2025-11-27'),
 (342, 60, 'Nghiên cứu API Oracle Bella gửi', 'Tương đối phức tạp, cần thời gian nghiên cứu và test', '2025-11-30', NULL, 'Trung bình', 4, 6, 'Đã hoàn thành', 'Chưa duyệt', NULL, 'null', '', NULL, NULL, '2025-11-27 01:38:01', '2025-11-15', '2025-11-27'),
-(343, 60, 'Hoàn thiện thêm chức năng thay đổi email', 'null', '2025-12-30', NULL, 'Trung bình', 4, 6, 'Chưa bắt đầu', 'Chưa duyệt', NULL, 'null', '', 1, NULL, '2025-11-27 01:38:01', '2025-11-15', NULL),
+(343, 60, 'Hoàn thiện thêm chức năng thay đổi email', 'null', '2025-12-30', NULL, 'Trung bình', 4, 6, 'Trễ hạn', 'Chưa duyệt', NULL, 'null', '', 1, NULL, '2025-11-27 01:38:01', '2025-11-15', NULL),
 (344, 60, 'Kết nối API', 'null', '2026-01-11', NULL, 'Trung bình', 4, 6, 'Đang thực hiện', 'Chưa duyệt', NULL, 'null', '', 0, NULL, '2025-11-27 01:38:02', '2025-11-15', '2025-11-27'),
 (345, 60, 'Lên kế hoạch test chức năng web', 'null', '2026-01-30', NULL, 'Trung bình', 4, 6, 'Chưa bắt đầu', 'Chưa duyệt', NULL, 'null', '', 1, NULL, '2025-11-27 01:38:02', '2025-11-15', NULL),
 (346, 67, 'Thiết kế database ', 'null', '2025-12-31', NULL, 'Trung bình', 24, 6, 'Đã hoàn thành', 'Chưa duyệt', NULL, 'null', '', NULL, NULL, '2025-11-27 15:17:29', '2025-11-18', '2025-11-27'),
@@ -593,8 +619,8 @@ INSERT INTO `cong_viec` (`id`, `du_an_id`, `ten_cong_viec`, `mo_ta`, `han_hoan_t
 (355, 57, 'Web Vietguard Scan', 'null', '2025-11-30', NULL, 'Trung bình', 4, 6, 'Đã hoàn thành', 'Chưa duyệt', NULL, 'null', '', NULL, NULL, '2025-11-28 01:31:56', '2025-11-17', '2025-11-28'),
 (356, 57, 'Web Source Analyzer', 'null', '2025-11-29', NULL, 'Trung bình', 4, 6, 'Đã hoàn thành', 'Chưa duyệt', NULL, 'null', '', NULL, NULL, '2025-11-28 01:33:16', '2025-11-17', '2025-11-28'),
 (357, 57, 'Web Compability Check', 'null', '2025-11-30', NULL, 'Cao', 4, 6, 'Đã hoàn thành', 'Chưa duyệt', NULL, 'null', '', NULL, NULL, '2025-11-28 01:35:36', '2025-11-25', '2025-11-28'),
-(358, 57, 'Kết nối API - code analysis', 'null', '2026-03-28', NULL, 'Trung bình', 24, 6, 'Chưa bắt đầu', 'Chưa duyệt', NULL, 'null', '', 0, NULL, '2025-11-28 01:37:59', '2025-11-28', NULL),
-(360, 57, 'Kết nối API - compability check', 'null', '2026-03-30', NULL, 'Trung bình', 24, 6, 'Chưa bắt đầu', 'Chưa duyệt', NULL, 'null', '', 0, NULL, '2025-11-28 01:39:11', '2025-11-24', NULL),
+(358, 57, 'Kết nối API - code analysis', 'null', '2026-03-28', NULL, 'Trung bình', 24, 6, 'Chưa bắt đầu', 'Chưa duyệt', NULL, 'null', 'D:/uploads/55555 (1).png;D:/uploads/55555 (2).png;D:/uploads/55555.png', 0, NULL, '2025-11-28 01:37:59', '2025-11-28', NULL),
+(360, 57, 'Kết nối API - compability check', 'null', '2026-03-30', NULL, 'Trung bình', 24, 6, 'Đang thực hiện', 'Chưa duyệt', NULL, 'null', 'D:/uploads/automation dich.pdf', 0, NULL, '2025-11-28 01:39:11', '2025-11-24', NULL),
 (361, 57, 'Kết nối APi cho web HPG tổng', NULL, '2026-03-28', NULL, 'Cao', 24, 6, 'Chưa bắt đầu', 'Chưa duyệt', NULL, NULL, '', 0, 'Đã xóa', '2025-11-28 01:41:36', '2025-11-27', NULL),
 (362, 57, 'Kết nối API cho Web Vietguard Scan', 'null', '2026-01-28', NULL, 'Cao', 4, 6, 'Đã hoàn thành', 'Chưa duyệt', NULL, 'null', '', 0, NULL, '2025-11-28 01:42:24', '2025-11-26', '2025-11-28'),
 (363, 62, 'kết quả báo cáo về 6 ngân hàng', 'null', '2025-11-29', NULL, 'Cao', 4, 6, 'Đã hoàn thành', 'Chưa duyệt', NULL, 'https://docs.google.com/document/d/1x3fd4jPfC4A9iRu02q221SO5T5a643yvLNe4b0CQW3c/edit?usp=sharing', '', NULL, NULL, '2025-11-28 01:44:27', '2025-11-24', '2025-11-28'),
@@ -636,15 +662,15 @@ INSERT INTO `cong_viec` (`id`, `du_an_id`, `ten_cong_viec`, `mo_ta`, `han_hoan_t
 (451, 64, 'Đăng ký CSA bản quyền sở hữu trí tuệ', 'Đăng ký CSA bản quyền sở hữu trí tuệ', '2026-01-30', NULL, 'Trung bình', 4, 6, 'Đang thực hiện', 'Chưa duyệt', NULL, 'null', '', 0, NULL, '2025-12-01 02:48:02', '2025-11-25', NULL),
 (452, 64, 'Đổi toàn bộ chữ thành tiếng việt', 'Đổi toàn bộ chữ thành tiếng việt', '2026-01-30', NULL, 'Trung bình', 4, 6, 'Đã hoàn thành', 'Chưa duyệt', NULL, 'null', '', 0, NULL, '2025-12-01 02:48:02', '2025-11-25', '2025-12-05'),
 (453, 64, 'báo HPG về tách CSA thành 2 bản', 'báo HPG về tách CSA thành 2 bản', '2026-01-30', NULL, 'Trung bình', 4, 6, 'Đã hoàn thành', 'Chưa duyệt', NULL, 'null', '', 0, NULL, '2025-12-01 02:48:02', '2025-11-25', '2025-12-03'),
-(454, 1, 'Thanh toán HĐ OCI của CyStack', 'Liên hệ với HyperG lấy bill sử dụng Cloud của CyStack trong tháng 11 để làm thanh toán với CyStack thu tiền về', '2025-12-31', NULL, 'Cao', 11, 14, 'Đang thực hiện', 'Chưa duyệt', NULL, '', '', 1, NULL, '2025-12-01 02:57:05', '2025-12-01', NULL),
+(454, 1, 'Thanh toán HĐ OCI của CyStack', 'Liên hệ với HyperG lấy bill sử dụng Cloud của CyStack trong tháng 11 để làm thanh toán với CyStack thu tiền về', '2025-12-31', NULL, 'Cao', 11, 14, 'Trễ hạn', 'Chưa duyệt', NULL, '', '', 1, NULL, '2025-12-01 02:57:05', '2025-12-01', NULL),
 (455, 1, 'Tổng hợp tài liệu và nghị định, luật ICS', '- Tổng hợp các luật, nghị định, nghị quyết liên quan đến: Dashboard, Mobile banking, Bảo vệ dữ liệu (DLP)\r\n- Tổng hợp về các dự án liên quan Cloud', '2025-12-02', NULL, 'Cao', 4, 8, 'Đã hoàn thành', 'Chưa duyệt', NULL, '', '/opt/Tomcat/uploads/Các thông tư - nghị đinh ( Dashboard - mobile banking - DLP ).docx', NULL, NULL, '2025-12-01 06:14:49', '2025-12-01', '2025-12-01'),
 (456, 1, 'Tổng hợp tài liệu - Xử lý rác thải ', '- Tập hợp toàn bộ tài liệu liên quan đến xử lý chất thải\r\n- Các yêu cầu đối với đơn vị xử lý chất thải : sinh hoạt và công nghiệp ', '2025-12-04', NULL, 'Cao', 4, 8, 'Đã hoàn thành', 'Chưa duyệt', NULL, '', '/opt/Tomcat/uploads/các thông tư - nghị định liên quan đến xử lý chất thải.docx', NULL, NULL, '2025-12-01 06:16:38', '2025-12-01', '2025-12-01'),
 (457, 74, 'Chuẩn bị cho buổi đào tạo', 'Các công tác chuẩn bị', '2025-12-05', '2025-12-05', 'Thấp', 11, 7, 'Đã hoàn thành', 'Chưa duyệt', NULL, '', '', NULL, NULL, '2025-12-01 06:25:01', '2025-12-01', '2025-12-08'),
 (458, 1, 'Dịch vụ tư vấn xin giấy phép lưu hành Game G1', '- Tìm hiểu về thủ tục và yêu cầu \r\n- Lên các bước thực hiện \r\n- Lên phương án chi phí và so sánh với các đơn vị khác', '2025-12-05', NULL, 'Cao', 4, 8, 'Đã hoàn thành', 'Chưa duyệt', NULL, 'https://docs.google.com/spreadsheets/d/1BWbQm1-pXtqMCjGnMzdztXSo8BaMXdeJw1UELcFit44/edit?gid=451125659#gid=451125659', '', 0, NULL, '2025-12-01 06:35:21', '2025-12-01', '2025-12-08'),
-(459, 1, 'Tạo Chứng chỉ cho các Khóa học', 'Để phục vụ cho web ICS Learning, phòng Kỹ thuật gửi lại danh sách các khóa học cần thiết kế chứng chỉ để Quỳnh tạo Chứng chỉ cho từng Khóa học riêng', '2025-12-31', NULL, 'Thấp', 4, 14, 'Chưa bắt đầu', 'Chưa duyệt', NULL, '', '', 0, NULL, '2025-12-01 08:35:43', '2025-12-01', NULL),
+(459, 1, 'Tạo Chứng chỉ cho các Khóa học', 'Để phục vụ cho web ICS Learning, phòng Kỹ thuật gửi lại danh sách các khóa học cần thiết kế chứng chỉ để Quỳnh tạo Chứng chỉ cho từng Khóa học riêng', '2025-12-31', NULL, 'Thấp', 4, 14, 'Trễ hạn', 'Chưa duyệt', NULL, '', '', 0, NULL, '2025-12-01 08:35:43', '2025-12-01', NULL),
 (460, 1, 'Tài chính T10-T11', 'Giải ngân đợt thanh toán lương T10; Làm bảng lương T11 và các khoản phí khác (phí gửi xe tháng, phí hỗ trợ TTS,...)\r\nBáo cáo tài chính \r\n', '2025-12-10', NULL, 'Trung bình', 12, 14, 'Đã hoàn thành', 'Đã duyệt', 'Đồng ý, triển khai thật chi tiết các vấn đề tài chính của công ty và báo lại trong ngày 8.12', '', '', NULL, NULL, '2025-12-01 08:53:53', '2025-12-01', '2025-12-01'),
 (461, 1, 'Nghiên cứu gửi email hàng loạt', 'Gửi email hàng loạt không bị spam, không hiển thị gửi 1 lúc nhiều người ', '2025-12-03', NULL, 'Cao', 4, 6, 'Đã hoàn thành', 'Chưa duyệt', NULL, '', '', NULL, NULL, '2025-12-02 06:42:18', '2025-12-02', '2025-12-05'),
-(462, 1, 'Tuyển dụng Nhân sự', 'Tham khảo các trang tuyển dụng: bảng giá, quy chế,.. để đăng tin tuyển dụng GĐKD & GĐMKT lên các trang', '2026-01-02', NULL, 'Cao', 12, 1, 'Đang thực hiện', 'Chưa duyệt', NULL, '', '', 1, NULL, '2025-12-02 08:42:23', '0025-12-02', NULL),
+(462, 1, 'Tuyển dụng Nhân sự', 'Tham khảo các trang tuyển dụng: bảng giá, quy chế,.. để đăng tin tuyển dụng GĐKD & GĐMKT lên các trang', '2026-01-02', NULL, 'Cao', 12, 1, 'Trễ hạn', 'Chưa duyệt', NULL, '', '', 1, NULL, '2025-12-02 08:42:23', '0025-12-02', NULL),
 (463, 1, 'Thanh toán HĐ thuê chuyên gia đào tạo BIDV cn Hồng Hà', 'Làm đề xuất thanh toán trước cho các thầy sau ngày đào tạo 06/12. Hóa đơn, thanh lý hợp đồng từ BIDV chi nhánh Hồng Hà làm thanh toán sau ngày 1/1/2026 (đã thông tin).', '2025-12-15', NULL, 'Trung bình', 4, 14, 'Đã hoàn thành', 'Đã duyệt', 'Đồng ý cho triển khai hợp đồng đào tạo với BIDV', '', '', 0, NULL, '2025-12-03 04:10:12', '2025-12-03', '2025-12-22'),
 (464, 1, 'làm web theo dõi tình trạng những web của công ty', '', '2025-12-05', NULL, 'Trung bình', 8, 6, 'Đã hoàn thành', 'Chưa duyệt', NULL, '', '', NULL, NULL, '2025-12-04 04:14:01', '2025-11-27', '2025-12-08'),
 (467, 65, 'Thiết kế webiste Phutraco', '- Thiết kế giao diện website Phutraco Holding \r\n- Tạo đăng nhập để vào đăng bài viết\r\n- Quản lý thành viên ', '2025-12-13', NULL, 'Cao', 4, 6, 'Đã hoàn thành', 'Chưa duyệt', NULL, 'https://chatgpt.com/share/693948f6-7524-8003-9c69-e2a00b653d81', '', 0, NULL, '2025-12-07 01:49:03', '2025-12-08', '2025-12-12'),
@@ -665,27 +691,27 @@ INSERT INTO `cong_viec` (`id`, `du_an_id`, `ten_cong_viec`, `mo_ta`, `han_hoan_t
 (484, 65, 'Thiết kế nội dung cho các trang tiêu đề web Phutraco', 'Thiết kế nội dung cho các trang tiêu đề web Phutraco', '2025-12-18', NULL, 'Cao', 25, 7, 'Đã hoàn thành', 'Chưa duyệt', NULL, '', '', 0, NULL, '2025-12-10 08:05:46', '2025-12-10', '2025-12-17'),
 (485, 78, 'Khảo sát Super Port', 'Khảo sát triển khai phần Camera AI\r\n', '2025-12-11', NULL, 'Trung bình', 11, 7, 'Đã hoàn thành', 'Chưa duyệt', NULL, '', '/opt/Tomcat/uploads/1765514477156_da67580f-6cff-4e77-b6d4-665053a6dd39_BÁO CÁO KHẢO SÁT HIỆN TRƯỜNG.docx;/opt/Tomcat/uploads/1765514477157_651514ad-aed8-48db-b0dd-8b31c24e6414_BÁO CÁO KHẢO SÁT HIỆN TRƯỜNG.pdf', NULL, NULL, '2025-12-12 04:41:17', '2025-12-11', '2025-12-12'),
 (486, 78, 'Trao đổi với Irtech để lên Proposal gửi đối tác', '', '2025-12-18', NULL, 'Cao', 4, 7, 'Đã hoàn thành', 'Chưa duyệt', NULL, '', '', NULL, NULL, '2025-12-12 04:44:25', '2025-12-11', '2025-12-19'),
-(487, 79, 'Tư vấn các vấn đề kỹ thuật cho dự án', '', '2026-03-31', NULL, 'Thấp', 11, 7, 'Chưa bắt đầu', 'Chưa duyệt', NULL, '', '', NULL, NULL, '2025-12-12 09:21:58', '2025-12-12', NULL),
-(488, 51, 'Lên poc cho PVcombank về Dashboard', 'Lên POC cho Pvcombank. Trình bày chi tiết giải pháp Dashboard sẽ giải quyết các pain point nào cho ngân hàng, cho các trường và cả tập đoàn Bảo Sơn', '2025-12-14', NULL, 'Thấp', 11, 7, 'Đã hoàn thành', 'Chưa duyệt', NULL, '', 'D:/uploads/POC SMART DASHBOARD NỀN TẢNG ĐIỀU HÀNH DỮ LIỆU TẬP TRUNG CHO BẢO SƠN GROUP.docx', NULL, NULL, '2025-12-12 09:29:41', '2025-12-12', '2025-12-21');
+(487, 79, 'Tư vấn các vấn đề kỹ thuật cho dự án', '', '2026-03-31', NULL, 'Thấp', 11, 7, 'Đang thực hiện', 'Chưa duyệt', NULL, 'https://www.youtube.com/watch?v=4ILdAFNC1NY', '', NULL, NULL, '2025-12-12 09:21:58', '2025-12-12', NULL);
 INSERT INTO `cong_viec` (`id`, `du_an_id`, `ten_cong_viec`, `mo_ta`, `han_hoan_thanh`, `ngay_gia_han`, `muc_do_uu_tien`, `nguoi_giao_id`, `phong_ban_id`, `trang_thai`, `trang_thai_duyet`, `ly_do_duyet`, `tai_lieu_cv`, `file_tai_lieu`, `nhac_viec`, `tinh_trang`, `ngay_tao`, `ngay_bat_dau`, `ngay_hoan_thanh`) VALUES
+(488, 51, 'Lên poc cho PVcombank về Dashboard', 'Lên POC cho Pvcombank. Trình bày chi tiết giải pháp Dashboard sẽ giải quyết các pain point nào cho ngân hàng, cho các trường và cả tập đoàn Bảo Sơn', '2025-12-14', NULL, 'Thấp', 11, 7, 'Đã hoàn thành', 'Chưa duyệt', NULL, '', 'D:/uploads/POC SMART DASHBOARD NỀN TẢNG ĐIỀU HÀNH DỮ LIỆU TẬP TRUNG CHO BẢO SƠN GROUP.docx', NULL, NULL, '2025-12-12 09:29:41', '2025-12-12', '2025-12-21'),
 (489, 1, 'Làm phần quản lý bài viết cho Phutraco', 'Làm phần quản lý bài viết cho Phutraco', '2025-12-13', NULL, 'Cao', 25, 6, 'Đã hoàn thành', 'Chưa duyệt', NULL, '', '', NULL, NULL, '2025-12-12 11:09:14', '2025-12-11', '2025-12-12'),
 (491, 35, 'Làm Website Phutraco', '', '2025-12-15', NULL, 'Thấp', 8, 6, 'Đã hoàn thành', 'Chưa duyệt', NULL, '', '', NULL, NULL, '2025-12-17 02:16:27', '2025-12-11', '2025-12-17'),
-(492, 80, 'Lấy dữ liệu mẫu từ xã phường để train cho AI', '', '2025-12-27', NULL, 'Thấp', 11, 7, 'Chưa bắt đầu', 'Chưa duyệt', NULL, '', '', NULL, NULL, '2025-12-19 07:31:59', '2025-12-19', NULL),
-(493, 80, 'Chốt phương án triển khai với IRtech', '', '2025-12-27', NULL, 'Cao', 11, 7, 'Đang thực hiện', 'Chưa duyệt', NULL, '', '', NULL, NULL, '2025-12-19 07:32:48', '2025-12-19', NULL),
+(492, 80, 'Lấy dữ liệu mẫu từ xã phường để train cho AI', '', '2025-12-27', NULL, 'Thấp', 11, 7, 'Trễ hạn', 'Chưa duyệt', NULL, '', '', NULL, NULL, '2025-12-19 07:31:59', '2025-12-19', NULL),
+(493, 80, 'Chốt phương án triển khai với IRtech', '', '2025-12-27', NULL, 'Cao', 11, 7, 'Trễ hạn', 'Chưa duyệt', NULL, '', '', NULL, NULL, '2025-12-19 07:32:48', '2025-12-19', NULL),
 (494, 1, 'Báo cáo tuần 3 tháng 12/2025', '- Báo cáo về hoạt động của CTy vào tuần 3 tháng 12.2025', '2025-12-19', NULL, 'Trung bình', 4, 14, 'Đã hoàn thành', 'Chưa duyệt', NULL, '', 'D:/uploads/1766133474487_a0d6e13f-9b21-43a7-a885-0159e2f03c84_Báo cáo cuộc họp ICSS_19-12-2025_Họp nội bộ cty.doc', NULL, NULL, '2025-12-19 08:37:54', '2025-12-19', '2025-12-19'),
-(495, 1, 'Thiết kế quy trình bán sản phẩm AI SOC', 'Thiết kế quy trình vận hành sản phẩm theo từng giai đoạn', '2025-12-31', NULL, 'Trung bình', 4, 6, 'Chưa bắt đầu', 'Chưa duyệt', NULL, '', '', NULL, NULL, '2025-12-19 09:23:42', '2025-12-19', NULL),
-(496, 1, 'Tìm hiểu quy mô bệnh viện để triển khai AI SOC', '', '2025-12-31', NULL, 'Trung bình', 4, 6, 'Đang thực hiện', 'Chưa duyệt', NULL, '', '', NULL, NULL, '2025-12-19 09:24:39', '2025-12-19', '2025-12-22'),
-(497, 81, 'Lên PoC cho app điện lực Hà Nội', 'Phân tích được trước và sau khi bảo vệ app điện lực. Sau đó lên PoC cho EVN Hà Nội', '2025-12-26', NULL, 'Cao', 11, 7, 'Đang thực hiện', 'Chưa duyệt', NULL, '', '', NULL, NULL, '2025-12-22 02:01:36', '2025-12-22', NULL),
+(495, 1, 'Thiết kế quy trình bán sản phẩm AI SOC', 'Thiết kế quy trình vận hành sản phẩm theo từng giai đoạn', '2025-12-31', NULL, 'Trung bình', 4, 6, 'Trễ hạn', 'Chưa duyệt', NULL, '', '', NULL, NULL, '2025-12-19 09:23:42', '2025-12-19', NULL),
+(496, 1, 'Tìm hiểu quy mô bệnh viện để triển khai AI SOC', '', '2025-12-31', NULL, 'Trung bình', 4, 6, 'Trễ hạn', 'Chưa duyệt', NULL, '', '', NULL, NULL, '2025-12-19 09:24:39', '2025-12-19', '2025-12-22'),
+(497, 81, 'Lên PoC cho app điện lực Hà Nội', 'Phân tích được trước và sau khi bảo vệ app điện lực. Sau đó lên PoC cho EVN Hà Nội', '2025-12-26', NULL, 'Cao', 11, 7, 'Trễ hạn', 'Chưa duyệt', NULL, '', '', NULL, NULL, '2025-12-22 02:01:36', '2025-12-22', NULL),
 (498, 66, 'Làm website ICSS mới', '', '2025-12-22', NULL, 'Thấp', 8, 6, 'Đã hoàn thành', 'Chưa duyệt', NULL, '', '', NULL, NULL, '2025-12-22 03:11:49', '2025-12-22', '2025-12-22'),
 (499, 70, 'Hoàn thiện Fe cho giao diện admin', '', '2025-12-27', NULL, 'Cao', 24, 6, 'Đã hoàn thành', 'Chưa duyệt', NULL, '', '', NULL, NULL, '2025-12-22 03:15:34', '2025-12-20', '2025-12-23'),
 (500, 70, 'Hoàn thiện Fe cho giao diện Teacher ', '', '2025-12-27', NULL, 'Cao', 24, 6, 'Đã hoàn thành', 'Chưa duyệt', NULL, '', '', NULL, NULL, '2025-12-22 03:16:11', '2025-12-23', '2025-12-23'),
-(501, 70, 'Hoàn thiện Fe cho giao diện học sinh', '', '2025-12-30', NULL, 'Trung bình', 25, 6, 'Đang thực hiện', 'Chưa duyệt', NULL, '', '', NULL, NULL, '2025-12-22 03:19:11', '2025-12-22', NULL),
+(501, 70, 'Hoàn thiện Fe cho giao diện học sinh', '', '2025-12-30', NULL, 'Trung bình', 25, 6, 'Trễ hạn', 'Chưa duyệt', NULL, '', '', NULL, NULL, '2025-12-22 03:19:11', '2025-12-22', NULL),
 (502, 56, 'Thêm thư viện tài liệu', 'Thêm thư viện tài liệu', '2025-12-23', NULL, 'Trung bình', 25, 6, 'Đã hoàn thành', 'Chưa duyệt', NULL, '', '', NULL, NULL, '2025-12-22 03:23:38', '2025-12-22', '2025-12-22'),
 (503, 65, 'Thêm song ngữ cho tin tức ', 'Thêm song ngữ cho tin tức ', '2025-12-24', NULL, 'Cao', 25, 6, 'Đã hoàn thành', 'Chưa duyệt', NULL, '', '', NULL, NULL, '2025-12-22 03:25:03', '2025-12-22', '2025-12-22'),
-(504, 82, 'Làm Frontend NSS', 'Làm Frontend NSS', '2025-12-28', NULL, 'Cao', 25, 6, 'Chưa bắt đầu', 'Chưa duyệt', NULL, '', '', NULL, NULL, '2025-12-22 03:28:38', '2025-12-22', NULL),
+(504, 82, 'Làm Frontend NSS', 'Làm Frontend NSS', '2025-12-28', NULL, 'Cao', 25, 6, 'Trễ hạn', 'Chưa duyệt', NULL, '', '', NULL, NULL, '2025-12-22 03:28:38', '2025-12-22', NULL),
 (505, 70, 'Hoàn thiện Be cho Admin, teacher, student ', '', '2026-01-10', NULL, 'Thấp', 11, 6, 'Đang thực hiện', 'Chưa duyệt', NULL, '', '', NULL, NULL, '2025-12-23 02:10:05', '2025-12-23', NULL),
 (506, 73, 'Sổ tay an toàn thông tin doanh nghiệp', 'Thiết kế ', '2025-12-26', NULL, 'Thấp', 4, 6, 'Đã hoàn thành', 'Chưa duyệt', NULL, '', 'D:/uploads/1766457538985_3009b15f-51e0-412a-a5f0-64d00c7f05f1_Sổ tay_chính sách ATTT ICS.pdf', NULL, NULL, '2025-12-23 02:38:58', '2025-12-23', '2025-12-23'),
-(507, 50, '1', '1', '2025-12-30', NULL, 'Thấp', 11, 6, 'Đang thực hiện', 'Chưa duyệt', NULL, '', '', NULL, NULL, '2025-12-29 03:00:15', '2025-12-29', NULL);
+(507, 50, '1', '1', '2025-12-30', NULL, 'Thấp', 11, 6, 'Trễ hạn', 'Chưa duyệt', NULL, '', '', NULL, NULL, '2025-12-29 03:00:15', '2025-12-29', NULL);
 
 -- --------------------------------------------------------
 
@@ -2126,7 +2152,17 @@ INSERT INTO `cong_viec_lich_su` (`id`, `cong_viec_id`, `nguoi_thay_doi_id`, `mo_
 (1570, 507, 18, '🆕 Tạo mới công việc: \'1\' | Deadline: 2025-12-30 | Độ ưu tiên: Thấp | Người nhận: Nguyễn Thị Diễm Quỳnh', '2025-12-29 03:00:15'),
 (1571, 507, 18, '➕ Thêm tiến độ mới: \'1\' | Trạng thái: Chưa bắt đầu | Ngày bắt đầu: 2025-12-29 | Deadline: 2025-12-30 | Mô tả: \"1\"', '2025-12-29 03:00:44'),
 (1572, 507, 18, '🔧 [Tiến độ: 1] 🔄 Đổi trạng thái tiến độ: \'Chưa bắt đầu\' → \'Đang thực hiện\'', '2025-12-29 03:00:56'),
-(1573, 507, 18, '🔄 Đổi trạng thái: \'Đang thực hiện\' → \'Chưa bắt đầu\'', '2025-12-29 03:00:57');
+(1573, 507, 18, '🔄 Đổi trạng thái: \'Đang thực hiện\' → \'Chưa bắt đầu\'', '2025-12-29 03:00:57'),
+(1574, 341, 18, 'Tắt nhắc việc', '2026-01-07 07:07:33'),
+(1575, 492, 18, '➕ Thêm tiến độ mới: \'1\' | Trạng thái: Chưa bắt đầu | Ngày bắt đầu: 2026-01-07 | Deadline: 2026-01-08 | Mô tả: \"1\"', '2026-01-07 07:10:40'),
+(1576, 487, 18, '➕ Thêm tiến độ mới: \'1\' | Trạng thái: Chưa bắt đầu | Ngày bắt đầu: 2026-01-07 | Deadline: 2026-01-08 | Mô tả: \"1\"', '2026-01-07 07:17:12'),
+(1577, 487, 18, '📎 Cập nhật link tài liệu', '2026-01-07 07:24:39'),
+(1578, 487, 18, '📁 Tải lên file: Nghỉ phép_Thắng.docx', '2026-01-07 07:25:13'),
+(1579, 487, 18, '🔧 [Tiến độ: Hai bà trưng] 📝 Đổi tên tiến độ: \'1\' → \'Hai bà trưng\' | � Cập nhật mô tả tiến độ', '2026-01-07 07:41:41'),
+(1580, 487, 18, '🔧 [Tiến độ: Hai bà trưng] 🔄 Đổi trạng thái tiến độ: \'Chưa bắt đầu\' → \'Đang thực hiện\'', '2026-01-07 07:46:19'),
+(1581, 360, 18, '🔧 [Tiến độ: bước 1] 🔄 Đổi trạng thái tiến độ: \'Chưa bắt đầu\' → \'Đang thực hiện\'', '2026-01-07 07:57:52'),
+(1582, 360, 18, '📁 Tải lên file: automation dich.pdf', '2026-01-07 07:58:53'),
+(1583, 358, 25, '📁 Tải lên file: 55555 (1).png, 55555 (2).png, 55555.png', '2026-01-07 08:31:51');
 
 -- --------------------------------------------------------
 
@@ -2242,14 +2278,6 @@ INSERT INTO `cong_viec_nguoi_nhan` (`id`, `cong_viec_id`, `nhan_vien_id`) VALUES
 (915, 355, 8),
 (916, 356, 21),
 (921, 357, 25),
-(942, 358, 24),
-(943, 358, 25),
-(944, 358, 21),
-(945, 358, 8),
-(950, 360, 24),
-(951, 360, 25),
-(952, 360, 21),
-(953, 360, 8),
 (954, 361, 24),
 (955, 361, 25),
 (956, 361, 21),
@@ -2380,7 +2408,6 @@ INSERT INTO `cong_viec_nguoi_nhan` (`id`, `cong_viec_id`, `nhan_vien_id`) VALUES
 (1497, 280, 3),
 (1498, 280, 12),
 (1500, 186, 11),
-(1502, 487, 24),
 (1505, 467, 24),
 (1506, 467, 25),
 (1507, 467, 8),
@@ -2437,7 +2464,16 @@ INSERT INTO `cong_viec_nguoi_nhan` (`id`, `cong_viec_id`, `nhan_vien_id`) VALUES
 (1604, 505, 24),
 (1605, 505, 25),
 (1607, 506, 27),
-(1609, 507, 7);
+(1609, 507, 7),
+(1611, 487, 24),
+(1612, 360, 24),
+(1613, 360, 25),
+(1614, 360, 21),
+(1615, 360, 8),
+(1616, 358, 24),
+(1617, 358, 25),
+(1618, 358, 21),
+(1619, 358, 8);
 
 -- --------------------------------------------------------
 
@@ -2453,302 +2489,306 @@ CREATE TABLE `cong_viec_quy_trinh` (
   `trang_thai` enum('Chưa bắt đầu','Đang thực hiện','Đã hoàn thành') DEFAULT 'Chưa bắt đầu',
   `ngay_bat_dau` date DEFAULT NULL,
   `ngay_ket_thuc` date DEFAULT NULL,
-  `ngay_tao` timestamp NOT NULL DEFAULT current_timestamp()
+  `ngay_tao` timestamp NOT NULL DEFAULT current_timestamp(),
+  `tai_lieu_link` varchar(500) DEFAULT NULL COMMENT 'Link tài liệu',
+  `tai_lieu_file` varchar(500) DEFAULT NULL COMMENT 'File tài liệu đính kèm (nhiều file cách nhau bởi ;)'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Đang đổ dữ liệu cho bảng `cong_viec_quy_trinh`
 --
 
-INSERT INTO `cong_viec_quy_trinh` (`id`, `cong_viec_id`, `ten_buoc`, `mo_ta`, `trang_thai`, `ngay_bat_dau`, `ngay_ket_thuc`, `ngay_tao`) VALUES
-(161, 199, 'Báo cáo', 'Báo cáo', 'Đã hoàn thành', '2025-10-02', '2025-10-04', '2025-10-02 08:42:15'),
-(162, 198, 'bước 1', 'Báo cáo', 'Đã hoàn thành', '2025-10-02', '2025-10-04', '2025-10-02 08:42:47'),
-(163, 197, 'bước 1', 'Báo cáo', 'Đã hoàn thành', '2025-10-02', '2025-10-04', '2025-10-02 08:43:08'),
-(164, 195, 'bước 1', 'Báo cáo', 'Đã hoàn thành', '2025-10-02', '2025-10-04', '2025-10-02 08:43:20'),
-(165, 196, 'bước 1', 'Báo cáo', 'Đã hoàn thành', '2025-10-02', '2025-10-04', '2025-10-02 08:45:36'),
-(167, 202, 'Nghiên cứu các sản phẩm Hyper-G chuyển giao cho ICS ', 'Nghiên cứu các sản phẩm Hyper-G chuyển giao cho ICS ', 'Đã hoàn thành', '2025-10-01', '2025-10-06', '2025-10-07 01:46:03'),
-(168, 202, 'Nghiên cứu các sản phẩm Hyper-G chuyển giao cho ICS ', 'Nghiên cứu các sản phẩm Hyper-G chuyển giao cho ICS ', 'Đã hoàn thành', '2025-10-01', '2025-10-06', '2025-10-07 01:46:04'),
-(169, 202, 'Tổ chức họp trực tuyến với Hyper-G', '1. Thảo luận về tích hợp bán hàng Oracle Cloud2. Thảo luận về Smart Dashboard3. Thảo luận về việc triển khai và bán hàng AI SOC4. Thảo luận về việc triển khai, xây dựng thương hiệu và bán hàng sản phẩm DLP5. Thảo luận về dự án TKV+Cysteak Oracle Clould 6. Chia sẻ và thảo luận về hệ thống CRM quản lý cơ hội kinh doanh Salesforce.', 'Đã hoàn thành', '2025-10-07', '2025-10-07', '2025-10-07 01:47:32'),
-(170, 201, 'Giao việc cho phúc nghiên cứu viết sổ tay ATTT', 'Giao việc cho phúc nghiên cứu viết sổ tay ATTT', 'Đã hoàn thành', '2025-10-06', '2025-10-06', '2025-10-07 01:49:14'),
-(171, 205, 'Phân tích yêu cầu của UBND TP Đà Nẵng', 'Phân tích yêu cầu của UBND TP Đà Nẵng CV 381.BC.SKHCN', 'Đã hoàn thành', '2025-10-03', '2025-10-06', '2025-10-07 01:50:38'),
-(172, 201, 'Sổ tay ATTT', 'Đã hoàn thiện sổ tay', 'Đã hoàn thành', '2025-10-05', '2025-10-07', '2025-10-08 01:35:20'),
-(173, 206, 'bước 1', 'anh Hanh bàn giao lại cho các bạn kĩ thuật', 'Đã hoàn thành', '2025-10-17', '2025-10-20', '2025-10-17 04:12:32'),
-(174, 206, 'bước 2', 'nghiên cứu và báo cáo Mr Âu', 'Đã hoàn thành', '2025-10-17', '2025-10-20', '2025-10-17 04:12:55'),
-(175, 207, 'bước 1', 'lên file đào tạo cụ thể', 'Đã hoàn thành', '2025-10-17', '2025-10-20', '2025-10-17 04:15:06'),
-(176, 207, 'bước 2', 'Đào tạo và kiểm tra, báo cáo lại kết quả vào thứ 2 20/10/2025', 'Đã hoàn thành', '2025-10-17', '2025-10-20', '2025-10-17 04:15:53'),
-(179, 209, 'bước 1', 'làm việc với bên Hyper G', 'Đã hoàn thành', '2025-10-17', '2025-10-18', '2025-10-17 04:23:26'),
-(180, 209, 'bước 2', 'Mr Hanh bàn giao cho 2 bạn kĩ thuật nắm và triển khai', 'Đã hoàn thành', '2025-10-17', '2025-10-18', '2025-10-17 04:23:51'),
-(181, 210, 'bước 1', 'Trao đổi với hyper G', 'Đã hoàn thành', '2025-10-17', '2025-10-20', '2025-10-17 04:26:15'),
-(182, 210, 'bước 2', 'tài liệu bên họ có, hướng dẫn để bên mình nghiên cứu cụ thể, đặc biệt TIM và Renobit', 'Đã hoàn thành', '2025-10-17', '2025-10-20', '2025-10-17 04:27:01'),
-(183, 174, 'Hoàn thành', 'Hoàn thành', 'Đã hoàn thành', '2025-11-14', '2025-11-14', '2025-11-14 02:28:11'),
-(184, 175, 'Hoàn thành', 'Hoàn thành', 'Đã hoàn thành', '2025-11-14', '2025-11-14', '2025-11-14 02:30:53'),
-(185, 176, 'Hoàn thành', 'Hoàn thành', 'Đã hoàn thành', '2025-11-14', '2025-11-14', '2025-11-14 02:31:15'),
-(186, 177, 'Hoàn thành', 'Hoàn thành', 'Chưa bắt đầu', '2025-11-14', '2025-11-14', '2025-11-14 02:31:32'),
-(187, 211, 'Hoàn thành', 'Hoàn thành', 'Đã hoàn thành', '2025-11-14', '2025-11-14', '2025-11-14 02:32:01'),
-(189, 181, 'Hoàn thành', 'Hoàn thành', 'Đã hoàn thành', '2025-11-14', '2025-11-14', '2025-11-14 02:34:26'),
-(190, 182, 'Hoàn thành', 'Hoàn thành', 'Đã hoàn thành', '2025-11-14', '2025-11-14', '2025-11-14 02:34:57'),
-(191, 183, 'Hoàn thành', 'Hoàn thành', 'Chưa bắt đầu', '2025-11-14', '2025-11-14', '2025-11-14 02:35:28'),
-(192, 184, 'Hoàn thành', 'Hoàn thành', 'Chưa bắt đầu', '2025-11-14', '2025-11-14', '2025-11-14 02:35:43'),
-(193, 185, 'Hoàn thành', 'Hoàn thành', 'Chưa bắt đầu', '2025-11-14', '2025-11-14', '2025-11-14 02:35:58'),
-(194, 186, 'Hoàn thành', 'Hoàn thành', 'Đã hoàn thành', '2025-11-14', '2025-11-14', '2025-11-14 02:36:15'),
-(195, 187, 'Hoàn thành', 'Hoàn thành', 'Đã hoàn thành', '2025-11-14', '2025-11-14', '2025-11-14 02:36:40'),
-(196, 188, 'Hoàn thành', 'Hoàn thành', 'Đã hoàn thành', '2025-11-14', '2025-11-14', '2025-11-14 02:36:58'),
-(197, 190, 'Hoàn thành', 'Hoàn thành', 'Đã hoàn thành', '2025-11-14', '2025-11-14', '2025-11-14 02:37:18'),
-(198, 192, 'Hoàn thành', 'Hoàn thành', 'Chưa bắt đầu', '2025-11-14', '2025-11-14', '2025-11-14 02:37:33'),
-(199, 194, 'Hoàn thành', 'Hoàn thành', 'Chưa bắt đầu', '2025-11-14', '2025-11-14', '2025-11-14 02:37:52'),
-(200, 214, 'bước 1', '', 'Đã hoàn thành', '2025-11-14', '2025-11-18', '2025-11-14 06:13:42'),
-(201, 214, 'bước 2', '', 'Chưa bắt đầu', '2025-11-14', '2025-11-18', '2025-11-14 06:13:55'),
-(202, 215, 'đang thực hiện', '', 'Đã hoàn thành', '2025-11-17', '2025-11-17', '2025-11-17 01:13:52'),
-(203, 217, 'test', '', 'Đã hoàn thành', '2025-11-17', '2025-11-17', '2025-11-17 01:14:47'),
-(212, 226, 'Hoàn thành', 'Hoàn thành', 'Đã hoàn thành', '2025-11-17', '2025-11-17', '2025-11-17 01:48:52'),
-(213, 227, 'Hoàn thành', 'Hoàn thành', 'Đã hoàn thành', '2025-11-17', '2025-11-17', '2025-11-17 01:49:01'),
-(214, 228, 'Hoàn thành', 'Hoàn thành', 'Đã hoàn thành', '2025-11-17', '2025-11-17', '2025-11-17 01:49:45'),
-(215, 231, 'Hoàn thành', 'Hoàn thành', 'Đã hoàn thành', '2025-11-17', '2025-11-17', '2025-11-17 01:50:04'),
-(216, 230, 'Hoàn thành', 'Hoàn thành', 'Đã hoàn thành', '2025-11-17', '2025-11-17', '2025-11-17 01:50:15'),
-(217, 229, 'Hoàn thành', 'Hoàn thành', 'Đã hoàn thành', '2025-11-17', '2025-11-17', '2025-11-17 01:50:26'),
-(218, 232, 'Hoàn thành', 'Hoàn thành', 'Đang thực hiện', '2025-11-17', '2025-11-17', '2025-11-17 01:50:52'),
-(219, 233, 'Hoàn thành', 'Hoàn thành', 'Đã hoàn thành', '2025-11-17', '2025-11-17', '2025-11-17 01:51:02'),
-(220, 234, 'Hoàn thành', 'Hoàn thành', 'Chưa bắt đầu', '2025-11-17', '2025-11-17', '2025-11-17 01:51:13'),
-(221, 241, 'Hoàn thành', 'Hoàn thành', 'Đang thực hiện', '2025-11-17', '2025-11-17', '2025-11-17 01:51:41'),
-(222, 240, 'Hoàn thành', 'Hoàn thành', 'Đã hoàn thành', '2025-11-17', '2025-11-17', '2025-11-17 01:51:51'),
-(223, 239, 'Hoàn thành', 'Hoàn thành', 'Đã hoàn thành', '2025-11-17', '2025-11-17', '2025-11-17 01:52:03'),
-(224, 238, 'Hoàn thành', 'Hoàn thành', 'Đã hoàn thành', '2025-11-17', '2025-11-17', '2025-11-17 01:52:18'),
-(225, 237, 'Hoàn thành', 'Hoàn thành', 'Đã hoàn thành', '2025-11-17', '2025-11-17', '2025-11-17 01:52:34'),
-(226, 236, 'Hoàn thành', 'Hoàn thành', 'Đã hoàn thành', '2025-11-17', '2025-11-17', '2025-11-17 01:52:45'),
-(227, 235, 'Hoàn thành', 'Hoàn thành', 'Đã hoàn thành', '2025-11-17', '2025-11-17', '2025-11-17 01:52:57'),
-(229, 193, 'HĐ  với Công ty Cổ phần Giải pháp Công nghệ Quốc tế', '', 'Đã hoàn thành', '2025-11-17', '2025-11-17', '2025-11-17 01:53:31'),
-(230, 180, 'Hoàn thành', 'Hoàn thành', 'Đã hoàn thành', '2025-11-17', '2025-11-17', '2025-11-17 01:53:46'),
-(231, 179, 'Hoàn thành', 'Hoàn thành', 'Chưa bắt đầu', '2025-11-17', '2025-11-17', '2025-11-17 01:54:01'),
-(232, 178, 'Hoàn thành', 'Hoàn thành', 'Đã hoàn thành', '2025-11-17', '2025-11-17', '2025-11-17 01:54:14'),
-(233, 246, 'Hẹn với TKV để xác nhận kế hoạch triển khai', '', 'Đang thực hiện', '2025-11-17', '2025-11-30', '2025-11-17 06:22:42'),
-(234, 246, 'Ký hợp đồng', '', 'Đang thực hiện', '2025-12-01', '2025-12-31', '2025-11-17 06:24:04'),
-(235, 245, 'đã xong', '', 'Đã hoàn thành', '2025-11-17', '2025-11-18', '2025-11-17 06:25:27'),
-(236, 243, 'Hoàn thành', 'Hoàn thành', 'Đã hoàn thành', '2025-11-17', '2025-11-18', '2025-11-17 06:30:25'),
-(237, 247, 'báo giá cho Mobifone', '', 'Đã hoàn thành', '2025-11-17', '2025-11-17', '2025-11-17 06:31:01'),
-(238, 251, 'Đã trình hồ sơ xin ngân sách', '', 'Đã hoàn thành', '2025-11-17', '2025-11-17', '2025-11-17 06:42:05'),
-(239, 251, 'Ký kết hợp đồng', '', 'Chưa bắt đầu', '2025-11-17', '2025-12-31', '2025-11-17 06:42:42'),
-(240, 253, 'Gặp trao đổi', '', 'Đã hoàn thành', '2025-11-03', '2025-11-03', '2025-11-17 06:50:27'),
-(241, 254, 'đã khảo sát xong, cần báo cáo', '', 'Đã hoàn thành', '2025-11-14', '2025-11-14', '2025-11-17 06:55:21'),
-(242, 256, 'Dũng nắm công việc và hỗ trợ a Long khảo sát', 'Hiện tại đã liên hệ anh Đỉnh vào ngày 04.12.2025 nhưng anh Đỉnh vẫn đi công tác chưa về, anh Đỉnh sẽ thông báo lại khi trở về Sài Gòn', 'Đang thực hiện', '2025-11-17', '2025-11-30', '2025-11-17 07:00:03'),
-(243, 257, 'Đã dùng thử phản hồi ok', '', 'Đã hoàn thành', '2025-11-17', '2025-11-17', '2025-11-17 07:11:35'),
-(245, 260, 'Hỗ trợ kỹ thuật', '', 'Đã hoàn thành', '2025-11-17', '2025-11-24', '2025-11-17 08:41:56'),
-(246, 242, 'Hoàn thành', 'Hoàn thành', 'Đã hoàn thành', '2025-11-18', '2025-11-18', '2025-11-18 07:53:25'),
-(247, 266, 'Liên hệ trao đổi', 'Đã liên hệ nhưng a Đạt bận chưa trao đổi\nLiên hệ cho a Tuấn Anh nhưng bận chưa trao đổi \n', 'Đang thực hiện', '2025-11-20', '2025-11-29', '2025-11-20 04:33:13'),
-(248, 270, 'Đợi lịch khảo sát từ CyStack', '', 'Đã hoàn thành', '2025-11-20', '2025-11-30', '2025-11-20 04:36:05'),
-(249, 270, 'Khảo sát, báo cáo kết quả', '', 'Đã hoàn thành', '2025-11-30', '2025-12-31', '2025-11-20 04:36:42'),
-(251, 265, 'Bước 1: Thực hiện', 'Bước 1: Thực hiện', 'Đang thực hiện', '2025-11-20', '2025-11-20', '2025-11-20 06:44:56'),
-(252, 279, 'xác định hướng triển khai với a Tim', '', 'Đã hoàn thành', '2025-11-21', '2025-11-21', '2025-11-21 06:53:04'),
-(253, 282, 'giới thiệu sản phẩm cho Vpbak', '', 'Đã hoàn thành', '2025-11-14', '2025-11-14', '2025-11-21 06:55:20'),
-(254, 282, 'Giới thiệu sản phẩm cho chủ tịch Vpbank', 'đang xin lịch hẹn', 'Đã hoàn thành', '2025-11-14', '2025-12-30', '2025-11-21 06:55:54'),
-(255, 283, 'gửi phương án đề xuất', '', 'Đã hoàn thành', '2025-11-03', '2025-11-03', '2025-11-21 06:58:21'),
-(256, 283, 'đợi phản hồi', '', 'Đã hoàn thành', '2025-11-03', '2025-11-30', '2025-11-21 06:58:50'),
-(257, 276, 'Bước 2: Thực hiện', 'đang làm', 'Đã hoàn thành', '2025-11-22', '2025-11-24', '2025-11-22 13:04:26'),
-(258, 275, 'Hoàn thành', 'Hoàn thành', 'Đã hoàn thành', '2025-11-21', '2025-11-26', '2025-11-22 13:06:12'),
-(259, 248, 'Hoàn thành', 'Hoàn thành', 'Đang thực hiện', '2025-11-22', '2025-11-30', '2025-11-22 13:07:46'),
-(260, 249, 'Xin chính sách', 'đốc thốc lien tục mà họ hẹn lần tới', 'Đã hoàn thành', '2025-11-20', '2025-11-30', '2025-11-24 01:05:43'),
-(261, 255, 'Trao đổi sơ bộ về bộ dữ liệu của hạ tầng IT', '', 'Đã hoàn thành', '2025-11-20', '2025-11-20', '2025-11-24 01:17:14'),
-(262, 244, 'Đang làm việc với a Tim xin chính sách Netzero', '', 'Đã hoàn thành', '2025-11-20', '2025-11-28', '2025-11-24 01:36:37'),
-(263, 180, 'Xin lịch họp với 3C', '', 'Đã hoàn thành', '2025-11-24', '2025-11-30', '2025-11-24 01:44:26'),
-(264, 252, 'Cathay đang xin lịch họp với sếp', 'cuối năm sếp nhiều việc nên chưa sắp xếp được', 'Đã hoàn thành', '2025-11-24', '2025-11-30', '2025-11-24 01:46:19'),
-(265, 285, 'Hoàn thành', '', 'Đã hoàn thành', '2025-11-24', '2025-11-24', '2025-11-24 01:53:32'),
-(266, 178, 'Gửi chương trình đào tạo sang BIDV. Xin lịch đào tạo', '', 'Đã hoàn thành', '2025-11-24', '2025-11-30', '2025-11-24 01:56:31'),
-(267, 261, 'Xin chính sách IRmind', '', 'Đã hoàn thành', '2025-11-24', '2025-11-30', '2025-11-24 02:56:31'),
-(268, 271, 'Xin lịch khảo sát nhà máy', '', 'Đang thực hiện', '2025-11-24', '2025-12-15', '2025-11-24 03:13:58'),
-(269, 280, 'Trao đổi với a TIm về các bước thực hiện', '', 'Đã hoàn thành', '2025-11-24', '2025-11-30', '2025-11-24 03:15:14'),
-(270, 263, 'Điện a MInh sắp xếp lịch', '', 'Đã hoàn thành', '2025-11-24', '2025-11-30', '2025-11-24 03:16:02'),
-(271, 281, 'Trao đổi với a TIm về các bước thực hiện', '', 'Đã hoàn thành', '2025-11-24', '2025-11-30', '2025-11-24 03:21:14'),
-(272, 277, 'Giao diện landing page', '', 'Đã hoàn thành', '2025-11-24', '2025-12-26', '2025-11-24 07:10:36'),
-(273, 284, 'Đợi quang anh hoàn thiện Fe rồi hỗ trợ backend', '', 'Đang thực hiện', '2025-11-24', '2025-12-26', '2025-11-24 07:13:39'),
-(274, 278, 'Login và Regis ', '', 'Đã hoàn thành', '2025-11-22', '2025-11-25', '2025-11-24 07:14:36'),
-(275, 277, 'Giao diện người dùng', '', 'Đã hoàn thành', '2025-11-21', '2025-11-23', '2025-11-24 07:48:36'),
-(276, 277, 'Giao diện khóa học, chi tiết khóa học, search.', '', 'Đã hoàn thành', '2025-11-22', '2025-11-23', '2025-11-24 07:49:33'),
-(277, 277, 'Giao diện admin, giảng viên và các giao diện chức năng.', '', 'Đã hoàn thành', '2025-11-23', '2025-11-27', '2025-11-24 07:50:03'),
-(278, 277, 'Giao diện cài đặt và các chức năng user', '', 'Đã hoàn thành', '2025-11-23', '2025-11-27', '2025-11-24 07:50:47'),
-(279, 278, 'CRUD khóa học', '', 'Chưa bắt đầu', '2025-12-01', '2025-12-03', '2025-11-24 07:52:45'),
-(280, 319, 'bước 1', 'Làm lại slide giới thiệu công ty: ( 3slide giới thiệu công ty; 7slide giới thiệu sản phẩm )', 'Đã hoàn thành', '2025-11-24', '2025-11-25', '2025-11-25 06:56:27'),
-(281, 319, 'bước 2', 'Gửi sản phẩm bằng tiếng anh: Dashboard và CSA', 'Đã hoàn thành', '2025-11-24', '2025-11-25', '2025-11-25 06:57:16'),
-(282, 320, 'Báo giá Căn cứ chuyển đô', '', 'Đã hoàn thành', '2025-11-13', '2025-11-13', '2025-11-25 07:02:31'),
-(283, 320, 'Đề xuất thanh toán cho HyperG (tiền đô)', '', 'Đã hoàn thành', '2025-11-15', '2025-11-15', '2025-11-25 07:03:15'),
-(284, 320, 'Thanh toán cho HyperG (mua đô-gửi đô) ', 'Giải trình ngân hàng ', 'Đã hoàn thành', '2025-11-17', '2025-11-17', '2025-11-25 07:04:20'),
-(285, 320, 'Đóng thuế FCT - Xuất hóa đơn cho Cathay', '', 'Đã hoàn thành', '2025-11-18', '2025-11-18', '2025-11-25 07:05:11'),
-(286, 320, 'Cathay thanh toán cho ICS', 'đã duyệt hồ sơ, dự kiến thanh toán vào 15-16h chiều thứ sáu ngày 19/12/2025 (hoặc thứ hai)', 'Đã hoàn thành', '2025-11-18', '2025-11-30', '2025-11-25 07:06:09'),
-(287, 321, 'Gửi HĐĐT', 'Sau quá trình sửa chữa lỗi hợp đồng, ICS gửi lại Đồ Sơn 1 bản HĐĐT và 2 biên bản (nghiệm thu và khối lượng côn việc)', 'Đã hoàn thành', '2025-11-18', '2025-11-20', '2025-11-25 07:12:07'),
-(288, 321, 'Đồ Sơn thanh toán ', 'Kho Bạc duyệt ', 'Đã hoàn thành', '2025-11-21', '2025-11-25', '2025-11-25 07:13:04'),
-(289, 321, 'ICS thanh toán phí chuyên gia đào tạo', 'Làm đề xuất thanh toán cho Seedoo 22.000.000 vnd', 'Đã hoàn thành', '2025-11-25', '2025-11-25', '2025-11-25 07:14:26'),
-(290, 321, 'Tặng quà cho TT Chính trị Phường Đồ Sơn', 'Làm đề xuất thanh toán khoản chi đối ngoại - Scan gửi kế toán trình sếp duyệt\n', 'Đã hoàn thành', '2025-11-25', '2025-11-25', '2025-11-25 07:15:44'),
-(291, 321, 'Sửa lại HĐ (dự kiến 29/11 sửa đổi )', 'bổ sung 8% thuế suất vào HĐ - sau khi tặng quà Đồ sơn ( đã làm ĐXTT và chi) sẽ sửa đôi (kế toán thông báo sau) => không sửa vì đã đẩy hồ sơ lên dịch vụ công ', 'Đã hoàn thành', '2025-11-25', '2025-12-25', '2025-11-25 07:16:49'),
-(292, 322, 'Tạo form kế hoạch, thông tin khách hàng', 'Chuẩn bị form kế hoạch để A Trung bổ sung data doanh nghiệp và khách hàng vào', 'Đã hoàn thành', '2025-11-24', '2025-11-24', '2025-11-25 07:24:08'),
-(293, 322, 'Lên Kế hoạch tặng quà', 'Phân nhóm khách hàng, phân tích nhu cầu (quà gì, phù hợp tài chính,..), tặng như nào,....', 'Chưa bắt đầu', '2025-11-24', '2025-11-30', '2025-11-25 07:25:25'),
-(294, 322, 'Chuẩn bị Quà tặng', 'Tìm kiếm các đơn vị thiết kế và cung cấp quà tặng', 'Chưa bắt đầu', '2025-12-01', '2025-12-10', '2025-11-25 07:27:52'),
-(295, 323, 'Lấy HĐ', 'Thứ Năm Trung lấy', 'Đã hoàn thành', '2025-11-25', '2025-11-27', '2025-11-25 07:32:42'),
-(296, 323, 'Lưu trữ HĐ', 'Scan và lưu trữ HĐ', 'Đã hoàn thành', '2025-11-27', '2025-11-28', '2025-11-25 07:33:11'),
-(297, 324, 'Đánh giá TTS', 'Tạo file đánh giá TTS và gửi cho các bạn phụ trách đánh giá', 'Đã hoàn thành', '2025-11-24', '2025-11-24', '2025-11-25 07:51:11'),
-(298, 324, 'Đánh giá NV', 'Trích xuất dựa trên dự liệu dự án có trên phần mềm (Dashboard)', 'Đã hoàn thành', '2025-11-24', '2025-11-28', '2025-11-25 07:52:41'),
-(299, 193, 'Chuẩn bị Bộ Hồ sơ định danh và đăng kí Voicebrandname', 'Đã gửi đi và chờ kết quả', 'Đã hoàn thành', '2025-10-30', '2025-11-30', '2025-11-25 07:56:27'),
-(300, 326, 'Lên Quy định mới', 'Trình duyệt GĐNS và phát hành quy định', 'Đã hoàn thành', '2025-11-24', '2025-11-28', '2025-11-25 08:05:25'),
-(301, 320, 'Cung cấp CO/CQ cho Cathay', 'Trao đổi với HyperG cung cấp CO/CQ cho appGuard (nhanh nhất có thể) để gửi cho Cathay hoàn tất hồ sơ thanh toán. Tài liệu gửi đi gồm: Công văn giải trình (đã gửi), Chứng nhận  của An ninh mạng singapore về appGuard (đã có), và thư tuyên bố uỷ quyền nhà phân phối (HyperG xin mất 1 tuần và cung cấp cho ICS)', 'Đã hoàn thành', '2025-11-26', '2025-12-26', '2025-11-26 04:01:44'),
-(302, 323, 'Upload các file lên HRM', '', 'Đã hoàn thành', '2025-11-26', '2025-11-26', '2025-11-26 04:18:22'),
-(303, 331, 'Hoàn thành', '', 'Đã hoàn thành', '2025-10-30', '2025-10-30', '2025-11-27 01:38:48'),
-(304, 332, 'Hoàn thành', '', 'Đã hoàn thành', '2025-10-20', '2025-11-07', '2025-11-27 01:41:49'),
-(305, 333, 'Hoàn thành', '', 'Đã hoàn thành', '2025-10-22', '2025-10-29', '2025-11-27 01:42:29'),
-(306, 334, 'Hoàn thành', '', 'Đã hoàn thành', '2025-11-03', '2025-11-08', '2025-11-27 01:44:17'),
-(307, 341, 'Thêm tài khoản cá nhân để test', '', 'Đã hoàn thành', '2025-10-27', '2025-10-27', '2025-11-27 01:45:13'),
-(308, 341, 'Liên hệ Sepay để lấy form và hướng dẫn quy trình tích hợp tài khoản công ty', '', 'Đã hoàn thành', '2025-11-28', '2025-11-29', '2025-11-27 01:45:47'),
-(309, 341, 'Gửi Form đã điền cho BIDV để bên họ làm quy trình ', '', 'Đang thực hiện', '2025-10-30', '2026-01-01', '2025-11-27 01:46:25'),
-(310, 344, 'Nghiên cứu document SDK API', '', 'Đã hoàn thành', '2025-11-15', '2025-11-28', '2025-11-27 01:47:15'),
-(311, 344, 'Setup môi trường và test API (Có thể bằng 1 project demo)', '', 'Đã hoàn thành', '2025-12-01', '2025-12-08', '2025-11-27 01:48:05'),
-(312, 344, 'Tích hợp API vào backend website', '', 'Đang thực hiện', '2025-12-08', '2025-12-15', '2025-11-27 01:48:38'),
-(313, 344, 'Bella test và báo bug + fix bug', '', 'Chưa bắt đầu', '2025-12-13', '2025-12-21', '2025-11-27 01:49:03'),
-(314, 342, 'Hoàn thành', '', 'Đã hoàn thành', '2025-12-18', '2025-12-18', '2025-11-27 01:49:30'),
-(315, 337, 'Hoàn thành', '', 'Đã hoàn thành', '2025-11-20', '2025-11-28', '2025-11-27 01:52:12'),
-(316, 340, 'Hoàn thành', '', 'Đang thực hiện', '2025-11-27', '2025-11-30', '2025-11-27 01:52:35'),
-(317, 339, 'Hoàn thành', '', 'Đã hoàn thành', '2025-11-27', '2025-12-01', '2025-11-27 01:58:19'),
-(318, 325, 'Bắt đầu', 'Thu thập yêu cầu các phòng ban (Kỹ thuật, Kinh doanh,...) ', 'Đã hoàn thành', '2025-11-24', '2025-11-28', '2025-11-27 03:11:11'),
-(319, 325, 'Tạo JD tuyển dụng', 'Tạo JD tuyển dụng cho các vị trí nhân sự, phòng Kinh doanh tuyển dụng (P.KD tự tuyển dụng/ gửi lại yêu cầu để tuyển dụng), phòng Kỹ thuật k cần', 'Đã hoàn thành', '2025-12-01', '2025-12-30', '2025-11-27 03:12:08'),
-(320, 326, 'Phát hành ', 'Triển khai quy định mới', 'Chưa bắt đầu', '2025-12-01', '2025-12-01', '2025-11-27 03:38:11'),
-(321, 262, 'bước 1', '', 'Đã hoàn thành', '2025-11-24', '2025-11-26', '2025-11-27 06:39:18'),
-(322, 262, 'Báo cáo tiến độ Khảo sát Medlac', '', 'Đã hoàn thành', '2025-11-26', '2025-11-28', '2025-11-27 06:40:45'),
-(323, 277, 'Giao diện tạo khóa học, chỉnh sửa khóa học, quản lý danh mục', '', 'Đã hoàn thành', '2025-11-25', '2025-11-26', '2025-11-27 06:52:41'),
-(324, 346, 'bước 1', '', 'Đã hoàn thành', '2025-11-18', '2025-11-28', '2025-11-27 15:18:17'),
-(325, 347, 'bước 1', '', 'Chưa bắt đầu', '2025-11-17', '2025-11-28', '2025-11-27 15:19:30'),
-(326, 348, 'bước 1', '', 'Đã hoàn thành', '2025-11-17', '2025-11-28', '2025-11-27 15:21:17'),
-(327, 349, 'bước 1', '', 'Đã hoàn thành', '2025-11-18', '2025-11-29', '2025-11-27 15:24:06'),
-(328, 352, 'bước 1', '', 'Đã hoàn thành', '2025-11-17', '2025-11-28', '2025-11-27 15:27:09'),
-(329, 244, 'Làm việc với phòng văn hóa xã hội', '', 'Đã hoàn thành', '2025-11-27', '2025-11-27', '2025-11-28 01:11:07'),
-(330, 279, 'Lên phương án triển khai cho Hòa Bình về Netzero', 'Dương dựa theo tài liệu a Trung cung cấp để lên phương án sơ bộ.', 'Đã hoàn thành', '2025-11-28', '2025-11-30', '2025-11-28 01:14:29'),
-(331, 280, 'Lên phương án triển khai cho Lương Sơn về Netzero', 'Tương tự như Hòa Bình, Dương lên phương án ban đầu', 'Đã hoàn thành', '2025-11-28', '2025-12-02', '2025-11-28 01:16:53'),
-(332, 354, 'bước 1', '', 'Đã hoàn thành', '2025-11-17', '2025-11-29', '2025-11-28 01:31:00'),
-(333, 355, 'bước 1', '', 'Đã hoàn thành', '2025-11-25', '2025-11-29', '2025-11-28 01:34:49'),
-(334, 356, 'bước 1', '', 'Đã hoàn thành', '2025-11-24', '2025-11-30', '2025-11-28 01:35:04'),
-(335, 357, 'bước 1', '', 'Đã hoàn thành', '2025-11-28', '2025-11-29', '2025-11-28 01:35:52'),
-(336, 358, 'bước 1', '', 'Chưa bắt đầu', '2025-11-27', '2026-03-28', '2025-11-28 01:39:54'),
-(337, 360, 'bước 1', '', 'Chưa bắt đầu', '2025-11-28', '2026-03-28', '2025-11-28 01:40:32'),
-(338, 362, 'Bước 1', 'HyperG cấp API', 'Đã hoàn thành', '2025-11-28', '2026-01-28', '2025-11-28 01:42:39'),
-(339, 363, 'bước 1', '', 'Đã hoàn thành', '2025-11-25', '2025-11-29', '2025-11-28 01:44:37'),
-(340, 364, 'bước 1', '', 'Đã hoàn thành', '2025-11-26', '2025-11-30', '2025-11-28 01:45:24'),
-(342, 366, 'bước 1', '', 'Đã hoàn thành', '2025-11-28', '2025-12-05', '2025-11-28 01:47:29'),
-(343, 367, 'bước 1', '', 'Đã hoàn thành', '2025-11-28', '2025-12-28', '2025-11-28 01:49:44'),
-(344, 368, 'bước 1', '2', 'Đã hoàn thành', '2025-11-27', '2025-12-28', '2025-11-28 01:52:26'),
-(345, 362, 'Bước 2', 'Tích hợp API vào web VietguardScan. Cần viết backend wrapper cho API này', 'Đã hoàn thành', '2025-11-25', '2025-11-30', '2025-11-28 01:56:06'),
-(346, 369, 'bước 1', '', 'Đã hoàn thành', '2025-11-28', '2026-02-12', '2025-11-28 01:56:44'),
-(347, 338, 'Hoàn thành', '', 'Đang thực hiện', '2025-11-27', '2025-12-06', '2025-11-28 01:57:26'),
-(348, 370, 'bước 1', '', 'Đã hoàn thành', '2025-11-28', '2025-12-26', '2025-11-28 01:57:42'),
-(349, 335, 'Hoàn thành', '', 'Đang thực hiện', '2025-11-27', '2025-12-03', '2025-11-28 01:58:17'),
-(350, 336, 'Hoàn thành', '', 'Đang thực hiện', '2025-11-27', '2025-12-04', '2025-11-28 01:59:01'),
-(351, 371, 'bước 1', '', 'Đã hoàn thành', '2025-11-28', '2025-11-30', '2025-11-28 02:00:38'),
-(352, 372, 'bước 1', '', 'Đã hoàn thành', '2025-11-27', '2025-11-30', '2025-11-28 02:01:35'),
-(353, 271, 'liên hệ xin cuộc hẹn', 'A ĐỈnh báo sẽ liên hệ trước 1 tuần', 'Đã hoàn thành', '2025-11-28', '2025-11-28', '2025-11-28 02:07:35'),
-(354, 255, 'Họp với Bitcare về lấy dữ liệu', 'Hẹn gặp onl vào 28/11', 'Đã hoàn thành', '2025-11-27', '2025-11-28', '2025-11-28 02:09:28'),
-(355, 374, 'Làm file tổng hợp tất cả các công ty và lên phương án sơ bộ', 'Dũng đã hoàn thiện', 'Đã hoàn thành', '2025-11-28', '2025-11-28', '2025-11-28 02:14:31'),
-(356, 374, 'Lên phương án từng đơn vị', '', 'Đã hoàn thành', '2025-11-28', '2025-11-30', '2025-11-28 02:15:01'),
-(358, 375, 'Nhờ Hieesuu liên hệ', '', 'Đã hoàn thành', '2025-11-24', '2025-11-28', '2025-11-28 02:24:50'),
-(359, 375, 'Lên lịch hẹn', 'Dũng liên hệ a Hiếu để xin lịch hẹn', 'Đã hoàn thành', '2025-11-28', '2025-12-12', '2025-11-28 02:25:12'),
-(360, 376, 'Tạo file thông tin', '', 'Đã hoàn thành', '2025-11-28', '2025-11-28', '2025-11-28 09:02:15'),
-(365, 373, 'Tìm hiểu EPS', '', 'Đã hoàn thành', '2025-11-27', '2025-12-28', '2025-12-01 01:18:26'),
-(366, 325, 'Tuyển dụng', 'Đăng bài tuyển dụng lên các hội nhóm\n1 ứng viên Phenika phỏng vấn vào 8/12', 'Đang thực hiện', '2025-12-01', '2025-12-30', '2025-12-01 01:39:43'),
-(368, 382, '1', '', 'Đã hoàn thành', '2025-12-01', '2025-12-30', '2025-12-01 02:01:08'),
-(369, 383, '1', '', 'Đã hoàn thành', '2025-12-01', '2025-12-02', '2025-12-01 02:02:02'),
-(370, 377, 'bước 1', 'Đã yêu cầu bên đối tác soạn và gửi tài liệu', 'Chưa bắt đầu', '2025-12-01', '2025-12-18', '2025-12-01 02:02:48'),
-(371, 384, '1', '', 'Chưa bắt đầu', '2025-12-01', '2025-12-02', '2025-12-01 02:16:28'),
-(372, 351, 'bước 1', '', 'Đang thực hiện', '2025-12-01', '2025-12-12', '2025-12-01 02:17:56'),
-(373, 190, 'Báo cáo các bước tiếp theo của các đối tác với G- pay', '', 'Đang thực hiện', '2025-12-01', '2025-12-02', '2025-12-01 02:18:34'),
-(374, 350, 'bước 1', '', 'Đang thực hiện', '2025-12-01', '2025-12-12', '2025-12-01 02:18:44'),
-(375, 386, 'bước 1', '1', 'Đã hoàn thành', '2025-12-01', '2025-12-01', '2025-12-01 02:19:51'),
-(376, 387, '1', '', 'Chưa bắt đầu', '2025-12-01', '2025-12-02', '2025-12-01 02:20:14'),
-(378, 389, '1', '', 'Đã hoàn thành', '2025-12-01', '2025-12-16', '2025-12-01 02:28:48'),
-(379, 385, 'Tìm hiểu hướng dẫn sử dụng AI SOC', '', 'Đã hoàn thành', '2025-12-01', '2025-12-07', '2025-12-01 02:58:49'),
-(381, 457, 'Bảo lên nội dung đào tạo nhận thức ANM', 'Đào tạo cơ bản cho NV văn phòng, hiểu được tầm quan trọng của ANM và các lưu ý khi upload dữ liệu lên hệ thống khi sử dụng AI. Gửi slide đào tạo đầu ngày 3', 'Đã hoàn thành', '2025-12-01', '2025-12-03', '2025-12-01 06:27:29'),
-(382, 457, 'Hợp đồng đào tạo', 'Chú ý các hợp đồng BIDV và của SEEDOO, cái nào xong up lên đây', 'Đã hoàn thành', '2025-12-01', '2025-12-06', '2025-12-01 06:28:37'),
-(383, 457, 'Đảm bảo kỹ thuật hôm đào tạo', 'chuẩn bị và kiểm hệ thống mạng, router trước và trong khi đào tạo', 'Đã hoàn thành', '2025-12-01', '2025-12-06', '2025-12-01 06:30:17'),
-(384, 457, 'Chứng nhận và in ấn', 'Phụ trách in chứng nhận và các tài liệu liên quan', 'Đã hoàn thành', '2025-12-01', '2025-12-06', '2025-12-01 06:47:32'),
-(385, 454, 'HyperG xuất hóa đơn cho ICS', '05/12 HyperG xuất hóa ơn và bill cho ICS \n', 'Đang thực hiện', '2025-12-01', '2025-12-05', '2025-12-01 07:38:31'),
-(386, 454, 'ICS xuất hóa đơn cho Cystack', '', 'Chưa bắt đầu', '2025-12-05', '2025-12-07', '2025-12-01 07:39:04'),
-(387, 454, 'Cystack thanh toán', '', 'Chưa bắt đầu', '2025-12-07', '2026-01-07', '2025-12-01 07:41:34'),
-(388, 388, 'Gửi file Báo cáo cuộc họp T2, 01/12/2025', '', 'Đã hoàn thành', '2025-12-01', '2025-12-01', '2025-12-01 08:20:05'),
-(389, 455, 'bước 1', 'Tìm các thông tư - nghị định: Thư viện pháp luật', 'Đã hoàn thành', '2025-12-01', '2025-12-02', '2025-12-01 08:23:25'),
-(390, 455, 'bước 2', 'làm file word báo cáo Mr. ÂU', 'Đã hoàn thành', '2025-12-01', '2025-12-02', '2025-12-01 08:23:55'),
-(391, 459, 'Gửi danh sách các Khóa học cần tạo Chứng chỉ', 'ICS-Learning Q.A đã bàn giao lại cho nhân sự nào, phòng kỹ thuật sắp xếp nhân sự tiếp quản và gửi lại ', 'Chưa bắt đầu', '2025-12-01', '2025-12-15', '2025-12-01 08:36:34'),
-(392, 459, 'Tạo chứng chỉ', '', 'Chưa bắt đầu', '2025-12-15', '2025-12-31', '2025-12-01 08:37:20'),
-(394, 460, 'Giải ngân đợt thanh toán lương T10', '', 'Đã hoàn thành', '2025-12-01', '2025-12-01', '2025-12-01 08:54:32'),
-(395, 460, 'Làm bảng lương T11 và các khoản phí khác', 'Làm Bảng lương T11 cho nhân sự, gửi GĐNS và KT check,\nGửi file Thu chi tính đến ngày 11/12, Bảng hỗ trợ TTS, Phí vé xe tháng,...', 'Đã hoàn thành', '0025-12-02', '2025-12-02', '2025-12-01 08:55:14'),
-(396, 456, 'bước 1', 'Tìm các TT-ND tại thư viện pháp luật', 'Đã hoàn thành', '2025-12-01', '2025-12-02', '2025-12-01 09:03:34'),
-(397, 456, 'bước 2', 'Làm file báo cáo', 'Đã hoàn thành', '2025-12-01', '2025-12-02', '2025-12-01 09:03:55'),
-(398, 267, 'CyStack đã ký hợp đồng với Medlac', '', 'Đã hoàn thành', '2025-12-01', '2025-12-01', '2025-12-01 09:49:00'),
-(399, 378, 'b1: Tạo file thông tin', '', 'Đã hoàn thành', '2025-12-02', '2025-12-02', '2025-12-02 06:37:48'),
-(400, 461, 'B1: Tìm ứng dụng / code phần gửi email hàng loạt', '', 'Đã hoàn thành', '2025-12-02', '2025-12-03', '2025-12-02 06:43:34'),
-(401, 272, 'Hỗ trợ kỹ thuật cho 3C', '', 'Đang thực hiện', '2025-12-02', '2025-12-15', '2025-12-02 06:45:20'),
-(402, 193, 'Nhận kết quả Định danh và thanh toán Dvu làm hotline', 'Kết quả định danh do Bộ Công an cấp phép từ 15-30 ngày', 'Chưa bắt đầu', '2025-11-30', '2025-12-31', '2025-12-02 08:21:29'),
-(404, 462, 'Tìm kiến đơn vị tuyển dụng', 'Liên hệ các đơn vị tuyển dụng lớn để xin bảng giá đăng tin  lấy hết các chính sách tốt nhất sau đó đề xuất kinh phí để đăng bài/ Đã báo cáo, GĐNS đã duyệt, cần báo cáo sếp Cường để triển khai tiếp ( duyệt chi gói/... )', 'Đang thực hiện', '2025-12-02', '2025-12-04', '2025-12-02 08:53:24'),
-(405, 462, ' Tuyển dụng', 'Theo dõi và cập nhật tiến độ, thông tin người ứng tuyển', 'Chưa bắt đầu', '2025-12-08', '2026-01-02', '2025-12-02 08:55:04'),
-(406, 438, 'bước 1', '', 'Đã hoàn thành', '2025-12-03', '2025-12-26', '2025-12-03 01:47:57'),
-(407, 453, 'bước 1', '', 'Đã hoàn thành', '2025-12-03', '2025-12-05', '2025-12-03 01:49:58'),
-(408, 463, 'HĐ thuê chuyên gia & HĐ ĐT BIDV', 'P KD và P Pháp chế gửi lại HĐ, xuất hóa đơn và biên bản nghiệm thu & thanh lý, lấy căn cứ làm đề xuất thanh toán cho các thầy ( upload file lên HRM)/ Các thầy SEEDOO đang chuẩn bị gửi trước HĐơn còn HĐồng gửi sau (12/12)/ Đã nhận đc hóa đơn, chưa nhận đc hợp đồng', 'Đã hoàn thành', '2025-12-03', '2025-12-12', '2025-12-03 04:12:19'),
-(409, 463, 'Làm đề xuất thanh toán ', 'Chưa nhận được hóa đơn và hợp đồng thuê chuyên gia SEEDOOLàm theo mẫu đã gửi (sau khi nhận được thông tin từ HĐ)', 'Đã hoàn thành', '2025-12-04', '2025-12-16', '2025-12-03 04:15:44'),
-(410, 258, 'Đã hoàn thành', '', 'Đã hoàn thành', '2025-11-28', '2025-11-28', '2025-12-05 00:46:52'),
-(411, 452, 'bước 1', '', 'Đã hoàn thành', '2025-12-05', '2025-12-26', '2025-12-05 01:33:20'),
-(412, 451, 'bước 1', '', 'Đang thực hiện', '2025-12-05', '2025-12-31', '2025-12-05 01:33:52'),
-(413, 450, 'bước 1', '', 'Đã hoàn thành', '2025-12-05', '2025-12-31', '2025-12-05 01:34:19'),
-(414, 449, 'bước 1', '', 'Đã hoàn thành', '2025-12-05', '2025-12-31', '2025-12-05 01:34:55'),
-(415, 448, 'bước 1', '', 'Đã hoàn thành', '2025-12-05', '2025-12-30', '2025-12-05 01:35:22'),
-(416, 447, 'bước 1', '', 'Đã hoàn thành', '2025-12-05', '2025-12-25', '2025-12-05 01:35:42'),
-(417, 446, 'bước 1', '', 'Đã hoàn thành', '2025-11-06', '2025-12-31', '2025-12-05 01:36:17'),
-(418, 445, 'bước 1', '', 'Đã hoàn thành', '2025-11-06', '2025-12-25', '2025-12-05 01:37:00'),
-(419, 444, 'bước 1', '', 'Đã hoàn thành', '2025-10-22', '2025-12-31', '2025-12-05 01:38:37'),
-(420, 443, 'bước 1', '', 'Đã hoàn thành', '2025-12-05', '2025-12-31', '2025-12-05 01:38:58'),
-(421, 442, 'bước 1', '', 'Đã hoàn thành', '2025-10-24', '2026-01-01', '2025-12-05 01:39:35'),
-(422, 441, 'bước 1', '', 'Đã hoàn thành', '2025-10-16', '2025-12-24', '2025-12-05 01:39:58'),
-(423, 440, 'bước 1', '', 'Đã hoàn thành', '2025-10-31', '2025-12-31', '2025-12-05 01:40:19'),
-(424, 439, 'bước 1', '', 'Đã hoàn thành', '2025-10-23', '2025-12-18', '2025-12-05 01:40:41'),
-(425, 458, 'bước 1', 'nghiên cliệuài liệu', 'Đã hoàn thành', '2025-12-01', '2025-12-05', '2025-12-05 06:42:04'),
-(426, 458, 'bước 2', 'tạo các file theo đề án để điền thông tin', 'Đã hoàn thành', '2025-12-01', '2025-12-05', '2025-12-05 06:42:31'),
-(428, 467, 'Lên phương án thiết kế ', '', 'Đã hoàn thành', '2025-12-08', '2025-12-08', '2025-12-07 01:50:49'),
-(429, 467, 'Bản demo', '', 'Đã hoàn thành', '2025-12-08', '2025-12-10', '2025-12-07 01:51:14'),
-(430, 467, 'Bản hoàn chỉnh ', '', 'Đã hoàn thành', '2025-12-10', '2025-12-15', '2025-12-07 01:51:47'),
-(431, 464, 'Hoàn thành', '', 'Đã hoàn thành', '2025-12-04', '2025-12-04', '2025-12-08 01:56:10'),
-(432, 468, 'Dũng, Nam khảo sát hệ thống POS của Vietlott và chụp hình báo cáo', '', 'Đã hoàn thành', '2025-12-08', '2025-12-09', '2025-12-08 01:58:53'),
-(433, 468, 'Lên phương án triển khai phần mềm quản lý tài sản', '', 'Đã hoàn thành', '2025-12-09', '2025-12-12', '2025-12-08 01:59:25'),
-(434, 469, 'Sửa lại web ', '', 'Đã hoàn thành', '2025-11-21', '2025-11-21', '2025-12-08 02:18:43'),
-(435, 470, 'đã hoàn thành', '', 'Đã hoàn thành', '2025-11-25', '2025-11-25', '2025-12-08 02:19:19'),
-(436, 362, 'Bước 3', 'Đã viết xong wrapper API. Bước này kết nối với frontend. ', 'Đã hoàn thành', '2025-12-08', '2025-12-09', '2025-12-08 02:20:44'),
-(437, 471, 'Đã hoàn thành', '', 'Đã hoàn thành', '2025-11-20', '2025-11-20', '2025-12-08 02:24:26'),
-(438, 472, 'Đã hoàn thành', '', 'Đã hoàn thành', '2025-12-08', '2025-12-08', '2025-12-08 02:26:59'),
-(439, 473, 'Bước 1', '', 'Đang thực hiện', '2025-12-08', '2025-12-12', '2025-12-08 02:41:08'),
-(441, 454, 'Trao đổi lại giữa các bên', 'Phát sinh sự cố về vấn đề lợi ích giữa các bên, họp trao đổi lại để thống nhất', 'Chưa bắt đầu', '2025-12-09', '2025-12-09', '2025-12-08 03:34:04'),
-(442, 193, 'Chuẩn bị lại Bộ Hồ sơ định danh', 'Gửi lần 1: không được duyệt bị lỗi hồ sơ, chuẩn bị lại hồ sơ gửi lần 2 (bổ sung thêm giấy tờ - bản sao công chứng PDKKD, bản sao công chứng CCCD, tài liệu về dashboard)', 'Đang thực hiện', '2025-12-05', '2025-12-30', '2025-12-08 03:36:09'),
-(443, 476, 'Gửi file Báo cáo cuộc họp T2, 01/12/2025', '', 'Đã hoàn thành', '2025-12-08', '2025-12-08', '2025-12-08 06:44:36'),
-(444, 255, 'Báo cáo KPI Dashboard Agribank', 'Báo cáo', 'Đã hoàn thành', '2025-12-01', '2025-12-09', '2025-12-09 02:03:16'),
-(445, 478, 'Thiết kế giao diện frontend', 'Thiết kế giao diện frontend', 'Đã hoàn thành', '2025-12-10', '2025-12-10', '2025-12-10 01:33:38'),
-(446, 467, 'Thiết kế giao diện frontend', 'Thiết kế giao diện frontend', 'Đã hoàn thành', '2025-12-10', '2025-12-11', '2025-12-10 01:37:48'),
-(447, 479, 'bước 1', '', 'Đã hoàn thành', '2025-12-08', '2025-12-19', '2025-12-10 01:41:26'),
-(448, 480, 'Hoàn thành', '', 'Đã hoàn thành', '2025-12-08', '2025-12-12', '2025-12-10 01:43:52'),
-(449, 481, 'bước 1', '', 'Đã hoàn thành', '2025-12-08', '2025-12-26', '2025-12-10 01:45:21'),
-(450, 462, 'Báo cáo sếp Cường', 'Sếp Âu trao đổi với sếp Cường về việc tuyển dụng nhân sự vị trí GĐKD ', 'Đang thực hiện', '2025-12-08', '2025-12-30', '2025-12-10 02:01:02'),
-(451, 482, 'bước 1', '', 'Đã hoàn thành', '2025-12-11', '2025-12-19', '2025-12-11 03:21:12'),
-(452, 483, 'bước 1', '', 'Đã hoàn thành', '2025-12-11', '2025-12-19', '2025-12-11 03:21:41'),
-(453, 485, 'Khảo sát', '', 'Đã hoàn thành', '2025-12-11', '2025-12-11', '2025-12-12 04:43:26'),
-(454, 486, 'Trao đổi kỹ thuật, đưa thời gian cụ thể proposal ', '', 'Đã hoàn thành', '2025-12-12', '2025-12-14', '2025-12-12 04:45:07'),
-(455, 486, 'Anh Trung trao đổi với a Hùng về phương án hợp tác SuperPort ', 'Khi có proposal, anh Trung trao đổi với anh Hùng về phương án hợp tác và gửi Proposal cho a Giang - Super Port', 'Đã hoàn thành', '2025-12-12', '2025-12-16', '2025-12-12 04:47:59'),
-(456, 488, 'Lên POC và uload lên hệ thống', '', 'Đã hoàn thành', '2025-12-12', '2025-12-14', '2025-12-12 09:30:24'),
-(457, 489, 'Hoàn thành', 'Hoàn thành', 'Đã hoàn thành', '2025-12-12', '2025-12-13', '2025-12-12 11:09:31'),
-(458, 320, 'Chỉnh sửa và bổ sung Hóa đơn đỏ', 'ICS xuất hóa đơn cho Cathay, sửa lại và bổ sung thêm nội dung - làm hóa đơn thay thế, biên bản điều chỉnh và đề nghị thanh toán <đã gửi kế toán duyệt>', 'Đã hoàn thành', '2025-12-15', '2025-12-17', '2025-12-16 04:11:40'),
-(459, 491, 'Hoàn thành', '', 'Đã hoàn thành', '2025-12-12', '2025-12-16', '2025-12-17 02:16:54'),
-(460, 484, 'bước 1', 'aqaq', 'Đã hoàn thành', '2025-12-17', '2025-12-27', '2025-12-17 07:20:21'),
-(461, 477, 'bước 1', 'nhận MOU bên gamania', 'Đã hoàn thành', '2025-12-15', '2025-12-17', '2025-12-18 04:01:50'),
-(462, 477, 'bước 2', 'đổi thành xong ngữ và thay Viyn Ai thành V Ai', 'Đã hoàn thành', '2025-12-15', '2025-12-17', '2025-12-18 04:02:21'),
-(463, 494, 'Gửi file Báo cáo cuộc họp T6, 19/12/2025', '', 'Đã hoàn thành', '2025-12-19', '2025-12-19', '2025-12-19 08:39:45'),
-(464, 498, 'Hoàn thành', '', 'Đã hoàn thành', '2025-12-22', '2025-12-22', '2025-12-22 03:12:02'),
-(465, 502, 'Thêm thư viện tài liệu', 'Thêm thư viện tài liệu', 'Đã hoàn thành', '2025-12-22', '2025-12-23', '2025-12-22 03:23:53'),
-(466, 503, 'Thêm song ngữ cho tin tức ', 'Thêm song ngữ cho tin tức ', 'Đã hoàn thành', '2025-12-22', '2025-12-24', '2025-12-22 03:25:14'),
-(467, 493, 'Trao đổi Với IRtech về phương án triển khai, các chính sách', '', 'Đang thực hiện', '2025-12-22', '2025-12-27', '2025-12-22 03:27:01'),
-(468, 496, 'bước 1', 'Viết nghiên cứu thực trạng an toàn thông tin tại các cơ sở y tế, nghiên cứu khả năng triển khai cái giải pháp', 'Đang thực hiện', '2025-12-22', '2025-12-26', '2025-12-22 07:43:29'),
-(469, 496, 'bước 2', 'Đi khảo sát thực tế an toàn thông tin, xem các cơ sở đang thực hiện việc phòng thủ như thế nào', 'Chưa bắt đầu', '2025-12-26', '2026-01-02', '2025-12-22 07:45:08'),
-(470, 497, 'bước 1', 'viết PoC', 'Đang thực hiện', '2025-12-22', '2025-12-26', '2025-12-22 07:45:49'),
-(471, 499, 'bước 1', '', 'Đã hoàn thành', '2025-12-23', '2025-12-26', '2025-12-23 02:08:14'),
-(472, 500, 'bước 1', '', 'Đã hoàn thành', '2025-12-22', '2025-12-26', '2025-12-23 02:08:43'),
-(473, 501, 'bước 1', '', 'Đang thực hiện', '2025-12-22', '2025-12-28', '2025-12-23 02:10:24'),
-(474, 505, 'bước 1', '', 'Đang thực hiện', '2025-12-22', '2026-01-11', '2025-12-23 02:10:50'),
-(475, 506, 'Hoàn thành sổ tay', '', 'Đã hoàn thành', '2025-12-23', '2025-12-23', '2025-12-23 02:39:32'),
-(476, 507, '1', '1', 'Đang thực hiện', '2025-12-29', '2025-12-30', '2025-12-29 03:00:44');
+INSERT INTO `cong_viec_quy_trinh` (`id`, `cong_viec_id`, `ten_buoc`, `mo_ta`, `trang_thai`, `ngay_bat_dau`, `ngay_ket_thuc`, `ngay_tao`, `tai_lieu_link`, `tai_lieu_file`) VALUES
+(161, 199, 'Báo cáo', 'Báo cáo', 'Đã hoàn thành', '2025-10-02', '2025-10-04', '2025-10-02 08:42:15', NULL, NULL),
+(162, 198, 'bước 1', 'Báo cáo', 'Đã hoàn thành', '2025-10-02', '2025-10-04', '2025-10-02 08:42:47', NULL, NULL),
+(163, 197, 'bước 1', 'Báo cáo', 'Đã hoàn thành', '2025-10-02', '2025-10-04', '2025-10-02 08:43:08', NULL, NULL),
+(164, 195, 'bước 1', 'Báo cáo', 'Đã hoàn thành', '2025-10-02', '2025-10-04', '2025-10-02 08:43:20', NULL, NULL),
+(165, 196, 'bước 1', 'Báo cáo', 'Đã hoàn thành', '2025-10-02', '2025-10-04', '2025-10-02 08:45:36', NULL, NULL),
+(167, 202, 'Nghiên cứu các sản phẩm Hyper-G chuyển giao cho ICS ', 'Nghiên cứu các sản phẩm Hyper-G chuyển giao cho ICS ', 'Đã hoàn thành', '2025-10-01', '2025-10-06', '2025-10-07 01:46:03', NULL, NULL),
+(168, 202, 'Nghiên cứu các sản phẩm Hyper-G chuyển giao cho ICS ', 'Nghiên cứu các sản phẩm Hyper-G chuyển giao cho ICS ', 'Đã hoàn thành', '2025-10-01', '2025-10-06', '2025-10-07 01:46:04', NULL, NULL),
+(169, 202, 'Tổ chức họp trực tuyến với Hyper-G', '1. Thảo luận về tích hợp bán hàng Oracle Cloud2. Thảo luận về Smart Dashboard3. Thảo luận về việc triển khai và bán hàng AI SOC4. Thảo luận về việc triển khai, xây dựng thương hiệu và bán hàng sản phẩm DLP5. Thảo luận về dự án TKV+Cysteak Oracle Clould 6. Chia sẻ và thảo luận về hệ thống CRM quản lý cơ hội kinh doanh Salesforce.', 'Đã hoàn thành', '2025-10-07', '2025-10-07', '2025-10-07 01:47:32', NULL, NULL),
+(170, 201, 'Giao việc cho phúc nghiên cứu viết sổ tay ATTT', 'Giao việc cho phúc nghiên cứu viết sổ tay ATTT', 'Đã hoàn thành', '2025-10-06', '2025-10-06', '2025-10-07 01:49:14', NULL, NULL),
+(171, 205, 'Phân tích yêu cầu của UBND TP Đà Nẵng', 'Phân tích yêu cầu của UBND TP Đà Nẵng CV 381.BC.SKHCN', 'Đã hoàn thành', '2025-10-03', '2025-10-06', '2025-10-07 01:50:38', NULL, NULL),
+(172, 201, 'Sổ tay ATTT', 'Đã hoàn thiện sổ tay', 'Đã hoàn thành', '2025-10-05', '2025-10-07', '2025-10-08 01:35:20', NULL, NULL),
+(173, 206, 'bước 1', 'anh Hanh bàn giao lại cho các bạn kĩ thuật', 'Đã hoàn thành', '2025-10-17', '2025-10-20', '2025-10-17 04:12:32', NULL, NULL),
+(174, 206, 'bước 2', 'nghiên cứu và báo cáo Mr Âu', 'Đã hoàn thành', '2025-10-17', '2025-10-20', '2025-10-17 04:12:55', NULL, NULL),
+(175, 207, 'bước 1', 'lên file đào tạo cụ thể', 'Đã hoàn thành', '2025-10-17', '2025-10-20', '2025-10-17 04:15:06', NULL, NULL),
+(176, 207, 'bước 2', 'Đào tạo và kiểm tra, báo cáo lại kết quả vào thứ 2 20/10/2025', 'Đã hoàn thành', '2025-10-17', '2025-10-20', '2025-10-17 04:15:53', NULL, NULL),
+(179, 209, 'bước 1', 'làm việc với bên Hyper G', 'Đã hoàn thành', '2025-10-17', '2025-10-18', '2025-10-17 04:23:26', NULL, NULL),
+(180, 209, 'bước 2', 'Mr Hanh bàn giao cho 2 bạn kĩ thuật nắm và triển khai', 'Đã hoàn thành', '2025-10-17', '2025-10-18', '2025-10-17 04:23:51', NULL, NULL),
+(181, 210, 'bước 1', 'Trao đổi với hyper G', 'Đã hoàn thành', '2025-10-17', '2025-10-20', '2025-10-17 04:26:15', NULL, NULL),
+(182, 210, 'bước 2', 'tài liệu bên họ có, hướng dẫn để bên mình nghiên cứu cụ thể, đặc biệt TIM và Renobit', 'Đã hoàn thành', '2025-10-17', '2025-10-20', '2025-10-17 04:27:01', NULL, NULL),
+(183, 174, 'Hoàn thành', 'Hoàn thành', 'Đã hoàn thành', '2025-11-14', '2025-11-14', '2025-11-14 02:28:11', NULL, NULL),
+(184, 175, 'Hoàn thành', 'Hoàn thành', 'Đã hoàn thành', '2025-11-14', '2025-11-14', '2025-11-14 02:30:53', NULL, NULL),
+(185, 176, 'Hoàn thành', 'Hoàn thành', 'Đã hoàn thành', '2025-11-14', '2025-11-14', '2025-11-14 02:31:15', NULL, NULL),
+(186, 177, 'Hoàn thành', 'Hoàn thành', 'Chưa bắt đầu', '2025-11-14', '2025-11-14', '2025-11-14 02:31:32', NULL, NULL),
+(187, 211, 'Hoàn thành', 'Hoàn thành', 'Đã hoàn thành', '2025-11-14', '2025-11-14', '2025-11-14 02:32:01', NULL, NULL),
+(189, 181, 'Hoàn thành', 'Hoàn thành', 'Đã hoàn thành', '2025-11-14', '2025-11-14', '2025-11-14 02:34:26', NULL, NULL),
+(190, 182, 'Hoàn thành', 'Hoàn thành', 'Đã hoàn thành', '2025-11-14', '2025-11-14', '2025-11-14 02:34:57', NULL, NULL),
+(191, 183, 'Hoàn thành', 'Hoàn thành', 'Chưa bắt đầu', '2025-11-14', '2025-11-14', '2025-11-14 02:35:28', NULL, NULL),
+(192, 184, 'Hoàn thành', 'Hoàn thành', 'Chưa bắt đầu', '2025-11-14', '2025-11-14', '2025-11-14 02:35:43', NULL, NULL),
+(193, 185, 'Hoàn thành', 'Hoàn thành', 'Chưa bắt đầu', '2025-11-14', '2025-11-14', '2025-11-14 02:35:58', NULL, NULL),
+(194, 186, 'Hoàn thành', 'Hoàn thành', 'Đã hoàn thành', '2025-11-14', '2025-11-14', '2025-11-14 02:36:15', NULL, NULL),
+(195, 187, 'Hoàn thành', 'Hoàn thành', 'Đã hoàn thành', '2025-11-14', '2025-11-14', '2025-11-14 02:36:40', NULL, NULL),
+(196, 188, 'Hoàn thành', 'Hoàn thành', 'Đã hoàn thành', '2025-11-14', '2025-11-14', '2025-11-14 02:36:58', NULL, NULL),
+(197, 190, 'Hoàn thành', 'Hoàn thành', 'Đã hoàn thành', '2025-11-14', '2025-11-14', '2025-11-14 02:37:18', NULL, NULL),
+(198, 192, 'Hoàn thành', 'Hoàn thành', 'Chưa bắt đầu', '2025-11-14', '2025-11-14', '2025-11-14 02:37:33', NULL, NULL),
+(199, 194, 'Hoàn thành', 'Hoàn thành', 'Chưa bắt đầu', '2025-11-14', '2025-11-14', '2025-11-14 02:37:52', NULL, NULL),
+(200, 214, 'bước 1', '', 'Đã hoàn thành', '2025-11-14', '2025-11-18', '2025-11-14 06:13:42', NULL, NULL),
+(201, 214, 'bước 2', '', 'Chưa bắt đầu', '2025-11-14', '2025-11-18', '2025-11-14 06:13:55', NULL, NULL),
+(202, 215, 'đang thực hiện', '', 'Đã hoàn thành', '2025-11-17', '2025-11-17', '2025-11-17 01:13:52', NULL, NULL),
+(203, 217, 'test', '', 'Đã hoàn thành', '2025-11-17', '2025-11-17', '2025-11-17 01:14:47', NULL, NULL),
+(212, 226, 'Hoàn thành', 'Hoàn thành', 'Đã hoàn thành', '2025-11-17', '2025-11-17', '2025-11-17 01:48:52', 'https://www.youtube.com/', ''),
+(213, 227, 'Hoàn thành', 'Hoàn thành', 'Đã hoàn thành', '2025-11-17', '2025-11-17', '2025-11-17 01:49:01', NULL, NULL),
+(214, 228, 'Hoàn thành', 'Hoàn thành', 'Đã hoàn thành', '2025-11-17', '2025-11-17', '2025-11-17 01:49:45', NULL, NULL),
+(215, 231, 'Hoàn thành', 'Hoàn thành', 'Đã hoàn thành', '2025-11-17', '2025-11-17', '2025-11-17 01:50:04', NULL, NULL),
+(216, 230, 'Hoàn thành', 'Hoàn thành', 'Đã hoàn thành', '2025-11-17', '2025-11-17', '2025-11-17 01:50:15', NULL, NULL),
+(217, 229, 'Hoàn thành', 'Hoàn thành', 'Đã hoàn thành', '2025-11-17', '2025-11-17', '2025-11-17 01:50:26', NULL, NULL),
+(218, 232, 'Hoàn thành', 'Hoàn thành', 'Đang thực hiện', '2025-11-17', '2025-11-17', '2025-11-17 01:50:52', NULL, NULL),
+(219, 233, 'Hoàn thành', 'Hoàn thành', 'Đã hoàn thành', '2025-11-17', '2025-11-17', '2025-11-17 01:51:02', NULL, NULL),
+(220, 234, 'Hoàn thành', 'Hoàn thành', 'Chưa bắt đầu', '2025-11-17', '2025-11-17', '2025-11-17 01:51:13', NULL, NULL),
+(221, 241, 'Hoàn thành', 'Hoàn thành', 'Đang thực hiện', '2025-11-17', '2025-11-17', '2025-11-17 01:51:41', NULL, NULL),
+(222, 240, 'Hoàn thành', 'Hoàn thành', 'Đã hoàn thành', '2025-11-17', '2025-11-17', '2025-11-17 01:51:51', NULL, NULL),
+(223, 239, 'Hoàn thành', 'Hoàn thành', 'Đã hoàn thành', '2025-11-17', '2025-11-17', '2025-11-17 01:52:03', NULL, NULL),
+(224, 238, 'Hoàn thành', 'Hoàn thành', 'Đã hoàn thành', '2025-11-17', '2025-11-17', '2025-11-17 01:52:18', NULL, NULL),
+(225, 237, 'Hoàn thành', 'Hoàn thành', 'Đã hoàn thành', '2025-11-17', '2025-11-17', '2025-11-17 01:52:34', NULL, NULL),
+(226, 236, 'Hoàn thành', 'Hoàn thành', 'Đã hoàn thành', '2025-11-17', '2025-11-17', '2025-11-17 01:52:45', NULL, NULL),
+(227, 235, 'Hoàn thành', 'Hoàn thành', 'Đã hoàn thành', '2025-11-17', '2025-11-17', '2025-11-17 01:52:57', NULL, NULL),
+(229, 193, 'HĐ  với Công ty Cổ phần Giải pháp Công nghệ Quốc tế', '', 'Đã hoàn thành', '2025-11-17', '2025-11-17', '2025-11-17 01:53:31', NULL, NULL),
+(230, 180, 'Hoàn thành', 'Hoàn thành', 'Đã hoàn thành', '2025-11-17', '2025-11-17', '2025-11-17 01:53:46', NULL, NULL),
+(231, 179, 'Hoàn thành', 'Hoàn thành', 'Chưa bắt đầu', '2025-11-17', '2025-11-17', '2025-11-17 01:54:01', NULL, NULL),
+(232, 178, 'Hoàn thành', 'Hoàn thành', 'Đã hoàn thành', '2025-11-17', '2025-11-17', '2025-11-17 01:54:14', NULL, NULL),
+(233, 246, 'Hẹn với TKV để xác nhận kế hoạch triển khai', '', 'Đang thực hiện', '2025-11-17', '2025-11-30', '2025-11-17 06:22:42', NULL, NULL),
+(234, 246, 'Ký hợp đồng', '', 'Đang thực hiện', '2025-12-01', '2025-12-31', '2025-11-17 06:24:04', NULL, NULL),
+(235, 245, 'đã xong', '', 'Đã hoàn thành', '2025-11-17', '2025-11-18', '2025-11-17 06:25:27', NULL, NULL),
+(236, 243, 'Hoàn thành', 'Hoàn thành', 'Đã hoàn thành', '2025-11-17', '2025-11-18', '2025-11-17 06:30:25', NULL, NULL),
+(237, 247, 'báo giá cho Mobifone', '', 'Đã hoàn thành', '2025-11-17', '2025-11-17', '2025-11-17 06:31:01', NULL, NULL),
+(238, 251, 'Đã trình hồ sơ xin ngân sách', '', 'Đã hoàn thành', '2025-11-17', '2025-11-17', '2025-11-17 06:42:05', NULL, NULL),
+(239, 251, 'Ký kết hợp đồng', '', 'Chưa bắt đầu', '2025-11-17', '2025-12-31', '2025-11-17 06:42:42', NULL, NULL),
+(240, 253, 'Gặp trao đổi', '', 'Đã hoàn thành', '2025-11-03', '2025-11-03', '2025-11-17 06:50:27', NULL, NULL),
+(241, 254, 'đã khảo sát xong, cần báo cáo', '', 'Đã hoàn thành', '2025-11-14', '2025-11-14', '2025-11-17 06:55:21', NULL, NULL),
+(242, 256, 'Dũng nắm công việc và hỗ trợ a Long khảo sát', 'Hiện tại đã liên hệ anh Đỉnh vào ngày 04.12.2025 nhưng anh Đỉnh vẫn đi công tác chưa về, anh Đỉnh sẽ thông báo lại khi trở về Sài Gòn', 'Đang thực hiện', '2025-11-17', '2025-11-30', '2025-11-17 07:00:03', NULL, NULL),
+(243, 257, 'Đã dùng thử phản hồi ok', '', 'Đã hoàn thành', '2025-11-17', '2025-11-17', '2025-11-17 07:11:35', NULL, NULL),
+(245, 260, 'Hỗ trợ kỹ thuật', '', 'Đã hoàn thành', '2025-11-17', '2025-11-24', '2025-11-17 08:41:56', NULL, NULL),
+(246, 242, 'Hoàn thành', 'Hoàn thành', 'Đã hoàn thành', '2025-11-18', '2025-11-18', '2025-11-18 07:53:25', NULL, NULL),
+(247, 266, 'Liên hệ trao đổi', 'Đã liên hệ nhưng a Đạt bận chưa trao đổi\nLiên hệ cho a Tuấn Anh nhưng bận chưa trao đổi \n', 'Đang thực hiện', '2025-11-20', '2025-11-29', '2025-11-20 04:33:13', NULL, NULL),
+(248, 270, 'Đợi lịch khảo sát từ CyStack', '', 'Đã hoàn thành', '2025-11-20', '2025-11-30', '2025-11-20 04:36:05', NULL, NULL),
+(249, 270, 'Khảo sát, báo cáo kết quả', '', 'Đã hoàn thành', '2025-11-30', '2025-12-31', '2025-11-20 04:36:42', NULL, NULL),
+(251, 265, 'Bước 1: Thực hiện', 'Bước 1: Thực hiện', 'Đang thực hiện', '2025-11-20', '2025-11-20', '2025-11-20 06:44:56', NULL, NULL),
+(252, 279, 'xác định hướng triển khai với a Tim', '', 'Đã hoàn thành', '2025-11-21', '2025-11-21', '2025-11-21 06:53:04', NULL, NULL),
+(253, 282, 'giới thiệu sản phẩm cho Vpbak', '', 'Đã hoàn thành', '2025-11-14', '2025-11-14', '2025-11-21 06:55:20', NULL, NULL),
+(254, 282, 'Giới thiệu sản phẩm cho chủ tịch Vpbank', 'đang xin lịch hẹn', 'Đã hoàn thành', '2025-11-14', '2025-12-30', '2025-11-21 06:55:54', NULL, NULL),
+(255, 283, 'gửi phương án đề xuất', '', 'Đã hoàn thành', '2025-11-03', '2025-11-03', '2025-11-21 06:58:21', NULL, NULL),
+(256, 283, 'đợi phản hồi', '', 'Đã hoàn thành', '2025-11-03', '2025-11-30', '2025-11-21 06:58:50', NULL, NULL),
+(257, 276, 'Bước 2: Thực hiện', 'đang làm', 'Đã hoàn thành', '2025-11-22', '2025-11-24', '2025-11-22 13:04:26', NULL, NULL),
+(258, 275, 'Hoàn thành', 'Hoàn thành', 'Đã hoàn thành', '2025-11-21', '2025-11-26', '2025-11-22 13:06:12', NULL, NULL),
+(259, 248, 'Hoàn thành', 'Hoàn thành', 'Đang thực hiện', '2025-11-22', '2025-11-30', '2025-11-22 13:07:46', NULL, NULL),
+(260, 249, 'Xin chính sách', 'đốc thốc lien tục mà họ hẹn lần tới', 'Đã hoàn thành', '2025-11-20', '2025-11-30', '2025-11-24 01:05:43', NULL, NULL),
+(261, 255, 'Trao đổi sơ bộ về bộ dữ liệu của hạ tầng IT', '', 'Đã hoàn thành', '2025-11-20', '2025-11-20', '2025-11-24 01:17:14', NULL, NULL),
+(262, 244, 'Đang làm việc với a Tim xin chính sách Netzero', '', 'Đã hoàn thành', '2025-11-20', '2025-11-28', '2025-11-24 01:36:37', NULL, NULL),
+(263, 180, 'Xin lịch họp với 3C', '', 'Đã hoàn thành', '2025-11-24', '2025-11-30', '2025-11-24 01:44:26', NULL, NULL),
+(264, 252, 'Cathay đang xin lịch họp với sếp', 'cuối năm sếp nhiều việc nên chưa sắp xếp được', 'Đã hoàn thành', '2025-11-24', '2025-11-30', '2025-11-24 01:46:19', NULL, NULL),
+(265, 285, 'Hoàn thành', '', 'Đã hoàn thành', '2025-11-24', '2025-11-24', '2025-11-24 01:53:32', NULL, NULL),
+(266, 178, 'Gửi chương trình đào tạo sang BIDV. Xin lịch đào tạo', '', 'Đã hoàn thành', '2025-11-24', '2025-11-30', '2025-11-24 01:56:31', NULL, NULL),
+(267, 261, 'Xin chính sách IRmind', '', 'Đã hoàn thành', '2025-11-24', '2025-11-30', '2025-11-24 02:56:31', NULL, NULL),
+(268, 271, 'Xin lịch khảo sát nhà máy', '', 'Đang thực hiện', '2025-11-24', '2025-12-15', '2025-11-24 03:13:58', NULL, NULL),
+(269, 280, 'Trao đổi với a TIm về các bước thực hiện', '', 'Đã hoàn thành', '2025-11-24', '2025-11-30', '2025-11-24 03:15:14', NULL, NULL),
+(270, 263, 'Điện a MInh sắp xếp lịch', '', 'Đã hoàn thành', '2025-11-24', '2025-11-30', '2025-11-24 03:16:02', NULL, NULL),
+(271, 281, 'Trao đổi với a TIm về các bước thực hiện', '', 'Đã hoàn thành', '2025-11-24', '2025-11-30', '2025-11-24 03:21:14', NULL, NULL),
+(272, 277, 'Giao diện landing page', '', 'Đã hoàn thành', '2025-11-24', '2025-12-26', '2025-11-24 07:10:36', NULL, NULL),
+(273, 284, 'Đợi quang anh hoàn thiện Fe rồi hỗ trợ backend', '', 'Đang thực hiện', '2025-11-24', '2025-12-26', '2025-11-24 07:13:39', NULL, NULL),
+(274, 278, 'Login và Regis ', '', 'Đã hoàn thành', '2025-11-22', '2025-11-25', '2025-11-24 07:14:36', NULL, NULL),
+(275, 277, 'Giao diện người dùng', '', 'Đã hoàn thành', '2025-11-21', '2025-11-23', '2025-11-24 07:48:36', NULL, NULL),
+(276, 277, 'Giao diện khóa học, chi tiết khóa học, search.', '', 'Đã hoàn thành', '2025-11-22', '2025-11-23', '2025-11-24 07:49:33', NULL, NULL),
+(277, 277, 'Giao diện admin, giảng viên và các giao diện chức năng.', '', 'Đã hoàn thành', '2025-11-23', '2025-11-27', '2025-11-24 07:50:03', NULL, NULL),
+(278, 277, 'Giao diện cài đặt và các chức năng user', '', 'Đã hoàn thành', '2025-11-23', '2025-11-27', '2025-11-24 07:50:47', NULL, NULL),
+(279, 278, 'CRUD khóa học', '', 'Chưa bắt đầu', '2025-12-01', '2025-12-03', '2025-11-24 07:52:45', NULL, NULL),
+(280, 319, 'bước 1', 'Làm lại slide giới thiệu công ty: ( 3slide giới thiệu công ty; 7slide giới thiệu sản phẩm )', 'Đã hoàn thành', '2025-11-24', '2025-11-25', '2025-11-25 06:56:27', NULL, NULL),
+(281, 319, 'bước 2', 'Gửi sản phẩm bằng tiếng anh: Dashboard và CSA', 'Đã hoàn thành', '2025-11-24', '2025-11-25', '2025-11-25 06:57:16', NULL, NULL),
+(282, 320, 'Báo giá Căn cứ chuyển đô', '', 'Đã hoàn thành', '2025-11-13', '2025-11-13', '2025-11-25 07:02:31', NULL, NULL),
+(283, 320, 'Đề xuất thanh toán cho HyperG (tiền đô)', '', 'Đã hoàn thành', '2025-11-15', '2025-11-15', '2025-11-25 07:03:15', NULL, NULL),
+(284, 320, 'Thanh toán cho HyperG (mua đô-gửi đô) ', 'Giải trình ngân hàng ', 'Đã hoàn thành', '2025-11-17', '2025-11-17', '2025-11-25 07:04:20', NULL, NULL),
+(285, 320, 'Đóng thuế FCT - Xuất hóa đơn cho Cathay', '', 'Đã hoàn thành', '2025-11-18', '2025-11-18', '2025-11-25 07:05:11', NULL, NULL),
+(286, 320, 'Cathay thanh toán cho ICS', 'đã duyệt hồ sơ, dự kiến thanh toán vào 15-16h chiều thứ sáu ngày 19/12/2025 (hoặc thứ hai)', 'Đã hoàn thành', '2025-11-18', '2025-11-30', '2025-11-25 07:06:09', NULL, NULL),
+(287, 321, 'Gửi HĐĐT', 'Sau quá trình sửa chữa lỗi hợp đồng, ICS gửi lại Đồ Sơn 1 bản HĐĐT và 2 biên bản (nghiệm thu và khối lượng côn việc)', 'Đã hoàn thành', '2025-11-18', '2025-11-20', '2025-11-25 07:12:07', NULL, NULL),
+(288, 321, 'Đồ Sơn thanh toán ', 'Kho Bạc duyệt ', 'Đã hoàn thành', '2025-11-21', '2025-11-25', '2025-11-25 07:13:04', NULL, NULL),
+(289, 321, 'ICS thanh toán phí chuyên gia đào tạo', 'Làm đề xuất thanh toán cho Seedoo 22.000.000 vnd', 'Đã hoàn thành', '2025-11-25', '2025-11-25', '2025-11-25 07:14:26', NULL, NULL),
+(290, 321, 'Tặng quà cho TT Chính trị Phường Đồ Sơn', 'Làm đề xuất thanh toán khoản chi đối ngoại - Scan gửi kế toán trình sếp duyệt\n', 'Đã hoàn thành', '2025-11-25', '2025-11-25', '2025-11-25 07:15:44', NULL, NULL),
+(291, 321, 'Sửa lại HĐ (dự kiến 29/11 sửa đổi )', 'bổ sung 8% thuế suất vào HĐ - sau khi tặng quà Đồ sơn ( đã làm ĐXTT và chi) sẽ sửa đôi (kế toán thông báo sau) => không sửa vì đã đẩy hồ sơ lên dịch vụ công ', 'Đã hoàn thành', '2025-11-25', '2025-12-25', '2025-11-25 07:16:49', NULL, NULL),
+(292, 322, 'Tạo form kế hoạch, thông tin khách hàng', 'Chuẩn bị form kế hoạch để A Trung bổ sung data doanh nghiệp và khách hàng vào', 'Đã hoàn thành', '2025-11-24', '2025-11-24', '2025-11-25 07:24:08', NULL, NULL),
+(293, 322, 'Lên Kế hoạch tặng quà', 'Phân nhóm khách hàng, phân tích nhu cầu (quà gì, phù hợp tài chính,..), tặng như nào,....', 'Chưa bắt đầu', '2025-11-24', '2025-11-30', '2025-11-25 07:25:25', NULL, NULL),
+(294, 322, 'Chuẩn bị Quà tặng', 'Tìm kiếm các đơn vị thiết kế và cung cấp quà tặng', 'Chưa bắt đầu', '2025-12-01', '2025-12-10', '2025-11-25 07:27:52', NULL, NULL),
+(295, 323, 'Lấy HĐ', 'Thứ Năm Trung lấy', 'Đã hoàn thành', '2025-11-25', '2025-11-27', '2025-11-25 07:32:42', NULL, NULL),
+(296, 323, 'Lưu trữ HĐ', 'Scan và lưu trữ HĐ', 'Đã hoàn thành', '2025-11-27', '2025-11-28', '2025-11-25 07:33:11', NULL, NULL),
+(297, 324, 'Đánh giá TTS', 'Tạo file đánh giá TTS và gửi cho các bạn phụ trách đánh giá', 'Đã hoàn thành', '2025-11-24', '2025-11-24', '2025-11-25 07:51:11', NULL, NULL),
+(298, 324, 'Đánh giá NV', 'Trích xuất dựa trên dự liệu dự án có trên phần mềm (Dashboard)', 'Đã hoàn thành', '2025-11-24', '2025-11-28', '2025-11-25 07:52:41', NULL, NULL),
+(299, 193, 'Chuẩn bị Bộ Hồ sơ định danh và đăng kí Voicebrandname', 'Đã gửi đi và chờ kết quả', 'Đã hoàn thành', '2025-10-30', '2025-11-30', '2025-11-25 07:56:27', NULL, NULL),
+(300, 326, 'Lên Quy định mới', 'Trình duyệt GĐNS và phát hành quy định', 'Đã hoàn thành', '2025-11-24', '2025-11-28', '2025-11-25 08:05:25', NULL, NULL),
+(301, 320, 'Cung cấp CO/CQ cho Cathay', 'Trao đổi với HyperG cung cấp CO/CQ cho appGuard (nhanh nhất có thể) để gửi cho Cathay hoàn tất hồ sơ thanh toán. Tài liệu gửi đi gồm: Công văn giải trình (đã gửi), Chứng nhận  của An ninh mạng singapore về appGuard (đã có), và thư tuyên bố uỷ quyền nhà phân phối (HyperG xin mất 1 tuần và cung cấp cho ICS)', 'Đã hoàn thành', '2025-11-26', '2025-12-26', '2025-11-26 04:01:44', NULL, NULL),
+(302, 323, 'Upload các file lên HRM', '', 'Đã hoàn thành', '2025-11-26', '2025-11-26', '2025-11-26 04:18:22', NULL, NULL),
+(303, 331, 'Hoàn thành', '', 'Đã hoàn thành', '2025-10-30', '2025-10-30', '2025-11-27 01:38:48', NULL, NULL),
+(304, 332, 'Hoàn thành', '', 'Đã hoàn thành', '2025-10-20', '2025-11-07', '2025-11-27 01:41:49', NULL, NULL),
+(305, 333, 'Hoàn thành', '', 'Đã hoàn thành', '2025-10-22', '2025-10-29', '2025-11-27 01:42:29', NULL, NULL),
+(306, 334, 'Hoàn thành', '', 'Đã hoàn thành', '2025-11-03', '2025-11-08', '2025-11-27 01:44:17', NULL, NULL),
+(307, 341, 'Thêm tài khoản cá nhân để test', '', 'Đã hoàn thành', '2025-10-27', '2025-10-27', '2025-11-27 01:45:13', NULL, NULL),
+(308, 341, 'Liên hệ Sepay để lấy form và hướng dẫn quy trình tích hợp tài khoản công ty', '', 'Đã hoàn thành', '2025-11-28', '2025-11-29', '2025-11-27 01:45:47', NULL, NULL),
+(309, 341, 'Gửi Form đã điền cho BIDV để bên họ làm quy trình ', '', 'Đang thực hiện', '2025-10-30', '2026-01-01', '2025-11-27 01:46:25', NULL, NULL),
+(310, 344, 'Nghiên cứu document SDK API', '', 'Đã hoàn thành', '2025-11-15', '2025-11-28', '2025-11-27 01:47:15', NULL, NULL),
+(311, 344, 'Setup môi trường và test API (Có thể bằng 1 project demo)', '', 'Đã hoàn thành', '2025-12-01', '2025-12-08', '2025-11-27 01:48:05', NULL, NULL),
+(312, 344, 'Tích hợp API vào backend website', '', 'Đang thực hiện', '2025-12-08', '2025-12-15', '2025-11-27 01:48:38', NULL, NULL),
+(313, 344, 'Bella test và báo bug + fix bug', '', 'Chưa bắt đầu', '2025-12-13', '2025-12-21', '2025-11-27 01:49:03', NULL, NULL),
+(314, 342, 'Hoàn thành', '', 'Đã hoàn thành', '2025-12-18', '2025-12-18', '2025-11-27 01:49:30', NULL, NULL),
+(315, 337, 'Hoàn thành', '', 'Đã hoàn thành', '2025-11-20', '2025-11-28', '2025-11-27 01:52:12', NULL, NULL),
+(316, 340, 'Hoàn thành', '', 'Đang thực hiện', '2025-11-27', '2025-11-30', '2025-11-27 01:52:35', NULL, NULL),
+(317, 339, 'Hoàn thành', '', 'Đã hoàn thành', '2025-11-27', '2025-12-01', '2025-11-27 01:58:19', NULL, NULL),
+(318, 325, 'Bắt đầu', 'Thu thập yêu cầu các phòng ban (Kỹ thuật, Kinh doanh,...) ', 'Đã hoàn thành', '2025-11-24', '2025-11-28', '2025-11-27 03:11:11', NULL, NULL),
+(319, 325, 'Tạo JD tuyển dụng', 'Tạo JD tuyển dụng cho các vị trí nhân sự, phòng Kinh doanh tuyển dụng (P.KD tự tuyển dụng/ gửi lại yêu cầu để tuyển dụng), phòng Kỹ thuật k cần', 'Đã hoàn thành', '2025-12-01', '2025-12-30', '2025-11-27 03:12:08', NULL, NULL),
+(320, 326, 'Phát hành ', 'Triển khai quy định mới', 'Chưa bắt đầu', '2025-12-01', '2025-12-01', '2025-11-27 03:38:11', NULL, NULL),
+(321, 262, 'bước 1', '', 'Đã hoàn thành', '2025-11-24', '2025-11-26', '2025-11-27 06:39:18', NULL, NULL),
+(322, 262, 'Báo cáo tiến độ Khảo sát Medlac', '', 'Đã hoàn thành', '2025-11-26', '2025-11-28', '2025-11-27 06:40:45', NULL, NULL),
+(323, 277, 'Giao diện tạo khóa học, chỉnh sửa khóa học, quản lý danh mục', '', 'Đã hoàn thành', '2025-11-25', '2025-11-26', '2025-11-27 06:52:41', NULL, NULL),
+(324, 346, 'bước 1', '', 'Đã hoàn thành', '2025-11-18', '2025-11-28', '2025-11-27 15:18:17', NULL, NULL),
+(325, 347, 'bước 1', '', 'Chưa bắt đầu', '2025-11-17', '2025-11-28', '2025-11-27 15:19:30', NULL, NULL),
+(326, 348, 'bước 1', '', 'Đã hoàn thành', '2025-11-17', '2025-11-28', '2025-11-27 15:21:17', NULL, NULL),
+(327, 349, 'bước 1', '', 'Đã hoàn thành', '2025-11-18', '2025-11-29', '2025-11-27 15:24:06', NULL, NULL),
+(328, 352, 'bước 1', '', 'Đã hoàn thành', '2025-11-17', '2025-11-28', '2025-11-27 15:27:09', NULL, NULL),
+(329, 244, 'Làm việc với phòng văn hóa xã hội', '', 'Đã hoàn thành', '2025-11-27', '2025-11-27', '2025-11-28 01:11:07', NULL, NULL),
+(330, 279, 'Lên phương án triển khai cho Hòa Bình về Netzero', 'Dương dựa theo tài liệu a Trung cung cấp để lên phương án sơ bộ.', 'Đã hoàn thành', '2025-11-28', '2025-11-30', '2025-11-28 01:14:29', NULL, NULL),
+(331, 280, 'Lên phương án triển khai cho Lương Sơn về Netzero', 'Tương tự như Hòa Bình, Dương lên phương án ban đầu', 'Đã hoàn thành', '2025-11-28', '2025-12-02', '2025-11-28 01:16:53', NULL, NULL),
+(332, 354, 'bước 1', '', 'Đã hoàn thành', '2025-11-17', '2025-11-29', '2025-11-28 01:31:00', NULL, NULL),
+(333, 355, 'bước 1', '', 'Đã hoàn thành', '2025-11-25', '2025-11-29', '2025-11-28 01:34:49', NULL, NULL),
+(334, 356, 'bước 1', '', 'Đã hoàn thành', '2025-11-24', '2025-11-30', '2025-11-28 01:35:04', NULL, NULL),
+(335, 357, 'bước 1', '', 'Đã hoàn thành', '2025-11-28', '2025-11-29', '2025-11-28 01:35:52', NULL, NULL),
+(336, 358, 'bước 1', '', 'Chưa bắt đầu', '2025-11-27', '2026-03-28', '2025-11-28 01:39:54', 'https://www.youtube.com/', 'HƯỚNG DẪN LẤY PASS GIẢI NÉN (1).docx'),
+(337, 360, 'bước 1', '', 'Đang thực hiện', '2025-11-28', '2026-03-28', '2025-11-28 01:40:32', 'https://www.youtube.com/', 'automation dich_1767772008387.pdf'),
+(338, 362, 'Bước 1', 'HyperG cấp API', 'Đã hoàn thành', '2025-11-28', '2026-01-28', '2025-11-28 01:42:39', NULL, NULL),
+(339, 363, 'bước 1', '', 'Đã hoàn thành', '2025-11-25', '2025-11-29', '2025-11-28 01:44:37', NULL, NULL),
+(340, 364, 'bước 1', '', 'Đã hoàn thành', '2025-11-26', '2025-11-30', '2025-11-28 01:45:24', NULL, NULL),
+(342, 366, 'bước 1', '', 'Đã hoàn thành', '2025-11-28', '2025-12-05', '2025-11-28 01:47:29', NULL, NULL),
+(343, 367, 'bước 1', '', 'Đã hoàn thành', '2025-11-28', '2025-12-28', '2025-11-28 01:49:44', NULL, NULL),
+(344, 368, 'bước 1', '2', 'Đã hoàn thành', '2025-11-27', '2025-12-28', '2025-11-28 01:52:26', NULL, NULL),
+(345, 362, 'Bước 2', 'Tích hợp API vào web VietguardScan. Cần viết backend wrapper cho API này', 'Đã hoàn thành', '2025-11-25', '2025-11-30', '2025-11-28 01:56:06', NULL, NULL),
+(346, 369, 'bước 1', '', 'Đã hoàn thành', '2025-11-28', '2026-02-12', '2025-11-28 01:56:44', NULL, NULL),
+(347, 338, 'Hoàn thành', '', 'Đang thực hiện', '2025-11-27', '2025-12-06', '2025-11-28 01:57:26', NULL, NULL),
+(348, 370, 'bước 1', '', 'Đã hoàn thành', '2025-11-28', '2025-12-26', '2025-11-28 01:57:42', NULL, NULL),
+(349, 335, 'Hoàn thành', '', 'Đang thực hiện', '2025-11-27', '2025-12-03', '2025-11-28 01:58:17', NULL, NULL),
+(350, 336, 'Hoàn thành', '', 'Đang thực hiện', '2025-11-27', '2025-12-04', '2025-11-28 01:59:01', NULL, NULL),
+(351, 371, 'bước 1', '', 'Đã hoàn thành', '2025-11-28', '2025-11-30', '2025-11-28 02:00:38', NULL, NULL),
+(352, 372, 'bước 1', '', 'Đã hoàn thành', '2025-11-27', '2025-11-30', '2025-11-28 02:01:35', NULL, NULL),
+(353, 271, 'liên hệ xin cuộc hẹn', 'A ĐỈnh báo sẽ liên hệ trước 1 tuần', 'Đã hoàn thành', '2025-11-28', '2025-11-28', '2025-11-28 02:07:35', NULL, NULL),
+(354, 255, 'Họp với Bitcare về lấy dữ liệu', 'Hẹn gặp onl vào 28/11', 'Đã hoàn thành', '2025-11-27', '2025-11-28', '2025-11-28 02:09:28', NULL, NULL),
+(355, 374, 'Làm file tổng hợp tất cả các công ty và lên phương án sơ bộ', 'Dũng đã hoàn thiện', 'Đã hoàn thành', '2025-11-28', '2025-11-28', '2025-11-28 02:14:31', NULL, NULL),
+(356, 374, 'Lên phương án từng đơn vị', '', 'Đã hoàn thành', '2025-11-28', '2025-11-30', '2025-11-28 02:15:01', NULL, NULL),
+(358, 375, 'Nhờ Hieesuu liên hệ', '', 'Đã hoàn thành', '2025-11-24', '2025-11-28', '2025-11-28 02:24:50', NULL, NULL),
+(359, 375, 'Lên lịch hẹn', 'Dũng liên hệ a Hiếu để xin lịch hẹn', 'Đã hoàn thành', '2025-11-28', '2025-12-12', '2025-11-28 02:25:12', NULL, NULL),
+(360, 376, 'Tạo file thông tin', '', 'Đã hoàn thành', '2025-11-28', '2025-11-28', '2025-11-28 09:02:15', NULL, NULL),
+(365, 373, 'Tìm hiểu EPS', '', 'Đã hoàn thành', '2025-11-27', '2025-12-28', '2025-12-01 01:18:26', NULL, NULL),
+(366, 325, 'Tuyển dụng', 'Đăng bài tuyển dụng lên các hội nhóm\n1 ứng viên Phenika phỏng vấn vào 8/12', 'Đang thực hiện', '2025-12-01', '2025-12-30', '2025-12-01 01:39:43', NULL, NULL),
+(368, 382, '1', '', 'Đã hoàn thành', '2025-12-01', '2025-12-30', '2025-12-01 02:01:08', NULL, NULL),
+(369, 383, '1', '', 'Đã hoàn thành', '2025-12-01', '2025-12-02', '2025-12-01 02:02:02', NULL, NULL),
+(370, 377, 'bước 1', 'Đã yêu cầu bên đối tác soạn và gửi tài liệu', 'Chưa bắt đầu', '2025-12-01', '2025-12-18', '2025-12-01 02:02:48', NULL, NULL),
+(371, 384, '1', '', 'Chưa bắt đầu', '2025-12-01', '2025-12-02', '2025-12-01 02:16:28', NULL, NULL),
+(372, 351, 'bước 1', '', 'Đang thực hiện', '2025-12-01', '2025-12-12', '2025-12-01 02:17:56', NULL, NULL),
+(373, 190, 'Báo cáo các bước tiếp theo của các đối tác với G- pay', '', 'Đang thực hiện', '2025-12-01', '2025-12-02', '2025-12-01 02:18:34', NULL, NULL),
+(374, 350, 'bước 1', '', 'Đang thực hiện', '2025-12-01', '2025-12-12', '2025-12-01 02:18:44', NULL, NULL),
+(375, 386, 'bước 1', '1', 'Đã hoàn thành', '2025-12-01', '2025-12-01', '2025-12-01 02:19:51', NULL, NULL),
+(376, 387, '1', '', 'Chưa bắt đầu', '2025-12-01', '2025-12-02', '2025-12-01 02:20:14', NULL, NULL),
+(378, 389, '1', '', 'Đã hoàn thành', '2025-12-01', '2025-12-16', '2025-12-01 02:28:48', NULL, NULL),
+(379, 385, 'Tìm hiểu hướng dẫn sử dụng AI SOC', '', 'Đã hoàn thành', '2025-12-01', '2025-12-07', '2025-12-01 02:58:49', NULL, NULL),
+(381, 457, 'Bảo lên nội dung đào tạo nhận thức ANM', 'Đào tạo cơ bản cho NV văn phòng, hiểu được tầm quan trọng của ANM và các lưu ý khi upload dữ liệu lên hệ thống khi sử dụng AI. Gửi slide đào tạo đầu ngày 3', 'Đã hoàn thành', '2025-12-01', '2025-12-03', '2025-12-01 06:27:29', NULL, NULL),
+(382, 457, 'Hợp đồng đào tạo', 'Chú ý các hợp đồng BIDV và của SEEDOO, cái nào xong up lên đây', 'Đã hoàn thành', '2025-12-01', '2025-12-06', '2025-12-01 06:28:37', NULL, NULL),
+(383, 457, 'Đảm bảo kỹ thuật hôm đào tạo', 'chuẩn bị và kiểm hệ thống mạng, router trước và trong khi đào tạo', 'Đã hoàn thành', '2025-12-01', '2025-12-06', '2025-12-01 06:30:17', NULL, NULL),
+(384, 457, 'Chứng nhận và in ấn', 'Phụ trách in chứng nhận và các tài liệu liên quan', 'Đã hoàn thành', '2025-12-01', '2025-12-06', '2025-12-01 06:47:32', NULL, NULL),
+(385, 454, 'HyperG xuất hóa đơn cho ICS', '05/12 HyperG xuất hóa ơn và bill cho ICS \n', 'Đang thực hiện', '2025-12-01', '2025-12-05', '2025-12-01 07:38:31', NULL, NULL),
+(386, 454, 'ICS xuất hóa đơn cho Cystack', '', 'Chưa bắt đầu', '2025-12-05', '2025-12-07', '2025-12-01 07:39:04', NULL, NULL),
+(387, 454, 'Cystack thanh toán', '', 'Chưa bắt đầu', '2025-12-07', '2026-01-07', '2025-12-01 07:41:34', NULL, NULL),
+(388, 388, 'Gửi file Báo cáo cuộc họp T2, 01/12/2025', '', 'Đã hoàn thành', '2025-12-01', '2025-12-01', '2025-12-01 08:20:05', NULL, NULL),
+(389, 455, 'bước 1', 'Tìm các thông tư - nghị định: Thư viện pháp luật', 'Đã hoàn thành', '2025-12-01', '2025-12-02', '2025-12-01 08:23:25', NULL, NULL),
+(390, 455, 'bước 2', 'làm file word báo cáo Mr. ÂU', 'Đã hoàn thành', '2025-12-01', '2025-12-02', '2025-12-01 08:23:55', NULL, NULL),
+(391, 459, 'Gửi danh sách các Khóa học cần tạo Chứng chỉ', 'ICS-Learning Q.A đã bàn giao lại cho nhân sự nào, phòng kỹ thuật sắp xếp nhân sự tiếp quản và gửi lại ', 'Chưa bắt đầu', '2025-12-01', '2025-12-15', '2025-12-01 08:36:34', NULL, NULL),
+(392, 459, 'Tạo chứng chỉ', '', 'Chưa bắt đầu', '2025-12-15', '2025-12-31', '2025-12-01 08:37:20', NULL, NULL),
+(394, 460, 'Giải ngân đợt thanh toán lương T10', '', 'Đã hoàn thành', '2025-12-01', '2025-12-01', '2025-12-01 08:54:32', NULL, NULL),
+(395, 460, 'Làm bảng lương T11 và các khoản phí khác', 'Làm Bảng lương T11 cho nhân sự, gửi GĐNS và KT check,\nGửi file Thu chi tính đến ngày 11/12, Bảng hỗ trợ TTS, Phí vé xe tháng,...', 'Đã hoàn thành', '0025-12-02', '2025-12-02', '2025-12-01 08:55:14', NULL, NULL),
+(396, 456, 'bước 1', 'Tìm các TT-ND tại thư viện pháp luật', 'Đã hoàn thành', '2025-12-01', '2025-12-02', '2025-12-01 09:03:34', NULL, NULL),
+(397, 456, 'bước 2', 'Làm file báo cáo', 'Đã hoàn thành', '2025-12-01', '2025-12-02', '2025-12-01 09:03:55', NULL, NULL),
+(398, 267, 'CyStack đã ký hợp đồng với Medlac', '', 'Đã hoàn thành', '2025-12-01', '2025-12-01', '2025-12-01 09:49:00', NULL, NULL),
+(399, 378, 'b1: Tạo file thông tin', '', 'Đã hoàn thành', '2025-12-02', '2025-12-02', '2025-12-02 06:37:48', NULL, NULL),
+(400, 461, 'B1: Tìm ứng dụng / code phần gửi email hàng loạt', '', 'Đã hoàn thành', '2025-12-02', '2025-12-03', '2025-12-02 06:43:34', NULL, NULL),
+(401, 272, 'Hỗ trợ kỹ thuật cho 3C', '', 'Đang thực hiện', '2025-12-02', '2025-12-15', '2025-12-02 06:45:20', NULL, NULL),
+(402, 193, 'Nhận kết quả Định danh và thanh toán Dvu làm hotline', 'Kết quả định danh do Bộ Công an cấp phép từ 15-30 ngày', 'Chưa bắt đầu', '2025-11-30', '2025-12-31', '2025-12-02 08:21:29', NULL, NULL),
+(404, 462, 'Tìm kiến đơn vị tuyển dụng', 'Liên hệ các đơn vị tuyển dụng lớn để xin bảng giá đăng tin  lấy hết các chính sách tốt nhất sau đó đề xuất kinh phí để đăng bài/ Đã báo cáo, GĐNS đã duyệt, cần báo cáo sếp Cường để triển khai tiếp ( duyệt chi gói/... )', 'Đang thực hiện', '2025-12-02', '2025-12-04', '2025-12-02 08:53:24', NULL, NULL),
+(405, 462, ' Tuyển dụng', 'Theo dõi và cập nhật tiến độ, thông tin người ứng tuyển', 'Chưa bắt đầu', '2025-12-08', '2026-01-02', '2025-12-02 08:55:04', NULL, NULL),
+(406, 438, 'bước 1', '', 'Đã hoàn thành', '2025-12-03', '2025-12-26', '2025-12-03 01:47:57', NULL, NULL),
+(407, 453, 'bước 1', '', 'Đã hoàn thành', '2025-12-03', '2025-12-05', '2025-12-03 01:49:58', NULL, NULL),
+(408, 463, 'HĐ thuê chuyên gia & HĐ ĐT BIDV', 'P KD và P Pháp chế gửi lại HĐ, xuất hóa đơn và biên bản nghiệm thu & thanh lý, lấy căn cứ làm đề xuất thanh toán cho các thầy ( upload file lên HRM)/ Các thầy SEEDOO đang chuẩn bị gửi trước HĐơn còn HĐồng gửi sau (12/12)/ Đã nhận đc hóa đơn, chưa nhận đc hợp đồng', 'Đã hoàn thành', '2025-12-03', '2025-12-12', '2025-12-03 04:12:19', NULL, NULL),
+(409, 463, 'Làm đề xuất thanh toán ', 'Chưa nhận được hóa đơn và hợp đồng thuê chuyên gia SEEDOOLàm theo mẫu đã gửi (sau khi nhận được thông tin từ HĐ)', 'Đã hoàn thành', '2025-12-04', '2025-12-16', '2025-12-03 04:15:44', NULL, NULL),
+(410, 258, 'Đã hoàn thành', '', 'Đã hoàn thành', '2025-11-28', '2025-11-28', '2025-12-05 00:46:52', NULL, NULL),
+(411, 452, 'bước 1', '', 'Đã hoàn thành', '2025-12-05', '2025-12-26', '2025-12-05 01:33:20', NULL, NULL),
+(412, 451, 'bước 1', '', 'Đang thực hiện', '2025-12-05', '2025-12-31', '2025-12-05 01:33:52', NULL, NULL),
+(413, 450, 'bước 1', '', 'Đã hoàn thành', '2025-12-05', '2025-12-31', '2025-12-05 01:34:19', NULL, NULL),
+(414, 449, 'bước 1', '', 'Đã hoàn thành', '2025-12-05', '2025-12-31', '2025-12-05 01:34:55', NULL, NULL),
+(415, 448, 'bước 1', '', 'Đã hoàn thành', '2025-12-05', '2025-12-30', '2025-12-05 01:35:22', NULL, NULL),
+(416, 447, 'bước 1', '', 'Đã hoàn thành', '2025-12-05', '2025-12-25', '2025-12-05 01:35:42', NULL, NULL),
+(417, 446, 'bước 1', '', 'Đã hoàn thành', '2025-11-06', '2025-12-31', '2025-12-05 01:36:17', NULL, NULL),
+(418, 445, 'bước 1', '', 'Đã hoàn thành', '2025-11-06', '2025-12-25', '2025-12-05 01:37:00', NULL, NULL),
+(419, 444, 'bước 1', '', 'Đã hoàn thành', '2025-10-22', '2025-12-31', '2025-12-05 01:38:37', NULL, NULL),
+(420, 443, 'bước 1', '', 'Đã hoàn thành', '2025-12-05', '2025-12-31', '2025-12-05 01:38:58', NULL, NULL),
+(421, 442, 'bước 1', '', 'Đã hoàn thành', '2025-10-24', '2026-01-01', '2025-12-05 01:39:35', NULL, NULL),
+(422, 441, 'bước 1', '', 'Đã hoàn thành', '2025-10-16', '2025-12-24', '2025-12-05 01:39:58', NULL, NULL),
+(423, 440, 'bước 1', '', 'Đã hoàn thành', '2025-10-31', '2025-12-31', '2025-12-05 01:40:19', NULL, NULL),
+(424, 439, 'bước 1', '', 'Đã hoàn thành', '2025-10-23', '2025-12-18', '2025-12-05 01:40:41', NULL, NULL),
+(425, 458, 'bước 1', 'nghiên cliệuài liệu', 'Đã hoàn thành', '2025-12-01', '2025-12-05', '2025-12-05 06:42:04', NULL, NULL),
+(426, 458, 'bước 2', 'tạo các file theo đề án để điền thông tin', 'Đã hoàn thành', '2025-12-01', '2025-12-05', '2025-12-05 06:42:31', NULL, NULL),
+(428, 467, 'Lên phương án thiết kế ', '', 'Đã hoàn thành', '2025-12-08', '2025-12-08', '2025-12-07 01:50:49', NULL, NULL),
+(429, 467, 'Bản demo', '', 'Đã hoàn thành', '2025-12-08', '2025-12-10', '2025-12-07 01:51:14', NULL, NULL),
+(430, 467, 'Bản hoàn chỉnh ', '', 'Đã hoàn thành', '2025-12-10', '2025-12-15', '2025-12-07 01:51:47', NULL, NULL),
+(431, 464, 'Hoàn thành', '', 'Đã hoàn thành', '2025-12-04', '2025-12-04', '2025-12-08 01:56:10', NULL, NULL),
+(432, 468, 'Dũng, Nam khảo sát hệ thống POS của Vietlott và chụp hình báo cáo', '', 'Đã hoàn thành', '2025-12-08', '2025-12-09', '2025-12-08 01:58:53', NULL, NULL),
+(433, 468, 'Lên phương án triển khai phần mềm quản lý tài sản', '', 'Đã hoàn thành', '2025-12-09', '2025-12-12', '2025-12-08 01:59:25', NULL, NULL),
+(434, 469, 'Sửa lại web ', '', 'Đã hoàn thành', '2025-11-21', '2025-11-21', '2025-12-08 02:18:43', NULL, NULL),
+(435, 470, 'đã hoàn thành', '', 'Đã hoàn thành', '2025-11-25', '2025-11-25', '2025-12-08 02:19:19', NULL, NULL),
+(436, 362, 'Bước 3', 'Đã viết xong wrapper API. Bước này kết nối với frontend. ', 'Đã hoàn thành', '2025-12-08', '2025-12-09', '2025-12-08 02:20:44', NULL, NULL),
+(437, 471, 'Đã hoàn thành', '', 'Đã hoàn thành', '2025-11-20', '2025-11-20', '2025-12-08 02:24:26', NULL, NULL),
+(438, 472, 'Đã hoàn thành', '', 'Đã hoàn thành', '2025-12-08', '2025-12-08', '2025-12-08 02:26:59', NULL, NULL),
+(439, 473, 'Bước 1', '', 'Đang thực hiện', '2025-12-08', '2025-12-12', '2025-12-08 02:41:08', NULL, NULL),
+(441, 454, 'Trao đổi lại giữa các bên', 'Phát sinh sự cố về vấn đề lợi ích giữa các bên, họp trao đổi lại để thống nhất', 'Chưa bắt đầu', '2025-12-09', '2025-12-09', '2025-12-08 03:34:04', NULL, NULL),
+(442, 193, 'Chuẩn bị lại Bộ Hồ sơ định danh', 'Gửi lần 1: không được duyệt bị lỗi hồ sơ, chuẩn bị lại hồ sơ gửi lần 2 (bổ sung thêm giấy tờ - bản sao công chứng PDKKD, bản sao công chứng CCCD, tài liệu về dashboard)', 'Đang thực hiện', '2025-12-05', '2025-12-30', '2025-12-08 03:36:09', NULL, NULL),
+(443, 476, 'Gửi file Báo cáo cuộc họp T2, 01/12/2025', '', 'Đã hoàn thành', '2025-12-08', '2025-12-08', '2025-12-08 06:44:36', NULL, NULL),
+(444, 255, 'Báo cáo KPI Dashboard Agribank', 'Báo cáo', 'Đã hoàn thành', '2025-12-01', '2025-12-09', '2025-12-09 02:03:16', NULL, NULL),
+(445, 478, 'Thiết kế giao diện frontend', 'Thiết kế giao diện frontend', 'Đã hoàn thành', '2025-12-10', '2025-12-10', '2025-12-10 01:33:38', NULL, NULL),
+(446, 467, 'Thiết kế giao diện frontend', 'Thiết kế giao diện frontend', 'Đã hoàn thành', '2025-12-10', '2025-12-11', '2025-12-10 01:37:48', NULL, NULL),
+(447, 479, 'bước 1', '', 'Đã hoàn thành', '2025-12-08', '2025-12-19', '2025-12-10 01:41:26', NULL, NULL),
+(448, 480, 'Hoàn thành', '', 'Đã hoàn thành', '2025-12-08', '2025-12-12', '2025-12-10 01:43:52', NULL, NULL),
+(449, 481, 'bước 1', '', 'Đã hoàn thành', '2025-12-08', '2025-12-26', '2025-12-10 01:45:21', NULL, NULL),
+(450, 462, 'Báo cáo sếp Cường', 'Sếp Âu trao đổi với sếp Cường về việc tuyển dụng nhân sự vị trí GĐKD ', 'Đang thực hiện', '2025-12-08', '2025-12-30', '2025-12-10 02:01:02', NULL, NULL),
+(451, 482, 'bước 1', '', 'Đã hoàn thành', '2025-12-11', '2025-12-19', '2025-12-11 03:21:12', NULL, NULL),
+(452, 483, 'bước 1', '', 'Đã hoàn thành', '2025-12-11', '2025-12-19', '2025-12-11 03:21:41', NULL, NULL),
+(453, 485, 'Khảo sát', '', 'Đã hoàn thành', '2025-12-11', '2025-12-11', '2025-12-12 04:43:26', NULL, NULL),
+(454, 486, 'Trao đổi kỹ thuật, đưa thời gian cụ thể proposal ', '', 'Đã hoàn thành', '2025-12-12', '2025-12-14', '2025-12-12 04:45:07', NULL, NULL),
+(455, 486, 'Anh Trung trao đổi với a Hùng về phương án hợp tác SuperPort ', 'Khi có proposal, anh Trung trao đổi với anh Hùng về phương án hợp tác và gửi Proposal cho a Giang - Super Port', 'Đã hoàn thành', '2025-12-12', '2025-12-16', '2025-12-12 04:47:59', NULL, NULL),
+(456, 488, 'Lên POC và uload lên hệ thống', '', 'Đã hoàn thành', '2025-12-12', '2025-12-14', '2025-12-12 09:30:24', NULL, NULL),
+(457, 489, 'Hoàn thành', 'Hoàn thành', 'Đã hoàn thành', '2025-12-12', '2025-12-13', '2025-12-12 11:09:31', NULL, NULL),
+(458, 320, 'Chỉnh sửa và bổ sung Hóa đơn đỏ', 'ICS xuất hóa đơn cho Cathay, sửa lại và bổ sung thêm nội dung - làm hóa đơn thay thế, biên bản điều chỉnh và đề nghị thanh toán <đã gửi kế toán duyệt>', 'Đã hoàn thành', '2025-12-15', '2025-12-17', '2025-12-16 04:11:40', NULL, NULL),
+(459, 491, 'Hoàn thành', '', 'Đã hoàn thành', '2025-12-12', '2025-12-16', '2025-12-17 02:16:54', NULL, NULL),
+(460, 484, 'bước 1', 'aqaq', 'Đã hoàn thành', '2025-12-17', '2025-12-27', '2025-12-17 07:20:21', NULL, NULL),
+(461, 477, 'bước 1', 'nhận MOU bên gamania', 'Đã hoàn thành', '2025-12-15', '2025-12-17', '2025-12-18 04:01:50', NULL, NULL),
+(462, 477, 'bước 2', 'đổi thành xong ngữ và thay Viyn Ai thành V Ai', 'Đã hoàn thành', '2025-12-15', '2025-12-17', '2025-12-18 04:02:21', NULL, NULL),
+(463, 494, 'Gửi file Báo cáo cuộc họp T6, 19/12/2025', '', 'Đã hoàn thành', '2025-12-19', '2025-12-19', '2025-12-19 08:39:45', NULL, NULL),
+(464, 498, 'Hoàn thành', '', 'Đã hoàn thành', '2025-12-22', '2025-12-22', '2025-12-22 03:12:02', NULL, NULL),
+(465, 502, 'Thêm thư viện tài liệu', 'Thêm thư viện tài liệu', 'Đã hoàn thành', '2025-12-22', '2025-12-23', '2025-12-22 03:23:53', NULL, NULL),
+(466, 503, 'Thêm song ngữ cho tin tức ', 'Thêm song ngữ cho tin tức ', 'Đã hoàn thành', '2025-12-22', '2025-12-24', '2025-12-22 03:25:14', NULL, NULL),
+(467, 493, 'Trao đổi Với IRtech về phương án triển khai, các chính sách', '', 'Đang thực hiện', '2025-12-22', '2025-12-27', '2025-12-22 03:27:01', NULL, NULL),
+(468, 496, 'bước 1', 'Viết nghiên cứu thực trạng an toàn thông tin tại các cơ sở y tế, nghiên cứu khả năng triển khai cái giải pháp', 'Đang thực hiện', '2025-12-22', '2025-12-26', '2025-12-22 07:43:29', NULL, NULL),
+(469, 496, 'bước 2', 'Đi khảo sát thực tế an toàn thông tin, xem các cơ sở đang thực hiện việc phòng thủ như thế nào', 'Chưa bắt đầu', '2025-12-26', '2026-01-02', '2025-12-22 07:45:08', NULL, NULL),
+(470, 497, 'bước 1', 'viết PoC', 'Đang thực hiện', '2025-12-22', '2025-12-26', '2025-12-22 07:45:49', NULL, NULL),
+(471, 499, 'bước 1', '', 'Đã hoàn thành', '2025-12-23', '2025-12-26', '2025-12-23 02:08:14', NULL, NULL),
+(472, 500, 'bước 1', '', 'Đã hoàn thành', '2025-12-22', '2025-12-26', '2025-12-23 02:08:43', NULL, NULL),
+(473, 501, 'bước 1', '', 'Đang thực hiện', '2025-12-22', '2025-12-28', '2025-12-23 02:10:24', NULL, NULL),
+(474, 505, 'bước 1', '', 'Đang thực hiện', '2025-12-22', '2026-01-11', '2025-12-23 02:10:50', NULL, NULL),
+(475, 506, 'Hoàn thành sổ tay', '', 'Đã hoàn thành', '2025-12-23', '2025-12-23', '2025-12-23 02:39:32', NULL, NULL),
+(476, 507, '1', '1', 'Đang thực hiện', '2025-12-29', '2025-12-30', '2025-12-29 03:00:44', NULL, NULL),
+(477, 492, '1', '1', 'Chưa bắt đầu', '2026-01-07', '2026-01-08', '2026-01-07 07:10:40', NULL, NULL),
+(478, 487, 'Hai bà trưng', 'Hai bà trưng', 'Đang thực hiện', '2026-01-07', '2026-01-08', '2026-01-07 07:17:12', 'https://www.youtube.com/', NULL);
 
 -- --------------------------------------------------------
 
@@ -2805,7 +2845,7 @@ INSERT INTO `cong_viec_tien_do` (`id`, `cong_viec_id`, `phan_tram`, `thoi_gian_c
 (117, 217, 100, '2025-12-12 06:24:10'),
 (119, 235, 100, '2025-11-24 03:30:53'),
 (124, 236, 100, '2025-11-17 03:43:43'),
-(128, 226, 100, '2025-11-27 08:35:18'),
+(128, 226, 100, '2026-01-07 08:45:45'),
 (129, 227, 100, '2025-11-17 07:47:14'),
 (130, 228, 100, '2025-11-17 07:46:47'),
 (131, 231, 100, '2025-11-17 07:55:20'),
@@ -2881,7 +2921,7 @@ INSERT INTO `cong_viec_tien_do` (`id`, `cong_viec_id`, `phan_tram`, `thoi_gian_c
 (206, 343, 0, '2025-12-08 02:18:43'),
 (207, 339, 100, '2025-11-28 01:59:39'),
 (208, 338, 0, '2025-11-28 01:57:26'),
-(209, 346, 100, '2025-11-27 15:18:17'),
+(209, 346, 100, '2026-01-07 08:18:27'),
 (210, 347, 100, '2025-11-27 15:19:34'),
 (211, 348, 100, '2025-11-27 15:21:18'),
 (212, 349, 100, '2025-11-27 15:24:07'),
@@ -2890,8 +2930,8 @@ INSERT INTO `cong_viec_tien_do` (`id`, `cong_viec_id`, `phan_tram`, `thoi_gian_c
 (215, 355, 100, '2025-12-19 09:21:36'),
 (216, 356, 100, '2025-11-28 01:35:04'),
 (217, 357, 100, '2025-11-28 01:36:07'),
-(218, 360, 0, '2025-12-23 03:09:03'),
-(219, 358, 0, '2025-12-23 03:09:25'),
+(218, 360, 0, '2026-01-07 07:59:01'),
+(219, 358, 0, '2026-01-07 08:32:33'),
 (220, 362, 100, '2025-12-16 09:47:59'),
 (221, 363, 100, '2025-12-10 09:55:58'),
 (222, 364, 100, '2025-11-28 01:45:24'),
@@ -2964,7 +3004,7 @@ INSERT INTO `cong_viec_tien_do` (`id`, `cong_viec_id`, `phan_tram`, `thoi_gian_c
 (302, 486, 100, '2025-12-19 07:21:30'),
 (303, 488, 100, '2025-12-21 16:51:04'),
 (304, 489, 100, '2025-12-12 11:09:31'),
-(305, 487, 0, '2025-12-22 01:36:57'),
+(305, 487, 0, '2026-01-07 07:46:19'),
 (306, 484, 100, '2025-12-17 07:26:42'),
 (307, 477, 100, '2025-12-22 03:34:07'),
 (309, 491, 100, '2025-12-17 02:16:55'),
@@ -2978,11 +3018,72 @@ INSERT INTO `cong_viec_tien_do` (`id`, `cong_viec_id`, `phan_tram`, `thoi_gian_c
 (317, 502, 100, '2025-12-22 03:23:53'),
 (318, 503, 100, '2025-12-22 04:18:53'),
 (319, 493, 0, '2025-12-22 03:27:01'),
-(320, 504, 0, '2025-12-22 03:28:39'),
+(320, 504, 0, '2026-01-07 07:06:43'),
 (321, 501, 0, '2025-12-23 02:10:25'),
 (322, 505, 0, '2025-12-23 02:10:58'),
 (323, 506, 100, '2025-12-23 02:39:33'),
-(324, 507, 0, '2025-12-29 03:00:56');
+(324, 507, 0, '2025-12-29 03:00:56'),
+(325, 492, 0, '2026-01-07 07:11:37');
+
+-- --------------------------------------------------------
+
+--
+-- Cấu trúc bảng cho bảng `don_nghi_phep`
+--
+
+CREATE TABLE `don_nghi_phep` (
+  `id` int(11) NOT NULL,
+  `nhan_vien_id` int(11) NOT NULL COMMENT 'ID nhân viên gửi đơn',
+  `loai_phep` varchar(50) NOT NULL COMMENT 'Loại nghỉ phép: Phép năm, Phép không lương, Nghỉ ốm, Nghỉ thai sản, Nghỉ việc riêng, Khác',
+  `ngay_bat_dau` date NOT NULL COMMENT 'Ngày bắt đầu nghỉ',
+  `ngay_ket_thuc` date NOT NULL COMMENT 'Ngày kết thúc nghỉ',
+  `so_ngay` decimal(4,1) NOT NULL COMMENT 'Số ngày nghỉ (có thể 0.5 cho nửa ngày)',
+  `ly_do` text NOT NULL COMMENT 'Lý do xin nghỉ',
+  `trang_thai` enum('cho_duyet','da_duyet','tu_choi') DEFAULT 'cho_duyet' COMMENT 'Trạng thái đơn',
+  `ly_do_tu_choi` text DEFAULT NULL COMMENT 'Lý do từ chối (nếu có)',
+  `nguoi_duyet_id` int(11) DEFAULT NULL COMMENT 'ID người duyệt đơn',
+  `nguoi_tao_id` int(11) DEFAULT NULL COMMENT 'ID người tạo đơn (nếu admin tạo hộ)',
+  `thoi_gian_tao` timestamp NOT NULL DEFAULT current_timestamp() COMMENT 'Thời gian tạo đơn',
+  `thoi_gian_duyet` timestamp NULL DEFAULT NULL COMMENT 'Thời gian duyệt/từ chối',
+  `ghi_chu` text DEFAULT NULL COMMENT 'Ghi chú thêm'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Đang đổ dữ liệu cho bảng `don_nghi_phep`
+--
+
+INSERT INTO `don_nghi_phep` (`id`, `nhan_vien_id`, `loai_phep`, `ngay_bat_dau`, `ngay_ket_thuc`, `so_ngay`, `ly_do`, `trang_thai`, `ly_do_tu_choi`, `nguoi_duyet_id`, `nguoi_tao_id`, `thoi_gian_tao`, `thoi_gian_duyet`, `ghi_chu`) VALUES
+(1, 18, 'Phép năm', '2026-01-09', '2026-01-11', 3.0, 'Nghỉ sáng nhé mấy đứa', 'da_duyet', NULL, 18, 18, '2026-01-09 06:38:18', '2026-01-09 06:39:08', NULL),
+(2, 18, 'Phép năm', '2026-01-09', '2026-01-09', 0.5, 'Tao nghỉ', 'cho_duyet', NULL, NULL, 18, '2026-01-09 06:39:57', NULL, NULL);
+
+--
+-- Bẫy `don_nghi_phep`
+--
+DELIMITER $$
+CREATE TRIGGER `trg_cap_nhat_ngay_phep_sau_duyet` AFTER UPDATE ON `don_nghi_phep` FOR EACH ROW BEGIN
+    -- Nếu đơn được duyệt (chuyển từ cho_duyet sang da_duyet) và là phép năm
+    IF NEW.trang_thai = 'da_duyet' AND OLD.trang_thai = 'cho_duyet' AND NEW.loai_phep = 'Phép năm' THEN
+        -- Cập nhật số ngày phép đã dùng
+        UPDATE ngay_phep_nam 
+        SET 
+            ngay_phep_da_dung = ngay_phep_da_dung + NEW.so_ngay,
+            ngay_phep_con_lai = tong_ngay_phep - (ngay_phep_da_dung + NEW.so_ngay)
+        WHERE nhan_vien_id = NEW.nhan_vien_id 
+        AND nam = YEAR(NEW.ngay_bat_dau);
+    END IF;
+    
+    -- Nếu đơn đã duyệt bị từ chối lại (hoàn lại ngày phép) và là phép năm
+    IF NEW.trang_thai = 'tu_choi' AND OLD.trang_thai = 'da_duyet' AND NEW.loai_phep = 'Phép năm' THEN
+        UPDATE ngay_phep_nam 
+        SET 
+            ngay_phep_da_dung = GREATEST(0, ngay_phep_da_dung - NEW.so_ngay),
+            ngay_phep_con_lai = tong_ngay_phep - GREATEST(0, ngay_phep_da_dung - NEW.so_ngay)
+        WHERE nhan_vien_id = NEW.nhan_vien_id 
+        AND nam = YEAR(NEW.ngay_bat_dau);
+    END IF;
+END
+$$
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -3153,6 +3254,47 @@ CREATE TABLE `luu_kpi` (
   `ghi_chu` text DEFAULT NULL,
   `ngay_tao` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Cấu trúc bảng cho bảng `ngay_phep_nam`
+--
+
+CREATE TABLE `ngay_phep_nam` (
+  `id` int(11) NOT NULL,
+  `nhan_vien_id` int(11) NOT NULL,
+  `nam` int(4) NOT NULL COMMENT 'Năm',
+  `tong_ngay_phep` decimal(4,1) DEFAULT 12.0 COMMENT 'Tổng số ngày phép được cấp',
+  `ngay_phep_da_dung` decimal(4,1) DEFAULT 0.0 COMMENT 'Số ngày đã sử dụng',
+  `ngay_phep_con_lai` decimal(4,1) DEFAULT 12.0 COMMENT 'Số ngày còn lại',
+  `ngay_cap_nhat` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Đang đổ dữ liệu cho bảng `ngay_phep_nam`
+--
+
+INSERT INTO `ngay_phep_nam` (`id`, `nhan_vien_id`, `nam`, `tong_ngay_phep`, `ngay_phep_da_dung`, `ngay_phep_con_lai`, `ngay_cap_nhat`) VALUES
+(1, 3, 2025, 12.0, 0.0, 12.0, '2026-01-09 06:37:10'),
+(2, 4, 2025, 12.0, 0.0, 12.0, '2026-01-09 06:37:10'),
+(3, 6, 2025, 12.0, 0.0, 12.0, '2026-01-09 06:37:10'),
+(4, 7, 2025, 12.0, 0.0, 12.0, '2026-01-09 06:37:10'),
+(5, 8, 2025, 12.0, 0.0, 12.0, '2026-01-09 06:37:10'),
+(6, 10, 2025, 12.0, 0.0, 12.0, '2026-01-09 06:37:10'),
+(7, 11, 2025, 12.0, 0.0, 12.0, '2026-01-09 06:37:10'),
+(8, 12, 2025, 12.0, 0.0, 12.0, '2026-01-09 06:37:10'),
+(9, 15, 2025, 12.0, 0.0, 12.0, '2026-01-09 06:37:10'),
+(10, 16, 2025, 12.0, 0.0, 12.0, '2026-01-09 06:37:10'),
+(11, 18, 2025, 12.0, 0.0, 12.0, '2026-01-09 06:37:10'),
+(12, 22, 2025, 12.0, 0.0, 12.0, '2026-01-09 06:37:10'),
+(13, 23, 2025, 12.0, 0.0, 12.0, '2026-01-09 06:37:10'),
+(14, 24, 2025, 12.0, 0.0, 12.0, '2026-01-09 06:37:10'),
+(15, 25, 2025, 12.0, 0.0, 12.0, '2026-01-09 06:37:10'),
+(16, 27, 2025, 12.0, 0.0, 12.0, '2026-01-09 06:37:10'),
+(17, 28, 2025, 12.0, 0.0, 12.0, '2026-01-09 06:37:10'),
+(32, 18, 2026, 12.0, 6.0, 3.0, '2026-01-09 06:39:08'),
+(33, 25, 2026, 12.0, 0.0, 12.0, '2026-01-09 06:41:23');
 
 -- --------------------------------------------------------
 
@@ -3596,22 +3738,23 @@ CREATE TABLE `nhom_tai_lieu` (
   `ngay_tao` datetime DEFAULT current_timestamp(),
   `ngay_cap_nhat` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `trang_thai` enum('Hoạt động','Đã xóa') DEFAULT 'Hoạt động',
-  `thu_tu` int(11) DEFAULT 0
+  `thu_tu` int(11) DEFAULT 0,
+  `doi_tuong_xem` enum('Tất cả','Giám đốc và Trưởng phòng','Chỉ nhân viên') DEFAULT 'Tất cả'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Đang đổ dữ liệu cho bảng `nhom_tai_lieu`
 --
 
-INSERT INTO `nhom_tai_lieu` (`id`, `ten_nhom`, `mo_ta`, `icon`, `mau_sac`, `nguoi_tao_id`, `ngay_tao`, `ngay_cap_nhat`, `trang_thai`, `thu_tu`) VALUES
-(1, 'Báo cáo', 'Các báo cáo định kỳ và chuyên đề', 'fa-chart-line', '#3b82f6', NULL, '2025-12-24 09:37:45', '2025-12-24 09:37:45', 'Hoạt động', 1),
-(2, 'Mẫu đơn', 'Các mẫu đơn, biểu mẫu nội bộ', 'fa-file-lines', '#10b981', NULL, '2025-12-24 09:37:45', '2025-12-24 09:37:45', 'Hoạt động', 2),
-(3, 'Quy định & Chính sách', 'Quy định, chính sách công ty', 'fa-scale-balanced', '#f59e0b', NULL, '2025-12-24 09:37:45', '2025-12-24 09:37:45', 'Hoạt động', 3),
-(4, 'Hợp đồng & MOU', 'Hợp đồng, biên bản ghi nhớ', 'fa-file-contract', '#8b5cf6', NULL, '2025-12-24 09:37:45', '2025-12-24 09:37:45', 'Hoạt động', 4),
-(5, 'Hướng dẫn', 'Tài liệu hướng dẫn, quy trình', 'fa-book', '#06b6d4', NULL, '2025-12-24 09:37:45', '2025-12-24 09:37:45', 'Hoạt động', 5),
-(6, 'Thanh toán', 'Đề nghị, đề xuất thanh toán', 'fa-money-check-dollar', '#ec4899', NULL, '2025-12-24 09:37:45', '2025-12-24 09:37:45', 'Hoạt động', 6),
-(7, 'Khác', 'Các tài liệu khác', 'fa-folder-open', '#6b7280', NULL, '2025-12-24 09:37:45', '2025-12-24 09:37:45', 'Hoạt động', 99),
-(9, '1', '1', 'fa-folder', '#3b82f6', 18, '2025-12-29 10:01:26', '2025-12-29 10:02:20', 'Hoạt động', 0);
+INSERT INTO `nhom_tai_lieu` (`id`, `ten_nhom`, `mo_ta`, `icon`, `mau_sac`, `nguoi_tao_id`, `ngay_tao`, `ngay_cap_nhat`, `trang_thai`, `thu_tu`, `doi_tuong_xem`) VALUES
+(1, 'Báo cáo', 'Các báo cáo định kỳ và chuyên đề', 'fa-chart-line', '#3b82f6', NULL, '2025-12-24 09:37:45', '2026-01-07 16:36:32', 'Đã xóa', 1, 'Giám đốc và Trưởng phòng'),
+(2, 'Mẫu đơn', 'Các mẫu đơn, biểu mẫu nội bộ', 'fa-file-lines', '#10b981', NULL, '2025-12-24 09:37:45', '2026-01-07 16:41:39', 'Hoạt động', 2, 'Giám đốc và Trưởng phòng'),
+(3, 'Quy định & Chính sách', 'Quy định, chính sách công ty', 'fa-scale-balanced', '#f59e0b', NULL, '2025-12-24 09:37:45', '2025-12-24 09:37:45', 'Hoạt động', 3, 'Tất cả'),
+(4, 'Hợp đồng & MOU', 'Hợp đồng, biên bản ghi nhớ', 'fa-file-contract', '#8b5cf6', NULL, '2025-12-24 09:37:45', '2025-12-24 09:37:45', 'Hoạt động', 4, 'Tất cả'),
+(5, 'Hướng dẫn', 'Tài liệu hướng dẫn, quy trình', 'fa-book', '#06b6d4', NULL, '2025-12-24 09:37:45', '2025-12-24 09:37:45', 'Hoạt động', 5, 'Tất cả'),
+(6, 'Thanh toán', 'Đề nghị, đề xuất thanh toán', 'fa-money-check-dollar', '#ec4899', NULL, '2025-12-24 09:37:45', '2025-12-24 09:37:45', 'Hoạt động', 6, 'Tất cả'),
+(7, 'Khác', 'Các tài liệu khác', 'fa-folder-open', '#6b7280', NULL, '2025-12-24 09:37:45', '2026-01-09 11:55:36', 'Hoạt động', 99, 'Giám đốc và Trưởng phòng'),
+(9, '1', '1', 'fa-folder', '#3b82f6', 18, '2025-12-29 10:01:26', '2026-01-07 16:21:47', 'Đã xóa', 0, 'Giám đốc và Trưởng phòng');
 
 -- --------------------------------------------------------
 
@@ -3792,7 +3935,10 @@ INSERT INTO `quy_trinh_nguoi_nhan` (`id`, `step_id`, `nhan_id`) VALUES
 (158, 471, 24),
 (159, 472, 24),
 (160, 473, 24),
-(161, 475, 27);
+(161, 475, 27),
+(168, 478, 7),
+(169, 478, 16),
+(170, 478, 4);
 
 -- --------------------------------------------------------
 
@@ -3815,23 +3961,24 @@ CREATE TABLE `tai_lieu` (
   `ngay_cap_nhat` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `trang_thai` varchar(50) DEFAULT 'Hoạt động',
   `luot_xem` int(11) DEFAULT 0,
-  `luot_tai` int(11) DEFAULT 0
+  `luot_tai` int(11) DEFAULT 0,
+  `doi_tuong_xem` enum('Tất cả','Giám đốc và Trưởng phòng','Chỉ nhân viên') DEFAULT 'Tất cả'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Đang đổ dữ liệu cho bảng `tai_lieu`
 --
 
-INSERT INTO `tai_lieu` (`id`, `nhom_tai_lieu_id`, `ten_tai_lieu`, `loai_tai_lieu`, `mo_ta`, `file_name`, `file_path`, `file_size`, `file_type`, `nguoi_tao_id`, `ngay_tao`, `ngay_cap_nhat`, `trang_thai`, `luot_xem`, `luot_tai`) VALUES
-(1, NULL, '123', 'Báo cáo', '123', 'architect_Thang.pdf', 'architect_Thang.pdf', 876970, 'application/pdf', 18, '2025-12-18 07:42:58', '2025-12-18 07:46:57', 'Đã xóa', 0, 2),
-(2, NULL, 'File cài đặt CSA', 'Báo cáo', 'hi', 'ICS-cAIoTAgent.msi', 'ICS-cAIoTAgent.msi', 42856448, 'application/octet-stream', 18, '2025-12-18 07:48:06', '2025-12-18 07:48:48', 'Đã xóa', 0, 1),
-(3, NULL, 'BÁO CÁO TUẦN 4 THÁNG 12/2025', 'Báo cáo', '', 'Báo cáo cuộc họp ICSS_22-12-2025_Họp nội bộ cty.doc', 'Báo cáo cuộc họp ICSS_22-12-2025_Họp nội bộ cty.doc', 63488, 'application/msword', 18, '2025-12-22 09:08:27', '2025-12-22 09:13:51', 'Đã xóa', 0, 1),
-(4, 1, '1', 'Báo cáo', '1', 'z5858141712487_0b7a8856b74c84e05330a93879a7ce43.jpg', 'z5858141712487_0b7a8856b74c84e05330a93879a7ce43.jpg', 1148252, 'image/jpeg', 18, '2025-12-24 02:42:05', '2025-12-24 02:42:34', 'Đã xóa', 0, 0),
-(5, 1, '1', 'Báo cáo', '1', 'z5858141712487_0b7a8856b74c84e05330a93879a7ce43.jpg', 'z5858141712487_0b7a8856b74c84e05330a93879a7ce43_1766544131495.jpg', 1148252, 'image/jpeg', 18, '2025-12-24 02:42:11', '2025-12-24 02:42:38', 'Đã xóa', 0, 0),
-(6, 1, '1', 'Báo cáo', '1', 'z5858141712487_0b7a8856b74c84e05330a93879a7ce43.jpg', 'z5858141712487_0b7a8856b74c84e05330a93879a7ce43_1766544134274.jpg', 1148252, 'image/jpeg', 18, '2025-12-24 02:42:14', '2025-12-24 02:42:42', 'Đã xóa', 0, 0),
-(7, 3, '1', 'Báo cáo', '1', 'cauhoi.docx', 'cauhoi_1766976070053.docx', 38901, 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 18, '2025-12-29 02:41:10', '2025-12-29 02:41:16', 'Đã xóa', 0, 0),
-(8, 3, '1', 'Báo cáo', '1', 'cauhoicauhoicauhoicauhoi.docx', 'cauhoicauhoicauhoicauhoi.docx', 38901, 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 18, '2025-12-29 02:41:53', '2025-12-29 02:41:56', 'Đã xóa', 0, 0),
-(9, 9, '1', 'Báo cáo', '1', 'cauhoicauhoicauhoicauhoi.docx', 'cauhoicauhoicauhoicauhoi.docx', 38901, 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 18, '2025-12-29 03:02:39', '2025-12-29 03:02:39', 'Hoạt động', 0, 0);
+INSERT INTO `tai_lieu` (`id`, `nhom_tai_lieu_id`, `ten_tai_lieu`, `loai_tai_lieu`, `mo_ta`, `file_name`, `file_path`, `file_size`, `file_type`, `nguoi_tao_id`, `ngay_tao`, `ngay_cap_nhat`, `trang_thai`, `luot_xem`, `luot_tai`, `doi_tuong_xem`) VALUES
+(1, NULL, '123', 'Báo cáo', '123', 'architect_Thang.pdf', 'architect_Thang.pdf', 876970, 'application/pdf', 18, '2025-12-18 07:42:58', '2025-12-18 07:46:57', 'Đã xóa', 0, 2, 'Tất cả'),
+(2, NULL, 'File cài đặt CSA', 'Báo cáo', 'hi', 'ICS-cAIoTAgent.msi', 'ICS-cAIoTAgent.msi', 42856448, 'application/octet-stream', 18, '2025-12-18 07:48:06', '2025-12-18 07:48:48', 'Đã xóa', 0, 1, 'Tất cả'),
+(3, NULL, 'BÁO CÁO TUẦN 4 THÁNG 12/2025', 'Báo cáo', '', 'Báo cáo cuộc họp ICSS_22-12-2025_Họp nội bộ cty.doc', 'Báo cáo cuộc họp ICSS_22-12-2025_Họp nội bộ cty.doc', 63488, 'application/msword', 18, '2025-12-22 09:08:27', '2025-12-22 09:13:51', 'Đã xóa', 0, 1, 'Tất cả'),
+(4, 1, '1', 'Báo cáo', '1', 'z5858141712487_0b7a8856b74c84e05330a93879a7ce43.jpg', 'z5858141712487_0b7a8856b74c84e05330a93879a7ce43.jpg', 1148252, 'image/jpeg', 18, '2025-12-24 02:42:05', '2025-12-24 02:42:34', 'Đã xóa', 0, 0, 'Tất cả'),
+(5, 1, '1', 'Báo cáo', '1', 'z5858141712487_0b7a8856b74c84e05330a93879a7ce43.jpg', 'z5858141712487_0b7a8856b74c84e05330a93879a7ce43_1766544131495.jpg', 1148252, 'image/jpeg', 18, '2025-12-24 02:42:11', '2025-12-24 02:42:38', 'Đã xóa', 0, 0, 'Tất cả'),
+(6, 1, '1', 'Báo cáo', '1', 'z5858141712487_0b7a8856b74c84e05330a93879a7ce43.jpg', 'z5858141712487_0b7a8856b74c84e05330a93879a7ce43_1766544134274.jpg', 1148252, 'image/jpeg', 18, '2025-12-24 02:42:14', '2025-12-24 02:42:42', 'Đã xóa', 0, 0, 'Tất cả'),
+(7, 3, '1', 'Báo cáo', '1', 'cauhoi.docx', 'cauhoi_1766976070053.docx', 38901, 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 18, '2025-12-29 02:41:10', '2025-12-29 02:41:16', 'Đã xóa', 0, 0, 'Tất cả'),
+(8, 3, '1', 'Báo cáo', '1', 'cauhoicauhoicauhoicauhoi.docx', 'cauhoicauhoicauhoicauhoi.docx', 38901, 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 18, '2025-12-29 02:41:53', '2025-12-29 02:41:56', 'Đã xóa', 0, 0, 'Tất cả'),
+(9, 9, '1', 'Báo cáo', '1', 'cauhoicauhoicauhoicauhoi.docx', 'cauhoicauhoicauhoicauhoi.docx', 38901, 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 18, '2025-12-29 03:02:39', '2025-12-29 03:02:39', 'Hoạt động', 0, 0, 'Tất cả');
 
 -- --------------------------------------------------------
 
@@ -4398,7 +4545,82 @@ INSERT INTO `thong_bao` (`id`, `tieu_de`, `noi_dung`, `nguoi_nhan_id`, `loai_tho
 (2396, 'Biên bản họp nội bộ mới', 'Tài liệu \'1\' đã được thêm vào Biên bản họp nội bộ. Vui lòng xem chi tiết.', 11, 'Tài liệu', 'dsTailieu?nhomId=9', 0, '2025-12-29 03:02:39', '2025-12-29 03:02:39'),
 (2397, 'Biên bản họp nội bộ mới', 'Tài liệu \'1\' đã được thêm vào Biên bản họp nội bộ. Vui lòng xem chi tiết.', 12, 'Tài liệu', 'dsTailieu?nhomId=9', 0, '2025-12-29 03:02:39', '2025-12-29 03:02:39'),
 (2398, 'Biên bản họp nội bộ mới', 'Tài liệu \'1\' đã được thêm vào Biên bản họp nội bộ. Vui lòng xem chi tiết.', 18, 'Tài liệu', 'dsTailieu?nhomId=9', 1, '2025-12-29 03:02:43', '2025-12-29 03:02:39'),
-(2399, 'Biên bản họp nội bộ mới', 'Tài liệu \'1\' đã được thêm vào Biên bản họp nội bộ. Vui lòng xem chi tiết.', 22, 'Tài liệu', 'dsTailieu?nhomId=9', 0, '2025-12-29 03:02:39', '2025-12-29 03:02:39');
+(2399, 'Biên bản họp nội bộ mới', 'Tài liệu \'1\' đã được thêm vào Biên bản họp nội bộ. Vui lòng xem chi tiết.', 22, 'Tài liệu', 'dsTailieu?nhomId=9', 0, '2025-12-29 03:02:39', '2025-12-29 03:02:39'),
+(2400, 'Thêm mới quy trình', 'Công việc: Lấy dữ liệu mẫu từ xã phường để train cho AI vừa được thêm quy trình mới', 6, 'Cập nhật', 'dsCongviec?taskId=492', 0, '2026-01-07 07:10:40', '2026-01-07 07:10:40'),
+(2401, 'Thêm mới quy trình', 'Công việc: Tư vấn các vấn đề kỹ thuật cho dự án vừa được thêm quy trình mới', 24, 'Cập nhật', 'dsCongviec?taskId=487', 0, '2026-01-07 07:17:12', '2026-01-07 07:17:12'),
+(2402, 'Cập nhật quy trình', 'Công việc: Tư vấn các vấn đề kỹ thuật cho dự án vừa được cập nhật quy trình mới', 24, 'Cập nhật', 'dsCongviecNV?taskId=487', 0, '2026-01-07 07:23:18', '2026-01-07 07:23:18'),
+(2403, 'Cập nhật công việc', 'Công việc: Tư vấn các vấn đề kỹ thuật cho dự án vừa được cập nhật mới', 24, 'Cập nhật', 'dsCongviecNV?taskId=487', 0, '2026-01-07 07:24:39', '2026-01-07 07:24:39'),
+(2404, 'Cập nhật công việc', 'Công việc: Tư vấn các vấn đề kỹ thuật cho dự án vừa được cập nhật mới', 24, 'Cập nhật', 'dsCongviecNV?taskId=487', 0, '2026-01-07 07:25:13', '2026-01-07 07:25:13'),
+(2405, 'Cập nhật quy trình', 'Công việc: Tư vấn các vấn đề kỹ thuật cho dự án vừa được cập nhật quy trình mới', 24, 'Cập nhật', 'dsCongviecNV?taskId=487', 0, '2026-01-07 07:41:41', '2026-01-07 07:41:41'),
+(2406, 'Cập nhật quy trình', 'Công việc: Tư vấn các vấn đề kỹ thuật cho dự án vừa được cập nhật quy trình mới', 24, 'Cập nhật', 'dsCongviecNV?taskId=487', 0, '2026-01-07 07:43:18', '2026-01-07 07:43:18'),
+(2407, 'Cập nhật quy trình', 'Công việc: Tư vấn các vấn đề kỹ thuật cho dự án vừa được cập nhật quy trình mới', 24, 'Cập nhật', 'dsCongviecNV?taskId=487', 0, '2026-01-07 07:46:19', '2026-01-07 07:46:19'),
+(2408, 'Cập nhật quy trình', 'Công việc: Kết nối API - compability check vừa được cập nhật quy trình mới', 24, 'Cập nhật', 'dsCongviecNV?taskId=360', 0, '2026-01-07 07:46:48', '2026-01-07 07:46:48'),
+(2409, 'Cập nhật quy trình', 'Công việc: Kết nối API - compability check vừa được cập nhật quy trình mới', 25, 'Cập nhật', 'dsCongviecNV?taskId=360', 0, '2026-01-07 07:46:48', '2026-01-07 07:46:48'),
+(2410, 'Cập nhật quy trình', 'Công việc: Kết nối API - compability check vừa được cập nhật quy trình mới', 21, 'Cập nhật', 'dsCongviecNV?taskId=360', 0, '2026-01-07 07:46:48', '2026-01-07 07:46:48'),
+(2411, 'Cập nhật quy trình', 'Công việc: Kết nối API - compability check vừa được cập nhật quy trình mới', 8, 'Cập nhật', 'dsCongviecNV?taskId=360', 0, '2026-01-07 07:46:48', '2026-01-07 07:46:48'),
+(2412, 'Cập nhật quy trình', 'Công việc: Kết nối API - compability check vừa được cập nhật quy trình mới', 24, 'Cập nhật', 'dsCongviecNV?taskId=360', 0, '2026-01-07 07:57:52', '2026-01-07 07:57:52'),
+(2413, 'Cập nhật quy trình', 'Công việc: Kết nối API - compability check vừa được cập nhật quy trình mới', 25, 'Cập nhật', 'dsCongviecNV?taskId=360', 0, '2026-01-07 07:57:52', '2026-01-07 07:57:52'),
+(2414, 'Cập nhật quy trình', 'Công việc: Kết nối API - compability check vừa được cập nhật quy trình mới', 21, 'Cập nhật', 'dsCongviecNV?taskId=360', 0, '2026-01-07 07:57:52', '2026-01-07 07:57:52'),
+(2415, 'Cập nhật quy trình', 'Công việc: Kết nối API - compability check vừa được cập nhật quy trình mới', 8, 'Cập nhật', 'dsCongviecNV?taskId=360', 0, '2026-01-07 07:57:52', '2026-01-07 07:57:52'),
+(2416, 'Cập nhật công việc', 'Công việc: Kết nối API - compability check vừa được cập nhật mới', 24, 'Cập nhật', 'dsCongviecNV?taskId=360', 0, '2026-01-07 07:58:53', '2026-01-07 07:58:53'),
+(2417, 'Cập nhật công việc', 'Công việc: Kết nối API - compability check vừa được cập nhật mới', 25, 'Cập nhật', 'dsCongviecNV?taskId=360', 0, '2026-01-07 07:58:53', '2026-01-07 07:58:53'),
+(2418, 'Cập nhật công việc', 'Công việc: Kết nối API - compability check vừa được cập nhật mới', 21, 'Cập nhật', 'dsCongviecNV?taskId=360', 0, '2026-01-07 07:58:53', '2026-01-07 07:58:53'),
+(2419, 'Cập nhật công việc', 'Công việc: Kết nối API - compability check vừa được cập nhật mới', 8, 'Cập nhật', 'dsCongviecNV?taskId=360', 0, '2026-01-07 07:58:53', '2026-01-07 07:58:53'),
+(2420, 'Cập nhật quy trình', 'Công việc: Kết nối API - code analysis vừa được cập nhật quy trình mới', 24, 'Cập nhật', 'dsCongviecNV?taskId=358', 0, '2026-01-07 08:19:01', '2026-01-07 08:19:01'),
+(2421, 'Cập nhật quy trình', 'Công việc: Kết nối API - code analysis vừa được cập nhật quy trình mới', 25, 'Cập nhật', 'dsCongviecNV?taskId=358', 0, '2026-01-07 08:19:01', '2026-01-07 08:19:01'),
+(2422, 'Cập nhật quy trình', 'Công việc: Kết nối API - code analysis vừa được cập nhật quy trình mới', 21, 'Cập nhật', 'dsCongviecNV?taskId=358', 0, '2026-01-07 08:19:01', '2026-01-07 08:19:01'),
+(2423, 'Cập nhật quy trình', 'Công việc: Kết nối API - code analysis vừa được cập nhật quy trình mới', 8, 'Cập nhật', 'dsCongviecNV?taskId=358', 0, '2026-01-07 08:19:01', '2026-01-07 08:19:01'),
+(2424, 'Cập nhật công việc', 'Công việc: Kết nối API - code analysis vừa được cập nhật mới', 24, 'Cập nhật', 'dsCongviecNV?taskId=358', 0, '2026-01-07 08:31:51', '2026-01-07 08:31:51'),
+(2425, 'Cập nhật công việc', 'Công việc: Kết nối API - code analysis vừa được cập nhật mới', 25, 'Cập nhật', 'dsCongviecNV?taskId=358', 0, '2026-01-07 08:31:51', '2026-01-07 08:31:51'),
+(2426, 'Cập nhật công việc', 'Công việc: Kết nối API - code analysis vừa được cập nhật mới', 21, 'Cập nhật', 'dsCongviecNV?taskId=358', 0, '2026-01-07 08:31:51', '2026-01-07 08:31:51'),
+(2427, 'Cập nhật công việc', 'Công việc: Kết nối API - code analysis vừa được cập nhật mới', 8, 'Cập nhật', 'dsCongviecNV?taskId=358', 0, '2026-01-07 08:31:51', '2026-01-07 08:31:51'),
+(2428, 'Cập nhật quy trình', 'Công việc: Kết nối API - code analysis vừa được cập nhật quy trình mới', 24, 'Cập nhật', 'dsCongviecNV?taskId=358', 0, '2026-01-07 08:32:20', '2026-01-07 08:32:20'),
+(2429, 'Cập nhật quy trình', 'Công việc: Kết nối API - code analysis vừa được cập nhật quy trình mới', 25, 'Cập nhật', 'dsCongviecNV?taskId=358', 0, '2026-01-07 08:32:20', '2026-01-07 08:32:20'),
+(2430, 'Cập nhật quy trình', 'Công việc: Kết nối API - code analysis vừa được cập nhật quy trình mới', 21, 'Cập nhật', 'dsCongviecNV?taskId=358', 0, '2026-01-07 08:32:20', '2026-01-07 08:32:20'),
+(2431, 'Cập nhật quy trình', 'Công việc: Kết nối API - code analysis vừa được cập nhật quy trình mới', 8, 'Cập nhật', 'dsCongviecNV?taskId=358', 0, '2026-01-07 08:32:20', '2026-01-07 08:32:20'),
+(2432, 'Cập nhật quy trình', 'Công việc: Tìm kiếm đối tác và liên hệ lắp thêm đường internet mới chạy AI SOC vừa được cập nhật quy trình mới', 25, 'Cập nhật', 'dsCongviecNV?taskId=226', 0, '2026-01-07 08:44:55', '2026-01-07 08:44:55'),
+(2433, 'Cập nhật quy trình', 'Công việc: Tìm kiếm đối tác và liên hệ lắp thêm đường internet mới chạy AI SOC vừa được cập nhật quy trình mới', 25, 'Cập nhật', 'dsCongviecNV?taskId=226', 0, '2026-01-07 08:45:41', '2026-01-07 08:45:41');
+
+-- --------------------------------------------------------
+
+--
+-- Cấu trúc đóng vai cho view `v_don_nghi_phep_chi_tiet`
+-- (See below for the actual view)
+--
+CREATE TABLE `v_don_nghi_phep_chi_tiet` (
+`id` int(11)
+,`nhan_vien_id` int(11)
+,`ten_nhan_vien` varchar(100)
+,`email_nhan_vien` varchar(100)
+,`avatar_url` varchar(255)
+,`ten_phong_ban` varchar(100)
+,`loai_phep` varchar(50)
+,`ngay_bat_dau` date
+,`ngay_ket_thuc` date
+,`so_ngay` decimal(4,1)
+,`ly_do` text
+,`trang_thai` enum('cho_duyet','da_duyet','tu_choi')
+,`ly_do_tu_choi` text
+,`nguoi_duyet_id` int(11)
+,`ten_nguoi_duyet` varchar(100)
+,`nguoi_tao_id` int(11)
+,`ten_nguoi_tao` varchar(100)
+,`thoi_gian_tao` timestamp
+,`thoi_gian_duyet` timestamp
+,`ghi_chu` text
+,`tong_ngay_phep` decimal(4,1)
+,`ngay_phep_da_dung` decimal(4,1)
+,`ngay_phep_con_lai` decimal(4,1)
+);
+
+-- --------------------------------------------------------
+
+--
+-- Cấu trúc cho view `v_don_nghi_phep_chi_tiet`
+--
+DROP TABLE IF EXISTS `v_don_nghi_phep_chi_tiet`;
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_don_nghi_phep_chi_tiet`  AS SELECT `d`.`id` AS `id`, `d`.`nhan_vien_id` AS `nhan_vien_id`, `nv`.`ho_ten` AS `ten_nhan_vien`, `nv`.`email` AS `email_nhan_vien`, `nv`.`avatar_url` AS `avatar_url`, `pb`.`ten_phong` AS `ten_phong_ban`, `d`.`loai_phep` AS `loai_phep`, `d`.`ngay_bat_dau` AS `ngay_bat_dau`, `d`.`ngay_ket_thuc` AS `ngay_ket_thuc`, `d`.`so_ngay` AS `so_ngay`, `d`.`ly_do` AS `ly_do`, `d`.`trang_thai` AS `trang_thai`, `d`.`ly_do_tu_choi` AS `ly_do_tu_choi`, `d`.`nguoi_duyet_id` AS `nguoi_duyet_id`, `nd`.`ho_ten` AS `ten_nguoi_duyet`, `d`.`nguoi_tao_id` AS `nguoi_tao_id`, `nt`.`ho_ten` AS `ten_nguoi_tao`, `d`.`thoi_gian_tao` AS `thoi_gian_tao`, `d`.`thoi_gian_duyet` AS `thoi_gian_duyet`, `d`.`ghi_chu` AS `ghi_chu`, `np`.`tong_ngay_phep` AS `tong_ngay_phep`, `np`.`ngay_phep_da_dung` AS `ngay_phep_da_dung`, `np`.`ngay_phep_con_lai` AS `ngay_phep_con_lai` FROM (((((`don_nghi_phep` `d` left join `nhanvien` `nv` on(`d`.`nhan_vien_id` = `nv`.`id`)) left join `phong_ban` `pb` on(`nv`.`phong_ban_id` = `pb`.`id`)) left join `nhanvien` `nd` on(`d`.`nguoi_duyet_id` = `nd`.`id`)) left join `nhanvien` `nt` on(`d`.`nguoi_tao_id` = `nt`.`id`)) left join `ngay_phep_nam` `np` on(`d`.`nhan_vien_id` = `np`.`nhan_vien_id` and year(`d`.`ngay_bat_dau`) = `np`.`nam`)) ;
 
 --
 -- Chỉ mục cho các bảng đã đổ
@@ -4465,6 +4687,16 @@ ALTER TABLE `cong_viec_tien_do`
   ADD KEY `cong_viec_id` (`cong_viec_id`);
 
 --
+-- Chỉ mục cho bảng `don_nghi_phep`
+--
+ALTER TABLE `don_nghi_phep`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_nhan_vien_id` (`nhan_vien_id`),
+  ADD KEY `idx_trang_thai` (`trang_thai`),
+  ADD KEY `idx_ngay_bat_dau` (`ngay_bat_dau`),
+  ADD KEY `idx_nguoi_duyet_id` (`nguoi_duyet_id`);
+
+--
 -- Chỉ mục cho bảng `du_an`
 --
 ALTER TABLE `du_an`
@@ -4504,6 +4736,13 @@ ALTER TABLE `luong_cau_hinh`
 ALTER TABLE `luu_kpi`
   ADD PRIMARY KEY (`id`),
   ADD KEY `nhan_vien_id` (`nhan_vien_id`);
+
+--
+-- Chỉ mục cho bảng `ngay_phep_nam`
+--
+ALTER TABLE `ngay_phep_nam`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uk_nhanvien_nam` (`nhan_vien_id`,`nam`);
 
 --
 -- Chỉ mục cho bảng `nhanvien`
@@ -4612,25 +4851,31 @@ ALTER TABLE `cong_viec_danh_gia`
 -- AUTO_INCREMENT cho bảng `cong_viec_lich_su`
 --
 ALTER TABLE `cong_viec_lich_su`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1574;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1584;
 
 --
 -- AUTO_INCREMENT cho bảng `cong_viec_nguoi_nhan`
 --
 ALTER TABLE `cong_viec_nguoi_nhan`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1610;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1620;
 
 --
 -- AUTO_INCREMENT cho bảng `cong_viec_quy_trinh`
 --
 ALTER TABLE `cong_viec_quy_trinh`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=477;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=479;
 
 --
 -- AUTO_INCREMENT cho bảng `cong_viec_tien_do`
 --
 ALTER TABLE `cong_viec_tien_do`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=325;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=326;
+
+--
+-- AUTO_INCREMENT cho bảng `don_nghi_phep`
+--
+ALTER TABLE `don_nghi_phep`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT cho bảng `du_an`
@@ -4667,6 +4912,12 @@ ALTER TABLE `luong_cau_hinh`
 --
 ALTER TABLE `luu_kpi`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
+
+--
+-- AUTO_INCREMENT cho bảng `ngay_phep_nam`
+--
+ALTER TABLE `ngay_phep_nam`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=34;
 
 --
 -- AUTO_INCREMENT cho bảng `nhanvien`
@@ -4708,7 +4959,7 @@ ALTER TABLE `quyen`
 -- AUTO_INCREMENT cho bảng `quy_trinh_nguoi_nhan`
 --
 ALTER TABLE `quy_trinh_nguoi_nhan`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=162;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=171;
 
 --
 -- AUTO_INCREMENT cho bảng `tai_lieu`
@@ -4720,7 +4971,7 @@ ALTER TABLE `tai_lieu`
 -- AUTO_INCREMENT cho bảng `thong_bao`
 --
 ALTER TABLE `thong_bao`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2400;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2434;
 
 --
 -- Các ràng buộc cho các bảng đã đổ
@@ -4774,6 +5025,13 @@ ALTER TABLE `cong_viec_tien_do`
   ADD CONSTRAINT `cong_viec_tien_do_ibfk_1` FOREIGN KEY (`cong_viec_id`) REFERENCES `cong_viec` (`id`) ON DELETE CASCADE;
 
 --
+-- Các ràng buộc cho bảng `don_nghi_phep`
+--
+ALTER TABLE `don_nghi_phep`
+  ADD CONSTRAINT `fk_don_nghi_phep_nguoiduyet` FOREIGN KEY (`nguoi_duyet_id`) REFERENCES `nhanvien` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_don_nghi_phep_nhanvien` FOREIGN KEY (`nhan_vien_id`) REFERENCES `nhanvien` (`id`) ON DELETE CASCADE;
+
+--
 -- Các ràng buộc cho bảng `du_an`
 --
 ALTER TABLE `du_an`
@@ -4797,6 +5055,12 @@ ALTER TABLE `luong`
 --
 ALTER TABLE `luu_kpi`
   ADD CONSTRAINT `luu_kpi_ibfk_1` FOREIGN KEY (`nhan_vien_id`) REFERENCES `nhanvien` (`id`) ON DELETE CASCADE;
+
+--
+-- Các ràng buộc cho bảng `ngay_phep_nam`
+--
+ALTER TABLE `ngay_phep_nam`
+  ADD CONSTRAINT `fk_ngay_phep_nhanvien` FOREIGN KEY (`nhan_vien_id`) REFERENCES `nhanvien` (`id`) ON DELETE CASCADE;
 
 --
 -- Các ràng buộc cho bảng `nhanvien`
@@ -4842,57 +5106,6 @@ ALTER TABLE `tai_lieu`
 --
 ALTER TABLE `thong_bao`
   ADD CONSTRAINT `thong_bao_ibfk_1` FOREIGN KEY (`nguoi_nhan_id`) REFERENCES `nhanvien` (`id`) ON DELETE CASCADE;
-
--- --------------------------------------------------------
-
---
--- Cấu trúc bảng cho bảng `don_nghi_phep`
---
-
-CREATE TABLE IF NOT EXISTS `don_nghi_phep` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `nhan_vien_id` int(11) NOT NULL,
-  `loai_phep` varchar(50) DEFAULT 'annual',
-  `ngay_bat_dau` date NOT NULL,
-  `ngay_ket_thuc` date NOT NULL,
-  `so_ngay` decimal(4,1) NOT NULL,
-  `ly_do` text,
-  `ghi_chu` text,
-  `trang_thai` varchar(20) DEFAULT 'cho_duyet',
-  `nguoi_tao_id` int(11),
-  `nguoi_duyet_id` int(11),
-  `ly_do_tu_choi` text,
-  `thoi_gian_tao` timestamp DEFAULT CURRENT_TIMESTAMP,
-  `thoi_gian_duyet` timestamp NULL,
-  PRIMARY KEY (`id`),
-  KEY `nhan_vien_id` (`nhan_vien_id`),
-  KEY `nguoi_tao_id` (`nguoi_tao_id`),
-  KEY `nguoi_duyet_id` (`nguoi_duyet_id`),
-  CONSTRAINT `don_nghi_phep_ibfk_1` FOREIGN KEY (`nhan_vien_id`) REFERENCES `nhanvien` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `don_nghi_phep_ibfk_2` FOREIGN KEY (`nguoi_tao_id`) REFERENCES `nhanvien` (`id`) ON DELETE SET NULL,
-  CONSTRAINT `don_nghi_phep_ibfk_3` FOREIGN KEY (`nguoi_duyet_id`) REFERENCES `nhanvien` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- --------------------------------------------------------
-
---
--- Cấu trúc bảng cho bảng `ngay_phep_nam`
---
-
-CREATE TABLE IF NOT EXISTS `ngay_phep_nam` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `nhan_vien_id` int(11) NOT NULL,
-  `nam` int(4) NOT NULL,
-  `tong_ngay_phep` decimal(4,1) DEFAULT 12.0,
-  `ngay_phep_da_dung` decimal(4,1) DEFAULT 0.0,
-  `ngay_phep_con_lai` decimal(4,1) DEFAULT 12.0,
-  `ngay_cap_nhat` timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_nv_nam` (`nhan_vien_id`, `nam`),
-  KEY `nhan_vien_id` (`nhan_vien_id`),
-  CONSTRAINT `ngay_phep_nam_ibfk_1` FOREIGN KEY (`nhan_vien_id`) REFERENCES `nhanvien` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

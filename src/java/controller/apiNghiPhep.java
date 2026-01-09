@@ -198,6 +198,25 @@ public class apiNghiPhep extends HttpServlet {
             java.sql.Date ngayBatDau = java.sql.Date.valueOf(ngayBatDauStr);
             java.sql.Date ngayKetThuc = java.sql.Date.valueOf(ngayKetThucStr);
             int donId = kn.taoDonNghiPhep(nhanVienId, loaiPhep, ngayBatDau, ngayKetThuc, soNgay, lyDo, nguoiTaoId, null);
+            
+            // Gửi thông báo cho trưởng phòng nhân sự (ID = 12)
+            if (donId > 0) {
+                try {
+                    String tenNhanVien = (String) nhanVien.get("ho_ten");
+                    String tieuDe = "Có đơn xin nghỉ phép cần duyệt";
+                    String noiDung = "Nhân viên " + tenNhanVien + " đã gửi đơn xin " + loaiPhep.toLowerCase() 
+                        + " từ ngày " + ngayBatDauStr + " đến " + ngayKetThucStr + " (" + soNgay + " ngày). "
+                        + "Lý do: " + lyDo;
+                    String loaiThongBao = "Đơn xin nghỉ phép";
+                    String duongDan = "dsNghiPhep";
+                    
+                    kn.insertThongBao(12, tieuDe, noiDung, loaiThongBao, duongDan);
+                } catch (Exception ex) {
+                    // Không dừng quá trình nếu gửi thông báo thất bại
+                    ex.printStackTrace();
+                }
+            }
+            
             out.print("{\"success\":true,\"message\":\"Tạo đơn thành công\",\"donId\":" + donId + "}");
         } catch (Exception ex) {
             out.print("{\"success\":false,\"message\":\"" + escapeJson(ex.getMessage()) + "\"}");
@@ -230,8 +249,30 @@ public class apiNghiPhep extends HttpServlet {
             
             Map<String, Object> nhanVien = kn.getNhanVienByEmail(email);
             int nguoiDuyetId = ((Number) nhanVien.get("id")).intValue();
+            String tenNguoiDuyet = (String) nhanVien.get("ho_ten");
             
-            kn.duyetDonNghiPhep(donId, nguoiDuyetId);
+            boolean result = kn.duyetDonNghiPhep(donId, nguoiDuyetId);
+            
+            // Gửi thông báo cho người gửi đơn
+            if (result) {
+                try {
+                    String tenNhanVien = (String) don.get("ten_nhan_vien");
+                    String ngayBatDau = don.get("ngay_bat_dau").toString();
+                    String ngayKetThuc = don.get("ngay_ket_thuc").toString();
+                    
+                    String tieuDe = "Đơn xin " + loaiPhep.toLowerCase() + " đã được duyệt";
+                    String noiDung = "Đơn xin " + loaiPhep.toLowerCase() + " của bạn từ ngày " + ngayBatDau 
+                        + " đến " + ngayKetThuc + " (" + soNgay + " ngày) đã được " + tenNguoiDuyet + " duyệt.";
+                    String loaiThongBao = "Đơn xin nghỉ phép";
+                    String duongDan = "userNghiPhep";
+                    
+                    kn.insertThongBao(nhanVienId, tieuDe, noiDung, loaiThongBao, duongDan);
+                } catch (Exception ex) {
+                    // Không dừng quá trình nếu gửi thông báo thất bại
+                    ex.printStackTrace();
+                }
+            }
+            
             out.print("{\"success\":true,\"message\":\"Duyệt đơn thành công\"}");
         } catch (Exception ex) {
             out.print("{\"success\":false,\"message\":\"" + escapeJson(ex.getMessage()) + "\"}");
@@ -243,10 +284,42 @@ public class apiNghiPhep extends HttpServlet {
             int donId = Integer.parseInt(request.getParameter("donId"));
             String lyDo = request.getParameter("lyDo");
             
+            // Lấy thông tin đơn trước khi từ chối
+            Map<String, Object> don = kn.getDonNghiPhepById(donId);
+            if (don == null) {
+                out.print("{\"success\":false,\"message\":\"Không tìm thấy đơn\"}");
+                return;
+            }
+            
             Map<String, Object> nhanVien = kn.getNhanVienByEmail(email);
             int nguoiDuyetId = ((Number) nhanVien.get("id")).intValue();
+            String tenNguoiDuyet = (String) nhanVien.get("ho_ten");
             
-            kn.tuChoiDonNghiPhep(donId, nguoiDuyetId, lyDo);
+            boolean result = kn.tuChoiDonNghiPhep(donId, nguoiDuyetId, lyDo);
+            
+            // Gửi thông báo cho người gửi đơn
+            if (result) {
+                try {
+                    String loaiPhep = (String) don.get("loai_phep");
+                    String ngayBatDau = don.get("ngay_bat_dau").toString();
+                    String ngayKetThuc = don.get("ngay_ket_thuc").toString();
+                    double soNgay = Double.parseDouble(don.get("so_ngay").toString());
+                    int nhanVienId = ((Number) don.get("nhan_vien_id")).intValue();
+                    
+                    String tieuDe = "Đơn xin " + loaiPhep.toLowerCase() + " đã bị từ chối";
+                    String noiDung = "Đơn xin " + loaiPhep.toLowerCase() + " của bạn từ ngày " + ngayBatDau 
+                        + " đến " + ngayKetThuc + " (" + soNgay + " ngày) đã bị từ chối bởi " + tenNguoiDuyet + ". "
+                        + "Lý do: " + (lyDo != null && !lyDo.isEmpty() ? lyDo : "Không có lý do cụ thể");
+                    String loaiThongBao = "Đơn xin nghỉ phép";
+                    String duongDan = "userNghiPhep";
+                    
+                    kn.insertThongBao(nhanVienId, tieuDe, noiDung, loaiThongBao, duongDan);
+                } catch (Exception ex) {
+                    // Không dừng quá trình nếu gửi thông báo thất bại
+                    ex.printStackTrace();
+                }
+            }
+            
             out.print("{\"success\":true,\"message\":\"Từ chối đơn thành công\"}");
         } catch (Exception ex) {
             out.print("{\"success\":false,\"message\":\"" + escapeJson(ex.getMessage()) + "\"}");
