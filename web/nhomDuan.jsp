@@ -280,6 +280,73 @@
                 100% { background-position: -200% 0; }
             }
 
+            /* Button Styles for Add Task and Step */
+            .btn-add-task {
+                background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+                color: white;
+                border: none;
+                border-radius: 8px;
+                padding: 0.5rem 1.25rem;
+                font-size: 0.875rem;
+                font-weight: 600;
+                display: inline-flex;
+                align-items: center;
+                gap: 0.5rem;
+                transition: all 0.3s ease;
+                margin-top: 0.75rem;
+                box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+            }
+
+            .btn-add-task:hover {
+                background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+                box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+                transform: translateY(-2px);
+                color: white;
+                text-decoration: none;
+            }
+
+            .btn-add-task:active {
+                transform: translateY(0);
+                box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+            }
+
+            .btn-add-task i {
+                font-size: 1rem;
+            }
+
+            .btn-add-step {
+                background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+                color: white;
+                border: none;
+                border-radius: 8px;
+                padding: 0.5rem 1.25rem;
+                font-size: 0.875rem;
+                font-weight: 600;
+                display: inline-flex;
+                align-items: center;
+                gap: 0.5rem;
+                transition: all 0.3s ease;
+                margin-top: 0.75rem;
+                box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+            }
+
+            .btn-add-step:hover {
+                background: linear-gradient(135deg, #059669 0%, #047857 100%);
+                box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+                transform: translateY(-2px);
+                color: white;
+                text-decoration: none;
+            }
+
+            .btn-add-step:active {
+                transform: translateY(0);
+                box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
+            }
+
+            .btn-add-step i {
+                font-size: 1rem;
+            }
+
             .filter-bar {
                 background: white;
                 padding: 20px;
@@ -667,7 +734,7 @@
                                     else if (tienDoDuAn >= 20) progressColor = "#f59e0b";
                                     else progressColor = "#ef4444";
                         %>
-                        <div class="project-tree tree-item" data-status="<%= trangThaiDuAn %>" data-group="<%= nhomDuAn %>" data-name="<%= tenDuAn %>">
+                        <div class="project-tree tree-item" data-status="<%= trangThaiDuAn %>" data-group="<%= nhomDuAn %>" data-name="<%= tenDuAn %>" data-project-id="<%= duAnId %>">
                             <div class="tree-header">
                                 <div class="tree-icon project">
                                     <i class="fa-solid fa-folder-open"></i>
@@ -710,6 +777,9 @@
                                         <div class="progress-bar-fill" style="width: <%= tienDoDuAn %>%; background: <%= progressColor %>;"></div>
                                     </div>
                                     <div class="progress-text"><%= String.format("%.0f", tienDoDuAn) %>% Hoàn thành</div>
+                                    <button class="btn btn-sm btn-add-task" onclick="event.stopPropagation(); openAddTaskModal(<%= duAnId %>);" title="Thêm công việc mới">
+                                        <i class="fa-solid fa-plus-circle"></i> Thêm việc
+                                    </button>
                                 </div>
                                 <% if (congViecList != null && !congViecList.isEmpty()) { %>
                                 <div class="expand-icon">
@@ -747,7 +817,7 @@
                                     else if (tienDoCV >= 20) cvProgressColor = "#f59e0b";
                                     else cvProgressColor = "#ef4444";
                                 %>
-                                <div class="tree-item task-clickable" data-task-id="<%= cvId %>">
+                                <div class="tree-item task-clickable" data-task-id="<%= cvId %>" data-project-id="<%= duAnId %>">
                                     <div class="tree-header">
                                         <div class="tree-icon task">
                                             <i class="fa-solid fa-tasks"></i>
@@ -785,6 +855,9 @@
                                                 <div class="progress-bar-fill" style="width: <%= tienDoCV %>%; background: <%= cvProgressColor %>;"></div>
                                             </div>
                                             <div class="progress-text"><%= String.format("%.0f", tienDoCV) %>%</div>
+                                            <button class="btn btn-sm btn-add-step" onclick="event.stopPropagation(); openAddSubTaskModal(<%= duAnId %>, <%= cvId %>);" title="Thêm quy trình mới">
+                                                <i class="fa-solid fa-plus-circle"></i> Thêm quy trình
+                                            </button>
                                         </div>
                                         <% if (quyTrinhList != null && !quyTrinhList.isEmpty()) { %>
                                         <div class="expand-icon">
@@ -800,6 +873,7 @@
                                             String trangThaiQT = (String) quyTrinh.get("trang_thai");
                                             Double tienDoQT = (Double) quyTrinh.get("tien_do");
                                             java.sql.Date ngayKetThucQT = (java.sql.Date) quyTrinh.get("ngay_ket_thuc");
+                                            String nguoiNhanQTNames = (String) quyTrinh.get("nguoi_nhan_names");  // ✅ Lấy người nhận của quy trình
                                             
                                             String qtStatusClass = "";
                                             if ("Đang thực hiện".equals(trangThaiQT)) qtStatusClass = "dang-thuc-hien";
@@ -823,10 +897,10 @@
                                                         <%= generateDeadlineBadge(ngayKetThucQT, today) %>
                                                     </div>
                                                     <div class="tree-meta">
-                                                        <% if (nguoiNhanNames != null && !nguoiNhanNames.isEmpty()) { %>
+                                                        <% if (nguoiNhanQTNames != null && !nguoiNhanQTNames.isEmpty()) { %>
                                                         <span class="tree-meta-item">
                                                             <i class="fa-solid fa-user"></i>
-                                                            <%= nguoiNhanNames %>
+                                                            <%= nguoiNhanQTNames %>
                                                         </span>
                                                         <% } %>
                                                         <% if (ngayKetThucQT != null) { %>
@@ -954,5 +1028,171 @@
                 window.location.href = 'dsDuan?nhom_du_an=' + encodeURIComponent(nhomDuAn) + '&phong_ban=' + encodeURIComponent(fullPhongBan);
             }
         </script>
+        
+        <!-- Modal tạo công việc -->
+        <div class="modal fade" id="modalTask" tabindex="-1">
+            <div class="modal-dialog">
+                <form class="modal-content" id="taskForm" enctype="multipart/form-data">
+                    <div class="modal-header">
+                        <h5 class="modal-title"><i class="fa-solid fa-tasks"></i> Thông tin công việc
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" name="du_an_id" id="taskProjectId" value="">
+                        <div class="mb-3">
+                            <label class="form-label"><b>Tên công việc</b></label>
+                            <input type="text" class="form-control" name="ten_cong_viec" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label"><b>Mô tả</b></label>
+                            <textarea class="form-control" name="mo_ta" rows="4" placeholder="Nhập mô tả công việc..."></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label"><b>Ngày bắt đầu</b></label>
+                            <input type="date" class="form-control" name="ngay_bat_dau">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label"><b>Hạn hoàn thành</b></label>
+                            <input type="date" class="form-control" name="han_hoan_thanh">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label"><b>Mức độ ưu tiên</b></label>
+                            <select class="form-select" name="muc_do_uu_tien">
+                                <option value="Thấp" selected>Thấp</option>
+                                <option value="Trung bình">Trung bình</option>
+                                <option value="Cao">Cao</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label"><b>Người giao</b></label>
+                            <select class="form-select" name="ten_nguoi_giao" id="nguoiGiaoSelect">
+                                <!-- AJAX load nhân viên -->
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label"><b>Người nhận</b></label>
+                            <button type="button" class="btn btn-outline-primary" id="btnOpenNguoiNhanCreate">
+                                <i class="fa-solid fa-user-plus"></i> Thêm người nhận
+                            </button>
+                            <div id="danhSachNguoiNhan2" class="d-flex flex-wrap gap-2 mt-2">
+                                <!-- Tag tên người nhận sẽ hiển thị ở đây -->
+                            </div>
+                            <input type="hidden" name="ten_nguoi_nhan" id="nguoiNhanHidden2">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label"><b>Phòng ban</b></label>
+                            <select class="form-select" name="ten_phong_ban" id="phongSelect">
+                                <!-- Sẽ được load từ API -->
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label"><b>Tài liệu công việc (Link Driver)</b></label>
+                            <input type="text" class="form-control" name="tai_lieu_cv">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label"><b>File công việc</b></label>
+                            <input class="form-control" type="file" name="files" id="taskFiles" multiple>
+                            <div id="taskFileList" class="form-text text-muted small mt-1">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary rounded-pill " id="btnInsertTask">Lưu</button>
+                        <button type="button" class="btn btn-secondary rounded-pill"
+                                data-bs-dismiss="modal">Huỷ</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Modal thêm quy trình/công việc con -->
+        <div class="modal fade" id="modalAddProcessStep" tabindex="-1">
+            <div class="modal-dialog">
+                <form class="modal-content" id="formAddProcessStep">
+                    <div class="modal-header">
+                        <h5 class="modal-title"><i class="fa-solid fa-list-check"></i> Thêm công việc con
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" name="cong_viec_id" id="processParentTaskId" value="">
+                        <div class="mb-2">
+                            <label class="form-label">Tên công việc con</label>
+                            <input type="text" class="form-control" name="name" required placeholder="Nhập tên bước quy trình...">
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label">Mô tả</label>
+                            <textarea class="form-control" name="desc" rows="3" placeholder="Nhập mô tả..."></textarea>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label">Người nhận</label>
+                            <button type="button" class="btn btn-outline-primary btn-sm" id="btnOpenNguoiNhanProcess">
+                                <i class="fa-solid fa-user-plus"></i> Thêm người nhận
+                            </button>
+                            <div id="danhSachNguoiNhanProcess" class="d-flex flex-wrap gap-2 mt-2"></div>
+                            <input type="hidden" name="process_nguoi_nhan" id="nguoiNhanProcessHidden">
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label">Trạng thái</label>
+                            <select class="form-select" name="stepStatus">
+                                <option value="Chưa bắt đầu" selected>Chưa bắt đầu</option>
+                                <option value="Đang thực hiện">Đang thực hiện</option>
+                                <option value="Đã hoàn thành">Đã hoàn thành</option>
+                            </select>
+                        </div>
+                        <div class="mb-2 row">
+                            <div class="col">
+                                <label class="form-label">Ngày bắt đầu</label>
+                                <input type="date" class="form-control" name="start">
+                            </div>
+                            <div class="col">
+                                <label class="form-label">Ngày kết thúc</label>
+                                <input type="date" class="form-control" name="end">
+                            </div>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label">Link tài liệu</label>
+                            <input type="text" class="form-control" name="link_tai_lieu" placeholder="https://...">
+                            <small class="text-muted">Link tài liệu tham khảo (Google Drive, Dropbox, v.v.)</small>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label">File tài liệu</label>
+                            <input type="file" class="form-control" name="file_tai_lieu" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx" multiple>
+                            <small class="text-muted">Chọn một hoặc nhiều file (PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX)</small>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary rounded-pill">Thêm công việc con</button>
+                        <button type="button" class="btn btn-secondary rounded-pill"
+                                data-bs-dismiss="modal">Huỷ</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Modal chọn nhiều người -->
+        <div class="modal fade" id="modalChonNguoiNhan" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title"><i class="fa-solid fa-users"></i> Chọn người nhận</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="listNguoiNhanCheckbox" class="row"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" id="btnXacNhanNguoiNhan" class="btn btn-primary">
+                            <i class="fa-solid fa-check"></i> Xác nhận
+                        </button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script src="scripts/nhomDuan.js"></script>
     </body>
 </html>

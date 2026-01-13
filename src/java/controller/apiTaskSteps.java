@@ -39,6 +39,7 @@ public class apiTaskSteps extends HttpServlet {
         String taskId = request.getParameter("task_id");
 
         response.setContentType("application/json; charset=UTF-8");
+        request.setCharacterEncoding("UTF-8");
         PrintWriter out = response.getWriter();
 
         if (taskId == null || taskId.trim().isEmpty()) {

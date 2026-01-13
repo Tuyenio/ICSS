@@ -28,22 +28,42 @@ public class dsCongviecDuanNV extends HttpServlet {
             String trangThai = req.getParameter("trangThai");
             String tinhTrang = req.getParameter("tinhTrang");
 
-            if (projectIdStr == null) {
+            // Kiểm tra session
+            if (email == null || email.isEmpty()) {
+                resp.sendRedirect("login.jsp");
+                return;
+            }
+
+            if (projectIdStr == null || projectIdStr.isEmpty()) {
                 resp.sendRedirect("dsDuannv"); // không có ID thì quay lại danh sách dự án
                 return;
             }
 
             int projectId = Integer.parseInt(projectIdStr);
             String tenDuan = kn.getTenDuanById(projectId);
+            
+            // Kiểm tra nếu không tìm thấy dự án
+            if (tenDuan == null || tenDuan.isEmpty()) {
+                resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Không tìm thấy dự án với ID: " + projectId);
+                return;
+            }
 
             // 🟢 Danh sách công việc chính
             List<Map<String, Object>> taskList;
 
                 taskList = kn.getAllTasksNV(email, projectId);
+                
+            // Đảm bảo taskList không null
+            if (taskList == null) {
+                taskList = new ArrayList<>();
+            }
 
             // 🟢 Các danh sách phụ: archived, deleted
             List<Map<String, Object>> archivedTaskList = kn.getTasksByTinhTrang(email, projectId, "Lưu trữ");
             List<Map<String, Object>> deletedTaskList = kn.getTasksByTinhTrang(email, projectId, "Đã xóa");
+            
+            if (archivedTaskList == null) archivedTaskList = new ArrayList<>();
+            if (deletedTaskList == null) deletedTaskList = new ArrayList<>();
 
             // 🟢 Cập nhật trạng thái từ tiến độ
             for (Map<String, Object> task : taskList) {

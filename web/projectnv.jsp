@@ -524,7 +524,7 @@
                                     else if ("Đóng dự án".equals(status)) statusClass = "bg-danger";
                         %>
                         
-                        <div class="project-card" data-id="<%= p.get("id") %>" onclick="window.location.href='dsCongviecDuannv?projectId=<%= p.get("id") %>';" style="cursor:pointer;">
+                        <div class="project-card" data-id="<%= p.get("id") %>" onclick="window.location.href='dsCongviecDuanNV?projectId=<%= p.get("id") %>';" style="cursor:pointer;">
                             <div class="project-card-header" onclick="event.stopPropagation();">
                                 <h4 class="project-title"><%= p.get("ten_du_an") %></h4>
                                 <span class="badge <%= priorityClass %> project-priority"><%= priority %></span>
@@ -636,7 +636,7 @@
                                             else if ("Đã hoàn thành".equals(status)) statusClass = "bg-success";
                                             else if ("Đóng dự án".equals(status)) statusClass = "bg-danger";
                                 %>
-                                <tr onclick="window.location.href='dsCongviecDuannv?projectId=<%= p.get("id") %>';" style="cursor:pointer;">
+                                <tr onclick="window.location.href='dsCongviecDuanNV?projectId=<%= p.get("id") %>';" style="cursor:pointer;">
                                     <td><strong><%= p.get("ten_du_an") %></strong></td>
                                     <td>
                                         <img src="<%= p.get("lead_avatar") %>" width="24" height="24" class="rounded-circle me-1">

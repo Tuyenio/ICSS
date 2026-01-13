@@ -1444,7 +1444,9 @@ $('#btnAddProcessStep').on('click', function () {
 
 $('#formAddProcessStep').on('submit', function (e) {
     e.preventDefault();
-    var taskId = document.getElementById("taskId").value;
+    // Lấy task ID từ DOM hoặc từ biến global nếu từ nhomDuan
+    var taskId = document.getElementById("taskId") ? document.getElementById("taskId").value : window.currentTaskIdForProcess;
+    
     var step = {
         name: $(this).find('[name="stepName"]').val(),
         desc: $(this).find('[name="stepDesc"]').val(),

@@ -36,8 +36,11 @@ import java.nio.file.StandardCopyOption;
 public class xoaQuytrinh extends HttpServlet {
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        // ✅ Set encoding TRƯỚC KHI đọc bất kỳ parameter nào
         request.setCharacterEncoding("UTF-8");
         response.setCharacterEncoding("UTF-8");
+        response.setContentType("application/json; charset=UTF-8");
+        
         String action = request.getParameter("action");
 
         if ("delete".equals(action)) {
@@ -96,23 +99,19 @@ public class xoaQuytrinh extends HttpServlet {
                     }
 
                     // Trả JSON xác nhận
-                    response.setContentType("application/json; charset=UTF-8");
                     response.setStatus(HttpServletResponse.SC_OK);
                     response.getWriter().write("{\"success\":true}");
                     db.close();
                 } else {
-                    response.setContentType("application/json; charset=UTF-8");
                     response.setStatus(HttpServletResponse.SC_NOT_FOUND);
                     response.getWriter().write("{\"success\":false,\"message\":\"Không tìm thấy bước để xóa\"}");
                 }
             } catch (NumberFormatException | SQLException e) {
                 e.printStackTrace(); // Ghi log
-                response.setContentType("application/json; charset=UTF-8");
                 response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                 response.getWriter().write("{\"success\":false,\"message\":\"Lỗi server khi xóa bước\"}");
             } catch (ClassNotFoundException ex) {
                 ex.printStackTrace();
-                response.setContentType("application/json; charset=UTF-8");
                 response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                 response.getWriter().write("{\"success\":false,\"message\":\"Lỗi server (Class not found)\"}");
             }
@@ -250,7 +249,6 @@ public class xoaQuytrinh extends HttpServlet {
                         db.themLichSuCongViec(congViecId, userId, logMsg.toString());
                     }
 
-                    response.setContentType("application/json; charset=UTF-8");
                     response.setStatus(HttpServletResponse.SC_OK);
 
                     String safeLink = (linkTaiLieu != null) ? linkTaiLieu : "";
@@ -272,12 +270,10 @@ public class xoaQuytrinh extends HttpServlet {
                     db.close();
                 } else {
                     response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                    response.setContentType("application/json; charset=UTF-8");
                     response.getWriter().write("{\"success\":false,\"message\":\"Không thể thêm bước\"}");
                 }
             } catch (Exception e) {
                 response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                response.setContentType("application/json; charset=UTF-8");
                 e.printStackTrace();
                 response.getWriter().write("{\"success\":false,\"message\":\"Lỗi máy chủ\"}");
             }
