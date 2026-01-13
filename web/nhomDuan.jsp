@@ -474,6 +474,14 @@
                 background: #7c3aed;
                 transform: scale(1.1);
             }
+
+            .task-clickable {
+                cursor: pointer;
+            }
+
+            .task-clickable:hover {
+                background: #f0f9ff !important;
+            }
         </style>
 
         <script>
@@ -739,7 +747,7 @@
                                     else if (tienDoCV >= 20) cvProgressColor = "#f59e0b";
                                     else cvProgressColor = "#ef4444";
                                 %>
-                                <div class="tree-item">
+                                <div class="tree-item task-clickable" data-task-id="<%= cvId %>">
                                     <div class="tree-header">
                                         <div class="tree-icon task">
                                             <i class="fa-solid fa-tasks"></i>
@@ -915,6 +923,17 @@
                         }
                     });
                 }
+
+                // Click vào công việc để mở trang dsCongviec với taskId
+                $('.task-clickable').on('click', function(e) {
+                    // Chặn sự kiện expand/collapse của tree
+                    e.stopPropagation();
+                    
+                    var taskId = $(this).data('task-id');
+                    
+                    // Redirect sang trang dsCongviec với taskId
+                    window.location.href = 'dsCongviec?taskId=' + taskId;
+                });
             });
         </script>
         <script>
