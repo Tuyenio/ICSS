@@ -24,8 +24,8 @@ public class KNCSDL {
 
     public KNCSDL() throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
-        //this.cn = DriverManager.getConnection(path, "root", "");
-        this.cn = DriverManager.getConnection(path, "icssapp", "StrongPass!2025");
+        this.cn = DriverManager.getConnection(path, "root", "");
+        //this.cn = DriverManager.getConnection(path, "icssapp", "StrongPass!2025");
     }
 
     public ResultSet laydl(String email) throws SQLException {
@@ -6452,6 +6452,250 @@ public class KNCSDL {
             stmt.setInt(2, nhanVienId);
             return stmt.executeUpdate() > 0;
         }
+    }
+
+    /**
+     * Lấy tất cả dự án với công việc và tiến độ
+     */
+    public List<Map<String, Object>> getAllDuAnWithTasks() throws SQLException {
+        List<Map<String, Object>> duAnList = new ArrayList<>();
+        
+        // Truy vấn tất cả dự án
+        String sqlDuAn = """
+            SELECT da.id, da.ten_du_an, da.mo_ta, da.nhom_du_an, 
+                   da.phong_ban, da.trang_thai_duan, da.ngay_bat_dau, da.ngay_ket_thuc,
+                   nv.ho_ten as lead_name
+            FROM du_an da
+            LEFT JOIN nhanvien nv ON da.lead_id = nv.id
+            WHERE da.id <> 1
+            ORDER BY 
+                CASE da.trang_thai_duan
+                    WHEN 'Đang thực hiện' THEN 1
+                    WHEN 'Tạm ngưng' THEN 2
+                    WHEN 'Đã hoàn thành' THEN 3
+                    ELSE 4
+                END,
+                da.ngay_tao DESC
+        """;
+        
+        try (PreparedStatement psDuAn = cn.prepareStatement(sqlDuAn);
+             ResultSet rsDuAn = psDuAn.executeQuery()) {
+            
+            while (rsDuAn.next()) {
+                Map<String, Object> duAn = new HashMap<>();
+                int duAnId = rsDuAn.getInt("id");
+                
+                duAn.put("id", duAnId);
+                duAn.put("ten_du_an", rsDuAn.getString("ten_du_an"));
+                duAn.put("mo_ta", rsDuAn.getString("mo_ta"));
+                duAn.put("nhom_du_an", rsDuAn.getString("nhom_du_an"));
+                duAn.put("phong_ban", rsDuAn.getString("phong_ban"));
+                duAn.put("trang_thai_duan", rsDuAn.getString("trang_thai_duan"));
+                duAn.put("ngay_bat_dau", rsDuAn.getDate("ngay_bat_dau"));
+                duAn.put("ngay_ket_thuc", rsDuAn.getDate("ngay_ket_thuc"));
+                duAn.put("lead_name", rsDuAn.getString("lead_name"));
+                
+                // Tính tiến độ dự án
+                double tienDo = tinhTienDoDuAn(duAnId);
+                duAn.put("tien_do", tienDo);
+                
+                // Lấy danh sách công việc của dự án
+                List<Map<String, Object>> congViecList = getCongViecByDuAn(duAnId);
+                duAn.put("cong_viec", congViecList);
+                
+                duAnList.add(duAn);
+            }
+        }
+        
+        return duAnList;
+    }
+    
+    /**
+     * Tính tiến độ dự án dựa trên công việc
+     */
+    private double tinhTienDoDuAn(int duAnId) throws SQLException {
+        String sql = """
+            SELECT 
+                COUNT(*) as tong_cv,
+                SUM(CASE WHEN cv.trang_thai = 'Đã hoàn thành' THEN 1 ELSE 0 END) as cv_hoan_thanh
+            FROM cong_viec cv
+            WHERE cv.du_an_id = ?
+        """;
+        
+        try (PreparedStatement ps = cn.prepareStatement(sql)) {
+            ps.setInt(1, duAnId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    int tongCV = rs.getInt("tong_cv");
+                    int cvHoanThanh = rs.getInt("cv_hoan_thanh");
+                    
+                    if (tongCV > 0) {
+                        return Math.round((cvHoanThanh * 100.0 / tongCV) * 10) / 10.0;
+                    }
+                }
+            }
+        }
+        
+        return 0.0;
+    }
+    
+    /**
+     * Lấy danh sách công việc của một dự án
+     */
+    private List<Map<String, Object>> getCongViecByDuAn(int duAnId) throws SQLException {
+        List<Map<String, Object>> congViecList = new ArrayList<>();
+        
+        String sql = """
+            SELECT 
+                cv.id, cv.ten_cong_viec, cv.mo_ta, cv.trang_thai, 
+                cv.trang_thai_duyet, cv.muc_do_uu_tien,
+                cv.ngay_bat_dau, cv.han_hoan_thanh, cv.ngay_hoan_thanh,
+                nv.ho_ten as nguoi_giao_name,
+                pb.ten_phong as phong_ban_name,
+                (SELECT GROUP_CONCAT(nv2.ho_ten SEPARATOR ', ')
+                 FROM cong_viec_nguoi_nhan cvnn
+                 JOIN nhanvien nv2 ON cvnn.nhan_vien_id = nv2.id
+                 WHERE cvnn.cong_viec_id = cv.id) as nguoi_nhan_names
+            FROM cong_viec cv
+            LEFT JOIN nhanvien nv ON cv.nguoi_giao_id = nv.id
+            LEFT JOIN phong_ban pb ON cv.phong_ban_id = pb.id
+            WHERE cv.du_an_id = ?
+            ORDER BY 
+                CASE cv.trang_thai
+                    WHEN 'Đang thực hiện' THEN 1
+                    WHEN 'Chưa bắt đầu' THEN 2
+                    WHEN 'Trễ hạn' THEN 3
+                    WHEN 'Đã hoàn thành' THEN 4
+                    ELSE 5
+                END,
+                cv.ngay_tao DESC
+        """;
+        
+        try (PreparedStatement ps = cn.prepareStatement(sql)) {
+            ps.setInt(1, duAnId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> congViec = new HashMap<>();
+                    int congViecId = rs.getInt("id");
+                    
+                    congViec.put("id", congViecId);
+                    congViec.put("ten_cong_viec", rs.getString("ten_cong_viec"));
+                    congViec.put("mo_ta", rs.getString("mo_ta"));
+                    congViec.put("trang_thai", rs.getString("trang_thai"));
+                    congViec.put("trang_thai_duyet", rs.getString("trang_thai_duyet"));
+                    congViec.put("muc_do_uu_tien", rs.getString("muc_do_uu_tien"));
+                    congViec.put("ngay_bat_dau", rs.getDate("ngay_bat_dau"));
+                    congViec.put("han_hoan_thanh", rs.getDate("han_hoan_thanh"));
+                    congViec.put("ngay_hoan_thanh", rs.getDate("ngay_hoan_thanh"));
+                    congViec.put("nguoi_giao_name", rs.getString("nguoi_giao_name"));
+                    congViec.put("phong_ban_name", rs.getString("phong_ban_name"));
+                    congViec.put("nguoi_nhan_names", rs.getString("nguoi_nhan_names"));
+                    
+                    // Tính tiến độ công việc
+                    double tienDo = tinhTienDoCongViec(congViecId);
+                    congViec.put("tien_do", tienDo);
+                    
+                    // Lấy danh sách quy trình con
+                    List<Map<String, Object>> quyTrinhList = getQuyTrinhByCongViec(congViecId);
+                    congViec.put("quy_trinh", quyTrinhList);
+                    
+                    congViecList.add(congViec);
+                }
+            }
+        }
+        
+        return congViecList;
+    }
+    
+    /**
+     * Tính tiến độ công việc dựa trên quy trình
+     */
+    private double tinhTienDoCongViec(int congViecId) throws SQLException {
+        String sql = """
+            SELECT 
+                COUNT(*) as tong_qt,
+                SUM(CASE WHEN trang_thai = 'Đã hoàn thành' THEN 1 ELSE 0 END) as qt_hoan_thanh
+            FROM cong_viec_quy_trinh
+            WHERE cong_viec_id = ?
+        """;
+        
+        try (PreparedStatement ps = cn.prepareStatement(sql)) {
+            ps.setInt(1, congViecId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    int tongQT = rs.getInt("tong_qt");
+                    int qtHoanThanh = rs.getInt("qt_hoan_thanh");
+                    
+                    if (tongQT > 0) {
+                        return Math.round((qtHoanThanh * 100.0 / tongQT) * 10) / 10.0;
+                    } else {
+                        // Nếu không có quy trình thì tính theo trạng thái
+                        String sqlTrangThai = "SELECT trang_thai FROM cong_viec WHERE id = ?";
+                        try (PreparedStatement psTS = cn.prepareStatement(sqlTrangThai)) {
+                            psTS.setInt(1, congViecId);
+                            try (ResultSet rsTS = psTS.executeQuery()) {
+                                if (rsTS.next()) {
+                                    String trangThai = rsTS.getString("trang_thai");
+                                    switch (trangThai) {
+                                        case "Đã hoàn thành": return 100.0;
+                                        case "Đang thực hiện": return 50.0;
+                                        default: return 0.0;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        return 0.0;
+    }
+    
+    /**
+     * Lấy danh sách quy trình của một công việc
+     */
+    private List<Map<String, Object>> getQuyTrinhByCongViec(int congViecId) throws SQLException {
+        List<Map<String, Object>> quyTrinhList = new ArrayList<>();
+        
+        String sql = """
+            SELECT 
+                qt.id, qt.ten_buoc, qt.mo_ta, qt.trang_thai,
+                qt.ngay_bat_dau, qt.ngay_ket_thuc
+            FROM cong_viec_quy_trinh qt
+            WHERE qt.cong_viec_id = ?
+            ORDER BY qt.id ASC
+        """;
+        
+        try (PreparedStatement ps = cn.prepareStatement(sql)) {
+            ps.setInt(1, congViecId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> quyTrinh = new HashMap<>();
+                    
+                    quyTrinh.put("id", rs.getInt("id"));
+                    quyTrinh.put("ten_buoc", rs.getString("ten_buoc"));
+                    quyTrinh.put("mo_ta", rs.getString("mo_ta"));
+                    quyTrinh.put("trang_thai", rs.getString("trang_thai"));
+                    quyTrinh.put("ngay_bat_dau", rs.getDate("ngay_bat_dau"));
+                    quyTrinh.put("ngay_ket_thuc", rs.getDate("ngay_ket_thuc"));
+                    
+                    // Tính tiến độ quy trình (đơn giản dựa trên trạng thái)
+                    String trangThai = rs.getString("trang_thai");
+                    double tienDo = 0.0;
+                    switch (trangThai) {
+                        case "Đã hoàn thành": tienDo = 100.0; break;
+                        case "Đang thực hiện": tienDo = 50.0; break;
+                        default: tienDo = 0.0;
+                    }
+                    quyTrinh.put("tien_do", tienDo);
+                    
+                    quyTrinhList.add(quyTrinh);
+                }
+            }
+        }
+        
+        return quyTrinhList;
     }
 
 }
