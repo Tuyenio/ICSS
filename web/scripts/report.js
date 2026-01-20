@@ -85,6 +85,31 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 })();
 
+// Validation cho form export DỰ ÁN
+(function () {
+    var form = document.getElementById('formExportProjectReport');
+    if (!form) return;
+    
+    form.addEventListener('submit', function (e) {
+        var tuNgay = document.getElementById('exportProjectTuNgay');
+        var denNgay = document.getElementById('exportProjectDenNgay');
+        
+        if (!tuNgay || !denNgay || !tuNgay.value || !denNgay.value) {
+            e.preventDefault();
+            showToast('error', 'Vui lòng chọn khoảng thời gian để xuất báo cáo dự án.');
+            return false;
+        }
+        
+        if (tuNgay.value > denNgay.value) {
+            e.preventDefault();
+            showToast('error', 'Ngày kết thúc phải sau hoặc bằng ngày bắt đầu.');
+            return false;
+        }
+        
+        return true;
+    });
+})();
+
 // Hàm showToast bạn đang dùng (giả sử đã có)
 function showToast(type, message) {
     var map = {success: '#toastSuccess', error: '#toastError', info: '#toastInfo', warning: '#toastWarning'};
@@ -178,6 +203,44 @@ $(function () {
         $('#exportDenNgay').val(picker.endDate.format('YYYY-MM-DD'));
     });
 
+    // Khởi tạo Date Range Picker cho modal xuất báo cáo DỰ ÁN
+    $('#dateRangeExportProject').daterangepicker({
+        startDate: moment().startOf('month'),
+        endDate: moment().endOf('month'),
+        locale: {
+            format: 'DD/MM/YYYY',
+            separator: ' - ',
+            applyLabel: 'Áp dụng',
+            cancelLabel: 'Hủy',
+            fromLabel: 'Từ',
+            toLabel: 'Đến',
+            customRangeLabel: 'Tùy chọn',
+            weekLabel: 'T',
+            daysOfWeek: ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'],
+            monthNames: ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6',
+                'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'],
+            firstDay: 1
+        },
+        ranges: {
+            'Hôm nay': [moment(), moment()],
+            'Hôm qua': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+            '7 ngày qua': [moment().subtract(6, 'days'), moment()],
+            '30 ngày qua': [moment().subtract(29, 'days'), moment()],
+            'Tháng này': [moment().startOf('month'), moment().endOf('month')],
+            'Tháng trước': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
+            'Quý này': [moment().startOf('quarter'), moment().endOf('quarter')],
+            'Năm nay': [moment().startOf('year'), moment().endOf('year')]
+        },
+        alwaysShowCalendars: true,
+        autoApply: false
+    });
+
+    // Cập nhật hidden fields khi chọn date range trong modal DỰ ÁN
+    $('#dateRangeExportProject').on('apply.daterangepicker', function (ev, picker) {
+        $('#exportProjectTuNgay').val(picker.startDate.format('YYYY-MM-DD'));
+        $('#exportProjectDenNgay').val(picker.endDate.format('YYYY-MM-DD'));
+    });
+
     // Xử lý khi chọn khoảng thời gian
     $('#dateRangeFilter').on('apply.daterangepicker', function (ev, picker) {
         var tuNgay = picker.startDate.format('YYYY-MM-DD');
@@ -192,21 +255,10 @@ $(function () {
         window.location.href = url;
     });
 
-    // Xóa bộ lọc date range
-    $('#clearDateRange').click(function () {
-        var phongBan = $('#phongBanFilter').val();
-        var url = window.location.pathname;
-
-        // Quay về chế độ lọc theo tháng hiện tại
-        var now = new Date();
-        var thang = now.getMonth() + 1;
-        var nam = now.getFullYear();
-
-        url += '?thang=' + thang + '&nam=' + nam;
-        if (phongBan) {
-            url += '&phong_ban=' + encodeURIComponent(phongBan);
-        }
-        window.location.href = url;
+    // Nút đặt lại bộ lọc
+    $('#resetFilter').click(function () {
+        // Xóa tất cả filter: quay lại URL gốc không có tham số
+        window.location.href = window.location.pathname;
     });
 });
 
@@ -348,39 +400,73 @@ function refreshData() {
     window.location.reload();
 }
 
-// Enhanced filter table với cập nhật số lượng
+// Enhanced filter table với cập nhật số lượng - Hoạt động cho cả 2 tab
 $('#keywordFilter').on('input', function () {
     var keyword = $(this).val().toLowerCase();
-    var visibleRows = 0;
-    var totalRows = 0;
+    
+    // Kiểm tra tab nào đang active
+    var activeTab = $('.nav-link.active').attr('id');
+    
+    if (activeTab === 'nhanvien-tab') {
+        // Filter bảng nhân viên
+        var visibleRows = 0;
+        var totalRows = 0;
 
-    $('#reportTableBody tr').each(function () {
-        // Bỏ qua các row thông báo "không có dữ liệu"
-        if ($(this).find('td').length < 8)
-            return;
+        $('#reportTableBody tr').each(function () {
+            // Bỏ qua các row thông báo "không có dữ liệu"
+            if ($(this).find('td').length < 8)
+                return;
 
-        totalRows++;
-        var text = $(this).text().toLowerCase();
-        var visible = text.indexOf(keyword) > -1;
-        $(this).toggle(visible);
-        if (visible)
-            visibleRows++;
-    });
+            totalRows++;
+            var text = $(this).text().toLowerCase();
+            var visible = text.indexOf(keyword) > -1;
+            $(this).toggle(visible);
+            if (visible)
+                visibleRows++;
+        });
 
-    // Cập nhật số lượng hiển thị
-    $('.text-muted strong').text(visibleRows);
+        // Cập nhật số lượng hiển thị
+        $('.text-muted strong').text(visibleRows);
 
-    // Show/hide "no data" message
-    if (visibleRows === 0 && keyword !== '' && totalRows > 0) {
-        if ($('#no-data-row').length === 0) {
-            $('#reportTableBody').append(
-                    '<tr id="no-data-row"><td colspan="8" class="text-center text-muted py-4">' +
-                    '<i class="fa-solid fa-search fa-2x mb-2"></i><br>' +
-                    'Không tìm thấy kết quả cho từ khóa "<strong>' + keyword + '</strong>"</td></tr>'
-                    );
+        // Show/hide "no data" message
+        if (visibleRows === 0 && keyword !== '' && totalRows > 0) {
+            if ($('#no-data-row').length === 0) {
+                $('#reportTableBody').append(
+                        '<tr id="no-data-row"><td colspan="8" class="text-center text-muted py-4">' +
+                        '<i class="fa-solid fa-search fa-2x mb-2"></i><br>' +
+                        'Không tìm thấy kết quả cho từ khóa "<strong>' + keyword + '</strong>"</td></tr>'
+                        );
+            }
+        } else {
+            $('#no-data-row').remove();
         }
-    } else {
-        $('#no-data-row').remove();
+    } else if (activeTab === 'duan-tab') {
+        // Filter card dự án - Tìm theo tên dự án hoặc leader
+        var visibleProjects = 0;
+        var totalProjects = 0;
+
+        $('.project-card').each(function () {
+            totalProjects++;
+            var projectName = $(this).data('project-name') ? $(this).data('project-name').toLowerCase() : '';
+            var projectLead = $(this).data('project-lead') ? $(this).data('project-lead').toLowerCase() : '';
+            var visible = projectName.indexOf(keyword) > -1 || projectLead.indexOf(keyword) > -1;
+            $(this).toggle(visible);
+            if (visible)
+                visibleProjects++;
+        });
+
+        // Hiển thị thông báo nếu không tìm thấy
+        if (visibleProjects === 0 && keyword !== '' && totalProjects > 0) {
+            if ($('#no-project-found').length === 0) {
+                $('.row.g-4').append(
+                        '<div id="no-project-found" class="col-12 text-center py-5">' +
+                        '<i class="fa-solid fa-search fa-3x text-muted mb-3"></i><br>' +
+                        '<span class="text-muted">Không tìm thấy dự án cho từ khóa "<strong>' + keyword + '</strong>"</span></div>'
+                        );
+            }
+        } else {
+            $('#no-project-found').remove();
+        }
     }
 });
 
@@ -449,5 +535,134 @@ $(document).on("click", ".task-detail", function () {
         error: function () {
             $("#modalTaskTable").html('<tr><td colspan="3" class="text-center text-danger">Lỗi tải dữ liệu</td></tr>');
         }
+    });
+});
+
+// ============================================
+// FILTER DỰ ÁN & CLICK STATUS BOX
+// ============================================
+
+// Click status box để xem chi tiết công việc
+$('.status-box').on('click', function() {
+    var projectName = $(this).data('project');
+    var status = $(this).data('status');
+    var count = $(this).data('count');
+    
+    // Cập nhật modal header
+    $('#projectName').text(projectName);
+    $('#projectTaskStatus').text(status).attr('class', 'badge ' + getStatusBadgeClass(status));
+    $('#projectDetailTitle').html('<i class="fa-solid fa-list-check me-2"></i>Chi tiết công việc (' + status + ')');
+    
+    // Làm trống bảng
+    $('#projectTaskTableBody').html('<tr><td colspan="6" class="text-center text-muted py-3">Đang tải dữ liệu...</td></tr>');
+    
+    // Tải dữ liệu từ backend
+    $.ajax({
+        url: './getProjectTasks',
+        type: 'POST',
+        dataType: 'json',
+        data: {
+            projectName: projectName,
+            status: status,
+            tu_ngay: $('#tuNgayHidden').val(),
+            den_ngay: $('#denNgayHidden').val()
+        },
+        success: function(tasks) {
+            var html = '';
+            var stt = 1;
+            
+            if (tasks.length === 0) {
+                html = '<tr><td colspan="6" class="text-center text-muted py-3">Không có công việc</td></tr>';
+            } else {
+                tasks.forEach(function(task) {
+                    var statusBadge = getTaskStatusBadge(task.trang_thai_cv);
+                    html += '<tr>' +
+                            '<td class="text-center">' + (stt++) + '</td>' +
+                            '<td><strong>' + (task.ten_cong_viec || '-') + '</strong></td>' +
+                            '<td>' + (task.nguoi_nhan || '-') + '</td>' +
+                            '<td>' + (task.ngay_bat_dau || '-') + '</td>' +
+                            '<td>' + (task.han_hoan_thanh || '-') + '</td>' +
+                            '<td>' + statusBadge + '</td>' +
+                            '</tr>';
+                });
+            }
+            
+            $('#projectTaskTableBody').html(html);
+            
+            // Hiển thị modal
+            var modal = new bootstrap.Modal(document.getElementById('modalProjectTaskDetail'));
+            modal.show();
+        },
+        error: function() {
+            $('#projectTaskTableBody').html('<tr><td colspan="6" class="text-center text-danger py-3">Lỗi tải dữ liệu</td></tr>');
+            var modal = new bootstrap.Modal(document.getElementById('modalProjectTaskDetail'));
+            modal.show();
+        }
+    });
+});
+
+// Hàm lấy badge class theo status
+function getStatusBadgeClass(status) {
+    switch(status) {
+        case 'Đã hoàn thành': return 'bg-success';
+        case 'Đang thực hiện': return 'bg-info';
+        case 'Quá hạn': return 'bg-danger';
+        case 'Chưa bắt đầu': return 'bg-secondary';
+        default: return 'bg-secondary';
+    }
+}
+
+// Hàm lấy badge HTML cho trạng thái công việc
+function getTaskStatusBadge(status) {
+    var badgeClass = 'bg-secondary';
+    var icon = 'fa-circle-check';
+    
+    if (status === 'Đã hoàn thành') {
+        badgeClass = 'bg-success';
+        icon = 'fa-check-circle';
+    } else if (status === 'Đang thực hiện') {
+        badgeClass = 'bg-info';
+        icon = 'fa-spinner';
+    } else if (status === 'Trễ hạn') {
+        badgeClass = 'bg-danger';
+        icon = 'fa-exclamation-circle';
+    } else if (status === 'Chưa bắt đầu') {
+        badgeClass = 'bg-secondary';
+        icon = 'fa-circle';
+    }
+    
+    return '<span class="badge ' + badgeClass + '"><i class="fa-solid ' + icon + ' me-1"></i>' + status + '</span>';
+}
+
+// Xử lý chuyển đổi giữa báo cáo nhân viên và dự án trong modal
+$(document).ready(function() {
+    // Xử lý khi thay đổi loại báo cáo
+    $('#reportTypeSelector').on('change', function() {
+        var selectedType = $(this).val();
+        $('#reportTypeInput').val(selectedType);
+
+        // Hiển thị/ẩn các trường tương ứng
+        if (selectedType === 'summary') {
+            // Báo cáo nhân viên
+            $('#employeeReportFields').show();
+            $('#projectReportFields').hide();
+            
+            // Disable các trường của dự án để không gửi lên server
+            $('#projectReportFields input, #projectReportFields select').prop('disabled', true);
+            $('#employeeReportFields input, #employeeReportFields select').prop('disabled', false);
+        } else {
+            // Báo cáo dự án
+            $('#employeeReportFields').hide();
+            $('#projectReportFields').show();
+            
+            // Disable các trường của nhân viên
+            $('#employeeReportFields input, #employeeReportFields select').prop('disabled', true);
+            $('#projectReportFields input, #projectReportFields select').prop('disabled', false);
+        }
+    });
+
+    // Trigger change event khi modal được mở để đảm bảo hiển thị đúng
+    $('#modalExportReport').on('show.bs.modal', function() {
+        $('#reportTypeSelector').trigger('change');
     });
 });

@@ -59,6 +59,26 @@ public class apiBaoCao {
         }
     }
 
+    public static List<Map<String, Object>> getBaoCaoDuAnByDateRange(String tuNgay, String denNgay, String phongBan) {
+        try {
+            KNCSDL kn = new KNCSDL();
+            return kn.getBaoCaoDuAnByDateRange(tuNgay, denNgay, phongBan);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
+
+    public static List<Map<String, Object>> getChiTietCongViecDuAn(String tuNgay, String denNgay, String phongBan, String trangThaiDuAn) {
+        try {
+            KNCSDL kn = new KNCSDL();
+            return kn.getChiTietCongViecDuAn(tuNgay, denNgay, phongBan, trangThaiDuAn);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
+
     public static String convertToJson(Map<String, Object> data) {
         StringBuilder json = new StringBuilder();
         json.append("{");

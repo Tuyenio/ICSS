@@ -6719,4 +6719,300 @@ public class KNCSDL {
         return quyTrinhList;
     }
 
+    /**
+     * Lấy báo cáo chi tiết dự án theo khoảng thời gian
+     */
+    public List<Map<String, Object>> getBaoCaoDuAnByDateRange(String tuNgay, String denNgay, String phongBan) throws SQLException {
+        List<Map<String, Object>> baoCaoDuAn = new ArrayList<>();
+        
+        StringBuilder sql = new StringBuilder();
+        sql.append("""
+            SELECT 
+                da.id,
+                da.ten_du_an,
+                da.mo_ta,
+                da.nhom_du_an,
+                da.phong_ban,
+                da.trang_thai_duan,
+                da.muc_do_uu_tien,
+                da.ngay_bat_dau,
+                da.ngay_ket_thuc,
+                nv.ho_ten as lead_name,
+                
+                -- Thống kê công việc
+                COUNT(cv.id) AS tong_cong_viec,
+                SUM(CASE WHEN cv.trang_thai = 'Đã hoàn thành' THEN 1 ELSE 0 END) AS cv_hoan_thanh,
+                SUM(CASE WHEN cv.trang_thai = 'Đang thực hiện' THEN 1 ELSE 0 END) AS cv_dang_thuc_hien,
+                SUM(CASE WHEN cv.trang_thai = 'Trễ hạn' THEN 1 ELSE 0 END) AS cv_tre_han,
+                SUM(CASE WHEN cv.trang_thai = 'Chưa bắt đầu' THEN 1 ELSE 0 END) AS cv_chua_bat_dau,
+                
+                -- Công việc có vấn đề (trễ hạn hoặc gần deadline)
+                SUM(CASE 
+                    WHEN cv.han_hoan_thanh < CURDATE() AND cv.trang_thai <> 'Đã hoàn thành' 
+                    THEN 1 ELSE 0 
+                END) AS cv_qua_han,
+                
+                SUM(CASE 
+                    WHEN cv.han_hoan_thanh BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 3 DAY) 
+                         AND cv.trang_thai <> 'Đã hoàn thành' 
+                    THEN 1 ELSE 0 
+                END) AS cv_sap_het_han
+                
+            FROM du_an da
+            LEFT JOIN nhanvien nv ON da.lead_id = nv.id
+            LEFT JOIN cong_viec cv ON da.id = cv.du_an_id
+            WHERE da.id <> 1
+        """);
+        
+        List<Object> params = new ArrayList<>();
+        
+        // Lọc theo khoảng thời gian (dự án có deadline trong khoảng này hoặc đang active)
+        if (tuNgay != null && !tuNgay.isEmpty() && denNgay != null && !denNgay.isEmpty()) {
+            sql.append("""
+                AND (
+                    (da.ngay_ket_thuc BETWEEN ? AND ?)
+                    OR (da.trang_thai_duan = 'Đang thực hiện')
+                )
+            """);
+            params.add(java.sql.Date.valueOf(tuNgay));
+            params.add(java.sql.Date.valueOf(denNgay));
+        }
+        
+        // Lọc theo phòng ban
+        if (phongBan != null && !phongBan.trim().isEmpty()) {
+            sql.append(" AND da.phong_ban = ? ");
+            params.add(phongBan);
+        }
+        
+        sql.append("""
+            GROUP BY da.id, da.ten_du_an, da.mo_ta, da.nhom_du_an, 
+                     da.phong_ban, da.trang_thai_duan, da.muc_do_uu_tien,
+                     da.ngay_bat_dau, da.ngay_ket_thuc, nv.ho_ten
+            ORDER BY 
+                CASE da.trang_thai_duan
+                    WHEN 'Đang thực hiện' THEN 1
+                    WHEN 'Tạm ngưng' THEN 2
+                    WHEN 'Đã hoàn thành' THEN 3
+                    ELSE 4
+                END,
+                cv_qua_han DESC,
+                cv_sap_het_han DESC,
+                da.ngay_ket_thuc ASC
+        """);
+        
+        try (PreparedStatement stmt = cn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                stmt.setObject(i + 1, params.get(i));
+            }
+            
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> row = new HashMap<>();
+                    row.put("id", rs.getInt("id"));
+                    row.put("ten_du_an", rs.getString("ten_du_an"));
+                    row.put("mo_ta", rs.getString("mo_ta"));
+                    row.put("nhom_du_an", rs.getString("nhom_du_an"));
+                    row.put("phong_ban", rs.getString("phong_ban"));
+                    row.put("trang_thai_duan", rs.getString("trang_thai_duan"));
+                    row.put("muc_do_uu_tien", rs.getString("muc_do_uu_tien"));
+                    row.put("ngay_bat_dau", rs.getDate("ngay_bat_dau"));
+                    row.put("ngay_ket_thuc", rs.getDate("ngay_ket_thuc"));
+                    row.put("lead_name", rs.getString("lead_name"));
+                    
+                    int tongCV = rs.getInt("tong_cong_viec");
+                    int cvHoanThanh = rs.getInt("cv_hoan_thanh");
+                    
+                    row.put("tong_cong_viec", tongCV);
+                    row.put("cv_hoan_thanh", cvHoanThanh);
+                    row.put("cv_dang_thuc_hien", rs.getInt("cv_dang_thuc_hien"));
+                    row.put("cv_tre_han", rs.getInt("cv_tre_han"));
+                    row.put("cv_chua_bat_dau", rs.getInt("cv_chua_bat_dau"));
+                    row.put("cv_qua_han", rs.getInt("cv_qua_han"));
+                    row.put("cv_sap_het_han", rs.getInt("cv_sap_het_han"));
+                    
+                    // Tính tiến độ
+                    double tienDo = tongCV > 0 ? Math.round((cvHoanThanh * 100.0 / tongCV) * 10) / 10.0 : 0.0;
+                    row.put("tien_do", tienDo);
+                    
+                    baoCaoDuAn.add(row);
+                }
+            }
+        }
+        
+        return baoCaoDuAn;
+    }
+
+    /**
+     * Lấy chi tiết công việc trong dự án để xuất báo cáo
+     */
+    public List<Map<String, Object>> getChiTietCongViecDuAn(String tuNgay, String denNgay, String phongBan, String trangThaiDuAn) throws SQLException {
+        List<Map<String, Object>> chiTietList = new ArrayList<>();
+        
+        StringBuilder sql = new StringBuilder();
+        sql.append("""
+            SELECT 
+                da.ten_du_an,
+                da.trang_thai_duan,
+                da.ngay_ket_thuc as deadline_duan,
+                nv_lead.ho_ten as leader,
+                cv.ten_cong_viec,
+                cv.trang_thai as trang_thai_cv,
+                cv.ngay_bat_dau,
+                cv.han_hoan_thanh,
+                cv.ngay_hoan_thanh,
+                cv.muc_do_uu_tien,
+                GROUP_CONCAT(DISTINCT nv_nhan.ho_ten SEPARATOR ', ') as nguoi_nhan
+            FROM du_an da
+            LEFT JOIN nhanvien nv_lead ON da.lead_id = nv_lead.id
+            LEFT JOIN cong_viec cv ON da.id = cv.du_an_id
+            LEFT JOIN cong_viec_nguoi_nhan cvnn ON cv.id = cvnn.cong_viec_id
+            LEFT JOIN nhanvien nv_nhan ON cvnn.nhan_vien_id = nv_nhan.id
+            WHERE da.id <> 1
+        """);
+        
+        List<Object> params = new ArrayList<>();
+        
+        // Lọc theo khoảng thời gian
+        if (tuNgay != null && !tuNgay.isEmpty() && denNgay != null && !denNgay.isEmpty()) {
+            sql.append("""
+                AND (
+                    (da.ngay_ket_thuc BETWEEN ? AND ?)
+                    OR (da.trang_thai_duan = 'Đang thực hiện')
+                )
+            """);
+            params.add(java.sql.Date.valueOf(tuNgay));
+            params.add(java.sql.Date.valueOf(denNgay));
+        }
+        
+        // Lọc theo phòng ban
+        if (phongBan != null && !phongBan.trim().isEmpty()) {
+            sql.append(" AND da.phong_ban = ? ");
+            params.add(phongBan);
+        }
+        
+        // Lọc theo trạng thái dự án
+        if (trangThaiDuAn != null && !trangThaiDuAn.trim().isEmpty()) {
+            sql.append(" AND da.trang_thai_duan = ? ");
+            params.add(trangThaiDuAn);
+        }
+        
+        sql.append("""
+            GROUP BY da.ten_du_an, da.trang_thai_duan, da.ngay_ket_thuc,
+                     nv_lead.ho_ten, cv.id, cv.ten_cong_viec, cv.trang_thai,
+                     cv.ngay_bat_dau, cv.han_hoan_thanh, cv.ngay_hoan_thanh, cv.muc_do_uu_tien
+            ORDER BY 
+                CASE da.trang_thai_duan
+                    WHEN 'Đang thực hiện' THEN 1
+                    WHEN 'Tạm ngưng' THEN 2
+                    WHEN 'Đã hoàn thành' THEN 3
+                    ELSE 4
+                END,
+                da.ten_du_an,
+                cv.han_hoan_thanh ASC
+        """);
+        
+        try (PreparedStatement stmt = cn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                stmt.setObject(i + 1, params.get(i));
+            }
+            
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> row = new HashMap<>();
+                    row.put("ten_du_an", rs.getString("ten_du_an"));
+                    row.put("trang_thai_duan", rs.getString("trang_thai_duan"));
+                    row.put("deadline_duan", rs.getDate("deadline_duan"));
+                    row.put("leader", rs.getString("leader"));
+                    row.put("ten_cong_viec", rs.getString("ten_cong_viec"));
+                    row.put("trang_thai_cv", rs.getString("trang_thai_cv"));
+                    row.put("ngay_bat_dau", rs.getDate("ngay_bat_dau"));
+                    row.put("han_hoan_thanh", rs.getDate("han_hoan_thanh"));
+                    row.put("ngay_hoan_thanh", rs.getDate("ngay_hoan_thanh"));
+                    row.put("muc_do_uu_tien", rs.getString("muc_do_uu_tien"));
+                    row.put("nguoi_nhan", rs.getString("nguoi_nhan"));
+                    
+                    chiTietList.add(row);
+                }
+            }
+        }
+        
+        return chiTietList;
+    }
+
+    /**
+     * Lấy chi tiết công việc của dự án theo trạng thái
+     */
+    public List<Map<String, Object>> getProjectTasksByStatus(String projectName, String status, String tuNgay, String denNgay) throws SQLException {
+        List<Map<String, Object>> result = new ArrayList<>();
+        
+        StringBuilder sql = new StringBuilder();
+        sql.append("""
+            SELECT 
+                cv.id,
+                cv.ten_cong_viec,
+                cv.trang_thai as trang_thai_cv,
+                cv.ngay_bat_dau,
+                cv.han_hoan_thanh,
+                cv.ngay_hoan_thanh,
+                cv.muc_do_uu_tien,
+                GROUP_CONCAT(DISTINCT nv.ho_ten SEPARATOR ', ') as nguoi_nhan
+            FROM du_an da
+            LEFT JOIN cong_viec cv ON da.id = cv.du_an_id
+            LEFT JOIN cong_viec_nguoi_nhan cvnn ON cv.id = cvnn.cong_viec_id
+            LEFT JOIN nhanvien nv ON cvnn.nhan_vien_id = nv.id
+            WHERE da.ten_du_an = ?
+        """);
+        
+        List<Object> params = new ArrayList<>();
+        params.add(projectName);
+        
+        // Filter theo trạng thái
+        if ("Đã hoàn thành".equals(status)) {
+            sql.append(" AND cv.trang_thai = 'Đã hoàn thành' ");
+        } else if ("Đang thực hiện".equals(status)) {
+            sql.append(" AND cv.trang_thai = 'Đang thực hiện' ");
+        } else if ("Quá hạn".equals(status)) {
+            sql.append(" AND cv.trang_thai IS NOT NULL ");
+            sql.append(" AND cv.ngay_hoan_thanh IS NULL ");
+            sql.append(" AND cv.han_hoan_thanh IS NOT NULL ");
+            sql.append(" AND cv.han_hoan_thanh < CURDATE() ");
+        } else if ("Chưa bắt đầu".equals(status)) {
+            sql.append(" AND (cv.trang_thai = 'Chưa bắt đầu' OR (cv.ngay_bat_dau > CURDATE() AND cv.ngay_hoan_thanh IS NULL)) ");
+        }
+        
+        sql.append(" GROUP BY cv.id, cv.ten_cong_viec, cv.trang_thai, cv.ngay_bat_dau, cv.han_hoan_thanh, cv.ngay_hoan_thanh, cv.muc_do_uu_tien ");
+        sql.append(" ORDER BY cv.han_hoan_thanh ASC ");
+        
+        try (PreparedStatement stmt = cn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                stmt.setObject(i + 1, params.get(i));
+            }
+            
+            try (ResultSet rs = stmt.executeQuery()) {
+                java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy");
+                while (rs.next()) {
+                    Map<String, Object> row = new HashMap<>();
+                    row.put("id", rs.getInt("id"));
+                    row.put("ten_cong_viec", rs.getString("ten_cong_viec"));
+                    row.put("trang_thai_cv", rs.getString("trang_thai_cv"));
+                    row.put("nguoi_nhan", rs.getString("nguoi_nhan"));
+                    row.put("muc_do_uu_tien", rs.getString("muc_do_uu_tien"));
+                    
+                    java.sql.Date ngayBatDau = rs.getDate("ngay_bat_dau");
+                    row.put("ngay_bat_dau", ngayBatDau != null ? sdf.format(ngayBatDau) : "");
+                    
+                    java.sql.Date hanHoanThanh = rs.getDate("han_hoan_thanh");
+                    row.put("han_hoan_thanh", hanHoanThanh != null ? sdf.format(hanHoanThanh) : "");
+                    
+                    java.sql.Date ngayHoanThanh = rs.getDate("ngay_hoan_thanh");
+                    row.put("ngay_hoan_thanh", ngayHoanThanh != null ? sdf.format(ngayHoanThanh) : "");
+                    
+                    result.add(row);
+                }
+            }
+        }
+        
+        return result;
+    }
+
 }
