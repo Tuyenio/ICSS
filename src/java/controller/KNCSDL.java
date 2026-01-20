@@ -1729,7 +1729,8 @@ public class KNCSDL {
         LEFT JOIN phong_ban pb ON nv.phong_ban_id = pb.id
         LEFT JOIN cong_viec_nguoi_nhan cvr ON nv.id = cvr.nhan_vien_id
         LEFT JOIN cong_viec cv ON cvr.cong_viec_id = cv.id
-        WHERE 1 = 1
+        WHERE nv.trang_thai_lam_viec = 'Đang làm'
+          AND (nv.chuc_vu IS NULL OR nv.chuc_vu <> 'Giám đốc')
     """);
 
         // Danh sách tham số

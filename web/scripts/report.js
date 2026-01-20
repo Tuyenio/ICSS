@@ -60,28 +60,28 @@ document.addEventListener("DOMContentLoaded", function () {
 // Gắn reportType theo tab đang active & kiểm tra đơn giản
 (function () {
     var form = document.getElementById('formExportReport');
+    if (!form) return; // Nếu không tìm thấy form thì không làm gì
+    
     form.addEventListener('submit', function (e) {
-        var activePane = document.querySelector('#reportExportTabContent .tab-pane.active');
-        var reportType = 'summary';
-        if (activePane && activePane.id === 'tabExportKPI')
-            reportType = 'kpi';
-        if (activePane && activePane.id === 'tabExportTask')
-            reportType = 'task';
-        document.getElementById('reportTypeHidden').value = reportType;
-
-        // Validate tối thiểu (ví dụ cho Summary)
-        if (reportType === 'summary') {
-            var fromDate = form.querySelector('input[name="fromDate"]').value;
-            var toDate = form.querySelector('input[name="toDate"]').value;
-            if (!fromDate || !toDate) {
-                e.preventDefault();
-                showToast('error', 'Vui lòng chọn đầy đủ khoảng thời gian.');
-                return;
-            }
+        // Kiểm tra date range đã được chọn chưa
+        var tuNgay = document.getElementById('exportTuNgay');
+        var denNgay = document.getElementById('exportDenNgay');
+        
+        if (!tuNgay || !denNgay || !tuNgay.value || !denNgay.value) {
+            e.preventDefault();
+            showToast('error', 'Vui lòng chọn khoảng thời gian để xuất báo cáo.');
+            return false;
         }
-        // KPI có thể kiểm tra monthKPI nếu bạn muốn bắt buộc
-        // Task không bắt buộc (đã có mặc định)
-        // Không dùng AJAX để trình duyệt nhận stream file tải về
+        
+        // Kiểm tra ngày kết thúc phải sau ngày bắt đầu
+        if (tuNgay.value > denNgay.value) {
+            e.preventDefault();
+            showToast('error', 'Ngày kết thúc phải sau hoặc bằng ngày bắt đầu.');
+            return false;
+        }
+        
+        // Nếu tất cả hợp lệ, cho phép submit
+        return true;
     });
 })();
 
@@ -138,6 +138,44 @@ $(function () {
         autoApply: false
     }, function (start, end, label) {
         console.log('Date range selected:', start.format('YYYY-MM-DD'), 'to', end.format('YYYY-MM-DD'));
+    });
+
+    // Khởi tạo Date Range Picker cho modal xuất báo cáo
+    $('#dateRangeExport').daterangepicker({
+        startDate: moment().startOf('month'),
+        endDate: moment().endOf('month'),
+        locale: {
+            format: 'DD/MM/YYYY',
+            separator: ' - ',
+            applyLabel: 'Áp dụng',
+            cancelLabel: 'Hủy',
+            fromLabel: 'Từ',
+            toLabel: 'Đến',
+            customRangeLabel: 'Tùy chọn',
+            weekLabel: 'T',
+            daysOfWeek: ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'],
+            monthNames: ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6',
+                'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'],
+            firstDay: 1
+        },
+        ranges: {
+            'Hôm nay': [moment(), moment()],
+            'Hôm qua': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+            '7 ngày qua': [moment().subtract(6, 'days'), moment()],
+            '30 ngày qua': [moment().subtract(29, 'days'), moment()],
+            'Tháng này': [moment().startOf('month'), moment().endOf('month')],
+            'Tháng trước': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
+            'Quý này': [moment().startOf('quarter'), moment().endOf('quarter')],
+            'Năm nay': [moment().startOf('year'), moment().endOf('year')]
+        },
+        alwaysShowCalendars: true,
+        autoApply: false
+    });
+
+    // Cập nhật hidden fields khi chọn date range trong modal
+    $('#dateRangeExport').on('apply.daterangepicker', function (ev, picker) {
+        $('#exportTuNgay').val(picker.startDate.format('YYYY-MM-DD'));
+        $('#exportDenNgay').val(picker.endDate.format('YYYY-MM-DD'));
     });
 
     // Xử lý khi chọn khoảng thời gian

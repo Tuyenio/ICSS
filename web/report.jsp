@@ -433,6 +433,7 @@
                         <div class="modal fade" id="modalExportReport" tabindex="-1">
                             <div class="modal-dialog">
                                 <form class="modal-content" id="formExportReport" action="./exportReport" method="post">
+                                    <input type="hidden" name="reportType" value="summary">
                                     <div class="modal-header">
                                         <h5 class="modal-title"><i class="fa-solid fa-file-export"></i> Xuất báo cáo</h5>
                                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -456,8 +457,11 @@
                                             </select>
                                         </div>
                                         <div class="mb-3">
-                                            <label for="month" class="form-label">Tháng làm việc</label>
-                                            <input type="month" class="form-control" id="month" name="thangNam" required>
+                                            <label class="form-label">Chọn khoảng thời gian</label>
+                                            <input type="text" class="form-control" id="dateRangeExport" 
+                                                   placeholder="Chọn từ ngày - đến ngày" readonly required>
+                                            <input type="hidden" id="exportTuNgay" name="tu_ngay">
+                                            <input type="hidden" id="exportDenNgay" name="den_ngay">
                                         </div>
                                     </div>
 
