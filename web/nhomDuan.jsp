@@ -703,6 +703,30 @@
                                 <option value="Khác">Khác</option>
                             </select>
                         </div>
+                        <div class="filter-item">
+                            <select id="departmentFilter" class="form-select">
+                                <option value="">Tất cả phòng ban</option>
+                                <%
+                                    // Lấy danh sách phòng ban duy nhất từ dữ liệu
+                                    Set<String> phongBanSet = new TreeSet<>();
+                                    if (duAnList != null) {
+                                        for (Map<String, Object> da : duAnList) {
+                                            String pb = (String) da.get("phong_ban");
+                                            if (pb != null && !pb.isEmpty()) {
+                                                phongBanSet.add(pb);
+                                            }
+                                        }
+                                    }
+                                    
+                                    // In ra các option
+                                    for (String pb : phongBanSet) {
+                                %>
+                                <option value="<%= pb %>"><%= pb %></option>
+                                <%
+                                    }
+                                %>
+                            </select>
+                        </div>
                     </div>
 
                     <!-- Project Tree -->
@@ -734,7 +758,7 @@
                                     else if (tienDoDuAn >= 20) progressColor = "#f59e0b";
                                     else progressColor = "#ef4444";
                         %>
-                        <div class="project-tree tree-item" data-status="<%= trangThaiDuAn %>" data-group="<%= nhomDuAn %>" data-name="<%= tenDuAn %>" data-project-id="<%= duAnId %>">
+                        <div class="project-tree tree-item" data-status="<%= trangThaiDuAn %>" data-group="<%= nhomDuAn %>" data-department="<%= phongBan %>" data-name="<%= tenDuAn %>" data-project-id="<%= duAnId %>">
                             <div class="tree-header">
                                 <div class="tree-icon project">
                                     <i class="fa-solid fa-folder-open"></i>
@@ -975,22 +999,30 @@
                     filterProjects();
                 });
 
+                // Department filter
+                $('#departmentFilter').on('change', function() {
+                    filterProjects();
+                });
+
                 function filterProjects() {
                     var searchText = $('#searchInput').val().toLowerCase();
                     var statusFilter = $('#statusFilter').val();
                     var groupFilter = $('#groupFilter').val();
+                    var departmentFilter = $('#departmentFilter').val();
 
                     $('.project-tree').each(function() {
                         var $project = $(this);
                         var projectName = $project.data('name').toLowerCase();
                         var projectStatus = $project.data('status');
                         var projectGroup = $project.data('group');
+                        var projectDepartment = $project.data('department');
 
                         var matchSearch = searchText === '' || projectName.includes(searchText);
                         var matchStatus = statusFilter === '' || projectStatus === statusFilter;
                         var matchGroup = groupFilter === '' || projectGroup === groupFilter;
+                        var matchDepartment = departmentFilter === '' || projectDepartment === departmentFilter;
 
-                        if (matchSearch && matchStatus && matchGroup) {
+                        if (matchSearch && matchStatus && matchGroup && matchDepartment) {
                             $project.show();
                         } else {
                             $project.hide();
