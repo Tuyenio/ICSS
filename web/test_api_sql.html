@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test API Execute SQL</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+        
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            resize: vertical;
+            min-height: 120px;
+            transition: border-color 0.3s;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .btn-example {
+            background: #e0e0e0;
+            color: #333;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: background 0.3s;
+        }
+        
+        .btn-example:hover {
+            background: #d0d0d0;
+        }
+        
+        .result-section {
+            margin-top: 30px;
+        }
+        
+        .result-box {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 5px;
+            border-left: 4px solid #667eea;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        
+        pre {
+            margin: 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
+        
+        .success {
+            border-left-color: #4caf50;
+        }
+        
+        .error {
+            border-left-color: #f44336;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #667eea;
+        }
+        
+        .loading.show {
+            display: block;
+        }
+        
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .info-box {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border-left: 4px solid #2196f3;
+        }
+        
+        .info-box h3 {
+            color: #1976d2;
+            margin-bottom: 10px;
+        }
+        
+        .info-box ul {
+            margin-left: 20px;
+            color: #555;
+        }
+        
+        .info-box code {
+            background: #fff;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Test API Execute SQL</h1>
+        <p class="subtitle">Thực thi câu lệnh SQL động và nhận kết quả JSON</p>
+        
+        <div class="info-box">
+            <h3>📌 Hướng dẫn sử dụng:</h3>
+            <ul>
+                <li>Endpoint: <code>POST /apiExecuteSQL</code></li>
+                <li>Request Body: <code>{"command": "SELECT * FROM table_name"}</code></li>
+                <li>Response: JSON với các trường <code>success</code>, <code>data</code>, <code>rowCount</code></li>
+                <li>Hỗ trợ: SELECT, INSERT, UPDATE, DELETE, SHOW, DESCRIBE</li>
+            </ul>
+        </div>
+        
+        <div class="form-group">
+            <label for="sqlCommand">Nhập câu lệnh SQL:</label>
+            <textarea id="sqlCommand" placeholder="Ví dụ: SELECT * FROM nhanvien LIMIT 5">SELECT * FROM nhanvien LIMIT 5</textarea>
+        </div>
+        
+        <div class="btn-group">
+            <button class="btn-example" onclick="setExample('SELECT * FROM nhanvien LIMIT 5')">
+                📋 Danh sách nhân viên
+            </button>
+            <button class="btn-example" onclick="setExample('SELECT * FROM phong_ban')">
+                🏢 Danh sách phòng ban
+            </button>
+            <button class="btn-example" onclick="setExample('SELECT COUNT(*) as total FROM nhanvien')">
+                📊 Đếm nhân viên
+            </button>
+            <button class="btn-example" onclick="setExample('SHOW TABLES')">
+                🗂️ Danh sách bảng
+            </button>
+        </div>
+        
+        <button class="btn" onclick="executeSQL()">▶️ Thực thi SQL</button>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <div>Đang thực thi...</div>
+        </div>
+        
+        <div class="result-section" id="resultSection" style="display: none;">
+            <h2>📄 Kết quả:</h2>
+            <div class="result-box" id="resultBox">
+                <pre id="resultContent"></pre>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function setExample(sql) {
+            document.getElementById('sqlCommand').value = sql;
+        }
+        
+        async function executeSQL() {
+            const sqlCommand = document.getElementById('sqlCommand').value.trim();
+            
+            if (!sqlCommand) {
+                alert('Vui lòng nhập câu lệnh SQL!');
+                return;
+            }
+            
+            const loading = document.getElementById('loading');
+            const resultSection = document.getElementById('resultSection');
+            const resultBox = document.getElementById('resultBox');
+            const resultContent = document.getElementById('resultContent');
+            
+            // Hiển thị loading
+            loading.classList.add('show');
+            resultSection.style.display = 'none';
+            
+            try {
+                const response = await fetch('/apiExecuteSQL', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json; charset=UTF-8'
+                    },
+                    body: JSON.stringify({
+                        command: sqlCommand
+                    })
+                });
+                
+                const data = await response.json();
+                
+                // Ẩn loading
+                loading.classList.remove('show');
+                
+                // Hiển thị kết quả
+                resultSection.style.display = 'block';
+                
+                if (data.success) {
+                    resultBox.className = 'result-box success';
+                    resultContent.textContent = JSON.stringify(data, null, 2);
+                } else {
+                    resultBox.className = 'result-box error';
+                    resultContent.textContent = '❌ Lỗi:\n\n' + JSON.stringify(data, null, 2);
+                }
+                
+            } catch (error) {
+                loading.classList.remove('show');
+                resultSection.style.display = 'block';
+                resultBox.className = 'result-box error';
+                resultContent.textContent = '❌ Lỗi kết nối:\n\n' + error.message;
+            }
+        }
+        
+        // Enter để submit (Ctrl+Enter)
+        document.getElementById('sqlCommand').addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'Enter') {
+                executeSQL();
+            }
+        });
+    </script>
+</body>
+</html>
