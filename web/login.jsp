@@ -1,6 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ page import="java.sql.*, java.util.*" %>
 <%@ page import="controller.KNCSDL" %>
+<%@ page import="controller.CookieUtil" %>
 
 <%! 
     boolean loginSuccess = false;
@@ -29,6 +30,20 @@
                 session.setAttribute("vaiTro", vaiTro);
                 session.setAttribute("chucVu", chucVu);
                 session.setAttribute("avatar", avatar);
+                
+                // ✅ Lưu thông tin người dùng vào cookies (7 ngày = 604800 giây)
+                // Mã hóa thông tin người dùng để bảo mật
+                String userDataEncrypted = CookieUtil.encrypt(id + "|" + email + "|" + hoten + "|" + vaiTro + "|" + chucVu + "|" + avatar);
+                
+                if (userDataEncrypted != null) {
+                    Cookie userCookie = new Cookie("ICSS_USER", userDataEncrypted);
+                    userCookie.setMaxAge(7 * 24 * 60 * 60); // 7 ngày
+                    userCookie.setHttpOnly(true); // Không cho JavaScript truy cập (bảo mật)
+                    userCookie.setSecure(false); // Đặt true nếu sử dụng HTTPS
+                    userCookie.setPath("/");
+                    response.addCookie(userCookie);
+                }
+                
                 int userIdInt = Integer.parseInt(id);
                 
                 KNCSDL db2 = new KNCSDL();

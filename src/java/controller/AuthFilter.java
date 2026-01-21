@@ -76,10 +76,16 @@ public class AuthFilter implements Filter {
         // 🟡 Nếu truy cập root (ví dụ /ICSS/ không có gì sau)
         if (uri.equals(req.getContextPath() + "/") || uri.equals(req.getContextPath())) {
             if (session == null || session.getAttribute("vaiTro") == null) {
-                // ❌ Chưa đăng nhập → về login.jsp
-                res.sendRedirect(req.getContextPath() + "/login.jsp");
-                return;
-            } else {
+                // ❌ Kiểm tra cookies trước khi redirect login
+                if (!restoreSessionFromCookie(req, res)) {
+                    res.sendRedirect(req.getContextPath() + "/login.jsp");
+                    return;
+                }
+                // ✅ Session restored from cookie
+                session = req.getSession(false);
+            }
+            
+            if (session != null && session.getAttribute("vaiTro") != null) {
                 // ✅ Đã đăng nhập → chuyển theo vai trò
                 String role = ((String) session.getAttribute("vaiTro")).toLowerCase();
                 if (role.equals("admin") || role.equals("quản lý")) {
@@ -89,13 +95,26 @@ public class AuthFilter implements Filter {
                     res.sendRedirect(req.getContextPath() + "/userDashboard");
                     return;
                 }
+            } else {
+                res.sendRedirect(req.getContextPath() + "/login.jsp");
+                return;
             }
         }
 
         // ✅ Nếu chưa đăng nhập
         if (session == null || session.getAttribute("vaiTro") == null) {
-            res.sendRedirect(req.getContextPath() + "/login.jsp");
-            return;
+            // 🔄 Kiểm tra cookies để phục hồi session
+            if (!restoreSessionFromCookie(req, res)) {
+                res.sendRedirect(req.getContextPath() + "/login.jsp");
+                return;
+            }
+            // ✅ Session restored from cookie
+            session = req.getSession(false);
+            
+            if (session == null || session.getAttribute("vaiTro") == null) {
+                res.sendRedirect(req.getContextPath() + "/login.jsp");
+                return;
+            }
         }
 
         // ✅ Nếu đã đăng nhập
@@ -113,5 +132,75 @@ public class AuthFilter implements Filter {
             }
         }
         chain.doFilter(request, response);
+    }
+
+    /**
+     * Phục hồi session từ cookie nếu có sẵn và hợp lệ
+     */
+    private boolean restoreSessionFromCookie(HttpServletRequest req, HttpServletResponse res) {
+        Cookie[] cookies = req.getCookies();
+        if (cookies == null) {
+            return false;
+        }
+        
+        for (Cookie cookie : cookies) {
+            if ("ICSS_USER".equals(cookie.getName())) {
+                try {
+                    String decrypted = CookieUtil.decrypt(cookie.getValue());
+                    if (decrypted != null && decrypted.contains("|")) {
+                        String[] parts = decrypted.split("\\|");
+                        if (parts.length == 6) {
+                            String id = parts[0];
+                            String email = parts[1];
+                            String hoten = parts[2];
+                            String vaiTro = parts[3];
+                            String chucVu = parts[4];
+                            String avatar = parts[5];
+                            
+                            // ✅ Tạo session mới từ cookie data
+                            HttpSession session = req.getSession(true);
+                            session.setAttribute("userId", id);
+                            session.setAttribute("userEmail", email);
+                            session.setAttribute("userName", hoten);
+                            session.setAttribute("vaiTro", vaiTro);
+                            session.setAttribute("chucVu", chucVu);
+                            session.setAttribute("avatar", avatar);
+                            
+                            // ⚠️ Tải quyền từ database nếu cần
+                            try {
+                                int userIdInt = Integer.parseInt(id);
+                                KNCSDL db = new KNCSDL();
+                                List<String> quyenList = db.getQuyenTheoNhanVien(userIdInt);
+                                db.close();
+                                
+                                StringBuilder json = new StringBuilder("[");
+                                for (int i = 0; i < quyenList.size(); i++) {
+                                    json.append("\"").append(quyenList.get(i)).append("\"");
+                                    if (i < quyenList.size() - 1) json.append(",");
+                                }
+                                json.append("]");
+                                session.setAttribute("quyen", json.toString());
+                            } catch (Exception e) {
+                                System.err.println("Error loading permissions from cookie: " + e.getMessage());
+                            }
+                            
+                            return true;
+                        }
+                    }
+                } catch (Exception e) {
+                    System.err.println("Error restoring session from cookie: " + e.getMessage());
+                }
+            }
+        }
+        
+        return false;
+    }
+
+    @Override
+    public void init(FilterConfig filterConfig) throws ServletException {
+    }
+
+    @Override
+    public void destroy() {
     }
 }
