@@ -18,47 +18,219 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * API thông tin - chỉ hỗ trợ GET request
- * Endpoint: GET /api/execute-sql
- * Response: JSON thông tin API
+ * API để thực thi câu lệnh SQL động và trả về kết quả dưới dạng JSON
+ * Endpoint: POST /api/execute-sql
+ * Request Body: {"command": "SELECT * FROM table_name"}
+ * Response: JSON array của kết quả query
  */
 @WebServlet(name = "apiExecuteSQL", urlPatterns = {"/api/execute-sql"})
 public class apiExecuteSQL extends HttpServlet {
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        
+        // Thiết lập encoding và content type
+        request.setCharacterEncoding("UTF-8");
+        response.setCharacterEncoding("UTF-8");
+        response.setContentType("application/json; charset=UTF-8");
+        
+        PrintWriter out = response.getWriter();
+        Gson gson = new Gson();
+        
+        try {
+            // Đọc request body
+            StringBuilder sb = new StringBuilder();
+            BufferedReader reader = request.getReader();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                sb.append(line);
+            }
+            
+            String requestBody = sb.toString();
+            
+            // Parse JSON để lấy command
+            JsonObject jsonRequest = JsonParser.parseString(requestBody).getAsJsonObject();
+            
+            if (!jsonRequest.has("command")) {
+                // Thiếu trường command
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("success", false);
+                errorResponse.put("error", "Thiếu trường 'command' trong request");
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                out.print(gson.toJson(errorResponse));
+                return;
+            }
+            
+            String sqlCommand = jsonRequest.get("command").getAsString();
+            
+            // Kiểm tra command không rỗng
+            if (sqlCommand == null || sqlCommand.trim().isEmpty()) {
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("success", false);
+                errorResponse.put("error", "Câu lệnh SQL không được để trống");
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                out.print(gson.toJson(errorResponse));
+                return;
+            }
+            
+            // ✅ Kiểm tra chỉ cho phép SELECT (bảo mật)
+            String trimmedCommand = sqlCommand.trim().toUpperCase();
+            if (!trimmedCommand.startsWith("SELECT") && !trimmedCommand.startsWith("SHOW") 
+                    && !trimmedCommand.startsWith("DESCRIBE") && !trimmedCommand.startsWith("DESC")) {
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("success", false);
+                errorResponse.put("error", "❌ Chỉ cho phép câu lệnh SELECT. INSERT, UPDATE, DELETE, DROP không được phép!");
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                out.print(gson.toJson(errorResponse));
+                return;
+            }
+            
+            // Thực thi SQL
+            List<Map<String, Object>> resultList = executeSQL(sqlCommand);
+            
+            // Tạo response thành công
+            Map<String, Object> successResponse = new HashMap<>();
+            successResponse.put("success", true);
+            successResponse.put("data", resultList);
+            successResponse.put("rowCount", resultList.size());
+            
+            response.setStatus(HttpServletResponse.SC_OK);
+            out.print(gson.toJson(successResponse));
+            
+        } catch (com.google.gson.JsonSyntaxException e) {
+            // Lỗi parse JSON
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("error", "JSON không hợp lệ: " + e.getMessage());
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            out.print(gson.toJson(errorResponse));
+            
+        } catch (SQLException e) {
+            // Lỗi SQL
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("error", "Lỗi SQL: " + e.getMessage());
+            errorResponse.put("sqlState", e.getSQLState());
+            errorResponse.put("errorCode", e.getErrorCode());
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            out.print(gson.toJson(errorResponse));
+            
+        } catch (Exception e) {
+            // Lỗi khác
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("error", "Lỗi hệ thống: " + e.getMessage());
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            out.print(gson.toJson(errorResponse));
+            
+        } finally {
+            out.flush();
+        }
+    }
+    
+    /**
+     * Thực thi câu lệnh SQL và chuyển đổi ResultSet thành List<Map>
+     * @param sqlCommand Câu lệnh SQL cần thực thi
+     * @return List các bản ghi dưới dạng Map
+     * @throws SQLException
+     * @throws ClassNotFoundException
+     */
+    private List<Map<String, Object>> executeSQL(String sqlCommand) 
+            throws SQLException, ClassNotFoundException {
+        
+        List<Map<String, Object>> resultList = new ArrayList<>();
+        Connection conn = null;
+        Statement stmt = null;
+        ResultSet rs = null;
+        
+        try {
+            // Kết nối database qua KNCSDL
+            KNCSDL kn = new KNCSDL();
+            conn = kn.cn;
+            
+            // Tạo statement và thực thi
+            stmt = conn.createStatement();
+            
+            // Kiểm tra loại câu lệnh (chỉ cho SELECT)
+            String commandType = sqlCommand.trim().toUpperCase();
+            
+            if (commandType.startsWith("SELECT") || commandType.startsWith("SHOW") 
+                    || commandType.startsWith("DESCRIBE") || commandType.startsWith("DESC")) {
+                // Câu lệnh SELECT - trả về ResultSet
+                rs = stmt.executeQuery(sqlCommand);
+                
+                // Lấy metadata để biết số cột và tên cột
+                ResultSetMetaData metaData = rs.getMetaData();
+                int columnCount = metaData.getColumnCount();
+                
+                // Duyệt qua từng dòng kết quả
+                while (rs.next()) {
+                    Map<String, Object> row = new HashMap<>();
+                    
+                    // Duyệt qua từng cột
+                    for (int i = 1; i <= columnCount; i++) {
+                        String columnName = metaData.getColumnLabel(i);
+                        Object value = rs.getObject(i);
+                        
+                        // Xử lý các kiểu dữ liệu đặc biệt
+                        if (value instanceof Date) {
+                            value = value.toString();
+                        } else if (value instanceof Time) {
+                            value = value.toString();
+                        } else if (value instanceof Timestamp) {
+                            value = value.toString();
+                        } else if (value instanceof Blob) {
+                            value = "[BLOB]";
+                        } else if (value instanceof Clob) {
+                            value = "[CLOB]";
+                        }
+                        
+                        row.put(columnName, value);
+                    }
+                    
+                    resultList.add(row);
+                }
+                
+            } else {
+                // ❌ Không cho phép các câu lệnh khác ngoài SELECT
+                throw new SQLException("❌ Chỉ cho phép câu lệnh SELECT!");
+            }
+            
+        } finally {
+            // Đóng tài nguyên
+            if (rs != null) {
+                try { rs.close(); } catch (SQLException e) { /* ignored */ }
+            }
+            if (stmt != null) {
+                try { stmt.close(); } catch (SQLException e) { /* ignored */ }
+            }
+            // Lưu ý: Connection được quản lý bởi KNCSDL, không đóng ở đây
+        }
+        
+        return resultList;
+    }
+    
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("application/json; charset=UTF-8");
-        response.setCharacterEncoding("UTF-8");
         PrintWriter out = response.getWriter();
         
         Map<String, Object> info = new HashMap<>();
-        info.put("endpoint", "/api/execute-sql");
-        info.put("method", "GET");
-        info.put("status", "Chỉ hỗ trợ GET request");
-        info.put("description", "API thông tin - chỉ hỗ trợ phương thức GET. POST và các phương thức khác sẽ bị từ chối.");
-        info.put("note", "API không cho phép POST, PUT, DELETE hoặc các phương thức HTTP khác.");
+        info.put("endpoint", "/apiExecuteSQL");
+        info.put("method", "POST");
+        info.put("description", "API để thực thi câu lệnh SQL và trả về kết quả JSON");
+        info.put("requestFormat", Map.of("command", "SELECT * FROM table_name"));
+        info.put("example", Map.of(
+            "url", "POST /apiExecuteSQL",
+            "body", Map.of("command", "SELECT * FROM user")
+        ));
         
         Gson gson = new Gson();
         out.print(gson.toJson(info));
         out.flush();
     }
-    
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        response.setContentType("application/json; charset=UTF-8");
-        response.setCharacterEncoding("UTF-8");
-        response.setStatus(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
-        response.setHeader("Allow", "GET");
-        PrintWriter out = response.getWriter();
-        
-        Map<String, Object> error = new HashMap<>();
-        error.put("success", false);
-        error.put("error", "Phương thức POST không được phép. Chỉ hỗ trợ GET.");
-        
-        Gson gson = new Gson();
-        out.print(gson.toJson(error));
-        out.flush();
     
     @Override
     public String getServletInfo() {
