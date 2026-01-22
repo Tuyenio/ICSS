@@ -19,11 +19,11 @@ import java.util.Map;
 
 /**
  * API để thực thi câu lệnh SQL động và trả về kết quả dưới dạng JSON
- * Endpoint: POST /apiExecuteSQL
+ * Endpoint: POST /api/execute-sql
  * Request Body: {"command": "SELECT * FROM table_name"}
  * Response: JSON array của kết quả query
  */
-@WebServlet(name = "apiExecuteSQL", urlPatterns = {"/apiExecuteSQL"})
+@WebServlet(name = "apiExecuteSQL", urlPatterns = {"/api/execute-sql"})
 public class apiExecuteSQL extends HttpServlet {
 
     @Override
