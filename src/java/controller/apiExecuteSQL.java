@@ -48,6 +48,7 @@ public class apiExecuteSQL extends HttpServlet {
             }
             
             String requestBody = sb.toString();
+            System.out.println("[apiExecuteSQL] Request body: " + requestBody);
             
             // Parse JSON để lấy command
             JsonObject jsonRequest = JsonParser.parseString(requestBody).getAsJsonObject();
@@ -59,10 +60,12 @@ public class apiExecuteSQL extends HttpServlet {
                 errorResponse.put("error", "Thiếu trường 'command' trong request");
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 out.print(gson.toJson(errorResponse));
+                out.flush();
                 return;
             }
             
             String sqlCommand = jsonRequest.get("command").getAsString();
+            System.out.println("[apiExecuteSQL] SQL Command: " + sqlCommand);
             
             // Kiểm tra command không rỗng
             if (sqlCommand == null || sqlCommand.trim().isEmpty()) {
@@ -71,6 +74,7 @@ public class apiExecuteSQL extends HttpServlet {
                 errorResponse.put("error", "Câu lệnh SQL không được để trống");
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 out.print(gson.toJson(errorResponse));
+                out.flush();
                 return;
             }
             
@@ -85,17 +89,23 @@ public class apiExecuteSQL extends HttpServlet {
             
             response.setStatus(HttpServletResponse.SC_OK);
             out.print(gson.toJson(successResponse));
+            out.flush();
             
         } catch (com.google.gson.JsonSyntaxException e) {
             // Lỗi parse JSON
+            System.err.println("[apiExecuteSQL] JSON Syntax Error: " + e.getMessage());
+            e.printStackTrace();
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("success", false);
             errorResponse.put("error", "JSON không hợp lệ: " + e.getMessage());
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             out.print(gson.toJson(errorResponse));
+            out.flush();
             
         } catch (SQLException e) {
             // Lỗi SQL
+            System.err.println("[apiExecuteSQL] SQL Error: " + e.getMessage());
+            e.printStackTrace();
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("success", false);
             errorResponse.put("error", "Lỗi SQL: " + e.getMessage());
@@ -103,14 +113,19 @@ public class apiExecuteSQL extends HttpServlet {
             errorResponse.put("errorCode", e.getErrorCode());
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             out.print(gson.toJson(errorResponse));
+            out.flush();
             
         } catch (Exception e) {
             // Lỗi khác
+            System.err.println("[apiExecuteSQL] System Error: " + e.getMessage());
+            e.printStackTrace();
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("success", false);
             errorResponse.put("error", "Lỗi hệ thống: " + e.getMessage());
+            errorResponse.put("exceptionType", e.getClass().getName());
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             out.print(gson.toJson(errorResponse));
+            out.flush();
             
         } finally {
             out.flush();
@@ -134,8 +149,30 @@ public class apiExecuteSQL extends HttpServlet {
         
         try {
             // Kết nối database qua KNCSDL
-            KNCSDL kn = new KNCSDL();
+            System.out.println("[executeSQL] Tạo kết nối KNCSDL...");
+            KNCSDL kn = null;
+            try {
+                kn = new KNCSDL();
+                System.out.println("[executeSQL] KNCSDL khởi tạo thành công");
+            } catch (ClassNotFoundException e) {
+                System.err.println("[executeSQL] Lỗi ClassNotFoundException: " + e.getMessage());
+                throw e;
+            } catch (SQLException e) {
+                System.err.println("[executeSQL] Lỗi SQLException khi kết nối DB: " + e.getMessage());
+                throw e;
+            }
+            
+            if (kn == null) {
+                System.err.println("[executeSQL] KNCSDL is null!");
+                throw new SQLException("Không thể khởi tạo KNCSDL");
+            }
+            
             conn = kn.cn;
+            if (conn == null) {
+                System.err.println("[executeSQL] Connection is null!");
+                throw new SQLException("Kết nối database là null");
+            }
+            System.out.println("[executeSQL] Kết nối database thành công");
             
             // Tạo statement và thực thi
             stmt = conn.createStatement();
