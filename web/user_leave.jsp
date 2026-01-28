@@ -25,10 +25,14 @@
     BigDecimal tongNgayPhep = (BigDecimal) ngayPhep.get("tong_ngay_phep");
     BigDecimal ngayPhepDaDung = (BigDecimal) ngayPhep.get("ngay_phep_da_dung");
     BigDecimal ngayPhepConLai = (BigDecimal) ngayPhep.get("ngay_phep_con_lai");
+    BigDecimal ngayPhepNamTruoc = (BigDecimal) ngayPhep.get("ngay_phep_nam_truoc");
     
-    if (tongNgayPhep == null) tongNgayPhep = new BigDecimal("12.0");
+    if (tongNgayPhep == null) tongNgayPhep = new BigDecimal("0.0");
     if (ngayPhepDaDung == null) ngayPhepDaDung = new BigDecimal("0.0");
-    if (ngayPhepConLai == null) ngayPhepConLai = new BigDecimal("12.0");
+    if (ngayPhepConLai == null) ngayPhepConLai = new BigDecimal("0.0");
+    if (ngayPhepNamTruoc == null) ngayPhepNamTruoc = new BigDecimal("0.0");
+    
+    BigDecimal tongPhepConLaiAll = ngayPhepConLai.add(ngayPhepNamTruoc);
     
     // Đếm số đơn theo trạng thái
     int donChoDuyet = 0, donDaDuyet = 0, donTuChoi = 0;
@@ -424,8 +428,14 @@
             <div class="col-md-3 col-sm-6">
                 <div class="stat-card remaining animate-fadeInUp delay-1">
                     <div class="stat-icon"><i class="fa-solid fa-calendar-check"></i></div>
-                    <div class="stat-value"><%= ngayPhepConLai %></div>
-                    <div class="stat-label">Ngày phép còn lại</div>
+                    <div class="stat-value"><%= tongPhepConLaiAll %></div>
+                    <div class="stat-label">
+                        <% if (ngayPhepNamTruoc.compareTo(BigDecimal.ZERO) > 0) { %>
+                            <%= ngayPhepConLai %> (<%= namHienTai %>) + <%= ngayPhepNamTruoc %> (<%= namHienTai - 1 %>)
+                        <% } else { %>
+                            Ngày phép còn lại (<%= namHienTai %>)
+                        <% } %>
+                    </div>
                 </div>
             </div>
             <div class="col-md-3 col-sm-6">
@@ -702,8 +712,10 @@
             const loaiPhepSelect = document.querySelector('select[name="loaiPhep"]');
             const loaiPhep = loaiPhepSelect.value;
             const soNgay = parseFloat(document.querySelector('input[name="soNgay"]').value);
-            const ngayBatDau = document.querySelector('input[name="ngayBatDau"]').value;
-            const ngayKetThuc = document.querySelector('input[name="ngayKetThuc"]').value;
+            const ngayBatDauInput = document.querySelector('input[name="ngayBatDau"]');
+            const ngayKetThucInput = document.querySelector('input[name="ngayKetThuc"]');
+            const ngayBatDau = ngayBatDauInput.value;
+            const ngayKetThuc = ngayKetThucInput.value;
             const lyDo = document.querySelector('textarea[name="lyDo"]').value;
             
             // Kiểm tra các trường bắt buộc
@@ -713,6 +725,41 @@
                     title: 'Thiếu thông tin!',
                     text: 'Vui lòng điền đầy đủ các trường bắt buộc.',
                     confirmButtonColor: '#667eea'
+                });
+                return;
+            }
+            
+            // Hàm kiểm tra cuối tuần (Thứ 7 = 6, Chủ nhật = 0)
+            function isCuoiTuan(dateStr) {
+                const date = new Date(dateStr);
+                const day = date.getDay();
+                return day === 0 || day === 6; // 0 = Chủ nhật, 6 = Thứ 7
+            }
+            
+            // Kiểm tra ngày bắt đầu có phải cuối tuần không
+            if (isCuoiTuan(ngayBatDau)) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Ngày cuối tuần!',
+                    text: 'Bạn đã chọn ngày thứ 7 hoặc chủ nhật. Không thể đăng ký nghỉ phép vào ngày này.',
+                    confirmButtonColor: '#667eea'
+                }).then(() => {
+                    ngayBatDauInput.value = ''; // Reset về null
+                    ngayBatDauInput.focus();
+                });
+                return;
+            }
+            
+            // Kiểm tra ngày kết thúc có phải cuối tuần không
+            if (isCuoiTuan(ngayKetThuc)) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Ngày cuối tuần!',
+                    text: 'Bạn đã chọn ngày thứ 7 hoặc chủ nhật. Không thể đăng ký nghỉ phép vào ngày này.',
+                    confirmButtonColor: '#667eea'
+                }).then(() => {
+                    ngayKetThucInput.value = ''; // Reset về null
+                    ngayKetThucInput.focus();
                 });
                 return;
             }
