@@ -61,10 +61,16 @@ public class ScheduledLeaveAccrualJob extends HttpServlet {
                     break;
                     
                 case "monthStart":
-                    // Chạy job đầu tháng
-                    kn.congPhepHangThang(currentYear, currentMonth);
-                    result.append("{\"job\":\"monthStart\",\"year\":").append(currentYear)
-                          .append(",\"month\":").append(currentMonth).append(",\"status\":\"completed\"}");
+                    // Chạy job đầu tháng - cộng phép của tháng trước
+                    int prevMonthForCase = currentMonth - 1;
+                    int prevYearForCase = currentYear;
+                    if (prevMonthForCase == 0) {
+                        prevMonthForCase = 12;
+                        prevYearForCase = currentYear - 1;
+                    }
+                    kn.congPhepHangThang(prevYearForCase, prevMonthForCase);
+                    result.append("{\"job\":\"monthStart\",\"year\":").append(prevYearForCase)
+                          .append(",\"month\":").append(prevMonthForCase).append(",\"status\":\"completed\"}");
                     hasJob = true;
                     break;
                     
@@ -86,12 +92,18 @@ public class ScheduledLeaveAccrualJob extends HttpServlet {
                         hasJob = true;
                     }
                     
-                    // Ngày 1 hàng tháng: Cộng phép hàng tháng
+                    // Ngày 1 hàng tháng: Cộng phép của tháng trước
                     if (currentDay == 1) {
                         if (hasJob) result.append(",");
-                        kn.congPhepHangThang(currentYear, currentMonth);
-                        result.append("{\"job\":\"monthStart\",\"year\":").append(currentYear)
-                              .append(",\"month\":").append(currentMonth).append(",\"status\":\"completed\"}");
+                        int prevMonthAuto = currentMonth - 1;
+                        int prevYearAuto = currentYear;
+                        if (prevMonthAuto == 0) {
+                            prevMonthAuto = 12;
+                            prevYearAuto = currentYear - 1;
+                        }
+                        kn.congPhepHangThang(prevYearAuto, prevMonthAuto);
+                        result.append("{\"job\":\"monthStart\",\"year\":").append(prevYearAuto)
+                              .append(",\"month\":").append(prevMonthAuto).append(",\"status\":\"completed\"}");
                         hasJob = true;
                     }
                     

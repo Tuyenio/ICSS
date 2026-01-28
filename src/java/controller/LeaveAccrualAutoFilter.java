@@ -72,12 +72,21 @@ public class LeaveAccrualAutoFilter implements Filter {
                     }
                 }
                 
-                // Job 2: Đầu tháng (ngày 1) - Cộng 1 ngày cho NV mới
+                // Job 2: Đầu tháng (ngày 1) - Cộng phép của tháng trước vào ngày 1 tháng mới
                 if (currentDay == 1) {
-                    LOGGER.info("📅 Đầu tháng " + currentMonth + "/" + currentYear + " - Đang cộng phép hàng tháng...");
+                    // Tính tháng trước
+                    int previousMonth = currentMonth - 1;
+                    int previousYear = currentYear;
+                    if (previousMonth == 0) {
+                        previousMonth = 12;
+                        previousYear = currentYear - 1;
+                    }
+                    
+                    LOGGER.info("📅 Ngày 1/" + currentMonth + "/" + currentYear + " - Đang cộng phép của tháng " + previousMonth + "/" + previousYear + "...");
                     try {
-                        kn.congPhepHangThang(currentYear, currentMonth);
-                        LOGGER.info("✅ Đã cộng phép hàng tháng thành công cho tháng " + currentMonth);
+                        // Gọi với tháng trước (tháng vừa kết thúc) để cộng phép cho tháng đó
+                        kn.congPhepHangThang(previousYear, previousMonth);
+                        LOGGER.info("✅ Đã cộng phép hàng tháng thành công cho tháng " + previousMonth + "/" + previousYear);
                         hasRun = true;
                     } catch (SQLException ex) {
                         LOGGER.log(Level.SEVERE, "❌ Lỗi cộng phép hàng tháng: " + ex.getMessage(), ex);

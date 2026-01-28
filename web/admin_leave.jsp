@@ -405,6 +405,33 @@
         .delay-2 { animation-delay: 0.2s; }
         .delay-3 { animation-delay: 0.3s; }
         .delay-4 { animation-delay: 0.4s; }
+
+        /* ===== COLLAPSE BUTTON STYLES ===== */
+        .btn-link {
+            transition: all 0.3s ease;
+        }
+
+        .btn-link:hover {
+            transform: none !important;
+            color: inherit !important;
+        }
+
+        .btn-link .fa-chevron-down {
+            transition: transform 0.3s ease;
+        }
+
+        .btn-link[aria-expanded="true"] .fa-chevron-down {
+            transform: rotate(-180deg);
+        }
+
+        .collapse {
+            transition: all 0.3s ease;
+        }
+
+        /* ===== TRANSITION TRANSFORM ===== */
+        .transition-transform {
+            transition: transform 0.3s ease;
+        }
     </style>
 </head>
 
@@ -461,67 +488,73 @@
             </div>
         </div>
 
-        <!-- Form tạo đơn nhanh -->
+        <!-- Form tạo đơn nhanh - Collapse -->
         <div class="main-box animate-fadeInUp">
-            <div class="box-title">
-                <i class="fa-solid fa-file-signature"></i>
-                Tạo đơn xin nghỉ phép
-            </div>
-            
-            <form id="formTaoDon">
-                <input type="hidden" name="nhanVienId" value="<%= nhanVienId %>">
-                <div class="row g-4">
-                    <div class="col-md-4">
-                        <label class="form-label">
-                            <i class="fa-solid fa-tags me-2"></i>Loại nghỉ phép <span class="text-danger">*</span>
-                        </label>
-                        <select class="form-select" name="loaiPhep" required>
-                            <option value="">-- Chọn loại phép --</option>
-                            <option value="Phép năm">🌴 Phép năm</option>
-                            <option value="Nghỉ ốm">🏥 Nghỉ ốm</option>
-                            <option value="Nghỉ không lương">💰 Nghỉ không lương</option>
-                            <option value="Nghỉ thai sản">👶 Nghỉ thai sản</option>
-                            <option value="Việc riêng">🏠 Việc riêng</option>
-                            <option value="Khác">📋 Khác</option>
-                        </select>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">
-                            <i class="fa-solid fa-calendar-day me-2"></i>Từ ngày <span class="text-danger">*</span>
-                        </label>
-                        <input type="date" class="form-control" name="ngayBatDau" required>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">
-                            <i class="fa-solid fa-calendar-week me-2"></i>Đến ngày <span class="text-danger">*</span>
-                        </label>
-                        <input type="date" class="form-control" name="ngayKetThuc" required>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">
-                            <i class="fa-solid fa-hashtag me-2"></i>Số ngày nghỉ <span class="text-danger">*</span>
-                        </label>
-                        <input type="number" class="form-control" name="soNgay" step="0.5" min="0.5" max="30" 
-                               placeholder="VD: 1, 0.5, 2..." required>
-                        <small class="text-muted">Nhập 0.5 nếu nghỉ nửa ngày</small>
-                    </div>
-                    <div class="col-md-12">
-                        <label class="form-label">
-                            <i class="fa-solid fa-comment-dots me-2"></i>Lý do xin nghỉ <span class="text-danger">*</span>
-                        </label>
-                        <textarea class="form-control" name="lyDo" rows="3" 
-                                  placeholder="Nhập lý do xin nghỉ phép chi tiết..." required></textarea>
-                    </div>
-                    <div class="col-12 mt-4">
-                        <button type="submit" class="btn btn-primary-gradient btn-lg">
-                            <i class="fa-solid fa-paper-plane me-2"></i>Gửi đơn xin phép
-                        </button>
-                        <button type="reset" class="btn btn-outline-secondary btn-lg ms-2">
-                            <i class="fa-solid fa-rotate-left me-2"></i>Làm mới
-                        </button>
-                    </div>
+            <button class="btn btn-link w-100 text-start p-0" type="button" data-bs-toggle="collapse" data-bs-target="#formTaoDonCollapse" aria-expanded="false" aria-controls="formTaoDonCollapse" style="text-decoration: none;">
+                <div class="box-title mb-0">
+                    <i class="fa-solid fa-file-signature"></i>
+                    Tạo đơn xin nghỉ phép
+                    <i class="fa-solid fa-chevron-down float-end transition-transform"></i>
                 </div>
-            </form>
+            </button>
+            
+            <div class="collapse" id="formTaoDonCollapse">
+                <div class="pt-3 border-top">
+                    <form id="formTaoDon">
+                        <input type="hidden" name="nhanVienId" value="<%= nhanVienId %>">
+                        <div class="row g-4">
+                            <div class="col-md-4">
+                                <label class="form-label">
+                                    <i class="fa-solid fa-tags me-2"></i>Loại nghỉ phép <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-select" name="loaiPhep" required>
+                                    <option value="Phép năm" selected>🌴 Phép năm</option>
+                                    <option value="Nghỉ khám nghĩa vụ quân sự">⚔️ Nghỉ khám nghĩa vụ quân sự</option>
+                                    <option value="Nghỉ không lương">💰 Nghỉ không lương</option>
+                                    <option value="Nghỉ thai sản">👶 Nghỉ thai sản</option>
+                                    <option value="Việc riêng">🏠 Việc riêng</option>
+                                    <option value="Khác">📋 Khác</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">
+                                    <i class="fa-solid fa-calendar-day me-2"></i>Từ ngày <span class="text-danger">*</span>
+                                </label>
+                                <input type="date" class="form-control" name="ngayBatDau" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">
+                                    <i class="fa-solid fa-calendar-week me-2"></i>Đến ngày <span class="text-danger">*</span>
+                                </label>
+                                <input type="date" class="form-control" name="ngayKetThuc" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">
+                                    <i class="fa-solid fa-hashtag me-2"></i>Số ngày nghỉ <span class="text-danger">*</span>
+                                </label>
+                                <input type="number" class="form-control" name="soNgay" step="0.5" min="0.5" max="30" 
+                                       placeholder="VD: 1, 0.5, 2..." required>
+                                <small class="text-muted">Nhập 0.5 nếu nghỉ nửa ngày</small>
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label">
+                                    <i class="fa-solid fa-comment-dots me-2"></i>Lý do xin nghỉ <span class="text-danger">*</span>
+                                </label>
+                                <textarea class="form-control" name="lyDo" rows="3" 
+                                          placeholder="Nhập lý do xin nghỉ phép chi tiết..." required></textarea>
+                            </div>
+                            <div class="col-12 mt-4">
+                                <button type="submit" class="btn btn-primary-gradient btn-lg">
+                                    <i class="fa-solid fa-paper-plane me-2"></i>Gửi đơn xin phép
+                                </button>
+                                <button type="reset" class="btn btn-outline-secondary btn-lg ms-2">
+                                    <i class="fa-solid fa-rotate-left me-2"></i>Làm mới
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
 
         <!-- Lịch sử đơn nghỉ phép -->
@@ -564,7 +597,7 @@
                                 // Badge class cho loại phép
                                 String leaveClass = "personal";
                                 if ("Phép năm".equals(loaiPhep)) leaveClass = "annual";
-                                else if ("Nghỉ ốm".equals(loaiPhep)) leaveClass = "sick";
+                                else if ("Nghỉ khám nghĩa vụ quân sự".equals(loaiPhep)) leaveClass = "military";
                                 else if ("Nghỉ không lương".equals(loaiPhep)) leaveClass = "unpaid";
                                 else if ("Nghỉ thai sản".equals(loaiPhep)) leaveClass = "maternity";
                                 

@@ -421,6 +421,33 @@
         .delay-2 { animation-delay: 0.2s; }
         .delay-3 { animation-delay: 0.3s; }
         .delay-4 { animation-delay: 0.4s; }
+
+        /* ===== COLLAPSE BUTTON STYLES ===== */
+        .btn-link {
+            transition: all 0.3s ease;
+        }
+
+        .btn-link:hover {
+            transform: none !important;
+            color: inherit !important;
+        }
+
+        .btn-link .fa-chevron-down {
+            transition: transform 0.3s ease;
+        }
+
+        .btn-link[aria-expanded="true"] .fa-chevron-down {
+            transform: rotate(-180deg);
+        }
+
+        .collapse {
+            transition: all 0.3s ease;
+        }
+
+        /* ===== TRANSITION TRANSFORM ===== */
+        .transition-transform {
+            transition: transform 0.3s ease;
+        }
     </style>
 </head>
 
@@ -572,7 +599,7 @@
                                 // Badge class cho loại phép
                                 String leaveClass = "personal";
                                 if ("Phép năm".equals(loaiPhep)) leaveClass = "annual";
-                                else if ("Nghỉ ốm".equals(loaiPhep)) leaveClass = "sick";
+                                else if ("Nghỉ khám nghĩa vụ quân sự".equals(loaiPhep)) leaveClass = "military";
                                 else if ("Nghỉ không lương".equals(loaiPhep)) leaveClass = "unpaid";
                                 else if ("Nghỉ thai sản".equals(loaiPhep)) leaveClass = "maternity";
                                 
@@ -738,9 +765,8 @@
                                     <i class="fa-solid fa-tags me-2"></i>Loại nghỉ phép <span class="text-danger">*</span>
                                 </label>
                                 <select class="form-select" name="loaiPhep" required>
-                                    <option value="">-- Chọn loại phép --</option>
-                                    <option value="Phép năm">🌴 Phép năm</option>
-                                    <option value="Nghỉ ốm">🏥 Nghỉ ốm</option>
+                                    <option value="Phép năm" selected>🌴 Phép năm</option>
+                                    <option value="Nghỉ khám nghĩa vụ quân sự">⚔️ Nghỉ khám nghĩa vụ quân sự</option>
                                     <option value="Nghỉ không lương">💰 Nghỉ không lương</option>
                                     <option value="Nghỉ thai sản">👶 Nghỉ thai sản</option>
                                     <option value="Việc riêng">🏠 Việc riêng</option>
