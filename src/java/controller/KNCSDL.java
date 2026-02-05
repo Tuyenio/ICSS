@@ -24,8 +24,8 @@ public class KNCSDL {
 
     public KNCSDL() throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
-        //this.cn = DriverManager.getConnection(path, "root", "");
-        this.cn = DriverManager.getConnection(path, "icssapp", "StrongPass!2025");
+        this.cn = DriverManager.getConnection(path, "root", "");
+        //this.cn = DriverManager.getConnection(path, "icssapp", "StrongPass!2025");
     }
 
     public ResultSet laydl(String email) throws SQLException {
@@ -2200,8 +2200,15 @@ public class KNCSDL {
         sql.append("  ELSE ROUND(TIMESTAMPDIFF(MINUTE, cc.check_in, cc.check_out) / 60, 2) ");
         sql.append("END AS so_gio_lam, ");
 
-        // 🧠 Phân loại trạng thái chi tiết hơn
+        // 🧠 Phân loại trạng thái chi tiết hơn (ưu tiên nghỉ phép)
         sql.append("CASE ");
+        // ✅ Kiểm tra nghỉ phép đã được duyệt trước
+        sql.append("  WHEN EXISTS ( ");
+        sql.append("    SELECT 1 FROM don_nghi_phep dnp ");
+        sql.append("    WHERE dnp.nhan_vien_id = cc.nhan_vien_id ");
+        sql.append("    AND dnp.trang_thai = 'da_duyet' ");
+        sql.append("    AND cc.ngay BETWEEN dnp.ngay_bat_dau AND dnp.ngay_ket_thuc ");
+        sql.append("  ) THEN 'Nghỉ phép' ");
         sql.append("  WHEN cc.check_in IS NULL THEN 'Vắng' ");
         // ✅ Nếu có check_in trước hoặc bằng 8h05 mà chưa check_out → Đúng giờ
         sql.append("  WHEN TIME(cc.check_in) <= '08:05:59' AND cc.check_out IS NULL THEN 'Đúng giờ' ");
@@ -2291,6 +2298,13 @@ public class KNCSDL {
 
         String sql = "SELECT ngay, check_in, check_out, "
                 + "CASE "
+                // ✅ Kiểm tra nghỉ phép đã được duyệt trước
+                + "  WHEN EXISTS ( "
+                + "    SELECT 1 FROM don_nghi_phep dnp "
+                + "    WHERE dnp.nhan_vien_id = cham_cong.nhan_vien_id "
+                + "    AND dnp.trang_thai = 'da_duyet' "
+                + "    AND cham_cong.ngay BETWEEN dnp.ngay_bat_dau AND dnp.ngay_ket_thuc "
+                + "  ) THEN 'Nghỉ phép' "
                 + "  WHEN check_in IS NULL THEN 'Vắng' "
                 + "  WHEN TIME(check_in) <= '08:05:59' AND TIME(check_out) >= '17:00:00' THEN 'Đủ công' "
                 + "  WHEN TIME(check_in) <= '08:05:59' AND TIME(check_out) < '17:00:00' THEN 'Thiếu giờ' "
@@ -2630,6 +2644,13 @@ public class KNCSDL {
                 + "  ELSE ROUND(TIMESTAMPDIFF(MINUTE, check_in, check_out) / 60, 2) "
                 + "END AS so_gio_lam, "
                 + "CASE "
+                // ✅ Kiểm tra nghỉ phép đã được duyệt trước
+                + "  WHEN EXISTS ( "
+                + "    SELECT 1 FROM don_nghi_phep dnp "
+                + "    WHERE dnp.nhan_vien_id = cham_cong.nhan_vien_id "
+                + "    AND dnp.trang_thai = 'da_duyet' "
+                + "    AND cham_cong.ngay BETWEEN dnp.ngay_bat_dau AND dnp.ngay_ket_thuc "
+                + "  ) THEN 'Nghỉ phép' "
                 + "  WHEN check_in IS NULL THEN 'Vắng mặt' "
                 // ✅ Bổ sung logic khi chưa có check_out
                 + "  WHEN TIME(check_in) <= '08:05:59' AND check_out IS NULL THEN 'Đúng giờ' "
@@ -3651,6 +3672,57 @@ public class KNCSDL {
             stmt.setString(3, checkIn);
             stmt.setString(4, checkOut);
             return stmt.executeUpdate() > 0;
+        }
+    }
+    
+    /**
+     * Thêm bản ghi chấm công cho ngày nghỉ phép (check_in và check_out là NULL để đánh dấu nghỉ phép)
+     */
+    public boolean themChamCongNghiPhep(int nhanVienId, Date ngayNghi) throws SQLException {
+        // Kiểm tra xem đã tồn tại bản ghi chấm công trong ngày chưa
+        String checkSql = "SELECT COUNT(*) FROM cham_cong WHERE nhan_vien_id = ? AND ngay = ?";
+        try (PreparedStatement checkStmt = cn.prepareStatement(checkSql)) {
+            checkStmt.setInt(1, nhanVienId);
+            checkStmt.setDate(2, ngayNghi);
+            ResultSet rs = checkStmt.executeQuery();
+            if (rs.next() && rs.getInt(1) > 0) {
+                return true; // Đã có bản ghi, không cần thêm nữa
+            }
+        }
+        
+        // Thêm bản ghi chấm công với check_in và check_out = NULL để đánh dấu nghỉ phép
+        String sql = "INSERT INTO cham_cong (nhan_vien_id, ngay, check_in, check_out) VALUES (?, ?, NULL, NULL)";
+        try (PreparedStatement stmt = cn.prepareStatement(sql)) {
+            stmt.setInt(1, nhanVienId);
+            stmt.setDate(2, ngayNghi);
+            return stmt.executeUpdate() > 0;
+        }
+    }
+    
+    /**
+     * Tự động tạo các bản ghi chấm công cho tất cả ngày trong khoảng nghỉ phép
+     * (không bao gồm cuối tuần và ngày lễ)
+     */
+    public void taoChamCongChoNgayNghiPhep(int nhanVienId, Date ngayBatDau, Date ngayKetThuc) throws SQLException {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(new java.util.Date(ngayBatDau.getTime()));
+        
+        Date ngayKT = ngayKetThuc;
+        
+        while (!cal.getTime().after(new java.util.Date(ngayKT.getTime()))) {
+            Date ngayHienTai = new Date(cal.getTimeInMillis());
+            
+            // Bỏ qua cuối tuần (thứ 7, chủ nhật)
+            int dayOfWeek = cal.get(Calendar.DAY_OF_WEEK);
+            if (dayOfWeek != Calendar.SATURDAY && dayOfWeek != Calendar.SUNDAY) {
+                // Bỏ qua ngày lễ
+                if (!isNgayNghiLe(ngayHienTai)) {
+                    themChamCongNghiPhep(nhanVienId, ngayHienTai);
+                }
+            }
+            
+            // Chuyển sang ngày tiếp theo
+            cal.add(Calendar.DAY_OF_MONTH, 1);
         }
     }
 
@@ -5933,6 +6005,30 @@ public class KNCSDL {
     }
 
     /**
+     * Kiểm tra thứ tự nhóm tài liệu đã tồn tại chưa
+     */
+    public boolean isThuTuExists(int thuTu, Integer excludeId) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM nhom_tai_lieu WHERE thu_tu = ? AND trang_thai = 'Hoạt động'";
+        if (excludeId != null) {
+            sql += " AND id != ?";
+        }
+
+        try (PreparedStatement stmt = cn.prepareStatement(sql)) {
+            stmt.setInt(1, thuTu);
+            if (excludeId != null) {
+                stmt.setInt(2, excludeId);
+            }
+            
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
      * Thêm nhóm tài liệu mới
      */
     public int insertNhomTaiLieu(NhomTaiLieu ntl) throws SQLException {
@@ -6105,8 +6201,12 @@ public class KNCSDL {
         if (trangThai != null && !trangThai.isEmpty() && !trangThai.equals("all")) {
             sql.append("AND d.trang_thai = ? ");
         }
+        // ✅ FIX: Lọc theo năm và tháng riêng biệt
         if (thang > 0 && nam > 0) {
             sql.append("AND (MONTH(d.ngay_bat_dau) = ? OR MONTH(d.ngay_ket_thuc) = ?) ");
+            sql.append("AND (YEAR(d.ngay_bat_dau) = ? OR YEAR(d.ngay_ket_thuc) = ?) ");
+        } else if (nam > 0) {
+            // Chỉ lọc theo năm khi không có tháng
             sql.append("AND (YEAR(d.ngay_bat_dau) = ? OR YEAR(d.ngay_ket_thuc) = ?) ");
         }
         sql.append("ORDER BY d.thoi_gian_tao DESC");
@@ -6119,6 +6219,10 @@ public class KNCSDL {
             if (thang > 0 && nam > 0) {
                 stmt.setInt(paramIndex++, thang);
                 stmt.setInt(paramIndex++, thang);
+                stmt.setInt(paramIndex++, nam);
+                stmt.setInt(paramIndex++, nam);
+            } else if (nam > 0) {
+                // Chỉ bind năm
                 stmt.setInt(paramIndex++, nam);
                 stmt.setInt(paramIndex++, nam);
             }
@@ -6186,6 +6290,43 @@ public class KNCSDL {
             }
         }
         return list;
+    }
+
+    /**
+     * Kiểm tra xem có đơn nghỉ phép nào trùng khoảng thời gian không
+     */
+    public boolean hasOverlappingLeaveRequest(int nhanVienId, java.sql.Date ngayBatDau, java.sql.Date ngayKetThuc, Integer excludeDonId) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM don_nghi_phep " +
+                     "WHERE nhan_vien_id = ? " +
+                     "AND trang_thai IN ('cho_duyet', 'da_duyet') " +
+                     "AND ((ngay_bat_dau <= ? AND ngay_ket_thuc >= ?) " +
+                     "OR (ngay_bat_dau <= ? AND ngay_ket_thuc >= ?) " +
+                     "OR (ngay_bat_dau >= ? AND ngay_ket_thuc <= ?))";
+        
+        if (excludeDonId != null) {
+            sql += " AND id != ?";
+        }
+
+        try (PreparedStatement stmt = cn.prepareStatement(sql)) {
+            stmt.setInt(1, nhanVienId);
+            stmt.setDate(2, ngayBatDau);
+            stmt.setDate(3, ngayBatDau);
+            stmt.setDate(4, ngayKetThuc);
+            stmt.setDate(5, ngayKetThuc);
+            stmt.setDate(6, ngayBatDau);
+            stmt.setDate(7, ngayKetThuc);
+            
+            if (excludeDonId != null) {
+                stmt.setInt(8, excludeDonId);
+            }
+            
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        }
+        return false;
     }
 
     /**
@@ -6295,8 +6436,8 @@ public class KNCSDL {
     }
 
     /**
-     * Lấy thông tin ngày phép của nhân viên trong năm
-     * Bao gồm cả ngày phép năm cũ chuyển sang
+     * Lấy thông tin ngày phép của nhân viên trong năm Bao gồm cả ngày phép năm
+     * cũ chuyển sang
      */
     public Map<String, Object> getNgayPhepNam(int nhanVienId, int nam) throws SQLException {
         // Kiểm tra nếu chưa có bản ghi thì tạo mới
@@ -6424,59 +6565,71 @@ public class KNCSDL {
     }
 
     /**
-     * Cập nhật phép năm với ưu tiên trừ phép năm trước trước
-     * Nếu còn phép năm trước, trừ phép năm trước trước
-     * Nếu phép năm trước không đủ hoặc hết, mới trừ phép năm hiện tại
+     * Cập nhật phép năm với ưu tiên trừ phép năm trước trước Nếu còn phép năm
+     * trước, trừ phép năm trước trước Nếu phép năm trước không đủ hoặc hết, mới
+     * trừ phép năm hiện tại
      */
     public boolean capNhatNgayPhepDaDungUuTien(int nhanVienId, int nam, double soNgayDung) throws SQLException {
         try {
-            // Lấy số ngày phép của năm trước
-            int namTruoc = nam - 1;
-            String sqlPhepTruoc = "SELECT ngay_phep_nam_truoc FROM ngay_phep_nam WHERE nhan_vien_id = ? AND nam = ?";
+            String sqlGetPhep = "SELECT ngay_phep_nam_truoc, ngay_phep_da_dung, tong_ngay_phep "
+                    + "FROM ngay_phep_nam WHERE nhan_vien_id = ? AND nam = ?";
+
             double phepNamTruoc = 0.0;
-            
-            try (PreparedStatement stmt = cn.prepareStatement(sqlPhepTruoc)) {
+            double phepDaDung = 0.0;
+            double tongPhep = 0.0;
+
+            try (PreparedStatement stmt = cn.prepareStatement(sqlGetPhep)) {
                 stmt.setInt(1, nhanVienId);
                 stmt.setInt(2, nam);
                 try (ResultSet rs = stmt.executeQuery()) {
                     if (rs.next()) {
-                        Object phepObj = rs.getObject("ngay_phep_nam_truoc");
-                        if (phepObj != null && phepObj instanceof Number) {
-                            phepNamTruoc = ((Number) phepObj).doubleValue();
-                        }
+                        phepNamTruoc = rs.getDouble("ngay_phep_nam_truoc");
+                        phepDaDung = rs.getDouble("ngay_phep_da_dung");
+                        tongPhep = rs.getDouble("tong_ngay_phep");
                     }
                 }
             }
-            
-            // Nếu còn phép năm trước, trừ phép năm trước trước
+
+            double phepNamTruocMoi = phepNamTruoc;
+            double phepDaDungMoi = phepDaDung; // Khởi tạo với giá trị hiện tại
+
+            // ✅ ƯU TIÊN TRỪ PHÉP NĂM TRƯỚC TRƯỚC
             if (phepNamTruoc >= soNgayDung) {
-                String sqlTruPhepTruoc = "UPDATE ngay_phep_nam SET ngay_phep_nam_truoc = ngay_phep_nam_truoc - ? WHERE nhan_vien_id = ? AND nam = ?";
-                try (PreparedStatement stmt = cn.prepareStatement(sqlTruPhepTruoc)) {
-                    stmt.setDouble(1, soNgayDung);
-                    stmt.setInt(2, nhanVienId);
-                    stmt.setInt(3, nam);
-                    stmt.executeUpdate();
-                }
+                // Phép năm trước đủ, trừ hoàn toàn từ năm trước
+                phepNamTruocMoi = phepNamTruoc - soNgayDung;
+                // ⚠️ QUAN TRỌNG: Cũng phải tính ngay_phep_da_dung!
+                phepDaDungMoi = phepDaDung + soNgayDung;
+            } else if (phepNamTruoc > 0) {
+                // Phép năm trước không đủ, trừ hết phép năm trước + phần còn lại từ phép năm nay
+                double soNgayTruPhepNay = soNgayDung - phepNamTruoc;
+                phepNamTruocMoi = 0.0;
+                phepDaDungMoi = phepDaDung + soNgayTruPhepNay;
             } else {
-                // Trừ hết phép năm trước (nếu còn) rồi trừ phép năm nay
-                double soNgayConLaiTruPhepNay = soNgayDung - phepNamTruoc;
-                
-                // Cập nhật: set phép năm trước = 0 và cộng vào phép đã dùng năm nay
-                String sqlCapNhat = "UPDATE ngay_phep_nam SET "
-                        + "ngay_phep_nam_truoc = 0, "
-                        + "ngay_phep_da_dung = ngay_phep_da_dung + ?, "
-                        + "ngay_phep_con_lai = tong_ngay_phep - (ngay_phep_da_dung + ?) "
-                        + "WHERE nhan_vien_id = ? AND nam = ?";
-                
-                try (PreparedStatement stmt = cn.prepareStatement(sqlCapNhat)) {
-                    stmt.setDouble(1, soNgayConLaiTruPhepNay);
-                    stmt.setDouble(2, soNgayConLaiTruPhepNay);
-                    stmt.setInt(3, nhanVienId);
-                    stmt.setInt(4, nam);
-                    stmt.executeUpdate();
-                }
+                // Không có phép năm trước, trừ toàn bộ từ phép năm nay
+                phepDaDungMoi = phepDaDung + soNgayDung;
             }
-            
+
+            // ✅ Tính phép năm hiện tại còn lại (KHÔNG cộng phép năm cũ)
+            double phepConLaiMoi = tongPhep - phepDaDungMoi;
+            if (phepConLaiMoi < 0) {
+                phepConLaiMoi = 0;
+            }
+
+            String sqlUpdate = "UPDATE ngay_phep_nam SET "
+                    + "ngay_phep_nam_truoc = ?, "
+                    + "ngay_phep_da_dung = ?, "
+                    + "ngay_phep_con_lai = ? "
+                    + "WHERE nhan_vien_id = ? AND nam = ?";
+
+            try (PreparedStatement stmt = cn.prepareStatement(sqlUpdate)) {
+                stmt.setDouble(1, phepNamTruocMoi);
+                stmt.setDouble(2, phepDaDungMoi);
+                stmt.setDouble(3, phepConLaiMoi);
+                stmt.setInt(4, nhanVienId);
+                stmt.setInt(5, nam);
+                stmt.executeUpdate();
+            }
+
             return true;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -6507,6 +6660,60 @@ public class KNCSDL {
     }
 
     /**
+     * Lấy thống kê ngày phép của tất cả nhân viên cho admin
+     *
+     * @param nam Năm cần xem thống kê
+     * @return Danh sách thông tin ngày phép của tất cả nhân viên
+     */
+    public List<Map<String, Object>> getThongKeNgayPhepAllNhanVien(int nam) throws SQLException {
+        List<Map<String, Object>> list = new ArrayList<>();
+
+        String sql = "SELECT nv.id, nv.ho_ten, nv.email, nv.avatar_url, "
+                + "pb.ten_phong AS ten_phong_ban, nv.chuc_vu, nv.ngay_vao_lam, "
+                + "COALESCE(np.tong_ngay_phep, 0) AS tong_ngay_phep, "
+                + "COALESCE(np.ngay_phep_da_dung, 0) AS ngay_phep_da_dung, "
+                + "COALESCE(np.ngay_phep_con_lai, 0) AS ngay_phep_con_lai, "
+                + "COALESCE(np.ngay_phep_nam_truoc, 0) AS ngay_phep_nam_truoc, "
+                + "np.da_cong_phep_dau_nam "
+                + "FROM nhanvien nv "
+                + "LEFT JOIN phong_ban pb ON nv.phong_ban_id = pb.id "
+                + "LEFT JOIN ngay_phep_nam np ON nv.id = np.nhan_vien_id AND np.nam = ? "
+                + "WHERE nv.trang_thai_lam_viec = 'Đang làm' "
+                + "ORDER BY nv.ho_ten ASC";
+
+        try (PreparedStatement stmt = cn.prepareStatement(sql)) {
+            stmt.setInt(1, nam);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> emp = new HashMap<>();
+                    emp.put("id", rs.getInt("id"));
+                    emp.put("ho_ten", rs.getString("ho_ten"));
+                    emp.put("email", rs.getString("email"));
+                    emp.put("avatar_url", rs.getString("avatar_url"));
+                    emp.put("ten_phong_ban", rs.getString("ten_phong_ban"));
+                    emp.put("chuc_vu", rs.getString("chuc_vu"));
+                    emp.put("ngay_vao_lam", rs.getDate("ngay_vao_lam"));
+                    emp.put("tong_ngay_phep", rs.getBigDecimal("tong_ngay_phep"));
+                    emp.put("ngay_phep_da_dung", rs.getBigDecimal("ngay_phep_da_dung"));
+                    emp.put("ngay_phep_con_lai", rs.getBigDecimal("ngay_phep_con_lai"));
+                    emp.put("ngay_phep_nam_truoc", rs.getBigDecimal("ngay_phep_nam_truoc"));
+                    emp.put("da_cong_phep_dau_nam", rs.getInt("da_cong_phep_dau_nam"));
+
+                    // Tính tổng phép còn lại (bao gồm phép năm trước)
+                    double conLai = rs.getDouble("ngay_phep_con_lai");
+                    double namTruoc = rs.getDouble("ngay_phep_nam_truoc");
+                    emp.put("tong_phep_con_lai", conLai + namTruoc);
+
+                    list.add(emp);
+                }
+            }
+        }
+
+        return list;
+    }
+
+    /**
      * Xóa đơn nghỉ phép (chỉ được xóa đơn đang chờ duyệt)
      */
     public boolean xoaDonNghiPhep(int donId, int nhanVienId) throws SQLException {
@@ -6520,8 +6727,8 @@ public class KNCSDL {
     }
 
     /**
-     * Tạo đơn nghỉ phép từ quản lý/admin (trạng thái da_duyet)
-     * Được sử dụng khi admin tạo lệnh nghỉ trực tiếp cho nhân viên
+     * Tạo đơn nghỉ phép từ quản lý/admin (trạng thái da_duyet) Được sử dụng khi
+     * admin tạo lệnh nghỉ trực tiếp cho nhân viên
      */
     public int taoDonNghiPhepQuanLy(int nhanVienId, String loaiPhep, java.sql.Date ngayBatDau,
             java.sql.Date ngayKetThuc, double soNgay, String lyDo, Integer nguoiTaoId, String ghiChu) throws SQLException {
@@ -6817,11 +7024,13 @@ public class KNCSDL {
                     // ✅ Lấy danh sách người nhận của quy trình này
                     List<Map<String, Object>> nguoiNhanList = getNguoiNhanByStepId(qtId);
                     quyTrinh.put("nguoi_nhan_list", nguoiNhanList);
-                    
+
                     // ✅ Tạo chuỗi tên người nhận để hiển thị
                     StringBuilder nguoiNhanNames = new StringBuilder();
                     for (int i = 0; i < nguoiNhanList.size(); i++) {
-                        if (i > 0) nguoiNhanNames.append(", ");
+                        if (i > 0) {
+                            nguoiNhanNames.append(", ");
+                        }
                         nguoiNhanNames.append(nguoiNhanList.get(i).get("ten"));
                     }
                     quyTrinh.put("nguoi_nhan_names", nguoiNhanNames.toString());
@@ -6856,7 +7065,7 @@ public class KNCSDL {
      */
     public List<Map<String, Object>> getBaoCaoDuAnByDateRange(String tuNgay, String denNgay, String phongBan) throws SQLException {
         List<Map<String, Object>> baoCaoDuAn = new ArrayList<>();
-        
+
         StringBuilder sql = new StringBuilder();
         sql.append("""
             SELECT 
@@ -6895,9 +7104,9 @@ public class KNCSDL {
             LEFT JOIN cong_viec cv ON da.id = cv.du_an_id
             WHERE da.id <> 1
         """);
-        
+
         List<Object> params = new ArrayList<>();
-        
+
         // Lọc theo khoảng thời gian (dự án có deadline trong khoảng này hoặc đang active)
         if (tuNgay != null && !tuNgay.isEmpty() && denNgay != null && !denNgay.isEmpty()) {
             sql.append("""
@@ -6909,13 +7118,13 @@ public class KNCSDL {
             params.add(java.sql.Date.valueOf(tuNgay));
             params.add(java.sql.Date.valueOf(denNgay));
         }
-        
+
         // Lọc theo phòng ban
         if (phongBan != null && !phongBan.trim().isEmpty()) {
             sql.append(" AND da.phong_ban = ? ");
             params.add(phongBan);
         }
-        
+
         sql.append("""
             GROUP BY da.id, da.ten_du_an, da.mo_ta, da.nhom_du_an, 
                      da.phong_ban, da.trang_thai_duan, da.muc_do_uu_tien,
@@ -6931,12 +7140,12 @@ public class KNCSDL {
                 cv_sap_het_han DESC,
                 da.ngay_ket_thuc ASC
         """);
-        
+
         try (PreparedStatement stmt = cn.prepareStatement(sql.toString())) {
             for (int i = 0; i < params.size(); i++) {
                 stmt.setObject(i + 1, params.get(i));
             }
-            
+
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     Map<String, Object> row = new HashMap<>();
@@ -6950,10 +7159,10 @@ public class KNCSDL {
                     row.put("ngay_bat_dau", rs.getDate("ngay_bat_dau"));
                     row.put("ngay_ket_thuc", rs.getDate("ngay_ket_thuc"));
                     row.put("lead_name", rs.getString("lead_name"));
-                    
+
                     int tongCV = rs.getInt("tong_cong_viec");
                     int cvHoanThanh = rs.getInt("cv_hoan_thanh");
-                    
+
                     row.put("tong_cong_viec", tongCV);
                     row.put("cv_hoan_thanh", cvHoanThanh);
                     row.put("cv_dang_thuc_hien", rs.getInt("cv_dang_thuc_hien"));
@@ -6961,16 +7170,16 @@ public class KNCSDL {
                     row.put("cv_chua_bat_dau", rs.getInt("cv_chua_bat_dau"));
                     row.put("cv_qua_han", rs.getInt("cv_qua_han"));
                     row.put("cv_sap_het_han", rs.getInt("cv_sap_het_han"));
-                    
+
                     // Tính tiến độ
                     double tienDo = tongCV > 0 ? Math.round((cvHoanThanh * 100.0 / tongCV) * 10) / 10.0 : 0.0;
                     row.put("tien_do", tienDo);
-                    
+
                     baoCaoDuAn.add(row);
                 }
             }
         }
-        
+
         return baoCaoDuAn;
     }
 
@@ -6979,7 +7188,7 @@ public class KNCSDL {
      */
     public List<Map<String, Object>> getChiTietCongViecDuAn(String tuNgay, String denNgay, String phongBan, String trangThaiDuAn) throws SQLException {
         List<Map<String, Object>> chiTietList = new ArrayList<>();
-        
+
         StringBuilder sql = new StringBuilder();
         sql.append("""
             SELECT 
@@ -7001,9 +7210,9 @@ public class KNCSDL {
             LEFT JOIN nhanvien nv_nhan ON cvnn.nhan_vien_id = nv_nhan.id
             WHERE da.id <> 1
         """);
-        
+
         List<Object> params = new ArrayList<>();
-        
+
         // Lọc theo khoảng thời gian
         if (tuNgay != null && !tuNgay.isEmpty() && denNgay != null && !denNgay.isEmpty()) {
             sql.append("""
@@ -7015,19 +7224,19 @@ public class KNCSDL {
             params.add(java.sql.Date.valueOf(tuNgay));
             params.add(java.sql.Date.valueOf(denNgay));
         }
-        
+
         // Lọc theo phòng ban
         if (phongBan != null && !phongBan.trim().isEmpty()) {
             sql.append(" AND da.phong_ban = ? ");
             params.add(phongBan);
         }
-        
+
         // Lọc theo trạng thái dự án
         if (trangThaiDuAn != null && !trangThaiDuAn.trim().isEmpty()) {
             sql.append(" AND da.trang_thai_duan = ? ");
             params.add(trangThaiDuAn);
         }
-        
+
         sql.append("""
             GROUP BY da.ten_du_an, da.trang_thai_duan, da.ngay_ket_thuc,
                      nv_lead.ho_ten, cv.id, cv.ten_cong_viec, cv.trang_thai,
@@ -7042,12 +7251,12 @@ public class KNCSDL {
                 da.ten_du_an,
                 cv.han_hoan_thanh ASC
         """);
-        
+
         try (PreparedStatement stmt = cn.prepareStatement(sql.toString())) {
             for (int i = 0; i < params.size(); i++) {
                 stmt.setObject(i + 1, params.get(i));
             }
-            
+
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     Map<String, Object> row = new HashMap<>();
@@ -7062,12 +7271,12 @@ public class KNCSDL {
                     row.put("ngay_hoan_thanh", rs.getDate("ngay_hoan_thanh"));
                     row.put("muc_do_uu_tien", rs.getString("muc_do_uu_tien"));
                     row.put("nguoi_nhan", rs.getString("nguoi_nhan"));
-                    
+
                     chiTietList.add(row);
                 }
             }
         }
-        
+
         return chiTietList;
     }
 
@@ -7076,7 +7285,7 @@ public class KNCSDL {
      */
     public List<Map<String, Object>> getProjectTasksByStatus(String projectName, String status, String tuNgay, String denNgay) throws SQLException {
         List<Map<String, Object>> result = new ArrayList<>();
-        
+
         StringBuilder sql = new StringBuilder();
         sql.append("""
             SELECT 
@@ -7094,10 +7303,10 @@ public class KNCSDL {
             LEFT JOIN nhanvien nv ON cvnn.nhan_vien_id = nv.id
             WHERE da.ten_du_an = ?
         """);
-        
+
         List<Object> params = new ArrayList<>();
         params.add(projectName);
-        
+
         // Filter theo trạng thái
         if ("Đã hoàn thành".equals(status)) {
             sql.append(" AND cv.trang_thai = 'Đã hoàn thành' ");
@@ -7111,15 +7320,15 @@ public class KNCSDL {
         } else if ("Chưa bắt đầu".equals(status)) {
             sql.append(" AND (cv.trang_thai = 'Chưa bắt đầu' OR (cv.ngay_bat_dau > CURDATE() AND cv.ngay_hoan_thanh IS NULL)) ");
         }
-        
+
         sql.append(" GROUP BY cv.id, cv.ten_cong_viec, cv.trang_thai, cv.ngay_bat_dau, cv.han_hoan_thanh, cv.ngay_hoan_thanh, cv.muc_do_uu_tien ");
         sql.append(" ORDER BY cv.han_hoan_thanh ASC ");
-        
+
         try (PreparedStatement stmt = cn.prepareStatement(sql.toString())) {
             for (int i = 0; i < params.size(); i++) {
                 stmt.setObject(i + 1, params.get(i));
             }
-            
+
             try (ResultSet rs = stmt.executeQuery()) {
                 java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy");
                 while (rs.next()) {
@@ -7129,29 +7338,28 @@ public class KNCSDL {
                     row.put("trang_thai_cv", rs.getString("trang_thai_cv"));
                     row.put("nguoi_nhan", rs.getString("nguoi_nhan"));
                     row.put("muc_do_uu_tien", rs.getString("muc_do_uu_tien"));
-                    
+
                     java.sql.Date ngayBatDau = rs.getDate("ngay_bat_dau");
                     row.put("ngay_bat_dau", ngayBatDau != null ? sdf.format(ngayBatDau) : "");
-                    
+
                     java.sql.Date hanHoanThanh = rs.getDate("han_hoan_thanh");
                     row.put("han_hoan_thanh", hanHoanThanh != null ? sdf.format(hanHoanThanh) : "");
-                    
+
                     java.sql.Date ngayHoanThanh = rs.getDate("ngay_hoan_thanh");
                     row.put("ngay_hoan_thanh", ngayHoanThanh != null ? sdf.format(ngayHoanThanh) : "");
-                    
+
                     result.add(row);
                 }
             }
         }
-        
+
         return result;
     }
 
     // ========== PHƯƠNG THỨC MỚI CHO HỆ THỐNG NGHỈ PHÉP ==========
-    
     /**
-     * Cộng 12 ngày phép đầu năm cho các nhân viên đã làm > 12 tháng
-     * Chuyển ngày phép năm cũ còn lại sang năm mới
+     * Cộng 12 ngày phép đầu năm cho các nhân viên đã làm > 12 tháng Chuyển ngày
+     * phép năm cũ còn lại sang năm mới
      */
     public void congPhepDauNam(int nam) throws SQLException {
         String sql = "CALL sp_cong_phep_dau_nam(?)";
@@ -7160,10 +7368,10 @@ public class KNCSDL {
             stmt.execute();
         }
     }
-    
+
     /**
-     * Cộng 1 ngày phép hàng tháng cho nhân viên chưa đủ 12 tháng
-     * Chỉ cộng nếu nhân viên vào làm trước ngày 15 của tháng đó
+     * Cộng 1 ngày phép hàng tháng cho nhân viên chưa đủ 12 tháng Chỉ cộng nếu
+     * nhân viên vào làm trước ngày 15 của tháng đó
      */
     public void congPhepHangThang(int nam, int thang) throws SQLException {
         String sql = "CALL sp_cong_phep_hang_thang(?, ?)";
@@ -7173,7 +7381,7 @@ public class KNCSDL {
             stmt.execute();
         }
     }
-    
+
     /**
      * Xóa ngày phép năm cũ khi hết quý 1 (bước sang quý 2)
      */
@@ -7184,14 +7392,14 @@ public class KNCSDL {
             stmt.execute();
         }
     }
-    
+
     /**
      * Kiểm tra ngày có phải là ngày nghỉ lễ không
      */
     public boolean isNgayNghiLe(java.sql.Date ngay) throws SQLException {
-        String sql = "SELECT COUNT(*) as count FROM ngay_nghi_le " +
-                    "WHERE ? BETWEEN ngay_bat_dau AND ngay_ket_thuc";
-        
+        String sql = "SELECT COUNT(*) as count FROM ngay_nghi_le "
+                + "WHERE ? BETWEEN ngay_bat_dau AND ngay_ket_thuc";
+
         try (PreparedStatement stmt = cn.prepareStatement(sql)) {
             stmt.setDate(1, ngay);
             try (ResultSet rs = stmt.executeQuery()) {
@@ -7202,7 +7410,7 @@ public class KNCSDL {
         }
         return false;
     }
-    
+
     /**
      * Kiểm tra ngày có phải là cuối tuần (thứ 7, chủ nhật) không
      */
@@ -7212,16 +7420,16 @@ public class KNCSDL {
         int dayOfWeek = cal.get(Calendar.DAY_OF_WEEK);
         return dayOfWeek == Calendar.SATURDAY || dayOfWeek == Calendar.SUNDAY;
     }
-    
+
     /**
      * Lấy danh sách ngày nghỉ lễ trong khoảng thời gian
      */
     public List<Map<String, Object>> getDanhSachNgayNghiLe(int nam) throws SQLException {
         List<Map<String, Object>> list = new ArrayList<>();
-        String sql = "SELECT * FROM ngay_nghi_le " +
-                    "WHERE YEAR(ngay_bat_dau) = ? OR lap_lai_hang_nam = 1 " +
-                    "ORDER BY ngay_bat_dau";
-        
+        String sql = "SELECT * FROM ngay_nghi_le "
+                + "WHERE YEAR(ngay_bat_dau) = ? OR lap_lai_hang_nam = 1 "
+                + "ORDER BY ngay_bat_dau";
+
         try (PreparedStatement stmt = cn.prepareStatement(sql)) {
             stmt.setInt(1, nam);
             try (ResultSet rs = stmt.executeQuery()) {
@@ -7238,16 +7446,16 @@ public class KNCSDL {
         }
         return list;
     }
-    
+
     /**
      * Lấy lịch sử cộng phép của nhân viên
      */
     public List<Map<String, Object>> getLichSuCongPhep(int nhanVienId, int nam) throws SQLException {
         List<Map<String, Object>> list = new ArrayList<>();
-        String sql = "SELECT * FROM lich_su_cong_phep " +
-                    "WHERE nhan_vien_id = ? AND nam = ? " +
-                    "ORDER BY ngay_cong DESC";
-        
+        String sql = "SELECT * FROM lich_su_cong_phep "
+                + "WHERE nhan_vien_id = ? AND nam = ? "
+                + "ORDER BY ngay_cong DESC";
+
         try (PreparedStatement stmt = cn.prepareStatement(sql)) {
             stmt.setInt(1, nhanVienId);
             stmt.setInt(2, nam);
@@ -7265,6 +7473,241 @@ public class KNCSDL {
             }
         }
         return list;
+    }
+
+    /**
+     * Cộng 1 ngày phép hàng tháng cho nhân viên chưa đủ 12 tháng
+     * Kiểm tra từ bảng lich_su_cong_phep: nếu tháng trước chưa cộng thì cộng +1
+     * Ví dụ: Hôm nay 3/2/2026 → check tháng 1 đã cộng chưa, chưa thì cộng vào tháng 1
+     * Gọi khi user truy cập index.jsp hoặc userDashboard
+     */
+    public void congPhepTheoThang() throws SQLException {
+        Logger logger = Logger.getLogger(KNCSDL.class.getName());
+        
+        try {
+            Calendar cal = Calendar.getInstance();
+            int currentYear = cal.get(Calendar.YEAR);
+            int currentMonth = cal.get(Calendar.MONTH) + 1;
+            
+            // Tính tháng trước
+            int previousMonth = (currentMonth == 1) ? 12 : currentMonth - 1;
+            int previousYear = (currentMonth == 1) ? currentYear - 1 : currentYear;
+            
+            logger.info("🔍 [congPhepTheoThang] Bắt đầu kiểm tra cộng phép hàng tháng");
+            logger.info("   Tháng hiện tại: " + currentMonth + "/" + currentYear + ", Tháng check: " + previousMonth + "/" + previousYear);
+            
+            // Lấy danh sách tất cả nhân viên đang làm
+            String sqlNhanVien = "SELECT nv.id, nv.ho_ten, nv.ngay_vao_lam FROM nhanvien nv WHERE nv.trang_thai_lam_viec = 'Đang làm' AND nv.ngay_vao_lam IS NOT NULL ORDER BY nv.id";
+            
+            try (PreparedStatement stmtNV = cn.prepareStatement(sqlNhanVien);
+                 ResultSet rsNV = stmtNV.executeQuery()) {
+                
+                int totalChecked = 0;
+                int totalInserted = 0;
+                
+                while (rsNV.next()) {
+                    int nhanVienId = rsNV.getInt("id");
+                    String hoTen = rsNV.getString("ho_ten");
+                    java.sql.Date ngayVaoLam = rsNV.getDate("ngay_vao_lam");
+                    totalChecked++;
+                    
+                    // Tính số tháng đã làm
+                    int monthsWorked = calculateMonthsDifference(ngayVaoLam, new java.sql.Date(System.currentTimeMillis()));
+                    
+                    logger.info("   [" + totalChecked + "] NV ID " + nhanVienId + " (" + hoTen + ") - Ngày vào: " + ngayVaoLam + ", Tháng làm: " + monthsWorked);
+                    
+                    // Chỉ cộng cho nhân viên chưa đủ 12 tháng
+                    if (monthsWorked < 12) {
+                        logger.info("       ✓ < 12 tháng, kiểm tra lịch sử...");
+                        
+                        // Kiểm tra xem tháng trước (previousMonth) đã cộng chưa
+                        String sqlCheck = "SELECT COUNT(*) as cnt FROM lich_su_cong_phep WHERE nhan_vien_id = ? AND nam = ? AND thang = ? AND loai_cong IN ('hang_thang', 'dau_nam')";
+                        
+                        try (PreparedStatement stmtCheck = cn.prepareStatement(sqlCheck)) {
+                            stmtCheck.setInt(1, nhanVienId);
+                            stmtCheck.setInt(2, previousYear);
+                            stmtCheck.setInt(3, previousMonth);
+                            
+                            try (ResultSet rsCheck = stmtCheck.executeQuery()) {
+                                if (rsCheck.next()) {
+                                    int count = rsCheck.getInt("cnt");
+                                    logger.info("       → Lịch sử tháng " + previousMonth + "/" + previousYear + ": " + count + " record");
+                                    
+                                    // Nếu tháng trước chưa cộng (count = 0) thì cộng +1 ngày
+                                    if (count == 0) {
+                                        logger.info("       ✅ Tháng " + previousMonth + " chưa cộng, thực hiện INSERT...");
+                                        
+                                        // Thêm record vào lich_su_cong_phep
+                                        String sqlInsert = "INSERT INTO lich_su_cong_phep (nhan_vien_id, nam, thang, so_ngay_cong, loai_cong, ly_do, ngay_cong) VALUES (?, ?, ?, 1.0, 'hang_thang', ?, NOW())";
+                                        
+                                        try (PreparedStatement stmtInsert = cn.prepareStatement(sqlInsert)) {
+                                            String lyDo = "Cộng 1 ngày phép hàng tháng cho tháng " + previousMonth + "/" + previousYear;
+                                            stmtInsert.setInt(1, nhanVienId);
+                                            stmtInsert.setInt(2, previousYear);
+                                            stmtInsert.setInt(3, previousMonth);
+                                            stmtInsert.setString(4, lyDo);
+                                            int rows = stmtInsert.executeUpdate();
+                                            
+                                            if (rows > 0) {
+                                                logger.info("       💾 Đã INSERT vào lich_su_cong_phep");
+                                                
+                                                // 2. Cập nhật bảng ngay_phep_nam (cho năm hiện tại)
+                                                String sqlUpdate = "INSERT INTO ngay_phep_nam (nhan_vien_id, nam, tong_ngay_phep, ngay_phep_da_dung, ngay_phep_con_lai, ngay_phep_nam_truoc) " +
+                                                                   "VALUES (?, ?, 1.0, 0.0, 1.0, 0) " +
+                                                                   "ON DUPLICATE KEY UPDATE " +
+                                                                   "tong_ngay_phep = tong_ngay_phep + 1.0, " +
+                                                                   "ngay_phep_con_lai = ngay_phep_con_lai + 1.0";
+                                                
+                                                try (PreparedStatement stmtUpdate = cn.prepareStatement(sqlUpdate)) {
+                                                    stmtUpdate.setInt(1, nhanVienId);
+                                                    stmtUpdate.setInt(2, currentYear);
+                                                    int updateRows = stmtUpdate.executeUpdate();
+                                                    
+                                                    if (updateRows > 0) {
+                                                        totalInserted++;
+                                                        logger.info("       💾 Đã cập nhật ngay_phep_nam (năm " + currentYear + ")");
+                                                    } else {
+                                                        logger.warning("       ❌ UPDATE ngay_phep_nam thất bại");
+                                                    }
+                                                }
+                                            } else {
+                                                logger.warning("       ❌ INSERT lich_su_cong_phep thất bại");
+                                            }
+                                        }
+                                    } else {
+                                        logger.info("       ⏭️ Tháng " + previousMonth + " đã cộng rồi");
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        logger.info("       ✗ >= 12 tháng, skip");
+                    }
+                }
+                
+                logger.info("🎯 [congPhepTheoThang] Hoàn tất - Kiểm tra: " + totalChecked + " nhân viên, INSERT: " + totalInserted + " record");
+                
+            }
+        } catch (SQLException ex) {
+            logger.log(Level.SEVERE, "❌ [congPhepTheoThang] SQL Exception: " + ex.getMessage(), ex);
+            throw ex;
+        } catch (Exception ex) {
+            logger.log(Level.SEVERE, "❌ [congPhepTheoThang] Exception: " + ex.getMessage(), ex);
+            throw new SQLException(ex);
+        }
+    }
+    
+    /**
+     * Tính số tháng chênh lệch giữa 2 ngày
+     */
+    private int calculateMonthsDifference(java.sql.Date from, java.sql.Date to) {
+        Calendar calFrom = Calendar.getInstance();
+        Calendar calTo = Calendar.getInstance();
+        calFrom.setTime(from);
+        calTo.setTime(to);
+        
+        int months = calTo.get(Calendar.MONTH) - calFrom.get(Calendar.MONTH);
+        months += (calTo.get(Calendar.YEAR) - calFrom.get(Calendar.YEAR)) * 12;
+        
+        return months;
+    }
+
+    /**
+     * Xử lý trường hợp sinh nhật công việc (anniversary)
+     * Khi nhân viên đủ 12 tháng làm việc vào đúng ngày anniversary, cộng hết số ngày phép còn lại
+     * Kiểm tra từ bảng lich_su_cong_phep để tính số ngày đã cộng
+     * Gọi khi user truy cập index.jsp hoặc userDashboard
+     */
+    public void congPhepAnniversary() throws SQLException {
+        Calendar cal = Calendar.getInstance();
+        int currentYear = cal.get(Calendar.YEAR);
+        int currentMonth = cal.get(Calendar.MONTH) + 1;
+        int currentDay = cal.get(Calendar.DAY_OF_MONTH);
+        java.sql.Date today = new java.sql.Date(System.currentTimeMillis());
+        
+        Logger logger = Logger.getLogger(KNCSDL.class.getName());
+        logger.info("🎉 Kiểm tra Anniversary - Ngày hôm nay: " + currentDay + "/" + currentMonth + "/" + currentYear);
+        
+        // Lấy danh sách tất cả nhân viên đang làm
+        String sqlNhanVien = "SELECT nv.id, nv.ngay_vao_lam FROM nhanvien nv WHERE nv.trang_thai_lam_viec = 'Đang làm' AND nv.ngay_vao_lam IS NOT NULL";
+        
+        try (PreparedStatement stmtNV = cn.prepareStatement(sqlNhanVien);
+             ResultSet rsNV = stmtNV.executeQuery()) {
+            
+            while (rsNV.next()) {
+                int nhanVienId = rsNV.getInt("id");
+                java.sql.Date ngayVaoLam = rsNV.getDate("ngay_vao_lam");
+                
+                // Tính số tháng đã làm
+                int monthsWorked = calculateMonthsDifference(ngayVaoLam, today);
+                
+                // Lấy ngày và tháng vào làm
+                Calendar calVao = Calendar.getInstance();
+                calVao.setTime(ngayVaoLam);
+                int dayVao = calVao.get(Calendar.DAY_OF_MONTH);
+                int monthVao = calVao.get(Calendar.MONTH) + 1;
+                
+                // Kiểm tra xem hôm nay có phải là ngày anniversary (đủ 12 tháng)
+                if (monthsWorked >= 12 && currentDay == dayVao && currentMonth == monthVao) {
+                    logger.info("✅ NV ID " + nhanVienId + " - Hôm nay là ngày Anniversary (đủ 12 tháng)! Ngày vào: " + dayVao + "/" + monthVao);
+                    
+                    // Kiểm tra xem năm này đã cộng anniversary chưa
+                    String sqlCheckAnniversary = "SELECT COUNT(*) as cnt FROM lich_su_cong_phep WHERE nhan_vien_id = ? AND nam = ? AND loai_cong = 'anniversary'";
+                    
+                    try (PreparedStatement stmtCheckAni = cn.prepareStatement(sqlCheckAnniversary)) {
+                        stmtCheckAni.setInt(1, nhanVienId);
+                        stmtCheckAni.setInt(2, currentYear);
+                        
+                        try (ResultSet rsCheckAni = stmtCheckAni.executeQuery()) {
+                            if (rsCheckAni.next()) {
+                                int countAnniversary = rsCheckAni.getInt("cnt");
+                                
+                                if (countAnniversary == 0) {
+                                    // Chưa cộng anniversary - tính số ngày phép còn lại
+                                    String sqlSumDays = "SELECT COALESCE(SUM(so_ngay_cong), 0) as tong_da_cong FROM lich_su_cong_phep WHERE nhan_vien_id = ? AND nam = ? AND loai_cong IN ('hang_thang', 'dau_nam')";
+                                    
+                                    try (PreparedStatement stmtSum = cn.prepareStatement(sqlSumDays)) {
+                                        stmtSum.setInt(1, nhanVienId);
+                                        stmtSum.setInt(2, currentYear);
+                                        
+                                        try (ResultSet rsSum = stmtSum.executeQuery()) {
+                                            if (rsSum.next()) {
+                                                double tongDaCong = rsSum.getDouble("tong_da_cong");
+                                                double soNgayConLai = 12.0 - tongDaCong;
+                                                
+                                                if (soNgayConLai > 0) {
+                                                    logger.info("📊 NV ID " + nhanVienId + " - Đã cộng: " + tongDaCong + " ngày, Còn lại: " + soNgayConLai + " ngày");
+                                                    
+                                                    // Cộng số ngày phép còn lại
+                                                    String sqlInsertAnniversary = "INSERT INTO lich_su_cong_phep (nhan_vien_id, nam, thang, so_ngay_cong, loai_cong, ly_do, ngay_cong) VALUES (?, ?, ?, ?, 'anniversary', ?, NOW())";
+                                                    
+                                                    try (PreparedStatement stmtInsertAni = cn.prepareStatement(sqlInsertAnniversary)) {
+                                                        String lyDo = "🎉 Sinh nhật công việc 12 tháng! Cộng " + soNgayConLai + " ngày phép còn lại của năm " + currentYear + ". Ngày vào: " + dayVao + "/" + monthVao + ". Không cộng hàng tháng nữa.";
+                                                        
+                                                        stmtInsertAni.setInt(1, nhanVienId);
+                                                        stmtInsertAni.setInt(2, currentYear);
+                                                        stmtInsertAni.setInt(3, currentMonth);
+                                                        stmtInsertAni.setDouble(4, soNgayConLai);
+                                                        stmtInsertAni.setString(5, lyDo);
+                                                        stmtInsertAni.executeUpdate();
+                                                        
+                                                        logger.info("💾 Đã lưu Anniversary bonus cho NV ID " + nhanVienId + " - " + soNgayConLai + " ngày");
+                                                    }
+                                                } else {
+                                                    logger.info("⏭️ NV ID " + nhanVienId + " - Đã cộng đủ 12 ngày rồi, không cộng thêm");
+                                                }
+                                            }
+                                        }
+                                    }
+                                } else {
+                                    logger.info("⏭️ NV ID " + nhanVienId + " - Năm " + currentYear + " đã cộng anniversary rồi, bỏ qua");
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
 }

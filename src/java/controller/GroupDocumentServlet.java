@@ -153,6 +153,14 @@ public class GroupDocumentServlet extends HttpServlet {
                 return;
             }
 
+            // Kiểm tra trùng thứ tự
+            KNCSDL db = new KNCSDL();
+            if (thuTu > 0 && db.isThuTuExists(thuTu, null)) {
+                request.setAttribute("error", "Thứ tự " + thuTu + " đã tồn tại! Vui lòng chọn thứ tự khác.");
+                handleListGroups(request, response);
+                return;
+            }
+
             // Tạo object NhomTaiLieu
             NhomTaiLieu ntl = new NhomTaiLieu();
             ntl.setTenNhom(tenNhom);
@@ -164,7 +172,6 @@ public class GroupDocumentServlet extends HttpServlet {
             ntl.setDoiTuongXem(doiTuongXem != null && !doiTuongXem.isEmpty() ? doiTuongXem : "Tất cả");
 
             // Lưu vào database
-            KNCSDL db = new KNCSDL();
             int result = db.insertNhomTaiLieu(ntl);
 
             if (result > 0) {
@@ -213,6 +220,14 @@ public class GroupDocumentServlet extends HttpServlet {
                 thuTu = 0;
             }
 
+            // Kiểm tra trùng thứ tự
+            KNCSDL db = new KNCSDL();
+            if (thuTu > 0 && db.isThuTuExists(thuTu, id)) {
+                request.setAttribute("error", "Thứ tự " + thuTu + " đã tồn tại! Vui lòng chọn thứ tự khác.");
+                handleListGroups(request, response);
+                return;
+            }
+
             // Tạo object NhomTaiLieu
             NhomTaiLieu ntl = new NhomTaiLieu();
             ntl.setId(id);
@@ -224,7 +239,6 @@ public class GroupDocumentServlet extends HttpServlet {
             ntl.setThuTu(thuTu);
 
             // Cập nhật database
-            KNCSDL db = new KNCSDL();
             boolean success = db.updateNhomTaiLieu(ntl);
 
             if (success) {

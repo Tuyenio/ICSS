@@ -30,6 +30,22 @@ public class themNhanvien extends HttpServlet {
             String trangThai = request.getParameter("trang_thai_lam_viec");
             String vaiTro = request.getParameter("vai_tro");
 
+            // ✅ VALIDATION EMAIL
+            String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
+            if (email == null || email.trim().isEmpty() || !email.matches(emailRegex)) {
+                out.print("error_email");
+                return;
+            }
+
+            // ✅ VALIDATION SỐ ĐIỆN THOẠI (chỉ số, 10-11 chữ số)
+            if (sdt != null && !sdt.trim().isEmpty()) {
+                String phoneRegex = "^[0-9]{10,11}$";
+                if (!sdt.matches(phoneRegex)) {
+                    out.print("error_phone");
+                    return;
+                }
+            }
+
             int sophongban = Integer.parseInt(phongban);
 
             KNCSDL kn = new KNCSDL();

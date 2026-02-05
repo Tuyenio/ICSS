@@ -31,6 +31,7 @@ public class dsDuannv extends HttpServlet {
             // ========== Lấy danh sách nhân viên để lọc Lead ==========
             List<Map<String, Object>> dsNhanVien = kn.getAllNhanVien();
             req.setAttribute("dsNhanVien", dsNhanVien);
+            req.setAttribute("employeeList", dsNhanVien); // Thêm để dùng trong modal thêm/sửa dự án
 
             // ========== Nhận tham số lọc ==========
             String keyword = req.getParameter("keyword");

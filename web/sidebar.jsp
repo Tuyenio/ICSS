@@ -8,6 +8,7 @@
     /* PREMIUM SIDEBAR DESIGN */
     .sidebar {
         min-height: 100vh;
+        max-height: 100vh;
         background: linear-gradient(145deg,
             rgba(15, 23, 42, 0.95) 0%,
             rgba(30, 41, 59, 0.95) 35%,
@@ -29,7 +30,8 @@
         left: 0;
         bottom: 0;
         z-index: 1000;
-        overflow: hidden;
+        overflow-y: auto;
+        overflow-x: hidden;
     }
 
     .sidebar::before {
@@ -433,9 +435,10 @@
 
         <%-- Nghỉ phép (với submenu giống Chấm công) --%>
         <%
-            boolean isNghiPhepGroup = currentPath.equals("leave_management.jsp") || currentPath.equals("admin_leave.jsp");
+            boolean isNghiPhepGroup = currentPath.equals("leave_management.jsp") || currentPath.equals("admin_leave.jsp") || currentPath.equals("admin_leave_statistics.jsp");
             boolean isQLNghiPhep = currentPath.equals("leave_management.jsp");
             boolean isAdminNghiPhep = currentPath.equals("admin_leave.jsp");
+            boolean isLeaveStats = currentPath.equals("admin_leave_statistics.jsp");
         %>
         <li class="has-submenu <%= isNghiPhepGroup ? "open" : "" %>">
             <a href="#" class="submenu-toggle <%= isNghiPhepGroup ? "active" : "" %>">
@@ -449,6 +452,13 @@
                 <li>
                     <a href="dsNghiPhep" class="<%= isQLNghiPhep ? "active" : "" %>">
                         <i class="fa-solid fa-list"></i><span>Quản lý nghỉ phép</span>
+                    </a>
+                </li>
+
+                <!-- Thống kê ngày phép -->
+                <li>
+                    <a href="adminLeaveStats" class="<%= isLeaveStats ? "active" : "" %>">
+                        <i class="fa-solid fa-chart-bar"></i><span>Thống kê ngày phép</span>
                     </a>
                 </li>
 

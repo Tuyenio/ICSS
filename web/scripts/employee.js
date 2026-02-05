@@ -467,6 +467,25 @@ $('#employeeForm').on('submit', function (e) {
     e.preventDefault(); // Ngăn form gửi mặc định
 
     const empId = $('#empId').val(); // Dùng empId để phân biệt thêm/sửa
+    const email = $('#empEmail').val();
+    const phone = $('#empPhone').val();
+
+    // ✅ VALIDATION EMAIL
+    const emailRegex = /^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+    if (!emailRegex.test(email)) {
+        showToast('error', '❌ Email không đúng định dạng!');
+        return;
+    }
+
+    // ✅ VALIDATION SỐ ĐIỆN THOẠI (chỉ số, 10-11 chữ số)
+    if (phone && phone.trim() !== '') {
+        const phoneRegex = /^[0-9]{10,11}$/;
+        if (!phoneRegex.test(phone)) {
+            showToast('error', '❌ Số điện thoại không đúng định dạng! (10-11 chữ số)');
+            return;
+        }
+    }
+
     const formData = $(this).serialize(); // Lấy toàn bộ dữ liệu form
 
     const url = empId ? './dsnhanvien' : './themNhanvien';
@@ -476,6 +495,14 @@ $('#employeeForm').on('submit', function (e) {
         type: 'POST',
         data: formData,
         success: function (response) {
+            if (response === 'error_email') {
+                showToast('error', '❌ Email không đúng định dạng!');
+                return;
+            }
+            if (response === 'error_phone') {
+                showToast('error', '❌ Số điện thoại không đúng định dạng! (10-11 chữ số)');
+                return;
+            }
             $('#modalEmployee').modal('hide');
             showToast('success', empId ? 'Cập nhật thành công' : 'Thêm mới thành công');
             location.reload(); // Hoặc cập nhật bảng bằng JS

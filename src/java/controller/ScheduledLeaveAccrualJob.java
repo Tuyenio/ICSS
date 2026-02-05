@@ -11,12 +11,13 @@ import jakarta.servlet.http.*;
 
 /**
  * Scheduled Job để tự động cộng ngày phép cho nhân viên
- * - Đầu năm: Cộng 12 ngày cho nhân viên làm >12 tháng
- * - Đầu tháng: Cộng 1 ngày cho nhân viên mới (chưa đủ 12 tháng)
- * - Đầu quý 2: Xóa ngày phép năm cũ
+ * - Đầu năm (1/1): Cộng 12 ngày cho nhân viên làm >= 12 tháng
+ * - Đầu quý 2 (1/4): Xóa ngày phép năm cũ
+ * 
+ * Note: Cộng phép hàng tháng + Anniversary được xử lý bởi LeaveAccrualAutoFilter
+ * khi user truy cập index.jsp hoặc userDashboard
  * 
  * Servlet này nên được gọi bởi scheduled task (cron job/task scheduler)
- * hoặc có thể tích hợp với Quartz Scheduler
  * 
  * @author ICSS
  */
@@ -45,7 +46,7 @@ public class ScheduledLeaveAccrualJob extends HttpServlet {
             KNCSDL kn = new KNCSDL();
             Calendar cal = Calendar.getInstance();
             int currentYear = cal.get(Calendar.YEAR);
-            int currentMonth = cal.get(Calendar.MONTH) + 1; // 0-based
+            int currentMonth = cal.get(Calendar.MONTH) + 1;
             int currentDay = cal.get(Calendar.DAY_OF_MONTH);
             
             StringBuilder result = new StringBuilder();
@@ -57,20 +58,6 @@ public class ScheduledLeaveAccrualJob extends HttpServlet {
                     // Chạy job đầu năm
                     kn.congPhepDauNam(currentYear);
                     result.append("{\"job\":\"yearStart\",\"year\":").append(currentYear).append(",\"status\":\"completed\"}");
-                    hasJob = true;
-                    break;
-                    
-                case "monthStart":
-                    // Chạy job đầu tháng - cộng phép của tháng trước
-                    int prevMonthForCase = currentMonth - 1;
-                    int prevYearForCase = currentYear;
-                    if (prevMonthForCase == 0) {
-                        prevMonthForCase = 12;
-                        prevYearForCase = currentYear - 1;
-                    }
-                    kn.congPhepHangThang(prevYearForCase, prevMonthForCase);
-                    result.append("{\"job\":\"monthStart\",\"year\":").append(prevYearForCase)
-                          .append(",\"month\":").append(prevMonthForCase).append(",\"status\":\"completed\"}");
                     hasJob = true;
                     break;
                     
@@ -89,21 +76,6 @@ public class ScheduledLeaveAccrualJob extends HttpServlet {
                     if (currentMonth == 1 && currentDay == 1) {
                         kn.congPhepDauNam(currentYear);
                         result.append("{\"job\":\"yearStart\",\"year\":").append(currentYear).append(",\"status\":\"completed\"}");
-                        hasJob = true;
-                    }
-                    
-                    // Ngày 1 hàng tháng: Cộng phép của tháng trước
-                    if (currentDay == 1) {
-                        if (hasJob) result.append(",");
-                        int prevMonthAuto = currentMonth - 1;
-                        int prevYearAuto = currentYear;
-                        if (prevMonthAuto == 0) {
-                            prevMonthAuto = 12;
-                            prevYearAuto = currentYear - 1;
-                        }
-                        kn.congPhepHangThang(prevYearAuto, prevMonthAuto);
-                        result.append("{\"job\":\"monthStart\",\"year\":").append(prevYearAuto)
-                              .append(",\"month\":").append(prevMonthAuto).append(",\"status\":\"completed\"}");
                         hasJob = true;
                     }
                     

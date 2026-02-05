@@ -458,7 +458,7 @@
                     <div class="stat-value"><%= tongPhepConLaiAll %></div>
                     <div class="stat-label">
                         <% if (ngayPhepNamTruoc.compareTo(BigDecimal.ZERO) > 0) { %>
-                            <%= ngayPhepConLai %> (<%= namHienTai %>) + <%= ngayPhepNamTruoc %> (<%= namHienTai - 1 %>)
+                            <%= ngayPhepNamTruoc %> (<%= namHienTai - 1 %>) + <%= ngayPhepConLai %> (<%= namHienTai %>)
                         <% } else { %>
                             Ngày phép còn lại (<%= namHienTai %>)
                         <% } %>
@@ -469,7 +469,7 @@
                 <div class="stat-card used animate-fadeInUp delay-2">
                     <div class="stat-icon"><i class="fa-solid fa-calendar-minus"></i></div>
                     <div class="stat-value"><%= ngayPhepDaDung %></div>
-                    <div class="stat-label">Đã sử dụng / <%= tongNgayPhep %></div>
+                    <div class="stat-label">Đã sử dụng / <%= tongNgayPhep.add(ngayPhepNamTruoc) %></div>
                 </div>
             </div>
             <div class="col-md-3 col-sm-6">

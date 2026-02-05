@@ -203,6 +203,12 @@ public class apiNghiPhep extends HttpServlet {
                 return;
             }
             
+            // Validation 5: Kiểm tra trùng với đơn nghỉ phép khác
+            if (kn.hasOverlappingLeaveRequest(nhanVienId, ngayBatDau, ngayKetThuc, null)) {
+                out.print("{\"success\":false,\"message\":\"⚠️ Bạn đã có đơn nghỉ phép trong khoảng thời gian này rồi. Vui lòng kiểm tra lại hoặc chọn ngày khác.\",\"resetDate\":true}");
+                return;
+            }
+            
             // Kiểm tra số ngày phép còn lại
             Calendar cal = Calendar.getInstance();
             int nam = cal.get(Calendar.YEAR);
@@ -233,19 +239,20 @@ public class apiNghiPhep extends HttpServlet {
             
             double tongPhepConLai = conLai + phepNamTruoc;
             
-            // Kiểm tra phép năm
+            // Kiểm tra phép năm - ƯU TIÊN KIỂM TRA PHÉP NĂM TRƯỚC TRƯỚC
             if ("Phép năm".equals(loaiPhep)) {
                 if (soNgay > tongPhepConLai) {
-                    String msg = "Không đủ phép năm. Còn lại: " + conLai + " ngày (năm nay)";
-                    if (phepNamTruoc > 0) {
-                        msg += " + " + phepNamTruoc + " ngày (năm trước)";
-                    }
-                    msg += ". Vui lòng chọn loại phép khác.";
+                    String msg = "❌ Không đủ phép năm!\\n\\n";
+                    msg += "📊 Số ngày phép của bạn:\\n";
+                    msg += "• Phép năm " + (nam - 1) + " (chưa hết hạn): " + phepNamTruoc + " ngày\\n";
+                    msg += "• Phép năm " + nam + ": " + conLai + " ngày\\n";
+                    msg += "• Tổng còn lại: " + tongPhepConLai + " ngày\\n\\n";
+                    msg += "💡 Bạn đang xin " + soNgay + " ngày. Vui lòng giảm số ngày hoặc chọn loại phép khác.";
                     out.print("{\"success\":false,\"message\":\"" + escapeJson(msg) + "\"}");
                     return;
                 }
                 if (tongPhepConLai <= 0) {
-                    out.print("{\"success\":false,\"message\":\"Bạn đã hết phép năm. Vui lòng chọn loại phép khác.\"}");
+                    out.print("{\"success\":false,\"message\":\"❌ Bạn đã hết phép năm. Vui lòng chọn loại phép khác.\"}");
                     return;
                 }
             }
@@ -294,20 +301,87 @@ public class apiNghiPhep extends HttpServlet {
             double soNgay = Double.parseDouble(don.get("so_ngay").toString());
             int nhanVienId = ((Number) don.get("nhan_vien_id")).intValue();
             
-            // Nếu là phép năm, trừ phép
+            // ⚠️ KIỂM TRA TRƯỚC DUYỆT: Nếu là phép năm, kiểm tra xem phép có đủ không
             if ("Phép năm".equals(loaiPhep)) {
                 Calendar cal = Calendar.getInstance();
                 int nam = cal.get(Calendar.YEAR);
                 
-                // Cập nhật ngày phép đã dùng
-                kn.capNhatNgayPhepDaDung(nhanVienId, nam, soNgay);
+                Map<String, Object> ngayPhep = kn.getNgayPhepNam(nhanVienId, nam);
+                double conLai = 0.0;
+                double phepNamTruoc = 0.0;
+                
+                if (ngayPhep != null) {
+                    if (ngayPhep.get("ngay_phep_con_lai") != null) {
+                        Object conLaiObj = ngayPhep.get("ngay_phep_con_lai");
+                        if (conLaiObj instanceof Number) {
+                            conLai = ((Number) conLaiObj).doubleValue();
+                        } else if (conLaiObj != null) {
+                            conLai = Double.parseDouble(conLaiObj.toString());
+                        }
+                    }
+                    
+                    if (ngayPhep.get("ngay_phep_nam_truoc") != null) {
+                        Object phepNamTruocObj = ngayPhep.get("ngay_phep_nam_truoc");
+                        if (phepNamTruocObj instanceof Number) {
+                            phepNamTruoc = ((Number) phepNamTruocObj).doubleValue();
+                        } else if (phepNamTruocObj != null) {
+                            phepNamTruoc = Double.parseDouble(phepNamTruocObj.toString());
+                        }
+                    }
+                }
+                
+                double tongPhepConLai = conLai + phepNamTruoc;
+                
+                // Kiểm tra tổng phép có đủ không
+                if (soNgay > tongPhepConLai) {
+                    String msg = "❌ Duyệt thất bại: Nhân viên đã hết số ngày nghỉ phép!\\n\\n";
+                    msg += "Số ngày cần: " + soNgay + " ngày\\n";
+                    msg += "Còn lại: " + conLai + " ngày (năm nay)";
+                    if (phepNamTruoc > 0) {
+                        msg += " + " + phepNamTruoc + " ngày (năm trước)";
+                    }
+                    msg += "\\n\\nTổng cộng: " + tongPhepConLai + " ngày";
+                    
+                    out.print("{\"success\":false,\"message\":\"" + escapeJson(msg) + "\"}");
+                    return;
+                }
             }
             
+            // ✅ NẾU PHÉP ĐỦ: Cập nhật trạng thái duyệt
             Map<String, Object> nhanVien = kn.getNhanVienByEmail(email);
             int nguoiDuyetId = ((Number) nhanVien.get("id")).intValue();
             String tenNguoiDuyet = (String) nhanVien.get("ho_ten");
             
             boolean result = kn.duyetDonNghiPhep(donId, nguoiDuyetId);
+            
+            // ✅ TRỪ PHÉP TRỰC TIẾP VÀO DATABASE (không dùng trigger)
+            // Logic: Ưu tiên trừ phép năm trước trước, nếu không đủ mới trừ phép năm nay
+            if (result && "Phép năm".equals(loaiPhep)) {
+                Calendar cal = Calendar.getInstance();
+                int nam = cal.get(Calendar.YEAR);
+                
+                // Gọi phương thức trừ phép với ưu tiên
+                boolean truPhepOk = kn.capNhatNgayPhepDaDungUuTien(nhanVienId, nam, soNgay);
+                
+                if (!truPhepOk) {
+                    out.print("{\"success\":false,\"message\":\"❌ Lỗi: Không thể cập nhật phép sau duyệt.\"}");
+                    return;
+                }
+            }
+            
+            // ✅ TẠO BẢN GHI CHẤM CÔNG CHO CÁC NGÀY NGHỈ PHÉP
+            if (result) {
+                try {
+                    java.sql.Date ngayBatDau = (java.sql.Date) don.get("ngay_bat_dau");
+                    java.sql.Date ngayKetThuc = (java.sql.Date) don.get("ngay_ket_thuc");
+                    
+                    // Tự động tạo bản ghi chấm công cho các ngày nghỉ phép (trừ cuối tuần và ngày lễ)
+                    kn.taoChamCongChoNgayNghiPhep(nhanVienId, ngayBatDau, ngayKetThuc);
+                } catch (Exception ex) {
+                    // Không dừng quá trình nếu tạo chấm công thất bại, chỉ log
+                    ex.printStackTrace();
+                }
+            }
             
             // Gửi thông báo cho người gửi đơn
             if (result) {
@@ -329,7 +403,7 @@ public class apiNghiPhep extends HttpServlet {
                 }
             }
             
-            out.print("{\"success\":true,\"message\":\"Duyệt đơn thành công\"}");
+            out.print("{\"success\":true,\"message\":\"✅ Duyệt đơn thành công\"}");
         } catch (Exception ex) {
             out.print("{\"success\":false,\"message\":\"" + escapeJson(ex.getMessage()) + "\"}");
         }
@@ -465,16 +539,19 @@ public class apiNghiPhep extends HttpServlet {
                 double tongPhepConLai = conLai + phepNamTruoc;
                 
                 if (soNgay > tongPhepConLai) {
-                    String msg = "Không đủ phép năm. Còn lại: " + conLai + " ngày (năm nay)";
+                    String msg = "❌ Số ngày nghỉ phép đăng ký (" + soNgay + " ngày) vượt quá số ngày phép còn lại của nhân viên!\\n\\n";
+                    msg += "📊 Số ngày phép còn lại:\\n";
+                    msg += "• Phép năm nay: " + conLai + " ngày\\n";
                     if (phepNamTruoc > 0) {
-                        msg += " + " + phepNamTruoc + " ngày (năm trước)";
+                        msg += "• Phép năm trước: " + phepNamTruoc + " ngày\\n";
                     }
-                    msg += ". Vui lòng chọn số ngày khác.";
+                    msg += "• Tổng còn lại: " + tongPhepConLai + " ngày\\n\\n";
+                    msg += "💡 Vui lòng giảm số ngày nghỉ hoặc chọn loại phép khác.";
                     out.print("{\"success\":false,\"message\":\"" + escapeJson(msg) + "\"}");
                     return;
                 }
                 if (tongPhepConLai <= 0) {
-                    out.print("{\"success\":false,\"message\":\"Nhân viên này đã hết phép năm.\"}");
+                    out.print("{\"success\":false,\"message\":\"❌ Nhân viên này đã hết phép năm.\"}");
                     return;
                 }
             }
@@ -487,33 +564,54 @@ public class apiNghiPhep extends HttpServlet {
             int donId = kn.taoDonNghiPhepQuanLy(nhanVienId, loaiPhep, ngayBatDau, ngayKetThuc, 
                                                soNgay, lyDo, nguoiTaoId, "Được tạo bởi " + tenNguoiTao);
             
-            // Nếu là phép năm, trừ phép ngay lập tức với ưu tiên phép năm trước trước
-            if (donId > 0 && "Phép năm".equals(loaiPhep)) {
-                Calendar cal = Calendar.getInstance();
-                int nam = cal.get(Calendar.YEAR);
-                kn.capNhatNgayPhepDaDungUuTien(nhanVienId, nam, soNgay);
+            if (donId <= 0) {
+                out.print("{\"success\":false,\"message\":\"❌ Lỗi: Không thể tạo đơn.\"}");
+                return;
             }
             
-            // Gửi thông báo cho nhân viên
-            if (donId > 0) {
-                try {
-                    Map<String, Object> nv = kn.getNhanVienById(nhanVienId);
-                    String tenNhanVien = (String) nv.get("ho_ten");
-                    String tieuDe = "Nhân viên được cấp phép";
-                    String noiDung = "Bạn được cấp " + loaiPhep.toLowerCase() + " từ ngày " + ngayBatDauStr 
-                        + " đến " + ngayKetThucStr + " (" + soNgay + " ngày) bởi " + tenNguoiTao + ". "
-                        + "Lý do: " + lyDo;
-                    String loaiThongBao = "Đơn xin nghỉ phép";
-                    String duongDan = "userNghiPhep";
-                    
-                    kn.insertThongBao(nhanVienId, tieuDe, noiDung, loaiThongBao, duongDan);
-                } catch (Exception ex) {
-                    // Không dừng quá trình nếu gửi thông báo thất bại
-                    ex.printStackTrace();
+            // ✅ TRỪ PHÉP TRỰC TIẾP VÀO DATABASE (không dùng trigger)
+            // Logic: Ưu tiên trừ phép năm trước trước, nếu không đủ mới trừ phép năm nay
+            if ("Phép năm".equals(loaiPhep)) {
+                Calendar cal = Calendar.getInstance();
+                int nam = cal.get(Calendar.YEAR);
+                
+                // Gọi phương thức trừ phép với ưu tiên
+                boolean truPhepOk = kn.capNhatNgayPhepDaDungUuTien(nhanVienId, nam, soNgay);
+                
+                if (!truPhepOk) {
+                    out.print("{\"success\":false,\"message\":\"❌ Lỗi: Không thể cập nhật phép sau tạo.\"}");
+                    return;
                 }
             }
             
-            out.print("{\"success\":true,\"message\":\"Thêm mới đơn thành công\",\"donId\":" + donId + "}");
+            // ✅ TẠO BẢN GHI CHẤM CÔNG CHO CÁC NGÀY NGHỈ PHÉP
+            try {
+                // Tự động tạo bản ghi chấm công cho các ngày nghỉ phép (trừ cuối tuần và ngày lễ)
+                kn.taoChamCongChoNgayNghiPhep(nhanVienId, ngayBatDau, ngayKetThuc);
+            } catch (Exception ex) {
+                // Không dừng quá trình nếu tạo chấm công thất bại, chỉ log
+                ex.printStackTrace();
+            }
+            
+            // Gửi thông báo cho nhân viên
+            try {
+                Map<String, Object> nv = kn.getNhanVienById(nhanVienId);
+                String tenNhanVien = (String) nv.get("ho_ten");
+                
+                String tieuDe = "Đơn xin " + loaiPhep.toLowerCase() + " đã được tạo";
+                String noiDung = "Quản lý " + tenNguoiTao + " đã tạo đơn xin " + loaiPhep.toLowerCase() 
+                    + " cho bạn từ ngày " + ngayBatDauStr + " đến " + ngayKetThucStr + " (" + soNgay + " ngày). "
+                    + "Lý do: " + lyDo;
+                String loaiThongBao = "Đơn xin nghỉ phép";
+                String duongDan = "userNghiPhep";
+                
+                kn.insertThongBao(nhanVienId, tieuDe, noiDung, loaiThongBao, duongDan);
+            } catch (Exception ex) {
+                // Không dừng quá trình nếu gửi thông báo thất bại
+                ex.printStackTrace();
+            }
+            
+            out.print("{\"success\":true,\"message\":\"✅ Tạo đơn thành công và tự động duyệt\"}");
         } catch (Exception ex) {
             out.print("{\"success\":false,\"message\":\"" + escapeJson(ex.getMessage()) + "\"}");
         }

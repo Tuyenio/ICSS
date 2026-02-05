@@ -458,7 +458,7 @@
                     <div class="stat-value"><%= tongPhepConLaiAll %></div>
                     <div class="stat-label">
                         <% if (ngayPhepNamTruoc.compareTo(BigDecimal.ZERO) > 0) { %>
-                            <%= ngayPhepConLai %> (<%= namHienTai %>) + <%= ngayPhepNamTruoc %> (<%= namHienTai - 1 %>)
+                            <%= ngayPhepNamTruoc %> (<%= namHienTai - 1 %>) + <%= ngayPhepConLai %> (<%= namHienTai %>)
                         <% } else { %>
                             Ngày phép còn lại (<%= namHienTai %>)
                         <% } %>
@@ -469,7 +469,7 @@
                 <div class="stat-card used animate-fadeInUp delay-2">
                     <div class="stat-icon"><i class="fa-solid fa-calendar-minus"></i></div>
                     <div class="stat-value"><%= ngayPhepDaDung %></div>
-                    <div class="stat-label">Đã sử dụng / <%= tongNgayPhep %></div>
+                    <div class="stat-label">Đã sử dụng / <%= tongNgayPhep.add(ngayPhepNamTruoc) %></div>
                 </div>
             </div>
             <div class="col-md-3 col-sm-6">
@@ -810,27 +810,37 @@
                 return;
             }
             
-            // Nếu là phép năm, kiểm tra số phép còn lại
+            // Nếu là phép năm, kiểm tra số phép còn lại (ƯU TIÊN PHÉP NĂM TRƯỚC)
             if (loaiPhep === 'Phép năm') {
                 fetch('apiNghiPhep?action=getNgayPhep&nhanVienId=<%= nhanVienId %>&nam=' + new Date().getFullYear())
                     .then(res => res.json())
                     .then(data => {
                         if (data.success) {
-                            const conLai = data.data.ngay_phep_con_lai || 12;
-                            if (soNgay > conLai) {
+                            const conLai = data.data.ngay_phep_con_lai || 0;
+                            const namTruoc = data.data.ngay_phep_nam_truoc || 0;
+                            const tongConLai = conLai + namTruoc;
+                            
+                            if (soNgay > tongConLai) {
+                                let msgText = 'Bạn chỉ còn ' + tongConLai + ' ngày phép:\n';
+                                if (namTruoc > 0) {
+                                    msgText += '• Phép năm ' + (new Date().getFullYear() - 1) + ': ' + namTruoc + ' ngày\n';
+                                }
+                                msgText += '• Phép năm nay: ' + conLai + ' ngày\n\n';
+                                msgText += 'Bạn đang xin ' + soNgay + ' ngày. Vui lòng giảm số ngày hoặc chọn loại phép khác.';
+                                
                                 Swal.fire({
                                     icon: 'error',
                                     title: 'Không đủ phép năm!',
-                                    text: 'Bạn chỉ còn ' + conLai + ' ngày phép. Vui lòng chọn loại phép khác.',
+                                    text: msgText,
                                     confirmButtonColor: '#667eea'
                                 });
                                 return;
                             }
-                            if (conLai <= 0) {
+                            if (tongConLai <= 0) {
                                 Swal.fire({
                                     icon: 'error',
                                     title: 'Hết phép năm!',
-                                    text: 'Bạn đã hết phép năm trong năm nay. Vui lòng chọn loại phép khác.',
+                                    text: 'Bạn đã hết phép năm. Vui lòng chọn loại phép khác.',
                                     confirmButtonColor: '#667eea'
                                 });
                                 return;

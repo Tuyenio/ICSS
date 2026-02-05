@@ -8,6 +8,7 @@
     /* PREMIUM SIDEBAR DESIGN */
     .sidebar {
         min-height: 100vh;
+        max-height: 100vh;
         background: linear-gradient(145deg,
             rgba(15, 23, 42, 0.95) 0%,
             rgba(30, 41, 59, 0.95) 35%,
@@ -29,7 +30,8 @@
         left: 0;
         bottom: 0;
         z-index: 1000;
-        overflow: hidden;
+        overflow-y: auto;
+        overflow-x: hidden;
     }
 
     .sidebar::before {
