@@ -167,10 +167,11 @@ public class dsChamCong extends HttpServlet {
             String ngay = req.getParameter("attendanceDate");
             String checkIn = req.getParameter("checkInTime");
             String checkOut = req.getParameter("checkOutTime");
+            String trangThai = req.getParameter("trangThai");
 
             KNCSDL kn = new KNCSDL();
 
-            boolean success = kn.themChamCong(nhanVienId, ngay, checkIn, checkOut);
+            boolean success = kn.themChamCong(nhanVienId, ngay, checkIn, checkOut, trangThai);
 
             if (success) {
                 resp.sendRedirect("dsChamCong"); // load lại danh sách

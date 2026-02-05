@@ -181,6 +181,24 @@
                                             }
                                         });
                                     });
+
+                                    // ✅ Sự kiện click Check-in WFH
+                                    $('#btnCheckInWFH').click(function () {
+                                        Swal.fire({
+                                            title: 'Xác nhận check-in Work From Home?',
+                                            text: 'Bạn có muốn check-in Work From Home ngày hôm nay không?',
+                                            icon: 'question',
+                                            showCancelButton: true,
+                                            confirmButtonColor: '#3085d6',
+                                            cancelButtonColor: '#d33',
+                                            confirmButtonText: 'Đồng ý',
+                                            cancelButtonText: 'Hủy'
+                                        }).then(function (result) {
+                                            if (result.isConfirmed) {
+                                                performCheckInWFH();
+                                            }
+                                        });
+                                    });
                                 });
 
                                 // ✅ Gọi AJAX Check-in
@@ -265,6 +283,49 @@
                                                 text: 'Không thể kết nối đến server. Vui lòng thử lại!'
                                             });
                                             $('#btnCheckOut').prop('disabled', false);
+                                        }
+                                    });
+                                }
+
+                                // ✅ Gọi AJAX Check-in WFH
+                                function performCheckInWFH() {
+                                    showLoading();
+                                    $('#btnCheckInWFH').prop('disabled', true);
+
+                                    $.ajax({
+                                        url: './userChamCong',
+                                        type: 'POST',
+                                        data: {action: 'checkin_wfh'},
+                                        dataType: 'json',
+                                        success: function (response) {
+                                            hideLoading();
+                                            if (response.success) {
+                                                Swal.fire({
+                                                    icon: 'success',
+                                                    title: 'Check-in WFH thành công!',
+                                                    text: response.message,
+                                                    showConfirmButton: false,
+                                                    timer: 2000
+                                                }).then(function () {
+                                                    location.reload();
+                                                });
+                                            } else {
+                                                Swal.fire({
+                                                    icon: 'error',
+                                                    title: 'Lỗi check-in WFH!',
+                                                    text: response.message
+                                                });
+                                                $('#btnCheckInWFH').prop('disabled', false);
+                                            }
+                                        },
+                                        error: function () {
+                                            hideLoading();
+                                            Swal.fire({
+                                                icon: 'error',
+                                                title: 'Lỗi kết nối!',
+                                                text: 'Không thể kết nối đến server. Vui lòng thử lại!'
+                                            });
+                                            $('#btnCheckInWFH').prop('disabled', false);
                                         }
                                     });
                                 }

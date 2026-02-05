@@ -24,8 +24,8 @@ public class KNCSDL {
 
     public KNCSDL() throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
-        this.cn = DriverManager.getConnection(path, "root", "");
-        //this.cn = DriverManager.getConnection(path, "icssapp", "StrongPass!2025");
+        //this.cn = DriverManager.getConnection(path, "root", "");
+        this.cn = DriverManager.getConnection(path, "icssapp", "StrongPass!2025");
     }
 
     public ResultSet laydl(String email) throws SQLException {
@@ -2200,16 +2200,19 @@ public class KNCSDL {
         sql.append("  ELSE ROUND(TIMESTAMPDIFF(MINUTE, cc.check_in, cc.check_out) / 60, 2) ");
         sql.append("END AS so_gio_lam, ");
 
-        // 🧠 Phân loại trạng thái chi tiết hơn (ưu tiên nghỉ phép)
+        // 🧠 Phân loại trạng thái chi tiết hơn
         sql.append("CASE ");
-        // ✅ Kiểm tra nghỉ phép đã được duyệt trước
-        sql.append("  WHEN EXISTS ( ");
+        // ✅ Ưu tiên WFH
+        sql.append("  WHEN cc.loai_cham_cong = 'WFH' THEN 'WFH' ");
+        // ✅ Nghỉ phép chỉ áp dụng khi không có check_in/check_out
+        sql.append("  WHEN cc.check_in IS NULL AND cc.check_out IS NULL AND EXISTS ( ");
         sql.append("    SELECT 1 FROM don_nghi_phep dnp ");
         sql.append("    WHERE dnp.nhan_vien_id = cc.nhan_vien_id ");
         sql.append("    AND dnp.trang_thai = 'da_duyet' ");
         sql.append("    AND cc.ngay BETWEEN dnp.ngay_bat_dau AND dnp.ngay_ket_thuc ");
         sql.append("  ) THEN 'Nghỉ phép' ");
-        sql.append("  WHEN cc.check_in IS NULL THEN 'Vắng' ");
+        // ✅ Nếu chưa có check_in
+        sql.append("  WHEN cc.check_in IS NULL THEN 'Vắng mặt' ");
         // ✅ Nếu có check_in trước hoặc bằng 8h05 mà chưa check_out → Đúng giờ
         sql.append("  WHEN TIME(cc.check_in) <= '08:05:59' AND cc.check_out IS NULL THEN 'Đúng giờ' ");
         // ✅ Nếu check_in sau 8h05 mà chưa check_out → Đi trễ
@@ -2297,21 +2300,25 @@ public class KNCSDL {
         List<Map<String, Object>> lichSu = new ArrayList<>();
 
         String sql = "SELECT ngay, check_in, check_out, "
-                + "CASE "
-                // ✅ Kiểm tra nghỉ phép đã được duyệt trước
-                + "  WHEN EXISTS ( "
-                + "    SELECT 1 FROM don_nghi_phep dnp "
-                + "    WHERE dnp.nhan_vien_id = cham_cong.nhan_vien_id "
-                + "    AND dnp.trang_thai = 'da_duyet' "
-                + "    AND cham_cong.ngay BETWEEN dnp.ngay_bat_dau AND dnp.ngay_ket_thuc "
-                + "  ) THEN 'Nghỉ phép' "
-                + "  WHEN check_in IS NULL THEN 'Vắng' "
-                + "  WHEN TIME(check_in) <= '08:05:59' AND TIME(check_out) >= '17:00:00' THEN 'Đủ công' "
-                + "  WHEN TIME(check_in) <= '08:05:59' AND TIME(check_out) < '17:00:00' THEN 'Thiếu giờ' "
-                + "  WHEN TIME(check_in) > '08:05:59' AND TIME(check_out) >= '17:00:00' THEN 'Đi trễ' "
-                + "  WHEN TIME(check_in) > '08:05:59' AND TIME(check_out) < '17:00:00' THEN 'Thiếu giờ' "
-                + "  ELSE 'Thiếu dữ liệu' "
-                + "END AS trang_thai "
+            + "CASE "
+            // ✅ Ưu tiên WFH
+            + "  WHEN loai_cham_cong = 'WFH' THEN 'WFH' "
+            // ✅ Nghỉ phép chỉ khi không có check_in/check_out
+            + "  WHEN check_in IS NULL AND check_out IS NULL AND EXISTS ( "
+            + "    SELECT 1 FROM don_nghi_phep dnp "
+            + "    WHERE dnp.nhan_vien_id = cham_cong.nhan_vien_id "
+            + "    AND dnp.trang_thai = 'da_duyet' "
+            + "    AND cham_cong.ngay BETWEEN dnp.ngay_bat_dau AND dnp.ngay_ket_thuc "
+            + "  ) THEN 'Nghỉ phép' "
+            + "  WHEN check_in IS NULL THEN 'Vắng mặt' "
+            + "  WHEN TIME(check_in) <= '08:05:59' AND check_out IS NULL THEN 'Đúng giờ' "
+            + "  WHEN TIME(check_in) > '08:05:59' AND check_out IS NULL THEN 'Đi trễ' "
+            + "  WHEN TIME(check_in) <= '08:05:59' AND TIME(check_out) >= '17:00:00' THEN 'Đủ công' "
+            + "  WHEN TIME(check_in) <= '08:05:59' AND TIME(check_out) < '17:00:00' THEN 'Thiếu giờ' "
+            + "  WHEN TIME(check_in) > '08:05:59' AND TIME(check_out) >= '17:00:00' THEN 'Đi trễ' "
+            + "  WHEN TIME(check_in) > '08:05:59' AND TIME(check_out) < '17:00:00' THEN 'Thiếu giờ' "
+            + "  ELSE 'Thiếu dữ liệu' "
+            + "END AS trang_thai "
                 + "FROM cham_cong "
                 + "WHERE nhan_vien_id = ? AND MONTH(ngay) = ? AND YEAR(ngay) = ? "
                 + "ORDER BY ngay DESC";
@@ -2639,32 +2646,30 @@ public class KNCSDL {
         List<Map<String, Object>> lichSu = new ArrayList<>();
 
         String sql = "SELECT id, ngay, check_in, check_out, bao_cao, "
-                + "CASE "
-                + "  WHEN check_in IS NULL OR check_out IS NULL THEN 0 "
-                + "  ELSE ROUND(TIMESTAMPDIFF(MINUTE, check_in, check_out) / 60, 2) "
-                + "END AS so_gio_lam, "
-                + "CASE "
-                // ✅ Kiểm tra nghỉ phép đã được duyệt trước
-                + "  WHEN EXISTS ( "
-                + "    SELECT 1 FROM don_nghi_phep dnp "
-                + "    WHERE dnp.nhan_vien_id = cham_cong.nhan_vien_id "
-                + "    AND dnp.trang_thai = 'da_duyet' "
-                + "    AND cham_cong.ngay BETWEEN dnp.ngay_bat_dau AND dnp.ngay_ket_thuc "
-                + "  ) THEN 'Nghỉ phép' "
-                + "  WHEN check_in IS NULL THEN 'Vắng mặt' "
-                // ✅ Bổ sung logic khi chưa có check_out
-                + "  WHEN TIME(check_in) <= '08:05:59' AND check_out IS NULL THEN 'Đúng giờ' "
-                + "  WHEN TIME(check_in) > '08:05:59' AND check_out IS NULL THEN 'Đi trễ' "
-                // ✅ Logic khi có đủ check_in và check_out
-                + "  WHEN TIME(check_in) <= '08:05:59' AND TIME(check_out) >= '17:00:00' THEN 'Đủ công' "
-                + "  WHEN TIME(check_in) <= '08:05:59' AND TIME(check_out) < '17:00:00' THEN 'Thiếu giờ' "
-                + "  WHEN TIME(check_in) > '08:05:59' AND TIME(check_out) >= '17:00:00' THEN 'Đi trễ' "
-                + "  WHEN TIME(check_in) > '08:05:59' AND TIME(check_out) < '17:00:00' THEN 'Thiếu giờ' "
-                + "  ELSE 'Thiếu dữ liệu' "
-                + "END AS trang_thai "
-                + "FROM cham_cong "
-                + "WHERE nhan_vien_id = ? AND MONTH(ngay) = ? AND YEAR(ngay) = ? "
-                + "ORDER BY ngay DESC";
+            + "CASE "
+            + "  WHEN check_in IS NULL OR check_out IS NULL THEN 0 "
+            + "  ELSE ROUND(TIMESTAMPDIFF(MINUTE, check_in, check_out) / 60, 2) "
+            + "END AS so_gio_lam, "
+            + "CASE "
+            + "  WHEN loai_cham_cong = 'WFH' THEN 'WFH' "
+            + "  WHEN check_in IS NULL AND check_out IS NULL AND EXISTS ( "
+            + "    SELECT 1 FROM don_nghi_phep dnp "
+            + "    WHERE dnp.nhan_vien_id = cham_cong.nhan_vien_id "
+            + "    AND dnp.trang_thai = 'da_duyet' "
+            + "    AND cham_cong.ngay BETWEEN dnp.ngay_bat_dau AND dnp.ngay_ket_thuc "
+            + "  ) THEN 'Nghỉ phép' "
+            + "  WHEN check_in IS NULL THEN 'Vắng mặt' "
+            + "  WHEN TIME(check_in) <= '08:05:59' AND check_out IS NULL THEN 'Đúng giờ' "
+            + "  WHEN TIME(check_in) > '08:05:59' AND check_out IS NULL THEN 'Đi trễ' "
+            + "  WHEN TIME(check_in) <= '08:05:59' AND TIME(check_out) >= '17:00:00' THEN 'Đủ công' "
+            + "  WHEN TIME(check_in) <= '08:05:59' AND TIME(check_out) < '17:00:00' THEN 'Thiếu giờ' "
+            + "  WHEN TIME(check_in) > '08:05:59' AND TIME(check_out) >= '17:00:00' THEN 'Đi trễ' "
+            + "  WHEN TIME(check_in) > '08:05:59' AND TIME(check_out) < '17:00:00' THEN 'Thiếu giờ' "
+            + "  ELSE 'Thiếu dữ liệu' "
+            + "END AS trang_thai "
+            + "FROM cham_cong "
+            + "WHERE nhan_vien_id = ? AND MONTH(ngay) = ? AND YEAR(ngay) = ? "
+            + "ORDER BY ngay DESC";
 
         try (PreparedStatement stmt = cn.prepareStatement(sql)) {
             stmt.setInt(1, nhanVienId);
@@ -2785,6 +2790,45 @@ public class KNCSDL {
 
     // Check-in
     public boolean checkIn(int nhanVienId) throws SQLException {
+        // Kiểm tra đã check-in hôm nay chưa và có phải WFH không
+        String checkSql = "SELECT loai_cham_cong FROM cham_cong WHERE nhan_vien_id = ? AND ngay = CURDATE() LIMIT 1";
+        boolean exists = false;
+        boolean isWFH = false;
+
+        try (PreparedStatement checkStmt = cn.prepareStatement(checkSql)) {
+            checkStmt.setInt(1, nhanVienId);
+            try (ResultSet rs = checkStmt.executeQuery()) {
+                if (rs.next()) {
+                    exists = true;
+                    String loaiChamCong = rs.getString("loai_cham_cong");
+                    isWFH = "WFH".equalsIgnoreCase(loaiChamCong);
+                }
+            }
+        }
+
+        // Nếu đã check-in WFH thì không cho check-in thường
+        if (isWFH) {
+            return false;
+        }
+
+        String sql;
+        if (exists) {
+            // Cập nhật check-in, đánh dấu loai_cham_cong = 'office'
+            sql = "UPDATE cham_cong SET check_in = CURRENT_TIME, loai_cham_cong = 'office' "
+                    + "WHERE nhan_vien_id = ? AND ngay = CURDATE()";
+        } else {
+            // Tạo record mới với loai_cham_cong = 'office'
+            sql = "INSERT INTO cham_cong (nhan_vien_id, ngay, check_in, loai_cham_cong) VALUES (?, CURDATE(), CURRENT_TIME, 'office')";
+        }
+
+        try (PreparedStatement stmt = cn.prepareStatement(sql)) {
+            stmt.setInt(1, nhanVienId);
+            return stmt.executeUpdate() > 0;
+        }
+    }
+
+    // Check-in WFH
+    public boolean checkInWFH(int nhanVienId) throws SQLException {
         // Kiểm tra đã check-in hôm nay chưa
         String checkSql = "SELECT COUNT(*) FROM cham_cong WHERE nhan_vien_id = ? AND ngay = CURDATE()";
         boolean exists = false;
@@ -2800,11 +2844,12 @@ public class KNCSDL {
 
         String sql;
         if (exists) {
-            // Cập nhật check-in nếu đã có record
-            sql = "UPDATE cham_cong SET check_in = CURRENT_TIME WHERE nhan_vien_id = ? AND ngay = CURDATE()";
+            // Cập nhật check-in WFH, reset check_out, đánh dấu loai_cham_cong = 'WFH'
+            sql = "UPDATE cham_cong SET check_in = CURRENT_TIME, check_out = NULL, loai_cham_cong = 'WFH' "
+                    + "WHERE nhan_vien_id = ? AND ngay = CURDATE()";
         } else {
-            // Tạo record mới
-            sql = "INSERT INTO cham_cong (nhan_vien_id, ngay, check_in) VALUES (?, CURDATE(), CURRENT_TIME)";
+            // Tạo record mới với loai_cham_cong = 'WFH'
+            sql = "INSERT INTO cham_cong (nhan_vien_id, ngay, check_in, loai_cham_cong) VALUES (?, CURDATE(), CURRENT_TIME, 'WFH')";
         }
 
         try (PreparedStatement stmt = cn.prepareStatement(sql)) {
@@ -2816,7 +2861,8 @@ public class KNCSDL {
     // Check-out
     public boolean checkOut(int nhanVienId) throws SQLException {
         String sql = "UPDATE cham_cong SET check_out = CURRENT_TIME "
-                + "WHERE nhan_vien_id = ? AND ngay = CURDATE() AND check_in IS NOT NULL";
+                + "WHERE nhan_vien_id = ? AND ngay = CURDATE() AND check_in IS NOT NULL "
+                + "AND (loai_cham_cong IS NULL OR loai_cham_cong <> 'WFH')";
 
         try (PreparedStatement stmt = cn.prepareStatement(sql)) {
             stmt.setInt(1, nhanVienId);
@@ -3671,6 +3717,41 @@ public class KNCSDL {
             stmt.setString(2, ngay);
             stmt.setString(3, checkIn);
             stmt.setString(4, checkOut);
+            return stmt.executeUpdate() > 0;
+        }
+    }
+
+    // Overload themChamCong với tham số trạng thái
+    public boolean themChamCong(int nhanVienId, String ngay, String checkIn, String checkOut, String trangThai) throws SQLException {
+        // Kiểm tra xem đã tồn tại bản ghi
+        String checkSql = "SELECT COUNT(*) FROM cham_cong WHERE nhan_vien_id = ? AND ngay = ?";
+        try (PreparedStatement checkStmt = cn.prepareStatement(checkSql)) {
+            checkStmt.setInt(1, nhanVienId);
+            checkStmt.setString(2, ngay);
+            ResultSet rs = checkStmt.executeQuery();
+            if (rs.next() && rs.getInt(1) > 0) {
+                return false; // đã tồn tại
+            }
+        }
+
+        String sql;
+        if ("WFH".equals(trangThai)) {
+            // Nếu là WFH, lưu check_in và loai_cham_cong = 'WFH', không cần check_out
+            sql = "INSERT INTO cham_cong (nhan_vien_id, ngay, check_in, loai_cham_cong) VALUES (?, ?, CURRENT_TIME, 'WFH')";
+        } else {
+            // Bình thường: thêm check_in, check_out, và loai_cham_cong = 'office'
+            sql = "INSERT INTO cham_cong (nhan_vien_id, ngay, check_in, check_out, loai_cham_cong) VALUES (?, ?, ?, ?, 'office')";
+        }
+
+        try (PreparedStatement stmt = cn.prepareStatement(sql)) {
+            stmt.setInt(1, nhanVienId);
+            stmt.setString(2, ngay);
+            
+            if (!("WFH".equals(trangThai))) {
+                stmt.setString(3, checkIn);
+                stmt.setString(4, checkOut);
+            }
+            
             return stmt.executeUpdate() > 0;
         }
     }

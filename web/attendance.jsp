@@ -400,11 +400,15 @@
                                             <% 
                                             String trangThai = (String) item.get("trang_thai");
                                             String badgeClass = "bg-secondary";
-                                            if ("Đi trễ".equals(trangThai)) badgeClass = "bg-warning text-dark";
-                                            else if ("Vắng".equals(trangThai)) badgeClass = "bg-danger";
-                                            else if ("Đủ công".equals(trangThai) || "Đúng giờ".equals(trangThai) ) badgeClass = "bg-success";
+                                            String displayStatus = (trangThai != null && !trangThai.isEmpty()) ? trangThai : "Nghỉ phép";
+
+                                            if ("WFH".equals(trangThai)) badgeClass = "bg-success";
+                                            else if ("Đủ công".equals(trangThai) || "Đúng giờ".equals(trangThai)) badgeClass = "bg-success";
+                                            else if ("Đi trễ".equals(trangThai)) badgeClass = "bg-warning text-dark";
+                                            else if ("Vắng mặt".equals(trangThai)) badgeClass = "bg-danger";
+                                            else if ("Thiếu giờ".equals(trangThai)) badgeClass = "bg-info";
                                             %>
-                                            <span class="badge <%= badgeClass %> badge-status"><%= trangThai %></span>
+                                            <span class="badge <%= badgeClass %> badge-status"><%= displayStatus %></span>
                                         </td>
                                         <td>
                                             <div class="action-buttons">
@@ -526,10 +530,17 @@
                                         <input type="date" class="form-control" name="attendanceDate" required>
                                     </div>
                                     <div class="mb-3">
+                                        <label class="form-label">Trạng thái</label>
+                                        <select class="form-select" name="trangThai" id="trangThaiSelect">
+                                            <option value="Bình thường">Bình thường</option>
+                                            <option value="WFH">Work From Home (WFH)</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3" id="checkInTimeGroup">
                                         <label class="form-label">Giờ check-in</label>
                                         <input type="time" class="form-control" name="checkInTime" step="60">
                                     </div>
-                                    <div class="mb-3">
+                                    <div class="mb-3" id="checkOutTimeGroup">
                                         <label class="form-label">Giờ check-out</label>
                                         <input type="time" class="form-control" name="checkOutTime" step="60">
                                     </div>
@@ -611,7 +622,31 @@
             </div>
         </div>
         <script>
-                const USER_PERMISSIONS = <%= session.getAttribute("quyen") %>;
+            const USER_PERMISSIONS = <%= session.getAttribute("quyen") %>;
+
+            // Xử lý thay đổi trạng thái trong modal thêm chấm công
+            document.addEventListener('DOMContentLoaded', function () {
+                const trangThaiSelect = document.getElementById('trangThaiSelect');
+                const checkInTimeGroup = document.getElementById('checkInTimeGroup');
+                const checkOutTimeGroup = document.getElementById('checkOutTimeGroup');
+
+                if (trangThaiSelect) {
+                    trangThaiSelect.addEventListener('change', function () {
+                        if (this.value === 'WFH') {
+                            // Ẩn các trường check-in/check-out cho WFH
+                            checkInTimeGroup.style.display = 'none';
+                            checkOutTimeGroup.style.display = 'none';
+                            // Clear giá trị
+                            checkInTimeGroup.querySelector('input').value = '';
+                            checkOutTimeGroup.querySelector('input').value = '';
+                        } else {
+                            // Hiển thị các trường check-in/check-out cho Bình thường
+                            checkInTimeGroup.style.display = 'block';
+                            checkOutTimeGroup.style.display = 'block';
+                        }
+                    });
+                }
+            });
         </script>
         <script src="<%= request.getContextPath() %>/scripts/attendance.js?v=20251105"></script>
 
