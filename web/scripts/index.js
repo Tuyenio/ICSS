@@ -1,15 +1,42 @@
 
 (function () {
+    // Hiệu ứng đổ bóng nhẹ tạo cảm giác nổi khối
+    const shadowPlugin = {
+        id: 'shadowPlugin',
+        beforeDraw(chart) {
+            const {ctx} = chart;
+            ctx.save();
+            ctx.shadowColor = 'rgba(15,23,42,0.16)';
+            ctx.shadowBlur = 12;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 6;
+        },
+        afterDraw(chart) {
+            chart.ctx.restore();
+        }
+    };
+
     const h = document.getElementById('chartDataHolder');
     if (!h)
         return;
-    const pbLabels = h.dataset.pbLabels ? h.dataset.pbLabels.split('|').filter(v => v) : [];
-    const pbValues = h.dataset.pbValues ? h.dataset.pbValues.split(',').map(Number) : [];
+
+    let pbLabels = h.dataset.pbLabels ? h.dataset.pbLabels.split('|').filter(v => v) : [];
+    let pbValues = h.dataset.pbValues ? h.dataset.pbValues.split(',').map(Number) : [];
+    if (!pbLabels.length) {
+        pbLabels = ['Chưa có dữ liệu'];
+        pbValues = [0];
+    }
+
     const ccLabels = h.dataset.ccLabels ? h.dataset.ccLabels.split('|').filter(v => v) : [];
     const ccValues = h.dataset.ccValues ? h.dataset.ccValues.split(',').map(Number) : [];
     const tongNgay = parseInt(h.dataset.tongNgay || '0');
     const diMuon = parseInt(h.dataset.diMuon || '0');
-    // Tiến độ phòng ban (horizontal bar for better balance)
+    const hcDangLam = parseInt(h.dataset.hcDangLam || '0');
+    const hcTamNghi = parseInt(h.dataset.hcTamNghi || '0');
+    const hcNghiViec = parseInt(h.dataset.hcNghiViec || '0');
+    const hcTong = parseInt(h.dataset.hcTong || '0');
+
+    // Tiến độ phòng ban (horizontal bar)
     const ctxPB = document.getElementById('chartTienDoPB');
     if (ctxPB) {
         // sort phòng ban theo % giảm dần để trực quan
@@ -28,7 +55,12 @@
             return '#ef4444';      // Modern red
         };
         const barColors = sortedVals.map(colorScale);
-        new Chart(ctxPB, {type: 'bar', data: {labels: sortedLabels, datasets: [{label: '% Hoàn thành', data: sortedVals, backgroundColor: barColors, borderWidth: 0, barPercentage: 0.55, categoryPercentage: 0.55}]}, options: {indexAxis: 'y', responsive: true, plugins: {legend: {display: false}, tooltip: {callbacks: {label: (c) => c.parsed.x + '%'}}}, scales: {x: {beginAtZero: true, max: 100, ticks: {callback: (v) => v + '%'}}, y: {ticks: {autoSkip: false}}}}});
+        new Chart(ctxPB, {
+            type: 'bar',
+            data: {labels: sortedLabels, datasets: [{label: '% Hoàn thành', data: sortedVals, backgroundColor: barColors, borderRadius: 10, borderWidth: 0, barPercentage: 0.55, categoryPercentage: 0.55}]},
+            options: {indexAxis: 'y', responsive: true, plugins: {legend: {display: false}, tooltip: {callbacks: {label: (c) => c.parsed.x + '%'}}}, scales: {x: {beginAtZero: true, max: 100, ticks: {callback: (v) => v + '%'}, grid: {color: '#e2e8f0'}}, y: {ticks: {autoSkip: false}}}},
+            plugins: [shadowPlugin]
+        });
     }
     // Trạng thái công việc - Doughnut
     const ctxTT = document.getElementById('chartTrangThaiCV');
@@ -55,6 +87,211 @@
                         ctx.fillText('Tổng', x, y + 16);
                         ctx.restore();
                     }}]});
+    }
+
+    // Cơ cấu nhân sự theo trạng thái (bar ngang)
+    const ctxHC = document.getElementById('chartHeadcount');
+    if (ctxHC) {
+        const labels = ['Đang làm', 'Tạm nghỉ', 'Nghỉ việc'];
+        const vals = [hcDangLam, hcTamNghi, hcNghiViec];
+        const colors = ['#0ea5e9', '#f59e0b', '#ef4444'];
+        new Chart(ctxHC, {
+            type: 'bar',
+            data: {labels, datasets: [{data: vals, backgroundColor: colors, borderRadius: 10, borderWidth: 0, barPercentage: 0.6, categoryPercentage: 0.6}]},
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                plugins: {
+                    legend: {display: false},
+                    tooltip: {callbacks: {label: (c) => `${c.parsed.x} người (${hcTong ? Math.round(c.parsed.x * 100 / hcTong) : 0}%)`}}
+                },
+                scales: {
+                    x: {beginAtZero: true, ticks: {callback: v => `${v}`}, grid: {color: '#e2e8f0'}},
+                    y: {ticks: {autoSkip: false}}
+                }
+            },
+            plugins: [shadowPlugin]
+        });
+    }
+
+    // Gauge hoàn thành công việc (doughnut)
+    const ctxGauge = document.getElementById('chartCompletionGauge');
+    if (ctxGauge) {
+        const pct = Math.min(100, Math.max(0, parseInt(h.dataset.stHt || '0') * 100 / (parseInt(h.dataset.stHt || '0') + parseInt(h.dataset.stTh || '0') + parseInt(h.dataset.stTre || '0') + parseInt(h.dataset.stCbd || '0') || 1)));
+        const done = Math.round(pct);
+        const remain = 100 - done;
+        new Chart(ctxGauge, {
+            type: 'doughnut',
+            data: {
+                labels: ['Hoàn thành', 'Chưa hoàn thành'],
+                datasets: [{
+                    data: [done, remain],
+                    backgroundColor: ['#22c55e', '#e2e8f0'],
+                    borderWidth: 0,
+                    cutout: '70%'
+                }]
+            },
+            options: {
+                plugins: {
+                    legend: {display: false},
+                    tooltip: {callbacks: {label: (c) => `${c.label}: ${c.parsed}%`}}
+                }
+            },
+            plugins: [{
+                id: 'centerGaugeText',
+                afterDraw(chart) {
+                    const {ctx} = chart;
+                    const meta = chart.getDatasetMeta(0);
+                    if (!meta || !meta.data || !meta.data.length) return;
+                    const x = meta.data[0].x;
+                    const y = meta.data[0].y;
+                    ctx.save();
+                    ctx.font = '700 26px system-ui';
+                    ctx.fillStyle = '#0f172a';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(done + '%', x, y - 4);
+                    ctx.font = '500 12px system-ui';
+                    ctx.fillStyle = '#64748b';
+                    ctx.fillText('Hoàn thành', x, y + 18);
+                    ctx.restore();
+                }
+            }, shadowPlugin]
+        });
+    }
+
+    // Xu hướng đi muộn / vắng (line + area)
+    const ctxLateTrend = document.getElementById('chartLateTrend');
+    if (ctxLateTrend) {
+        const h2 = document.getElementById('attDataHolder');
+        if (!h2) {
+            console.warn('Thiếu dữ liệu chấm công (attDataHolder)');
+        }
+        const parseArr = s => s ? s.split(',').map(Number) : [];
+        let days = h2 && h2.dataset.days ? h2.dataset.days.split(',') : [];
+        let du = h2 ? parseArr(h2.dataset.du) : [];
+        let muon = h2 ? parseArr(h2.dataset.muon) : [];
+        let vang = h2 ? parseArr(h2.dataset.vang) : [];
+        if (!days.length) {
+            days = ['N/A'];
+            du = [0];
+            muon = [0];
+            vang = [0];
+        }
+        new Chart(ctxLateTrend, {
+            type: 'line',
+            data: {
+                labels: days,
+                datasets: [
+                    {label: 'Đủ công', data: du, borderColor: '#22c55e', backgroundColor: 'rgba(34,197,94,0.08)', tension: 0.35, fill: true, borderWidth: 2},
+                    {label: 'Đi muộn', data: muon, borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.12)', tension: 0.35, fill: true, borderWidth: 2},
+                    {label: 'Vắng', data: vang, borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.12)', tension: 0.35, fill: true, borderWidth: 2}
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {position: 'bottom'},
+                    tooltip: {mode: 'index', intersect: false}
+                },
+                interaction: {mode: 'index', intersect: false},
+                scales: {
+                    x: {grid: {display: false}},
+                    y: {beginAtZero: true}
+                }
+            },
+            plugins: [shadowPlugin]
+        });
+    }
+
+    // Stacked trạng thái dự án theo nhóm
+    const ctxProjStack = document.getElementById('chartProjectStatusStack');
+    if (ctxProjStack) {
+        const STATUS_ORDER = ['Đang thực hiện', 'Tạm ngưng', 'Đã hoàn thành', 'Đóng dự án', 'Chưa bắt đầu'];
+        const STATUS_COLOR = {
+            'Đang thực hiện': '#0284C7',
+            'Tạm ngưng': '#F59E0B',
+            'Đã hoàn thành': '#16A34A',
+            'Đóng dự án': '#DC2626',
+            'Chưa bắt đầu': '#6366f1'
+        };
+
+        const countByStatus = (statuses) => {
+            const m = {};
+            statuses.forEach(st => { m[st] = (m[st] || 0) + 1; });
+            return m;
+        };
+
+        let ktStatuses = h.dataset.ktStatuses ? h.dataset.ktStatuses.split('|').filter(v => v) : [];
+        let kdStatuses = h.dataset.kdStatuses ? h.dataset.kdStatuses.split('|').filter(v => v) : [];
+        if (!ktStatuses.length && !kdStatuses.length) {
+            ktStatuses = ['Đang thực hiện'];
+            kdStatuses = ['Đang thực hiện'];
+        }
+        const ktCount = countByStatus(ktStatuses);
+        const kdCount = countByStatus(kdStatuses);
+
+        const datasets = STATUS_ORDER.map(st => ({
+            label: st,
+            data: [ktCount[st] || 0, kdCount[st] || 0],
+            backgroundColor: STATUS_COLOR[st] || '#94a3b8',
+            borderWidth: 0
+        }));
+
+        new Chart(ctxProjStack, {
+            type: 'bar',
+            data: {
+                labels: ['Phòng Kỹ Thuật', 'Phòng Kinh Doanh'],
+                datasets
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {position: 'bottom'},
+                    tooltip: {mode: 'index', intersect: false}
+                },
+                interaction: {mode: 'index', intersect: false},
+                scales: {
+                    x: {stacked: true},
+                    y: {stacked: true, beginAtZero: true, ticks: {stepSize: 1}}
+                }
+            },
+            plugins: [shadowPlugin]
+        });
+    }
+
+    // Radar tiến độ phòng ban
+    const ctxPBRadar = document.getElementById('chartPBProgressRadar');
+    if (ctxPBRadar && pbLabels.length && pbValues.length) {
+        new Chart(ctxPBRadar, {
+            type: 'radar',
+            data: {
+                labels: pbLabels,
+                datasets: [{
+                    label: 'Tiến độ (%)',
+                    data: pbValues,
+                    backgroundColor: 'rgba(99,102,241,0.15)',
+                    borderColor: '#6366f1',
+                    borderWidth: 2,
+                    pointBackgroundColor: '#312e81'
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    r: {
+                        beginAtZero: true,
+                        suggestedMax: 100,
+                        ticks: {stepSize: 20},
+                        grid: {color: '#e2e8f0'}
+                    }
+                },
+                plugins: {
+                    legend: {display: false}
+                }
+            },
+            plugins: [shadowPlugin]
+        });
     }
     // (Removed personnel composition chart)
     // Chuyển dữ liệu chấm công theo ngày sang data-* để tránh lỗi JSP parser

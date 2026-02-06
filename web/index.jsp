@@ -840,6 +840,70 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Biểu đồ mở rộng -->
+                    <div class="row mt-4 g-4 align-items-stretch">
+                        <!-- Cơ cấu nhân sự theo trạng thái -->
+                        <div class="col-lg-6 col-md-12">
+                            <div class="chart-card h-100">
+                                <h6><i class="fa-solid fa-user-check me-2 text-primary"></i>Cơ cấu nhân sự theo trạng thái</h6>
+                                <div class="chart-wrapper" style="height:320px;">
+                                    <canvas id="chartHeadcount"></canvas>
+                                </div>
+                                <div class="small text-muted mt-3 d-flex flex-wrap gap-3">
+                                    <span>Đang làm: <b><%= thongKeTongQuan.getOrDefault("nv_dang_lam",0) %></b></span>
+                                    <span>Tạm nghỉ: <b><%= thongKeTongQuan.getOrDefault("nv_tam_nghi",0) %></b></span>
+                                    <span>Nghỉ việc: <b><%= thongKeTongQuan.getOrDefault("nv_nghi_viec",0) %></b></span>
+                                    <span>Tổng: <b><%= thongKeTongQuan.getOrDefault("tong_nhan_vien",0) %></b></span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Hoàn thành công việc (gauge) -->
+                        <div class="col-lg-6 col-md-12">
+                            <div class="chart-card h-100">
+                                <h6><i class="fa-solid fa-gauge-high me-2 text-success"></i>Tỷ lệ hoàn thành công việc</h6>
+                                <div class="chart-wrapper d-flex justify-content-center align-items-center" style="height:320px;">
+                                    <canvas id="chartCompletionGauge" style="max-width:360px;max-height:320px;"></canvas>
+                                </div>
+                                <div class="small text-muted mt-3 d-flex flex-wrap gap-3">
+                                    <span>Tổng công việc: <b><%= tongCongViec %></b></span>
+                                    <span>Hoàn thành: <b><%= daHoanThanh %></b></span>
+                                    <span>Chưa hoàn thành: <b><%= (tongCongViec - daHoanThanh) %></b></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Phân tích mở rộng -->
+                    <div class="row mt-4 g-4 align-items-stretch">
+                        <div class="col-lg-4 col-md-12">
+                            <div class="chart-card h-100">
+                                <h6><i class="fa-solid fa-wave-square me-2 text-info"></i>Xu hướng đi muộn / vắng (theo ngày)</h6>
+                                <div class="chart-wrapper" style="height:320px;">
+                                    <canvas id="chartLateTrend"></canvas>
+                                </div>
+                                <div class="small text-muted mt-3">Biểu đồ line + area giúp nhìn rõ pattern đi muộn, vắng, đủ công.</div>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-md-12">
+                            <div class="chart-card h-100">
+                                <h6><i class="fa-solid fa-layer-group me-2 text-warning"></i>Trạng thái dự án theo nhóm</h6>
+                                <div class="chart-wrapper" style="height:320px;">
+                                    <canvas id="chartProjectStatusStack"></canvas>
+                                </div>
+                                <div class="small text-muted mt-3">So sánh phân bố trạng thái dự án giữa Phòng Kỹ Thuật và Kinh Doanh.</div>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-md-12">
+                            <div class="chart-card h-100">
+                                <h6><i class="fa-solid fa-radar me-2 text-primary"></i>Radar tiến độ phòng ban</h6>
+                                <div class="chart-wrapper" style="height:320px;">
+                                    <canvas id="chartPBProgressRadar"></canvas>
+                                </div>
+                                <div class="small text-muted mt-3">Radar cho thấy phòng ban nào dẫn đầu về % hoàn thành.</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -925,6 +989,10 @@
              data-st-cbd="<%= chuaBatDau %>"
              data-tong-ngay="<%= tongNgayLam %>"
              data-di-muon="<%= soLanDiMuon %>"
+             data-hc-dang-lam="<%= thongKeTongQuan.getOrDefault("nv_dang_lam",0) %>"
+             data-hc-tam-nghi="<%= thongKeTongQuan.getOrDefault("nv_tam_nghi",0) %>"
+             data-hc-nghi-viec="<%= thongKeTongQuan.getOrDefault("nv_nghi_viec",0) %>"
+             data-hc-tong="<%= thongKeTongQuan.getOrDefault("tong_nhan_vien",0) %>"
              data-kt-project-names="<%= dashboardProjectNamesAttr %>"
              data-kt-progress="<%= dashboardProgressAttr.toString() %>"
              data-kt-project-ids="<%= dashboardProjectIdsAttr.toString() %>"
