@@ -262,6 +262,13 @@ public class suaCongviec extends HttpServlet {
                 String nguoiNhanCu = db.getDanhSachNguoiNhan(taskId);
 
                 String ten = getValue(request, "ten_cong_viec");
+                
+                // ✅ VALIDATION: Tên công việc không được rỗng
+                if (ten == null || ten.trim().isEmpty()) {
+                    out.print("{\"success\":false,\"message\":\"❌ Tên công việc không được để trống!\"}");
+                    return;
+                }
+                
                 String moTa = getValue(request, "mo_ta");
                 String ngaybd = getValue(request, "ngay_bat_dau");
                 String han = getValue(request, "han_hoan_thanh");

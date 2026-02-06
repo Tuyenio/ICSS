@@ -78,6 +78,18 @@ public class apiExecuteSQL extends HttpServlet {
                 return;
             }
             
+            // ✅ Kiểm tra chỉ cho phép SELECT (bảo mật)
+            String trimmedCommand = sqlCommand.trim().toUpperCase();
+            if (!trimmedCommand.startsWith("SELECT") && !trimmedCommand.startsWith("SHOW") 
+                    && !trimmedCommand.startsWith("DESCRIBE") && !trimmedCommand.startsWith("DESC")) {
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("success", false);
+                errorResponse.put("error", "❌ Chỉ cho phép câu lệnh SELECT. INSERT, UPDATE, DELETE, DROP không được phép!");
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                out.print(gson.toJson(errorResponse));
+                return;
+            }
+            
             // Thực thi SQL
             List<Map<String, Object>> resultList = executeSQL(sqlCommand);
             
@@ -177,7 +189,7 @@ public class apiExecuteSQL extends HttpServlet {
             // Tạo statement và thực thi
             stmt = conn.createStatement();
             
-            // Kiểm tra loại câu lệnh (SELECT hoặc UPDATE/INSERT/DELETE)
+            // Kiểm tra loại câu lệnh (chỉ cho SELECT)
             String commandType = sqlCommand.trim().toUpperCase();
             
             if (commandType.startsWith("SELECT") || commandType.startsWith("SHOW") 
@@ -218,13 +230,8 @@ public class apiExecuteSQL extends HttpServlet {
                 }
                 
             } else {
-                // Câu lệnh UPDATE/INSERT/DELETE - trả về số dòng bị ảnh hưởng
-                int affectedRows = stmt.executeUpdate(sqlCommand);
-                
-                Map<String, Object> result = new HashMap<>();
-                result.put("affectedRows", affectedRows);
-                result.put("message", "Câu lệnh thực thi thành công");
-                resultList.add(result);
+                // ❌ Không cho phép các câu lệnh khác ngoài SELECT
+                throw new SQLException("❌ Chỉ cho phép câu lệnh SELECT!");
             }
             
         } finally {

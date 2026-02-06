@@ -421,6 +421,33 @@
         .delay-2 { animation-delay: 0.2s; }
         .delay-3 { animation-delay: 0.3s; }
         .delay-4 { animation-delay: 0.4s; }
+
+        /* ===== COLLAPSE BUTTON STYLES ===== */
+        .btn-link {
+            transition: all 0.3s ease;
+        }
+
+        .btn-link:hover {
+            transform: none !important;
+            color: inherit !important;
+        }
+
+        .btn-link .fa-chevron-down {
+            transition: transform 0.3s ease;
+        }
+
+        .btn-link[aria-expanded="true"] .fa-chevron-down {
+            transform: rotate(-180deg);
+        }
+
+        .collapse {
+            transition: all 0.3s ease;
+        }
+
+        /* ===== TRANSITION TRANSFORM ===== */
+        .transition-transform {
+            transition: transform 0.3s ease;
+        }
     </style>
 </head>
 
@@ -472,6 +499,15 @@
                 </div>
             </div>
         </div>
+
+        <!-- Add New Leave Button -->
+        <% if ("Admin".equals(vaiTro) || "Quản lý".equals(vaiTro)) { %>
+        <div class="mb-3">
+            <button type="button" class="btn" onclick="openModalThemMoi()" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 14px;">
+                <i class="fa-solid fa-plus me-2"></i>Thêm mới đơn
+            </button>
+        </div>
+        <% } %>
 
         <!-- Filter & Table -->
         <div class="main-box animate-fadeInUp">
@@ -563,7 +599,7 @@
                                 // Badge class cho loại phép
                                 String leaveClass = "personal";
                                 if ("Phép năm".equals(loaiPhep)) leaveClass = "annual";
-                                else if ("Nghỉ ốm".equals(loaiPhep)) leaveClass = "sick";
+                                else if ("Nghỉ khám nghĩa vụ quân sự".equals(loaiPhep)) leaveClass = "military";
                                 else if ("Nghỉ không lương".equals(loaiPhep)) leaveClass = "unpaid";
                                 else if ("Nghỉ thai sản".equals(loaiPhep)) leaveClass = "maternity";
                                 
@@ -729,9 +765,8 @@
                                     <i class="fa-solid fa-tags me-2"></i>Loại nghỉ phép <span class="text-danger">*</span>
                                 </label>
                                 <select class="form-select" name="loaiPhep" required>
-                                    <option value="">-- Chọn loại phép --</option>
-                                    <option value="Phép năm">🌴 Phép năm</option>
-                                    <option value="Nghỉ ốm">🏥 Nghỉ ốm</option>
+                                    <option value="Phép năm" selected>🌴 Phép năm</option>
+                                    <option value="Nghỉ khám nghĩa vụ quân sự">⚔️ Nghỉ khám nghĩa vụ quân sự</option>
                                     <option value="Nghỉ không lương">💰 Nghỉ không lương</option>
                                     <option value="Nghỉ thai sản">👶 Nghỉ thai sản</option>
                                     <option value="Việc riêng">🏠 Việc riêng</option>
@@ -1083,6 +1118,183 @@
                 }
             });
         }
+
+        /**
+         * Mở modal thêm mới đơn nghỉ phép (Admin/Quản lý)
+         */
+        function openModalThemMoi() {
+            // Reset form
+            document.getElementById('formThemMoi').reset();
+            
+            // Mở modal
+            let modal = new bootstrap.Modal(document.getElementById('modalThemMoi'));
+            modal.show();
+        }
+
+        /**
+         * Submit form thêm mới đơn
+         */
+        function submitThemMoiDon() {
+            let nhanVienId = document.getElementById('selectNhanVien').value;
+            let loaiPhep = document.getElementById('selectLoaiPhep').value;
+            let ngayBatDau = document.getElementById('inputNgayBatDau').value;
+            let ngayKetThuc = document.getElementById('inputNgayKetThuc').value;
+            let soNgay = document.getElementById('inputSoNgay').value;
+            let lyDo = document.getElementById('inputLyDo').value;
+
+            let formData = new FormData();
+            formData.append('nhanVienId', nhanVienId);
+            formData.append('loaiPhep', loaiPhep);
+            formData.append('ngayBatDau', ngayBatDau);
+            formData.append('ngayKetThuc', ngayKetThuc);
+            formData.append('soNgay', soNgay);
+            formData.append('lyDo', lyDo);
+            formData.append('action', 'themNghiPhepMoi');
+
+            // Validate
+            if (!nhanVienId || !loaiPhep || !ngayBatDau || !ngayKetThuc || !soNgay || !lyDo) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Thiếu thông tin!',
+                    text: 'Vui lòng điền đầy đủ các trường bắt buộc',
+                    confirmButtonColor: '#667eea'
+                });
+                return;
+            }
+
+            // Gửi request
+            fetch('apiNghiPhep', {
+                method: 'POST',
+                body: new URLSearchParams(formData)
+            })
+            .then(res => res.json())
+            .then(data => {
+                bootstrap.Modal.getInstance(document.getElementById('modalThemMoi')).hide();
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Thành công!',
+                        text: 'Thêm mới đơn nghỉ phép thành công',
+                        confirmButtonColor: '#667eea'
+                    }).then(() => {
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Lỗi!',
+                        text: data.message,
+                        confirmButtonColor: '#667eea'
+                    });
+                }
+            })
+            .catch(error => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi!',
+                    text: 'Có lỗi xảy ra: ' + error,
+                    confirmButtonColor: '#667eea'
+                });
+            });
+        }
+
+        /**
+         * Tính tự động số ngày từ ngày bắt đầu và kết thúc
+         */
+        document.addEventListener('DOMContentLoaded', function() {
+            const inputNgayBatDau = document.getElementById('inputNgayBatDau');
+            const inputNgayKetThuc = document.getElementById('inputNgayKetThuc');
+            const inputSoNgay = document.getElementById('inputSoNgay');
+
+            if (inputNgayBatDau && inputNgayKetThuc && inputSoNgay) {
+                [inputNgayBatDau, inputNgayKetThuc].forEach(elem => {
+                    elem.addEventListener('change', function() {
+                        const start = new Date(inputNgayBatDau.value);
+                        const end = new Date(inputNgayKetThuc.value);
+                        
+                        if (start && end && start <= end) {
+                            const diffTime = Math.abs(end - start);
+                            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+                            inputSoNgay.value = diffDays;
+                        }
+                    });
+                });
+            }
+        });
     </script>
+
+    <!-- Modal Thêm Mới Đơn Nghỉ Phép -->
+    <div class="modal fade" id="modalThemMoi" tabindex="-1" aria-labelledby="modalThemMoiLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-gradient text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <h5 class="modal-title" id="modalThemMoiLabel">
+                        <i class="fa-solid fa-plus-circle me-2"></i>Thêm mới đơn nghỉ phép
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formThemMoi">
+                        <!-- Chọn nhân viên -->
+                        <div class="mb-3">
+                            <label for="selectNhanVien" class="form-label fw-6">Chọn nhân viên <span class="text-danger">*</span></label>
+                            <select id="selectNhanVien" class="form-select" required>
+                                <option value="">-- Chọn nhân viên --</option>
+                                <% for (Map<String, Object> nv : dsNhanVien) { %>
+                                    <option value="<%= nv.get("id") %>">
+                                        <%= nv.get("ho_ten") %> - <%= nv.get("ten_phong") %>
+                                    </option>
+                                <% } %>
+                            </select>
+                        </div>
+
+                        <!-- Loại phép -->
+                        <div class="mb-3">
+                            <label for="selectLoaiPhep" class="form-label fw-6">Loại phép <span class="text-danger">*</span></label>
+                            <select id="selectLoaiPhep" class="form-select" required>
+                                <option value="">-- Chọn loại phép --</option>
+                                <option value="Phép năm">Phép năm</option>
+                                <option value="Phép không lương">Phép không lương</option>
+                                <option value="Phép bệnh">Phép bệnh</option>
+                                <option value="Phép lễ">Phép lễ</option>
+                                <option value="Khác">Khác</option>
+                            </select>
+                        </div>
+
+                        <!-- Ngày bắt đầu -->
+                        <div class="mb-3">
+                            <label for="inputNgayBatDau" class="form-label fw-6">Ngày bắt đầu <span class="text-danger">*</span></label>
+                            <input type="date" id="inputNgayBatDau" class="form-control" required>
+                        </div>
+
+                        <!-- Ngày kết thúc -->
+                        <div class="mb-3">
+                            <label for="inputNgayKetThuc" class="form-label fw-6">Ngày kết thúc <span class="text-danger">*</span></label>
+                            <input type="date" id="inputNgayKetThuc" class="form-control" required>
+                        </div>
+
+                        <!-- Số ngày -->
+                        <div class="mb-3">
+                            <label for="inputSoNgay" class="form-label fw-6">Số ngày <span class="text-danger">*</span></label>
+                            <input type="number" id="inputSoNgay" class="form-control" placeholder="Tự động tính" step="0.5" required>
+                            <small class="form-text text-muted">Sẽ tự động tính dựa trên ngày bắt đầu và kết thúc</small>
+                        </div>
+
+                        <!-- Lý do -->
+                        <div class="mb-3">
+                            <label for="inputLyDo" class="form-label fw-6">Lý do <span class="text-danger">*</span></label>
+                            <textarea id="inputLyDo" class="form-control" rows="3" placeholder="Nhập lý do yêu cầu cấp phép..." required></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-success" onclick="submitThemMoiDon()">
+                        <i class="fa-solid fa-save me-2"></i>Thêm mới
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

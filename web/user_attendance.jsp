@@ -437,9 +437,13 @@
                                     <%=chamCongHomNay.get("da_check_in") != null && (Boolean)chamCongHomNay.get("da_check_in") ? "disabled" : ""%>>
                                 <i class="fa-solid fa-sign-in-alt"></i> Check-in
                             </button>
-                            <button class="btn btn-danger me-3" id="btnCheckOut"
+                            <button class="btn btn-danger me-2" id="btnCheckOut"
                                     <%=chamCongHomNay.get("da_check_out") != null && (Boolean)chamCongHomNay.get("da_check_out") ? "disabled" : ""%>>
                                 <i class="fa-solid fa-sign-out-alt"></i> Check-out
+                            </button>
+                            <button class="btn btn-info" id="btnCheckInWFH"
+                                    <%=chamCongHomNay.get("da_check_in") != null && (Boolean)chamCongHomNay.get("da_check_in") ? "disabled" : ""%>>
+                                <i class="fa-solid fa-home"></i> WFH
                             </button>
                         </div>
                     </div>
@@ -522,12 +526,15 @@
                                     <% 
                                         String trangThai = (String) record.get("trang_thai");
                                         String badgeClass = "bg-secondary";
-                                        if ("Đủ công".equals(trangThai) || "Đúng giờ".equals(trangThai)) badgeClass = "bg-success";
+                                        String displayStatus = (trangThai != null && !trangThai.isEmpty()) ? trangThai : "Nghỉ phép";
+
+                                        if ("WFH".equals(trangThai)) badgeClass = "bg-success";
+                                        else if ("Đủ công".equals(trangThai) || "Đúng giờ".equals(trangThai)) badgeClass = "bg-success";
                                         else if ("Đi trễ".equals(trangThai)) badgeClass = "bg-warning";
                                         else if ("Vắng mặt".equals(trangThai)) badgeClass = "bg-danger";
                                         else if ("Thiếu giờ".equals(trangThai)) badgeClass = "bg-info";
                                     %>
-                                    <span class="badge <%=badgeClass%>"><%=trangThai%></span>
+                                    <span class="badge <%=badgeClass%>"><%=displayStatus%></span>
                                 </td>
                                 <td class="text-center">
                                     <%

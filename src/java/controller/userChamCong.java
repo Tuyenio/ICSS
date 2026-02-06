@@ -158,6 +158,28 @@ public class userChamCong extends HttpServlet {
                     response.getWriter().write("{\"success\": false, \"message\": \"Lỗi check-out, vui lòng thử lại!\"}");
                 }
 
+            } else if ("checkin_wfh".equals(action)) {
+                // Kiểm tra đã check-in hôm nay chưa
+                Map<String, Object> chamCongHomNay = kn.getChamCongHomNay(nhanVienId);
+                Boolean daCheckIn = (Boolean) chamCongHomNay.get("da_check_in");
+
+                if (daCheckIn != null && daCheckIn) {
+                    response.getWriter().write("{\"success\": false, \"message\": \"Bạn đã check-in hôm nay rồi!\"}");
+                    return;
+                }
+
+                // Thực hiện check-in WFH
+                boolean success = kn.checkInWFH(nhanVienId);
+                if (success) {
+                    // Lấy thời gian check-in vừa thực hiện
+                    java.time.ZonedDateTime now = java.time.ZonedDateTime.now(java.time.ZoneId.of("Asia/Ho_Chi_Minh"));
+                    String checkInTime = now.toLocalTime().toString();
+
+                    response.getWriter().write("{\"success\": true, \"message\": \"Check-in Work From Home thành công lúc " + checkInTime + "!\"}");
+                } else {
+                    response.getWriter().write("{\"success\": false, \"message\": \"Lỗi check-in WFH, vui lòng thử lại!\"}");
+                }
+
             } else if ("send_report".equals(action)) {
                 // Xử lý gửi báo cáo
                 String attendanceIdStr = request.getParameter("attendanceId");

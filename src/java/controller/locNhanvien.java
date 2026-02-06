@@ -57,7 +57,7 @@ public class locNhanvien extends HttpServlet {
                     out.println("<tr>");
                     out.println("<td>" + nv.get("id") + "</td>");
                     out.println("<td><img src='https://i.pravatar.cc/40?img=1' class='rounded-circle' width='36'></td>");
-                    out.println("<td><a href='#' class='emp-detail-link fw-semibold text-primary'>" + nv.get("ho_ten") + "</a></td>");
+                    out.println("<td><a href='#' class='emp-detail-link fw-semibold text-primary' data-email='" + nv.get("email") + "'>" + nv.get("ho_ten") + "</a></td>");
                     out.println("<td>" + nv.get("email") + "</td>");
                     out.println("<td>" + nv.get("so_dien_thoai") + "</td>");
                     out.println("<td>" + nv.get("gioi_tinh") + "</td>");

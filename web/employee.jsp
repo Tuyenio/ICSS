@@ -455,7 +455,8 @@
                                     <div class="col-md-6">
                                         <label class="form-label" title="Số điện thoại liên hệ">Số điện
                                             thoại</label>
-                                        <input type="text" class="form-control" id="empPhone" name="so_dien_thoai">
+                                        <input type="text" class="form-control" id="empPhone" name="so_dien_thoai" 
+                                               pattern="[0-9]{10,11}" title="Số điện thoại phải là 10-11 chữ số">
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label" title="Giới tính">Giới tính</label>

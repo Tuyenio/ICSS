@@ -582,9 +582,7 @@
                                 <button class="btn-action btn-edit" onclick="event.stopPropagation(); editProject(<%= p.get("id") %>);">
                                     <i class="fa-solid fa-pen"></i> Sửa
                                 </button>
-                                <button class="btn-action btn-delete delete-project-btn" data-id="<%= p.get("id") %>" onclick="event.stopPropagation();">
-                                    <i class="fa-solid fa-trash"></i> Xóa
-                                </button>
+                                <!-- Button xóa đã bị ẩn cho nhân viên -->
                             </div>
                         </div>
                         

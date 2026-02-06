@@ -25,10 +25,14 @@
     BigDecimal tongNgayPhep = (BigDecimal) ngayPhep.get("tong_ngay_phep");
     BigDecimal ngayPhepDaDung = (BigDecimal) ngayPhep.get("ngay_phep_da_dung");
     BigDecimal ngayPhepConLai = (BigDecimal) ngayPhep.get("ngay_phep_con_lai");
+    BigDecimal ngayPhepNamTruoc = (BigDecimal) ngayPhep.get("ngay_phep_nam_truoc");
     
-    if (tongNgayPhep == null) tongNgayPhep = new BigDecimal("12.0");
+    if (tongNgayPhep == null) tongNgayPhep = new BigDecimal("0.0");
     if (ngayPhepDaDung == null) ngayPhepDaDung = new BigDecimal("0.0");
-    if (ngayPhepConLai == null) ngayPhepConLai = new BigDecimal("12.0");
+    if (ngayPhepConLai == null) ngayPhepConLai = new BigDecimal("0.0");
+    if (ngayPhepNamTruoc == null) ngayPhepNamTruoc = new BigDecimal("0.0");
+    
+    BigDecimal tongPhepConLaiAll = ngayPhepConLai.add(ngayPhepNamTruoc);
     
     // Đếm số đơn theo trạng thái
     int donChoDuyet = 0, donDaDuyet = 0, donTuChoi = 0;
@@ -401,6 +405,33 @@
         .delay-2 { animation-delay: 0.2s; }
         .delay-3 { animation-delay: 0.3s; }
         .delay-4 { animation-delay: 0.4s; }
+
+        /* ===== COLLAPSE BUTTON STYLES ===== */
+        .btn-link {
+            transition: all 0.3s ease;
+        }
+
+        .btn-link:hover {
+            transform: none !important;
+            color: inherit !important;
+        }
+
+        .btn-link .fa-chevron-down {
+            transition: transform 0.3s ease;
+        }
+
+        .btn-link[aria-expanded="true"] .fa-chevron-down {
+            transform: rotate(-180deg);
+        }
+
+        .collapse {
+            transition: all 0.3s ease;
+        }
+
+        /* ===== TRANSITION TRANSFORM ===== */
+        .transition-transform {
+            transition: transform 0.3s ease;
+        }
     </style>
 </head>
 
@@ -424,15 +455,21 @@
             <div class="col-md-3 col-sm-6">
                 <div class="stat-card remaining animate-fadeInUp delay-1">
                     <div class="stat-icon"><i class="fa-solid fa-calendar-check"></i></div>
-                    <div class="stat-value"><%= ngayPhepConLai %></div>
-                    <div class="stat-label">Ngày phép còn lại</div>
+                    <div class="stat-value"><%= tongPhepConLaiAll %></div>
+                    <div class="stat-label">
+                        <% if (ngayPhepNamTruoc.compareTo(BigDecimal.ZERO) > 0) { %>
+                            <%= ngayPhepNamTruoc %> (<%= namHienTai - 1 %>) + <%= ngayPhepConLai %> (<%= namHienTai %>)
+                        <% } else { %>
+                            Ngày phép còn lại (<%= namHienTai %>)
+                        <% } %>
+                    </div>
                 </div>
             </div>
             <div class="col-md-3 col-sm-6">
                 <div class="stat-card used animate-fadeInUp delay-2">
                     <div class="stat-icon"><i class="fa-solid fa-calendar-minus"></i></div>
                     <div class="stat-value"><%= ngayPhepDaDung %></div>
-                    <div class="stat-label">Đã sử dụng / <%= tongNgayPhep %></div>
+                    <div class="stat-label">Đã sử dụng / <%= tongNgayPhep.add(ngayPhepNamTruoc) %></div>
                 </div>
             </div>
             <div class="col-md-3 col-sm-6">
@@ -451,67 +488,73 @@
             </div>
         </div>
 
-        <!-- Form tạo đơn nhanh -->
+        <!-- Form tạo đơn nhanh - Collapse -->
         <div class="main-box animate-fadeInUp">
-            <div class="box-title">
-                <i class="fa-solid fa-file-signature"></i>
-                Tạo đơn xin nghỉ phép
-            </div>
-            
-            <form id="formTaoDon">
-                <input type="hidden" name="nhanVienId" value="<%= nhanVienId %>">
-                <div class="row g-4">
-                    <div class="col-md-4">
-                        <label class="form-label">
-                            <i class="fa-solid fa-tags me-2"></i>Loại nghỉ phép <span class="text-danger">*</span>
-                        </label>
-                        <select class="form-select" name="loaiPhep" required>
-                            <option value="">-- Chọn loại phép --</option>
-                            <option value="Phép năm">🌴 Phép năm</option>
-                            <option value="Nghỉ ốm">🏥 Nghỉ ốm</option>
-                            <option value="Nghỉ không lương">💰 Nghỉ không lương</option>
-                            <option value="Nghỉ thai sản">👶 Nghỉ thai sản</option>
-                            <option value="Việc riêng">🏠 Việc riêng</option>
-                            <option value="Khác">📋 Khác</option>
-                        </select>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">
-                            <i class="fa-solid fa-calendar-day me-2"></i>Từ ngày <span class="text-danger">*</span>
-                        </label>
-                        <input type="date" class="form-control" name="ngayBatDau" required>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">
-                            <i class="fa-solid fa-calendar-week me-2"></i>Đến ngày <span class="text-danger">*</span>
-                        </label>
-                        <input type="date" class="form-control" name="ngayKetThuc" required>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">
-                            <i class="fa-solid fa-hashtag me-2"></i>Số ngày nghỉ <span class="text-danger">*</span>
-                        </label>
-                        <input type="number" class="form-control" name="soNgay" step="0.5" min="0.5" max="30" 
-                               placeholder="VD: 1, 0.5, 2..." required>
-                        <small class="text-muted">Nhập 0.5 nếu nghỉ nửa ngày</small>
-                    </div>
-                    <div class="col-md-12">
-                        <label class="form-label">
-                            <i class="fa-solid fa-comment-dots me-2"></i>Lý do xin nghỉ <span class="text-danger">*</span>
-                        </label>
-                        <textarea class="form-control" name="lyDo" rows="3" 
-                                  placeholder="Nhập lý do xin nghỉ phép chi tiết..." required></textarea>
-                    </div>
-                    <div class="col-12 mt-4">
-                        <button type="submit" class="btn btn-primary-gradient btn-lg">
-                            <i class="fa-solid fa-paper-plane me-2"></i>Gửi đơn xin phép
-                        </button>
-                        <button type="reset" class="btn btn-outline-secondary btn-lg ms-2">
-                            <i class="fa-solid fa-rotate-left me-2"></i>Làm mới
-                        </button>
-                    </div>
+            <button class="btn btn-link w-100 text-start p-0" type="button" data-bs-toggle="collapse" data-bs-target="#formTaoDonCollapse" aria-expanded="false" aria-controls="formTaoDonCollapse" style="text-decoration: none;">
+                <div class="box-title mb-0">
+                    <i class="fa-solid fa-file-signature"></i>
+                    Tạo đơn xin nghỉ phép
+                    <i class="fa-solid fa-chevron-down float-end transition-transform"></i>
                 </div>
-            </form>
+            </button>
+            
+            <div class="collapse" id="formTaoDonCollapse">
+                <div class="pt-3 border-top">
+                    <form id="formTaoDon">
+                        <input type="hidden" name="nhanVienId" value="<%= nhanVienId %>">
+                        <div class="row g-4">
+                            <div class="col-md-4">
+                                <label class="form-label">
+                                    <i class="fa-solid fa-tags me-2"></i>Loại nghỉ phép <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-select" name="loaiPhep" required>
+                                    <option value="Phép năm" selected>🌴 Phép năm</option>
+                                    <option value="Nghỉ khám nghĩa vụ quân sự">⚔️ Nghỉ khám nghĩa vụ quân sự</option>
+                                    <option value="Nghỉ không lương">💰 Nghỉ không lương</option>
+                                    <option value="Nghỉ thai sản">👶 Nghỉ thai sản</option>
+                                    <option value="Việc riêng">🏠 Việc riêng</option>
+                                    <option value="Khác">📋 Khác</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">
+                                    <i class="fa-solid fa-calendar-day me-2"></i>Từ ngày <span class="text-danger">*</span>
+                                </label>
+                                <input type="date" class="form-control" name="ngayBatDau" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">
+                                    <i class="fa-solid fa-calendar-week me-2"></i>Đến ngày <span class="text-danger">*</span>
+                                </label>
+                                <input type="date" class="form-control" name="ngayKetThuc" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">
+                                    <i class="fa-solid fa-hashtag me-2"></i>Số ngày nghỉ <span class="text-danger">*</span>
+                                </label>
+                                <input type="number" class="form-control" name="soNgay" step="0.5" min="0.5" max="30" 
+                                       placeholder="VD: 1, 0.5, 2..." required>
+                                <small class="text-muted">Nhập 0.5 nếu nghỉ nửa ngày</small>
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label">
+                                    <i class="fa-solid fa-comment-dots me-2"></i>Lý do xin nghỉ <span class="text-danger">*</span>
+                                </label>
+                                <textarea class="form-control" name="lyDo" rows="3" 
+                                          placeholder="Nhập lý do xin nghỉ phép chi tiết..." required></textarea>
+                            </div>
+                            <div class="col-12 mt-4">
+                                <button type="submit" class="btn btn-primary-gradient btn-lg">
+                                    <i class="fa-solid fa-paper-plane me-2"></i>Gửi đơn xin phép
+                                </button>
+                                <button type="reset" class="btn btn-outline-secondary btn-lg ms-2">
+                                    <i class="fa-solid fa-rotate-left me-2"></i>Làm mới
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
 
         <!-- Lịch sử đơn nghỉ phép -->
@@ -554,7 +597,7 @@
                                 // Badge class cho loại phép
                                 String leaveClass = "personal";
                                 if ("Phép năm".equals(loaiPhep)) leaveClass = "annual";
-                                else if ("Nghỉ ốm".equals(loaiPhep)) leaveClass = "sick";
+                                else if ("Nghỉ khám nghĩa vụ quân sự".equals(loaiPhep)) leaveClass = "military";
                                 else if ("Nghỉ không lương".equals(loaiPhep)) leaveClass = "unpaid";
                                 else if ("Nghỉ thai sản".equals(loaiPhep)) leaveClass = "maternity";
                                 
@@ -702,8 +745,10 @@
             const loaiPhepSelect = document.querySelector('select[name="loaiPhep"]');
             const loaiPhep = loaiPhepSelect.value;
             const soNgay = parseFloat(document.querySelector('input[name="soNgay"]').value);
-            const ngayBatDau = document.querySelector('input[name="ngayBatDau"]').value;
-            const ngayKetThuc = document.querySelector('input[name="ngayKetThuc"]').value;
+            const ngayBatDauInput = document.querySelector('input[name="ngayBatDau"]');
+            const ngayKetThucInput = document.querySelector('input[name="ngayKetThuc"]');
+            const ngayBatDau = ngayBatDauInput.value;
+            const ngayKetThuc = ngayKetThucInput.value;
             const lyDo = document.querySelector('textarea[name="lyDo"]').value;
             
             // Kiểm tra các trường bắt buộc
@@ -713,6 +758,41 @@
                     title: 'Thiếu thông tin!',
                     text: 'Vui lòng điền đầy đủ các trường bắt buộc.',
                     confirmButtonColor: '#667eea'
+                });
+                return;
+            }
+            
+            // Hàm kiểm tra cuối tuần (Thứ 7 = 6, Chủ nhật = 0)
+            function isCuoiTuan(dateStr) {
+                const date = new Date(dateStr);
+                const day = date.getDay();
+                return day === 0 || day === 6; // 0 = Chủ nhật, 6 = Thứ 7
+            }
+            
+            // Kiểm tra ngày bắt đầu có phải cuối tuần không
+            if (isCuoiTuan(ngayBatDau)) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Ngày cuối tuần!',
+                    text: 'Bạn đã chọn ngày thứ 7 hoặc chủ nhật. Không thể đăng ký nghỉ phép vào ngày này.',
+                    confirmButtonColor: '#667eea'
+                }).then(() => {
+                    ngayBatDauInput.value = ''; // Reset về null
+                    ngayBatDauInput.focus();
+                });
+                return;
+            }
+            
+            // Kiểm tra ngày kết thúc có phải cuối tuần không
+            if (isCuoiTuan(ngayKetThuc)) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Ngày cuối tuần!',
+                    text: 'Bạn đã chọn ngày thứ 7 hoặc chủ nhật. Không thể đăng ký nghỉ phép vào ngày này.',
+                    confirmButtonColor: '#667eea'
+                }).then(() => {
+                    ngayKetThucInput.value = ''; // Reset về null
+                    ngayKetThucInput.focus();
                 });
                 return;
             }
