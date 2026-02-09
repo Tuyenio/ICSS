@@ -20,6 +20,14 @@
     // Dữ liệu cho biểu đồ tiến độ dự án theo nhóm dự án
     Map<String, Object> tienDoKyThuat = new HashMap<>();
     Map<String, Object> tienDoKinhDoanh = new HashMap<>();
+
+    // NEW: Dữ liệu cho 6 biểu đồ mới
+    List<Map<String, Object>> overdueByProject = new ArrayList<>();
+    List<Map<String, Object>> topWorkload = new ArrayList<>();
+    List<Map<String, Object>> burnupChart = new ArrayList<>();
+    Map<String, Integer> priorityDist = new HashMap<>();
+    List<Map<String, Object>> avgOpenAge = new ArrayList<>();
+    Map<String, Integer> slaBreach = new HashMap<>();
     
     KNCSDL kn = null;
     try {
@@ -39,7 +47,25 @@
     // Thống kê chấm công toàn bộ nhân viên thường (loại trừ Admin / Quản lý / Trưởng phòng)
     chamCongThang = kn.getThongKeChamCongNhanVienThuong(thangNow, namNow);
     chamCongNgay = kn.getChamCongTheoNgayNhanVienThuong(thangNow, namNow);
+    
+    // NEW: Fetch data for 6 new charts
+    overdueByProject = kn.getDataForOverdueChart();
+    topWorkload = kn.getDataForTopWorkloadChart();
+    burnupChart = kn.getDataForBurnupChart();
+    priorityDist = kn.getDataForPriorityChart();
+    avgOpenAge = kn.getDataForAvgOpenAgeChart();
+    slaBreach = kn.getDataForSlaBreach();
+    
+    // Debug logging
+    System.out.println("=== CHART DATA FETCHED ===");
+    System.out.println("overdueByProject size: " + overdueByProject.size());
+    System.out.println("topWorkload size: " + topWorkload.size());
+    System.out.println("burnupChart size: " + burnupChart.size());
+    System.out.println("priorityDist: " + priorityDist);
+    System.out.println("avgOpenAge size: " + avgOpenAge.size());
+    System.out.println("slaBreach: " + slaBreach);
     } catch (Exception e) {
+        System.err.println("ERROR fetching chart data: " + e.getMessage());
         e.printStackTrace();
     } finally {
         if (kn != null) try { kn.close(); } catch (Exception ignore) {}
@@ -841,69 +867,70 @@
                         </div>
                     </div>
 
-                    <!-- Biểu đồ mở rộng -->
-                    <div class="row mt-4 g-4 align-items-stretch">
-                        <!-- Cơ cấu nhân sự theo trạng thái -->
+                    <!-- NEW: 6 Advanced Charts Section -->
+                    <div class="row mt-5 g-4 align-items-stretch">
+                        <!-- Chart 1: Overdue Tasks by Project -->
                         <div class="col-lg-6 col-md-12">
                             <div class="chart-card h-100">
-                                <h6><i class="fa-solid fa-user-check me-2 text-primary"></i>Cơ cấu nhân sự theo trạng thái</h6>
+                                <h6><i class="fa-solid fa-exclamation-circle me-2 text-danger"></i>Số task quá hạn theo dự án</h6>
                                 <div class="chart-wrapper" style="height:320px;">
-                                    <canvas id="chartHeadcount"></canvas>
-                                </div>
-                                <div class="small text-muted mt-3 d-flex flex-wrap gap-3">
-                                    <span>Đang làm: <b><%= thongKeTongQuan.getOrDefault("nv_dang_lam",0) %></b></span>
-                                    <span>Tạm nghỉ: <b><%= thongKeTongQuan.getOrDefault("nv_tam_nghi",0) %></b></span>
-                                    <span>Nghỉ việc: <b><%= thongKeTongQuan.getOrDefault("nv_nghi_viec",0) %></b></span>
-                                    <span>Tổng: <b><%= thongKeTongQuan.getOrDefault("tong_nhan_vien",0) %></b></span>
+                                    <canvas id="chartOverdueByProject" width="400" height="320"></canvas>
                                 </div>
                             </div>
                         </div>
-                        <!-- Hoàn thành công việc (gauge) -->
+
+                        <!-- Chart 2: Top 10 Employees Workload -->
                         <div class="col-lg-6 col-md-12">
                             <div class="chart-card h-100">
-                                <h6><i class="fa-solid fa-gauge-high me-2 text-success"></i>Tỷ lệ hoàn thành công việc</h6>
-                                <div class="chart-wrapper d-flex justify-content-center align-items-center" style="height:320px;">
-                                    <canvas id="chartCompletionGauge" style="max-width:360px;max-height:320px;"></canvas>
+                                <h6><i class="fa-solid fa-user-tie me-2 text-primary"></i>Top 10 nhân viên có nhiều task mở</h6>
+                                <div class="chart-wrapper" style="height:320px;">
+                                    <canvas id="chartTopWorkload" width="400" height="320"></canvas>
                                 </div>
-                                <div class="small text-muted mt-3 d-flex flex-wrap gap-3">
-                                    <span>Tổng công việc: <b><%= tongCongViec %></b></span>
-                                    <span>Hoàn thành: <b><%= daHoanThanh %></b></span>
-                                    <span>Chưa hoàn thành: <b><%= (tongCongViec - daHoanThanh) %></b></span>
+                            </div>
+                        </div>
+
+                        <!-- Chart 3: Created vs Completed Trend (30 days) -->
+                        <div class="col-lg-6 col-md-12">
+                            <div class="chart-card h-100">
+                                <h6><i class="fa-solid fa-chart-line me-2 text-success"></i>Trend: Task tạo mới vs hoàn thành (30 ngày)</h6>
+                                <div class="chart-wrapper" style="height:320px;">
+                                    <canvas id="chartCreatedVsCompleted" width="400" height="320"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Chart 4: Priority Distribution -->
+                        <div class="col-lg-6 col-md-12">
+                            <div class="chart-card h-100">
+                                <h6><i class="fa-solid fa-bars me-2 text-warning"></i>Phân bố ưu tiên task</h6>
+                                <div class="chart-wrapper" style="height:320px;">
+                                    <canvas id="chartPriorityDist" width="400" height="320"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Chart 5: Average Open Age by Project -->
+                        <div class="col-lg-6 col-md-12">
+                            <div class="chart-card h-100">
+                                <h6><i class="fa-solid fa-hourglass-end me-2 text-info"></i>Tuổi trung bình task mở (ngày)</h6>
+                                <div class="chart-wrapper" style="height:320px;">
+                                    <canvas id="chartAvgOpenAge" width="400" height="320"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Chart 6: SLA Breach Rate -->
+                        <div class="col-lg-6 col-md-12">
+                            <div class="chart-card h-100">
+                                <h6><i class="fa-solid fa-shield me-2 text-secondary"></i>Tỷ lệ vi phạm deadline (SLA)</h6>
+                                <div class="chart-wrapper" style="height:320px;">
+                                    <canvas id="chartSlaBreach" width="400" height="320"></canvas>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Phân tích mở rộng -->
-                    <div class="row mt-4 g-4 align-items-stretch">
-                        <div class="col-lg-4 col-md-12">
-                            <div class="chart-card h-100">
-                                <h6><i class="fa-solid fa-wave-square me-2 text-info"></i>Xu hướng đi muộn / vắng (theo ngày)</h6>
-                                <div class="chart-wrapper" style="height:320px;">
-                                    <canvas id="chartLateTrend"></canvas>
-                                </div>
-                                <div class="small text-muted mt-3">Biểu đồ line + area giúp nhìn rõ pattern đi muộn, vắng, đủ công.</div>
-                            </div>
-                        </div>
-                        <div class="col-lg-4 col-md-12">
-                            <div class="chart-card h-100">
-                                <h6><i class="fa-solid fa-layer-group me-2 text-warning"></i>Trạng thái dự án theo nhóm</h6>
-                                <div class="chart-wrapper" style="height:320px;">
-                                    <canvas id="chartProjectStatusStack"></canvas>
-                                </div>
-                                <div class="small text-muted mt-3">So sánh phân bố trạng thái dự án giữa Phòng Kỹ Thuật và Kinh Doanh.</div>
-                            </div>
-                        </div>
-                        <div class="col-lg-4 col-md-12">
-                            <div class="chart-card h-100">
-                                <h6><i class="fa-solid fa-radar me-2 text-primary"></i>Radar tiến độ phòng ban</h6>
-                                <div class="chart-wrapper" style="height:320px;">
-                                    <canvas id="chartPBProgressRadar"></canvas>
-                                </div>
-                                <div class="small text-muted mt-3">Radar cho thấy phòng ban nào dẫn đầu về % hoàn thành.</div>
-                            </div>
-                        </div>
-                    </div>
+
                 </div>
             </div>
         </div>
@@ -976,8 +1003,100 @@
                 anNinhProjectIdsAttr.append(anNinhProjectIds.get(i));
             }
             
-            // (Removed personnel composition chart)
+            // NEW: Format data for 6 new charts
+            // 1. Overdue by Project
+            StringBuilder overdueProjectNames = new StringBuilder();
+            StringBuilder overdueProjectCounts = new StringBuilder();
+            if (overdueByProject != null) {
+                for (int i = 0; i < overdueByProject.size(); i++) {
+                    if (i > 0) {
+                        overdueProjectNames.append("|");
+                        overdueProjectCounts.append(",");
+                    }
+                    Object projectName = overdueByProject.get(i).get("project_name");
+                    Object count = overdueByProject.get(i).get("count");
+                    overdueProjectNames.append(projectName != null ? projectName : "");
+                    overdueProjectCounts.append(count != null ? count : "0");
+                }
+            }
+            
+            // 2. Top Workload
+            StringBuilder workloadNames = new StringBuilder();
+            StringBuilder workloadCounts = new StringBuilder();
+            if (topWorkload != null) {
+                for (int i = 0; i < topWorkload.size(); i++) {
+                    if (i > 0) {
+                        workloadNames.append("|");
+                        workloadCounts.append(",");
+                    }
+                    Object empName = topWorkload.get(i).get("employee_name");
+                    Object taskCount = topWorkload.get(i).get("task_count");
+                    workloadNames.append(empName != null ? empName : "");
+                    workloadCounts.append(taskCount != null ? taskCount : "0");
+                }
+            }
+            
+            // 3. Burnup Chart (created vs completed)
+            StringBuilder burnupDays = new StringBuilder();
+            StringBuilder burnupCreated = new StringBuilder();
+            StringBuilder burnupCompleted = new StringBuilder();
+            if (burnupChart != null) {
+                for (int i = 0; i < burnupChart.size(); i++) {
+                    if (i > 0) {
+                        burnupDays.append("|");
+                        burnupCreated.append(",");
+                        burnupCompleted.append(",");
+                    }
+                    Object day = burnupChart.get(i).get("day");
+                    Object created = burnupChart.get(i).get("created");
+                    Object completed = burnupChart.get(i).get("completed");
+                    burnupDays.append(day != null ? day : "");
+                    burnupCreated.append(created != null ? created : "0");
+                    burnupCompleted.append(completed != null ? completed : "0");
+                }
+            }
+            
+            // 4. Priority Distribution
+            StringBuilder priorityLabels = new StringBuilder();
+            StringBuilder priorityCounts = new StringBuilder();
+            String[] priorityOrder = {"Cao", "Trung bình", "Thấp"};
+            for (int i = 0; i < priorityOrder.length; i++) {
+                if (i > 0) {
+                    priorityLabels.append("|");
+                    priorityCounts.append(",");
+                }
+                priorityLabels.append(priorityOrder[i]);
+                priorityCounts.append(priorityDist.getOrDefault(priorityOrder[i], 0));
+            }
+            
+            // 5. Average Open Age
+            StringBuilder avgAgeProjectNames = new StringBuilder();
+            StringBuilder avgAgeDays = new StringBuilder();
+            if (avgOpenAge != null) {
+                for (int i = 0; i < avgOpenAge.size(); i++) {
+                    if (i > 0) {
+                        avgAgeProjectNames.append("|");
+                        avgAgeDays.append(",");
+                    }
+                    Object projectName = avgOpenAge.get(i).get("project_name");
+                    Object avgDays = avgOpenAge.get(i).get("avg_open_days");
+                    avgAgeProjectNames.append(projectName != null ? projectName : "");
+                    avgAgeDays.append(avgDays != null ? avgDays : "0");
+                }
+            }
+            
+            // 6. SLA Breach
+            int slaBreached = slaBreach.getOrDefault("Breached", 0);
+            int slaOnTime = slaBreach.getOrDefault("On-time", 0);
         %>
+        <!-- DEBUG: Chart Data Sizes
+        overdueByProject: <%= overdueByProject.size() %>
+        topWorkload: <%= topWorkload.size() %>
+        burnupChart: <%= burnupChart.size() %>
+        avgOpenAge: <%= avgOpenAge.size() %>
+        priorityDist: <%= priorityDist.size() %>
+        slaBreach: <%= slaBreach.size() %> (Breached=<%= slaBreached %>, OnTime=<%= slaOnTime %>)
+        -->
         <div id="chartDataHolder" style="display:none"
              data-pb-labels="<%= pbLabelsAttr %>"
              data-pb-values="<%= pbValsAttr.toString() %>"
@@ -987,12 +1106,6 @@
              data-st-th="<%= dangThucHien %>"
              data-st-tre="<%= treHan %>"
              data-st-cbd="<%= chuaBatDau %>"
-             data-tong-ngay="<%= tongNgayLam %>"
-             data-di-muon="<%= soLanDiMuon %>"
-             data-hc-dang-lam="<%= thongKeTongQuan.getOrDefault("nv_dang_lam",0) %>"
-             data-hc-tam-nghi="<%= thongKeTongQuan.getOrDefault("nv_tam_nghi",0) %>"
-             data-hc-nghi-viec="<%= thongKeTongQuan.getOrDefault("nv_nghi_viec",0) %>"
-             data-hc-tong="<%= thongKeTongQuan.getOrDefault("tong_nhan_vien",0) %>"
              data-kt-project-names="<%= dashboardProjectNamesAttr %>"
              data-kt-progress="<%= dashboardProgressAttr.toString() %>"
              data-kt-project-ids="<%= dashboardProjectIdsAttr.toString() %>"
@@ -1004,7 +1117,20 @@
              data-kt-days-left="<%= dashboardDaysLeft.toString() %>"
              data-kd-end-dates="<%= String.join("|", anNinhEndDates) %>"
              data-kd-days-left="<%= anNinhDaysLeft.toString() %>"
-             data-kd-progress="<%= anNinhProgressAttr.toString() %>"></div>
+             data-kd-progress="<%= anNinhProgressAttr.toString() %>"
+             data-overdue-projects="<%= overdueProjectNames.toString() %>"
+             data-overdue-counts="<%= overdueProjectCounts.toString() %>"
+             data-workload-names="<%= workloadNames.toString() %>"
+             data-workload-counts="<%= workloadCounts.toString() %>"
+             data-burnup-days="<%= burnupDays.toString() %>"
+             data-burnup-created="<%= burnupCreated.toString() %>"
+             data-burnup-completed="<%= burnupCompleted.toString() %>"
+             data-priority-labels="<%= priorityLabels.toString() %>"
+             data-priority-counts="<%= priorityCounts.toString() %>"
+             data-avg-age-projects="<%= avgAgeProjectNames.toString() %>"
+             data-avg-age-days="<%= avgAgeDays.toString() %>"
+             data-sla-breached="<%= slaBreached %>"
+             data-sla-ontime="<%= slaOnTime %>"></div>
 
         <script>
             const attHolder = document.createElement('div');

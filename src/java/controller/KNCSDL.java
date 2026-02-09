@@ -24,8 +24,8 @@ public class KNCSDL {
 
     public KNCSDL() throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
-        this.cn = DriverManager.getConnection(path, "root", "");
-        //this.cn = DriverManager.getConnection(path, "icssapp", "StrongPass!2025");
+        //this.cn = DriverManager.getConnection(path, "root", "");
+        this.cn = DriverManager.getConnection(path, "icssapp", "StrongPass!2025");
     }
 
     public ResultSet laydl(String email) throws SQLException {
@@ -7789,6 +7789,142 @@ public class KNCSDL {
                 }
             }
         }
+    }
+
+    // ===== 6 NEW CHART DATA METHODS =====
+    
+    // 1. Overdue tasks per project
+    public List<Map<String, Object>> getDataForOverdueChart() throws SQLException {
+        List<Map<String, Object>> data = new ArrayList<>();
+        String sql = "SELECT da.ten_du_an AS project_name, COUNT(cv.id) AS count " +
+                "FROM du_an da " +
+                "LEFT JOIN cong_viec cv ON da.id = cv.du_an_id " +
+                "WHERE cv.trang_thai = 'Trễ hạn' " +
+                "GROUP BY da.id, da.ten_du_an " +
+                "HAVING COUNT(cv.id) > 0 " +
+                "ORDER BY count DESC";
+        
+        try (PreparedStatement stmt = cn.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                Map<String, Object> row = new HashMap<>();
+                row.put("project_name", rs.getString("project_name"));
+                row.put("count", rs.getInt("count"));
+                data.add(row);
+            }
+        }
+        return data;
+    }
+
+    // 2. Top 10 employees by open task count
+    public List<Map<String, Object>> getDataForTopWorkloadChart() throws SQLException {
+        List<Map<String, Object>> data = new ArrayList<>();
+        String sql = "SELECT nv.ho_ten AS employee_name, COUNT(cv.id) AS task_count " +
+                "FROM nhanvien nv " +
+                "LEFT JOIN cong_viec_nguoi_nhan cvn ON nv.id = cvn.nhan_vien_id " +
+                "LEFT JOIN cong_viec cv ON cvn.cong_viec_id = cv.id " +
+                "WHERE cv.trang_thai IN ('Chưa bắt đầu', 'Đang thực hiện') " +
+                "GROUP BY nv.id, nv.ho_ten " +
+                "ORDER BY task_count DESC " +
+                "LIMIT 10";
+        
+        try (PreparedStatement stmt = cn.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                Map<String, Object> row = new HashMap<>();
+                row.put("employee_name", rs.getString("employee_name"));
+                row.put("task_count", rs.getInt("task_count"));
+                data.add(row);
+            }
+        }
+        return data;
+    }
+
+    // 3. Created vs Completed tasks - Last 30 days
+    public List<Map<String, Object>> getDataForBurnupChart() throws SQLException {
+        List<Map<String, Object>> data = new ArrayList<>();
+        String sql = "SELECT DATE_FORMAT(dates.date, '%d/%m') AS day, " +
+                "COALESCE(created.count, 0) AS created, " +
+                "COALESCE(completed.count, 0) AS completed " +
+                "FROM (" +
+                "  SELECT DATE_SUB(CURDATE(), INTERVAL n DAY) AS date " +
+                "  FROM (SELECT 0 AS n UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9 UNION SELECT 10 " +
+                "        UNION SELECT 11 UNION SELECT 12 UNION SELECT 13 UNION SELECT 14 UNION SELECT 15 UNION SELECT 16 UNION SELECT 17 UNION SELECT 18 UNION SELECT 19 UNION SELECT 20 " +
+                "        UNION SELECT 21 UNION SELECT 22 UNION SELECT 23 UNION SELECT 24 UNION SELECT 25 UNION SELECT 26 UNION SELECT 27 UNION SELECT 28 UNION SELECT 29) nums " +
+                ") dates " +
+                "LEFT JOIN (SELECT DATE(ngay_tao) AS date, COUNT(*) AS count FROM cong_viec WHERE ngay_tao >= DATE_SUB(CURDATE(), INTERVAL 30 DAY) GROUP BY DATE(ngay_tao)) created ON dates.date = created.date " +
+                "LEFT JOIN (SELECT DATE(ngay_hoan_thanh) AS date, COUNT(*) AS count FROM cong_viec WHERE ngay_hoan_thanh >= DATE_SUB(CURDATE(), INTERVAL 30 DAY) GROUP BY DATE(ngay_hoan_thanh)) completed ON dates.date = completed.date " +
+                "ORDER BY dates.date ASC";
+        
+        try (PreparedStatement stmt = cn.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                Map<String, Object> row = new HashMap<>();
+                row.put("day", rs.getString("day"));
+                row.put("created", rs.getInt("created"));
+                row.put("completed", rs.getInt("completed"));
+                data.add(row);
+            }
+        }
+        return data;
+    }
+
+    // 4. Task priority distribution
+    public Map<String, Integer> getDataForPriorityChart() throws SQLException {
+        Map<String, Integer> data = new HashMap<>();
+        String sql = "SELECT muc_do_uu_tien, COUNT(*) AS count FROM cong_viec " +
+                "GROUP BY muc_do_uu_tien";
+        
+        try (PreparedStatement stmt = cn.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                String priority = rs.getString("muc_do_uu_tien");
+                int count = rs.getInt("count");
+                data.put(priority, count);
+            }
+        }
+        // Ensure all priorities exist
+        data.putIfAbsent("Cao", 0);
+        data.putIfAbsent("Trung bình", 0);
+        data.putIfAbsent("Thấp", 0);
+        return data;
+    }
+
+    // 5. Average open age per project (days task remains open)
+    public List<Map<String, Object>> getDataForAvgOpenAgeChart() throws SQLException {
+        List<Map<String, Object>> data = new ArrayList<>();
+        String sql = "SELECT da.ten_du_an AS project_name, " +
+                "ROUND(AVG(DATEDIFF(CURDATE(), cv.ngay_tao))) AS avg_open_days " +
+                "FROM du_an da " +
+                "LEFT JOIN cong_viec cv ON da.id = cv.du_an_id " +
+                "WHERE cv.trang_thai IN ('Chưa bắt đầu', 'Đang thực hiện', 'Trễ hạn') " +
+                "GROUP BY da.id, da.ten_du_an " +
+                "ORDER BY avg_open_days DESC";
+        
+        try (PreparedStatement stmt = cn.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                Map<String, Object> row = new HashMap<>();
+                row.put("project_name", rs.getString("project_name"));
+                row.put("avg_open_days", rs.getInt("avg_open_days"));
+                data.add(row);
+            }
+        }
+        return data;
+    }
+
+    // 6. SLA breach rate (deadline compliance)
+    public Map<String, Integer> getDataForSlaBreach() throws SQLException {
+        Map<String, Integer> data = new HashMap<>();
+        String sql = "SELECT " +
+                "SUM(CASE WHEN ngay_hoan_thanh IS NOT NULL AND han_hoan_thanh IS NOT NULL AND ngay_hoan_thanh > han_hoan_thanh THEN 1 ELSE 0 END) AS breached, " +
+                "SUM(CASE WHEN ngay_hoan_thanh IS NOT NULL AND han_hoan_thanh IS NOT NULL AND ngay_hoan_thanh <= han_hoan_thanh THEN 1 ELSE 0 END) AS on_time " +
+                "FROM cong_viec WHERE ngay_hoan_thanh IS NOT NULL";
+        
+        try (PreparedStatement stmt = cn.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
+            if (rs.next()) {
+                int breached = rs.getInt("breached");
+                int onTime = rs.getInt("on_time");
+                data.put("Breached", breached);
+                data.put("On-time", onTime);
+            }
+        }
+        return data;
     }
 
 }

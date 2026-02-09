@@ -88,212 +88,6 @@
                         ctx.restore();
                     }}]});
     }
-
-    // Cơ cấu nhân sự theo trạng thái (bar ngang)
-    const ctxHC = document.getElementById('chartHeadcount');
-    if (ctxHC) {
-        const labels = ['Đang làm', 'Tạm nghỉ', 'Nghỉ việc'];
-        const vals = [hcDangLam, hcTamNghi, hcNghiViec];
-        const colors = ['#0ea5e9', '#f59e0b', '#ef4444'];
-        new Chart(ctxHC, {
-            type: 'bar',
-            data: {labels, datasets: [{data: vals, backgroundColor: colors, borderRadius: 10, borderWidth: 0, barPercentage: 0.6, categoryPercentage: 0.6}]},
-            options: {
-                indexAxis: 'y',
-                responsive: true,
-                plugins: {
-                    legend: {display: false},
-                    tooltip: {callbacks: {label: (c) => `${c.parsed.x} người (${hcTong ? Math.round(c.parsed.x * 100 / hcTong) : 0}%)`}}
-                },
-                scales: {
-                    x: {beginAtZero: true, ticks: {callback: v => `${v}`}, grid: {color: '#e2e8f0'}},
-                    y: {ticks: {autoSkip: false}}
-                }
-            },
-            plugins: [shadowPlugin]
-        });
-    }
-
-    // Gauge hoàn thành công việc (doughnut)
-    const ctxGauge = document.getElementById('chartCompletionGauge');
-    if (ctxGauge) {
-        const pct = Math.min(100, Math.max(0, parseInt(h.dataset.stHt || '0') * 100 / (parseInt(h.dataset.stHt || '0') + parseInt(h.dataset.stTh || '0') + parseInt(h.dataset.stTre || '0') + parseInt(h.dataset.stCbd || '0') || 1)));
-        const done = Math.round(pct);
-        const remain = 100 - done;
-        new Chart(ctxGauge, {
-            type: 'doughnut',
-            data: {
-                labels: ['Hoàn thành', 'Chưa hoàn thành'],
-                datasets: [{
-                    data: [done, remain],
-                    backgroundColor: ['#22c55e', '#e2e8f0'],
-                    borderWidth: 0,
-                    cutout: '70%'
-                }]
-            },
-            options: {
-                plugins: {
-                    legend: {display: false},
-                    tooltip: {callbacks: {label: (c) => `${c.label}: ${c.parsed}%`}}
-                }
-            },
-            plugins: [{
-                id: 'centerGaugeText',
-                afterDraw(chart) {
-                    const {ctx} = chart;
-                    const meta = chart.getDatasetMeta(0);
-                    if (!meta || !meta.data || !meta.data.length) return;
-                    const x = meta.data[0].x;
-                    const y = meta.data[0].y;
-                    ctx.save();
-                    ctx.font = '700 26px system-ui';
-                    ctx.fillStyle = '#0f172a';
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.fillText(done + '%', x, y - 4);
-                    ctx.font = '500 12px system-ui';
-                    ctx.fillStyle = '#64748b';
-                    ctx.fillText('Hoàn thành', x, y + 18);
-                    ctx.restore();
-                }
-            }, shadowPlugin]
-        });
-    }
-
-    // Xu hướng đi muộn / vắng (line + area)
-    const ctxLateTrend = document.getElementById('chartLateTrend');
-    if (ctxLateTrend) {
-        const h2 = document.getElementById('attDataHolder');
-        if (!h2) {
-            console.warn('Thiếu dữ liệu chấm công (attDataHolder)');
-        }
-        const parseArr = s => s ? s.split(',').map(Number) : [];
-        let days = h2 && h2.dataset.days ? h2.dataset.days.split(',') : [];
-        let du = h2 ? parseArr(h2.dataset.du) : [];
-        let muon = h2 ? parseArr(h2.dataset.muon) : [];
-        let vang = h2 ? parseArr(h2.dataset.vang) : [];
-        if (!days.length) {
-            days = ['N/A'];
-            du = [0];
-            muon = [0];
-            vang = [0];
-        }
-        new Chart(ctxLateTrend, {
-            type: 'line',
-            data: {
-                labels: days,
-                datasets: [
-                    {label: 'Đủ công', data: du, borderColor: '#22c55e', backgroundColor: 'rgba(34,197,94,0.08)', tension: 0.35, fill: true, borderWidth: 2},
-                    {label: 'Đi muộn', data: muon, borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.12)', tension: 0.35, fill: true, borderWidth: 2},
-                    {label: 'Vắng', data: vang, borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.12)', tension: 0.35, fill: true, borderWidth: 2}
-                ]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {position: 'bottom'},
-                    tooltip: {mode: 'index', intersect: false}
-                },
-                interaction: {mode: 'index', intersect: false},
-                scales: {
-                    x: {grid: {display: false}},
-                    y: {beginAtZero: true}
-                }
-            },
-            plugins: [shadowPlugin]
-        });
-    }
-
-    // Stacked trạng thái dự án theo nhóm
-    const ctxProjStack = document.getElementById('chartProjectStatusStack');
-    if (ctxProjStack) {
-        const STATUS_ORDER = ['Đang thực hiện', 'Tạm ngưng', 'Đã hoàn thành', 'Đóng dự án', 'Chưa bắt đầu'];
-        const STATUS_COLOR = {
-            'Đang thực hiện': '#0284C7',
-            'Tạm ngưng': '#F59E0B',
-            'Đã hoàn thành': '#16A34A',
-            'Đóng dự án': '#DC2626',
-            'Chưa bắt đầu': '#6366f1'
-        };
-
-        const countByStatus = (statuses) => {
-            const m = {};
-            statuses.forEach(st => { m[st] = (m[st] || 0) + 1; });
-            return m;
-        };
-
-        let ktStatuses = h.dataset.ktStatuses ? h.dataset.ktStatuses.split('|').filter(v => v) : [];
-        let kdStatuses = h.dataset.kdStatuses ? h.dataset.kdStatuses.split('|').filter(v => v) : [];
-        if (!ktStatuses.length && !kdStatuses.length) {
-            ktStatuses = ['Đang thực hiện'];
-            kdStatuses = ['Đang thực hiện'];
-        }
-        const ktCount = countByStatus(ktStatuses);
-        const kdCount = countByStatus(kdStatuses);
-
-        const datasets = STATUS_ORDER.map(st => ({
-            label: st,
-            data: [ktCount[st] || 0, kdCount[st] || 0],
-            backgroundColor: STATUS_COLOR[st] || '#94a3b8',
-            borderWidth: 0
-        }));
-
-        new Chart(ctxProjStack, {
-            type: 'bar',
-            data: {
-                labels: ['Phòng Kỹ Thuật', 'Phòng Kinh Doanh'],
-                datasets
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {position: 'bottom'},
-                    tooltip: {mode: 'index', intersect: false}
-                },
-                interaction: {mode: 'index', intersect: false},
-                scales: {
-                    x: {stacked: true},
-                    y: {stacked: true, beginAtZero: true, ticks: {stepSize: 1}}
-                }
-            },
-            plugins: [shadowPlugin]
-        });
-    }
-
-    // Radar tiến độ phòng ban
-    const ctxPBRadar = document.getElementById('chartPBProgressRadar');
-    if (ctxPBRadar && pbLabels.length && pbValues.length) {
-        new Chart(ctxPBRadar, {
-            type: 'radar',
-            data: {
-                labels: pbLabels,
-                datasets: [{
-                    label: 'Tiến độ (%)',
-                    data: pbValues,
-                    backgroundColor: 'rgba(99,102,241,0.15)',
-                    borderColor: '#6366f1',
-                    borderWidth: 2,
-                    pointBackgroundColor: '#312e81'
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    r: {
-                        beginAtZero: true,
-                        suggestedMax: 100,
-                        ticks: {stepSize: 20},
-                        grid: {color: '#e2e8f0'}
-                    }
-                },
-                plugins: {
-                    legend: {display: false}
-                }
-            },
-            plugins: [shadowPlugin]
-        });
-    }
-    // (Removed personnel composition chart)
     // Chuyển dữ liệu chấm công theo ngày sang data-* để tránh lỗi JSP parser
     const attHolder = document.createElement('div');
     const ctxCCongNgay = document.getElementById('chartChamCongNgay');
@@ -607,6 +401,298 @@
             });
         }
     }
+
+    if (!h)
+        return;
+
+    // Debug: Log all new chart data attributes
+    console.log('=== NEW CHARTS DATA DEBUG ===');
+    console.log('Overdue Projects:', h.dataset.overdueProjects);
+    console.log('Overdue Counts:', h.dataset.overdueCounts);
+    console.log('Workload Names:', h.dataset.workloadNames);
+    console.log('Workload Counts:', h.dataset.workloadCounts);
+    console.log('Burnup Days:', h.dataset.burnupDays);
+    console.log('Priority Labels:', h.dataset.priorityLabels);
+    console.log('Priority Counts:', h.dataset.priorityCounts);
+    console.log('Avg Age Projects:', h.dataset.avgAgeProjects);
+    console.log('SLA Breached:', h.dataset.slaBreached, 'On-time:', h.dataset.slaOntime);
+
+    // 1. Overdue Tasks by Project
+    const ctxOverdue = document.getElementById('chartOverdueByProject');
+    if (ctxOverdue) {
+        const overdueProjects = h.dataset.overdueProjects ? h.dataset.overdueProjects.split('|').filter(v => v) : [];
+        const overdueCounts = h.dataset.overdueCounts ? h.dataset.overdueCounts.split(',').map(Number) : [];
+        console.log('Chart 1 - Overdue:', overdueProjects.length, 'projects', overdueProjects, overdueCounts);
+        console.log('Canvas ctxOverdue:', ctxOverdue, 'rendering context:', ctxOverdue?.getContext('2d'));
+
+        if (overdueProjects.length === 0) {
+            console.warn('No overdue data available');
+            ctxOverdue.parentElement.innerHTML = '<div class="text-center text-muted py-5"><i class="fa-solid fa-inbox fa-2x mb-2"></i><br>Không có dữ liệu</div>';
+        } else {
+            try {
+                const colors = ['#ef4444', '#f97316', '#f59e0b', '#3b82f6', '#10b981'].reverse();
+                new Chart(ctxOverdue, {
+                    type: 'bar',
+                    data: {
+                        labels: overdueProjects,
+                        datasets: [{
+                                label: 'Số task quá hạn',
+                                data: overdueCounts,
+                                backgroundColor: overdueCounts.map((_, i) => colors[i % colors.length]),
+                                borderRadius: 8,
+                                borderWidth: 0
+                            }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {legend: {display: false}, tooltip: {callbacks: {label: (c) => c.parsed.x + ' tasks'}}},
+                        scales: {x: {beginAtZero: true, ticks: {callback: (v) => v}}, y: {ticks: {autoSkip: false}}}
+                    },
+                    plugins: [shadowPlugin]
+                });
+                console.log('Chart 1 rendered successfully!');
+            } catch (e) {
+                console.error('Chart 1 error:', e);
+            }
+        }
+    }
+
+    // 2. Top 10 Employees Workload
+    const ctxWorkload = document.getElementById('chartTopWorkload');
+    if (ctxWorkload) {
+        const workloadNames = h.dataset.workloadNames ? h.dataset.workloadNames.split('|').filter(v => v) : [];
+        const workloadCounts = h.dataset.workloadCounts ? h.dataset.workloadCounts.split(',').map(Number) : [];
+        console.log('Chart 2 - Workload:', workloadNames.length, 'employees', workloadNames, workloadCounts);
+
+        if (workloadNames.length === 0) {
+            console.warn('No workload data available');
+            ctxWorkload.parentElement.innerHTML = '<div class="text-center text-muted py-5"><i class="fa-solid fa-inbox fa-2x mb-2"></i><br>Không có dữ liệu</div>';
+        } else {
+            try {
+                const workloadColors = workloadCounts.map(v => v > 15 ? '#ef4444' : v > 10 ? '#f59e0b' : '#10b981');
+                new Chart(ctxWorkload, {
+                    type: 'bar',
+                    data: {
+                        labels: workloadNames,
+                        datasets: [{
+                                label: 'Số task đang mở',
+                                data: workloadCounts,
+                                backgroundColor: workloadColors,
+                                borderRadius: 8,
+                                borderWidth: 0,
+                                barPercentage: 0.6
+                            }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {legend: {display: false}, tooltip: {callbacks: {label: (c) => c.parsed.x + ' tasks'}}},
+                        scales: {x: {beginAtZero: true}, y: {ticks: {autoSkip: false}}}
+                    },
+                    plugins: [shadowPlugin]
+                });
+                console.log('Chart 2 rendered successfully!');
+            } catch (e) {
+                console.error('Chart 2 error:', e);
+            }
+        }
+    }
+
+    // 3. Created vs Completed Trend (30 days)
+    const ctxBurnup = document.getElementById('chartCreatedVsCompleted');
+    if (ctxBurnup) {
+        const burnupDays = h.dataset.burnupDays ? h.dataset.burnupDays.split('|').filter(v => v) : [];
+        const burnupCreated = h.dataset.burnupCreated ? h.dataset.burnupCreated.split(',').map(Number) : [];
+        const burnupCompleted = h.dataset.burnupCompleted ? h.dataset.burnupCompleted.split(',').map(Number) : [];
+        console.log('Chart 3 - Burnup:', burnupDays.length, 'days', burnupCreated, burnupCompleted);
+
+        if (burnupDays.length === 0) {
+            console.warn('No burnup data available');
+            ctxBurnup.parentElement.innerHTML = '<div class="text-center text-muted py-5"><i class="fa-solid fa-inbox fa-2x mb-2"></i><br>Không có dữ liệu</div>';
+        } else {
+            try {
+                new Chart(ctxBurnup, {
+                    type: 'line',
+                    data: {
+                        labels: burnupDays,
+                        datasets: [
+                            {
+                                label: 'Tasks tạo mới',
+                                data: burnupCreated,
+                                borderColor: '#3b82f6',
+                                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                                tension: 0.3,
+                                fill: true,
+                                pointRadius: 3,
+                                pointBackgroundColor: '#3b82f6'
+                            },
+                            {
+                                label: 'Tasks hoàn thành',
+                                data: burnupCompleted,
+                                borderColor: '#10b981',
+                                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                                tension: 0.3,
+                                fill: true,
+                                pointRadius: 3,
+                                pointBackgroundColor: '#10b981'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {legend: {position: 'bottom'}, tooltip: {mode: 'index', intersect: false}},
+                        scales: {y: {beginAtZero: true}}
+                    },
+                    plugins: [shadowPlugin]
+                });
+                console.log('Chart 3 rendered successfully!');
+            } catch (e) {
+                console.error('Chart 3 error:', e);
+            }
+        }
+    }
+
+    // 4. Priority Distribution
+    const ctxPriority = document.getElementById('chartPriorityDist');
+    if (ctxPriority) {
+        const priorityLabels = h.dataset.priorityLabels ? h.dataset.priorityLabels.split('|').filter(v => v) : [];
+        const priorityCounts = h.dataset.priorityCounts ? h.dataset.priorityCounts.split(',').map(Number) : [];
+        console.log('Chart 4 - Priority:', priorityLabels, priorityCounts);
+
+        if (priorityLabels.length === 0 || priorityCounts.reduce((a, b) => a + b, 0) === 0) {
+            console.warn('No priority data available');
+            ctxPriority.parentElement.innerHTML = '<div class="text-center text-muted py-5"><i class="fa-solid fa-inbox fa-2x mb-2"></i><br>Không có dữ liệu</div>';
+        } else {
+            try {
+                const priorityColors = {'Cao': '#ef4444', 'Trung bình': '#f59e0b', 'Thấp': '#3b82f6'};
+                const colors = priorityLabels.map(l => priorityColors[l] || '#64748b');
+                new Chart(ctxPriority, {
+                    type: 'doughnut',
+                    data: {
+                        labels: priorityLabels,
+                        datasets: [{data: priorityCounts, backgroundColor: colors, borderWidth: 1}]
+                    },
+                    options: {
+                        cutout: '60%',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {position: 'bottom'},
+                            tooltip: {callbacks: {label: (ctx) => ctx.label + ': ' + ctx.parsed + ' (' + (Math.round(ctx.parsed * 100 / priorityCounts.reduce((a, b) => a + b, 0))) + '%)'}}
+                        }
+                    },
+                    plugins: [shadowPlugin]
+                });
+                console.log('Chart 4 rendered successfully!');
+            } catch (e) {
+                console.error('Chart 4 error:', e);
+            }
+        }
+    }
+
+    // 5. Average Open Age
+    const ctxAvgAge = document.getElementById('chartAvgOpenAge');
+    if (ctxAvgAge) {
+        const avgAgeProjects = h.dataset.avgAgeProjects ? h.dataset.avgAgeProjects.split('|').filter(v => v) : [];
+        const avgAgeDays = h.dataset.avgAgeDays ? h.dataset.avgAgeDays.split(',').map(Number) : [];
+        console.log('Chart 5 - Avg Age:', avgAgeProjects.length, 'projects', avgAgeDays);
+
+        if (avgAgeProjects.length === 0) {
+            console.warn('No avg age data available');
+            ctxAvgAge.parentElement.innerHTML = '<div class="text-center text-muted py-5"><i class="fa-solid fa-inbox fa-2x mb-2"></i><br>Không có dữ liệu</div>';
+        } else {
+            try {
+                const ageColors = avgAgeDays.map(d => d > 30 ? '#ef4444' : d > 20 ? '#f59e0b' : d > 10 ? '#3b82f6' : '#10b981');
+                new Chart(ctxAvgAge, {
+                    type: 'bar',
+                    data: {
+                        labels: avgAgeProjects,
+                        datasets: [{
+                                label: 'Ngày',
+                                data: avgAgeDays,
+                                backgroundColor: ageColors,
+                                borderRadius: 8,
+                                borderWidth: 0,
+                                barPercentage: 0.6
+                            }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {legend: {display: false}, tooltip: {callbacks: {label: (c) => c.parsed.x + ' ngày'}}},
+                        scales: {x: {beginAtZero: true}, y: {ticks: {autoSkip: false}}}
+                    },
+                    plugins: [shadowPlugin]
+                });
+                console.log('Chart 5 rendered successfully!');
+            } catch (e) {
+                console.error('Chart 5 error:', e);
+            }
+        }
+    }
+
+    // 6. SLA Breach Rate
+    const ctxSLA = document.getElementById('chartSlaBreach');
+    if (ctxSLA) {
+        const slaBreached = parseInt(h.dataset.slaBreached || '0');
+        const slaOnTime = parseInt(h.dataset.slaOntime || '0');
+        const total = slaBreached + slaOnTime;
+        console.log('Chart 6 - SLA:', 'breached=', slaBreached, 'ontime=', slaOnTime, 'total=', total);
+
+        if (total === 0) {
+            console.warn('No SLA data available');
+            ctxSLA.parentElement.innerHTML = '<div class="text-center text-muted py-5"><i class="fa-solid fa-inbox fa-2x mb-2"></i><br>Không có dữ liệu</div>';
+        } else {
+            try {
+                const breachPct = total > 0 ? Math.round(slaBreached * 100 / total) : 0;
+                const onTimePct = total > 0 ? Math.round(slaOnTime * 100 / total) : 0;
+                new Chart(ctxSLA, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Vi phạm', 'Đúng hạn'],
+                        datasets: [{data: [slaBreached, slaOnTime], backgroundColor: ['#ef4444', '#10b981'], borderWidth: 1}]
+                    },
+                    options: {
+                        cutout: '65%',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {position: 'bottom'},
+                            tooltip: {callbacks: {label: (ctx) => ctx.label + ': ' + ctx.parsed + ' (' + (ctx.parsed === slaBreached ? breachPct : onTimePct) + '%)'}}
+                        }
+                    },
+                    plugins: [{
+                            id: 'centerText',
+                            afterDraw(chart) {
+                                const {ctx} = chart;
+                                const meta = chart.getDatasetMeta(0);
+                                if (!meta || !meta.data || !meta.data.length)
+                                    return;
+                                ctx.save();
+                                ctx.font = '600 18px system-ui';
+                                ctx.fillStyle = breachPct > 30 ? '#ef4444' : '#10b981';
+                                ctx.textAlign = 'center';
+                                ctx.textBaseline = 'middle';
+                                const x = meta.data[0].x, y = meta.data[0].y;
+                                ctx.fillText(breachPct + '%', x, y - 4);
+                                ctx.font = '400 11px system-ui';
+                                ctx.fillStyle = '#6c757d';
+                                ctx.fillText('Vi phạm', x, y + 16);
+                                ctx.restore();
+                            }
+                        }, shadowPlugin]
+                });
+                console.log('Chart 6 rendered successfully!');
+            } catch (e) {
+                console.error('Chart 6 error:', e);
+            }
+        }
+    }
 })();
 document.getElementById("btnNhacViecAll").addEventListener("click", function () {
 
@@ -666,6 +752,5 @@ document.getElementById("btnNhacViecAll").addEventListener("click", function () 
                     console.error(err);
                     Swal.fire("Lỗi", "Không thể kết nối máy chủ!", "error");
                 });
-
-    });
+    });  // Close .then(result =>
 });
