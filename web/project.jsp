@@ -622,7 +622,7 @@
                                 <button class="btn-action btn-edit" onclick="event.stopPropagation(); editProject(<%= p.get("id") %>);">
                                     <i class="fa-solid fa-pen"></i> Sửa
                                 </button>
-                                <button class="btn-action btn-delete delete-project-btn" data-id="<%= p.get("id") %>" onclick="event.stopPropagation();">
+                                <button class="btn-action btn-delete delete-project-btn" data-id="<%= p.get("id") %>" onclick="event.stopPropagation(); deleteProject(<%= p.get("id") %>);">
                                     <i class="fa-solid fa-trash"></i> Xóa
                                 </button>
                             </div>
@@ -899,7 +899,10 @@
                 </div>
             </div>
         </div>
-        <script>const USER_PERMISSIONS = <%= session.getAttribute("quyen") %>;</script>
+        <script>
+            const USER_PERMISSIONS = <%= session.getAttribute("quyen") %>;
+            const USER_ROLE = "<%= session.getAttribute("vaiTro") %>";
+        </script>
         <script>
             // View Toggle Script
             document.addEventListener('DOMContentLoaded', function() {
@@ -927,6 +930,6 @@
                 });
             });
         </script>
-        <script src="<%= request.getContextPath() %>/scripts/project.js?v=20251105"></script>
+        <script src="<%= request.getContextPath() %>/scripts/project.js?v=<%= System.currentTimeMillis() %>"></script>
     </body>
 </html>

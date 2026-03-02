@@ -1,4 +1,9 @@
 function hasPermission(code) {
+    // Admin và Quản lý có toàn quyền
+    if (typeof USER_ROLE !== 'undefined' &&
+        (USER_ROLE === 'Admin' || USER_ROLE === 'Qu\u1ea3n l\u00fd')) {
+        return true;
+    }
     return USER_PERMISSIONS && USER_PERMISSIONS.includes(code);
 }
 document.addEventListener("DOMContentLoaded", function () {
@@ -100,8 +105,7 @@ document.addEventListener('DOMContentLoaded', function () {
     sortProjectTable("uutien", "desc");
 });
 
-$(document).on('click', '.delete-project-btn', function () {
-    let id = $(this).data('id');
+function deleteProject(id) {
     Swal.fire({
         title: 'Xác nhận xóa?',
         text: 'Bạn có chắc chắn muốn xóa dự án này?',
@@ -118,10 +122,10 @@ $(document).on('click', '.delete-project-btn', function () {
                 data: {id: id},
                 dataType: 'json',
                 success: function (response) {
-                    console.log("Response:", response); // 👈 Debug
+                    console.log("Response:", response);
                     if (response && response.success) {
                         showToast('success', 'Đã xóa dự án thành công!');
-                        setTimeout(() => location.reload(), 500); // reload luôn trang hiện tại
+                        setTimeout(() => location.reload(), 500);
                     } else {
                         showToast('error', response.message || 'Xóa thất bại!');
                     }
@@ -133,6 +137,10 @@ $(document).on('click', '.delete-project-btn', function () {
             });
         }
     });
+}
+
+$(document).on('click', '.delete-project-btn', function () {
+    deleteProject($(this).data('id'));
 });
 
 $("#projectForm").on("submit", function (e) {

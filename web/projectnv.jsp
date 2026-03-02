@@ -796,6 +796,7 @@
         </div>
         <script>
             const USER_PERMISSIONS = <%= session.getAttribute("quyen") %>;
+            const USER_ROLE = "<%= session.getAttribute("vaiTro") %>";
         </script>
         <script>
             // View Toggle Script
