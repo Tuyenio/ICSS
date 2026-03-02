@@ -50,11 +50,15 @@ public class DownloadFileServlet extends HttpServlet {
             return;
         }
 
-        // Thiết lập header tải file (giữ nguyên dấu tiếng Việt)
+        // Thiết lập header tải file (hỗ trợ tiếng Việt và ký tự đặc biệt)
         resp.setContentType("application/octet-stream");
         String utf8Name = file.getName();
+        // RFC 5987: encode đầy đủ để hỗ trợ tên file Unicode
         String encodedName = java.net.URLEncoder.encode(utf8Name, "UTF-8").replaceAll("\\+", "%20");
-        resp.setHeader("Content-Disposition", "attachment; filename=\"" + utf8Name + "\"; filename*=UTF-8''" + encodedName);
+        // HTTP header chỉ cho phép ASCII: thay các ký tự non-ASCII bằng _ làm fallback cho trình duyệt cũ
+        String asciiFallback = utf8Name.replaceAll("[^\\x20-\\x7E]", "_");
+        resp.setHeader("Content-Disposition",
+                "attachment; filename=\"" + asciiFallback + "\"; filename*=UTF-8''" + encodedName);
         resp.setContentLengthLong(file.length());
 
         try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file));

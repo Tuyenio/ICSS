@@ -87,12 +87,6 @@
             .kanban-col:hover::before {
                 left: 100%;
             }
-
-            .kanban-col:hover {
-                transform: scale(1.015);
-                box-shadow: 0 12px 30px rgba(0,0,0,0.15);
-                background: linear-gradient(145deg, #ffffff, #f1f5f9);
-            }
             .kanban-col h5 {
                 font-size: 1.1rem;
                 font-weight: 600;

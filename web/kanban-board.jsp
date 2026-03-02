@@ -80,6 +80,7 @@
                  data-uu-tien="<%= task.get("muc_do_uu_tien") %>"
                  data-ten_nguoi_giao="<%= task.get("nguoi_giao_id") %>"
                  data-ten_nguoi_nhan="<%= task.get("nguoi_nhan_ten") %>"
+                 data-ten_nguoi_theo_doi="<%= task.get("nguoi_theo_doi_ten") != null ? task.get("nguoi_theo_doi_ten") : "" %>"
                  data-ten_phong_ban="<%= task.get("phong_ban_id") %>"
                  data-trang-thai="<%= task.get("trang_thai") %>"
                  data-trang-thai-duyet="<%= trangThaiDuyet %>"
@@ -91,7 +92,7 @@
                 </div>
                 <% } %>
                 <div class="task-title"><%= task.get("ten_cong_viec") %></div>
-                <div class="task-meta">Người giao: <b><%= task.get("nguoi_giao_id") %></b><br>Người nhận: <b><%= task.get("nguoi_nhan_ten") %></b></div>
+                <div class="task-meta">Người giao: <b><%= task.get("nguoi_giao_id") %></b><br>Người nhận: <b><%= task.get("nguoi_nhan_ten") %></b><br>Người theo dõi: <b><%= task.get("nguoi_theo_doi_ten") != null ? task.get("nguoi_theo_doi_ten") : "" %></b></div>
                 <span class="task-priority badge <%= priorityBadge.getOrDefault(task.get("muc_do_uu_tien"), "bg-secondary") %>"><%= task.get("muc_do_uu_tien") %></span>
                 <span class="task-status badge <%= badgeClass.getOrDefault(status, "bg-secondary") %>"><%= trangThaiLabels.get(status) %></span>
                 <span class="badge <%= duyetBadgeClass %> ms-1"><%= trangThaiDuyet %></span>
