@@ -24,8 +24,8 @@ public class KNCSDL {
 
     public KNCSDL() throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
-        //this.cn = DriverManager.getConnection(path, "root", "");
-        this.cn = DriverManager.getConnection(path, "icssapp", "StrongPass!2025");
+        this.cn = DriverManager.getConnection(path, "root", "");
+        //this.cn = DriverManager.getConnection(path, "icssapp", "StrongPass!2025");
     }
 
     public ResultSet laydl(String email) throws SQLException {
@@ -405,6 +405,7 @@ public class KNCSDL {
                    cv.trang_thai_duyet, cv.ly_do_duyet, cv.nhac_viec,
                    ng1.ho_ten AS nguoi_giao_ten,
                    GROUP_CONCAT(DISTINCT ng2.ho_ten ORDER BY ng2.ho_ten SEPARATOR ', ') AS nguoi_nhan_ten,
+                   GROUP_CONCAT(DISTINCT ng3.ho_ten ORDER BY ng3.ho_ten SEPARATOR ', ') AS nguoi_theo_doi_ten,
                    MAX(td.phan_tram) AS phan_tram,
                    pb.ten_phong AS ten_phong
             FROM cong_viec cv
@@ -412,17 +413,21 @@ public class KNCSDL {
             LEFT JOIN nhanvien ng1 ON cv.nguoi_giao_id = ng1.id
             LEFT JOIN cong_viec_nguoi_nhan cvnn ON cv.id = cvnn.cong_viec_id
             LEFT JOIN nhanvien ng2 ON cvnn.nhan_vien_id = ng2.id
+            LEFT JOIN cong_viec_nguoi_theo_doi cvntd ON cv.id = cvntd.cong_viec_id
+            LEFT JOIN nhanvien ng3 ON cvntd.nhan_vien_id = ng3.id
             LEFT JOIN cong_viec_tien_do td ON cv.id = td.cong_viec_id
             LEFT JOIN phong_ban pb ON cv.phong_ban_id = pb.id
             WHERE cv.tinh_trang IS NULL
-              AND cv.id IN (
-                    SELECT cong_viec_id FROM cong_viec_nguoi_nhan WHERE nhan_vien_id = ?
-              )
+              AND (cv.nguoi_giao_id = ?
+                OR cv.id IN (SELECT cong_viec_id FROM cong_viec_nguoi_nhan WHERE nhan_vien_id = ?)
+                OR cv.id IN (SELECT cong_viec_id FROM cong_viec_nguoi_theo_doi WHERE nhan_vien_id = ?))
             GROUP BY cv.id
         """;
 
             try (PreparedStatement stmt = cn.prepareStatement(sql)) {
                 stmt.setInt(1, userId);
+                stmt.setInt(2, userId);
+                stmt.setInt(3, userId);
                 return executeTaskQuery(stmt);
             }
         }
@@ -455,6 +460,7 @@ public class KNCSDL {
                    cv.trang_thai_duyet, cv.ly_do_duyet, cv.nhac_viec,
                    ng1.ho_ten AS nguoi_giao_ten,
                    GROUP_CONCAT(DISTINCT ng2.ho_ten ORDER BY ng2.ho_ten SEPARATOR ', ') AS nguoi_nhan_ten,
+                   GROUP_CONCAT(DISTINCT ng3.ho_ten ORDER BY ng3.ho_ten SEPARATOR ', ') AS nguoi_theo_doi_ten,
                    MAX(td.phan_tram) AS phan_tram,
                    pb.ten_phong AS ten_phong
             FROM cong_viec cv
@@ -462,6 +468,8 @@ public class KNCSDL {
             LEFT JOIN nhanvien ng1 ON cv.nguoi_giao_id = ng1.id
             LEFT JOIN cong_viec_nguoi_nhan cvnn ON cv.id = cvnn.cong_viec_id
             LEFT JOIN nhanvien ng2 ON cvnn.nhan_vien_id = ng2.id
+            LEFT JOIN cong_viec_nguoi_theo_doi cvntd ON cv.id = cvntd.cong_viec_id
+            LEFT JOIN nhanvien ng3 ON cvntd.nhan_vien_id = ng3.id
             LEFT JOIN cong_viec_tien_do td ON cv.id = td.cong_viec_id
             LEFT JOIN phong_ban pb ON cv.phong_ban_id = pb.id
             WHERE cv.tinh_trang IS NULL
@@ -478,6 +486,7 @@ public class KNCSDL {
                    cv.trang_thai_duyet, cv.ly_do_duyet, cv.nhac_viec,
                    ng1.ho_ten AS nguoi_giao_ten,
                    GROUP_CONCAT(DISTINCT ng2.ho_ten ORDER BY ng2.ho_ten SEPARATOR ', ') AS nguoi_nhan_ten,
+                   GROUP_CONCAT(DISTINCT ng3.ho_ten ORDER BY ng3.ho_ten SEPARATOR ', ') AS nguoi_theo_doi_ten,
                    MAX(td.phan_tram) AS phan_tram,
                    pb.ten_phong AS ten_phong
             FROM cong_viec cv
@@ -485,13 +494,15 @@ public class KNCSDL {
             LEFT JOIN nhanvien ng1 ON cv.nguoi_giao_id = ng1.id
             LEFT JOIN cong_viec_nguoi_nhan cvnn ON cv.id = cvnn.cong_viec_id
             LEFT JOIN nhanvien ng2 ON cvnn.nhan_vien_id = ng2.id
+            LEFT JOIN cong_viec_nguoi_theo_doi cvntd ON cv.id = cvntd.cong_viec_id
+            LEFT JOIN nhanvien ng3 ON cvntd.nhan_vien_id = ng3.id
             LEFT JOIN cong_viec_tien_do td ON cv.id = td.cong_viec_id
             LEFT JOIN phong_ban pb ON cv.phong_ban_id = pb.id
             WHERE cv.tinh_trang IS NULL
               AND cv.du_an_id = ?
-              AND cv.id IN (
-                    SELECT cong_viec_id FROM cong_viec_nguoi_nhan WHERE nhan_vien_id = ?
-              )
+              AND (cv.nguoi_giao_id = ?
+                OR cv.id IN (SELECT cong_viec_id FROM cong_viec_nguoi_nhan WHERE nhan_vien_id = ?)
+                OR cv.id IN (SELECT cong_viec_id FROM cong_viec_nguoi_theo_doi WHERE nhan_vien_id = ?))
             GROUP BY cv.id
         """;
         }
@@ -500,6 +511,8 @@ public class KNCSDL {
             stmt.setInt(1, projectId);
             if (!isLead) {
                 stmt.setInt(2, userId);
+                stmt.setInt(3, userId);
+                stmt.setInt(4, userId);
             }
             return executeTaskQuery(stmt);
         }
@@ -519,6 +532,7 @@ public class KNCSDL {
                 task.put("mo_ta", rs.getString("mo_ta"));
                 task.put("nguoi_giao_id", rs.getString("nguoi_giao_ten"));
                 task.put("nguoi_nhan_ten", rs.getString("nguoi_nhan_ten"));
+                task.put("nguoi_theo_doi_ten", rs.getString("nguoi_theo_doi_ten"));
                 task.put("phan_tram", rs.getString("phan_tram"));
                 task.put("muc_do_uu_tien", rs.getString("muc_do_uu_tien"));
                 task.put("trang_thai", rs.getString("trang_thai"));
@@ -600,6 +614,55 @@ public class KNCSDL {
             ps.setInt(2, nhanVienId);
             ps.executeUpdate();
         }
+    }
+
+    // ===== NGƯỜI THEO DÕI =====
+    public void clearNguoiTheoDoi(int taskId) throws SQLException {
+        String sql = "DELETE FROM cong_viec_nguoi_theo_doi WHERE cong_viec_id=?";
+        try (PreparedStatement ps = cn.prepareStatement(sql)) {
+            ps.setInt(1, taskId);
+            ps.executeUpdate();
+        }
+    }
+
+    public void addNguoiTheoDoi(int taskId, int nhanVienId) throws SQLException {
+        String sql = "INSERT IGNORE INTO cong_viec_nguoi_theo_doi (cong_viec_id, nhan_vien_id) VALUES (?, ?)";
+        try (PreparedStatement ps = cn.prepareStatement(sql)) {
+            ps.setInt(1, taskId);
+            ps.setInt(2, nhanVienId);
+            ps.executeUpdate();
+        }
+    }
+
+    public void capNhatDanhSachNguoiTheoDoi(int congViecId, List<Integer> danhSachIdMoi) throws SQLException {
+        try (PreparedStatement deleteStmt = cn.prepareStatement("DELETE FROM cong_viec_nguoi_theo_doi WHERE cong_viec_id = ?")) {
+            deleteStmt.setInt(1, congViecId);
+            deleteStmt.executeUpdate();
+        }
+        String insertSql = "INSERT IGNORE INTO cong_viec_nguoi_theo_doi(cong_viec_id, nhan_vien_id) VALUES (?, ?)";
+        try (PreparedStatement insertStmt = cn.prepareStatement(insertSql)) {
+            for (Integer nhanId : danhSachIdMoi) {
+                insertStmt.setInt(1, congViecId);
+                insertStmt.setInt(2, nhanId);
+                insertStmt.addBatch();
+            }
+            insertStmt.executeBatch();
+        }
+    }
+
+    public String getDanhSachNguoiTheoDoi(int taskId) throws SQLException {
+        String sql = "SELECT GROUP_CONCAT(nv.ho_ten ORDER BY nv.ho_ten SEPARATOR ', ') AS ten_list "
+                + "FROM cong_viec_nguoi_theo_doi td JOIN nhanvien nv ON td.nhan_vien_id = nv.id "
+                + "WHERE td.cong_viec_id = ?";
+        try (PreparedStatement ps = cn.prepareStatement(sql)) {
+            ps.setInt(1, taskId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("ten_list");
+                }
+            }
+        }
+        return null;
     }
 
     // Sửa insertTask trả về id mới
@@ -1023,12 +1086,15 @@ public class KNCSDL {
                 .append("cv.trang_thai_duyet, cv.ly_do_duyet, cv.nhac_viec, cv.tinh_trang, ")
                 .append("ng1.ho_ten AS nguoi_giao_ten, ")
                 .append("GROUP_CONCAT(DISTINCT ng2.ho_ten ORDER BY ng2.ho_ten SEPARATOR ', ') AS nguoi_nhan_ten, ")
+                .append("GROUP_CONCAT(DISTINCT ng3.ho_ten ORDER BY ng3.ho_ten SEPARATOR ', ') AS nguoi_theo_doi_ten, ")
                 .append("MAX(td.phan_tram) AS phan_tram, ")
                 .append("pb.ten_phong AS ten_phong ")
                 .append("FROM cong_viec cv ")
                 .append("LEFT JOIN nhanvien ng1 ON cv.nguoi_giao_id = ng1.id ")
                 .append("LEFT JOIN cong_viec_nguoi_nhan cvnn ON cv.id = cvnn.cong_viec_id ")
                 .append("LEFT JOIN nhanvien ng2 ON cvnn.nhan_vien_id = ng2.id ")
+                .append("LEFT JOIN cong_viec_nguoi_theo_doi cvntd ON cv.id = cvntd.cong_viec_id ")
+                .append("LEFT JOIN nhanvien ng3 ON cvntd.nhan_vien_id = ng3.id ")
                 .append("LEFT JOIN cong_viec_tien_do td ON cv.id = td.cong_viec_id ")
                 .append("LEFT JOIN phong_ban pb ON cv.phong_ban_id = pb.id ")
                 .append("WHERE 1=1 ");
@@ -1074,6 +1140,7 @@ public class KNCSDL {
                     task.put("mo_ta", rs.getString("mo_ta"));
                     task.put("nguoi_giao_id", rs.getString("nguoi_giao_ten"));
                     task.put("nguoi_nhan_ten", rs.getString("nguoi_nhan_ten"));
+                    task.put("nguoi_theo_doi_ten", rs.getString("nguoi_theo_doi_ten"));
                     task.put("phan_tram", rs.getString("phan_tram"));
                     task.put("phong_ban_id", rs.getString("ten_phong"));
                     task.put("muc_do_uu_tien", rs.getString("muc_do_uu_tien"));
@@ -1119,17 +1186,22 @@ public class KNCSDL {
                 .append("cv.trang_thai_duyet, cv.ly_do_duyet, cv.nhac_viec, cv.tinh_trang, ")
                 .append("ng1.ho_ten AS nguoi_giao_ten, ")
                 .append("GROUP_CONCAT(DISTINCT ng2.ho_ten ORDER BY ng2.ho_ten SEPARATOR ', ') AS nguoi_nhan_ten, ")
+                .append("GROUP_CONCAT(DISTINCT ng3.ho_ten ORDER BY ng3.ho_ten SEPARATOR ', ') AS nguoi_theo_doi_ten, ")
                 .append("MAX(td.phan_tram) AS phan_tram, ")
                 .append("pb.ten_phong AS ten_phong ")
                 .append("FROM cong_viec cv ")
                 .append("LEFT JOIN nhanvien ng1 ON cv.nguoi_giao_id = ng1.id ")
                 .append("LEFT JOIN cong_viec_nguoi_nhan cvnn ON cv.id = cvnn.cong_viec_id ")
                 .append("LEFT JOIN nhanvien ng2 ON cvnn.nhan_vien_id = ng2.id ")
+                .append("LEFT JOIN cong_viec_nguoi_theo_doi cvntd ON cv.id = cvntd.cong_viec_id ")
+                .append("LEFT JOIN nhanvien ng3 ON cvntd.nhan_vien_id = ng3.id ")
                 .append("LEFT JOIN cong_viec_tien_do td ON cv.id = td.cong_viec_id ")
                 .append("LEFT JOIN phong_ban pb ON cv.phong_ban_id = pb.id ")
-                .append("WHERE cv.id IN (SELECT cong_viec_id FROM cong_viec_nguoi_nhan WHERE nhan_vien_id = ?) ");
+                .append("WHERE (cv.nguoi_giao_id = ? OR cv.id IN (SELECT cong_viec_id FROM cong_viec_nguoi_nhan WHERE nhan_vien_id = ?) OR cv.id IN (SELECT cong_viec_id FROM cong_viec_nguoi_theo_doi WHERE nhan_vien_id = ?)) ");
 
         List<Object> params = new ArrayList<>();
+        params.add(userId);
+        params.add(userId);
         params.add(userId);
 
         if (projectId != null && projectId != 0) {
@@ -1171,6 +1243,7 @@ public class KNCSDL {
                     task.put("mo_ta", rs.getString("mo_ta"));
                     task.put("nguoi_giao_id", rs.getString("nguoi_giao_ten"));
                     task.put("nguoi_nhan_ten", rs.getString("nguoi_nhan_ten"));  // 🔥 ĐÃ ĐẦY ĐỦ TOÀN BỘ
+                    task.put("nguoi_theo_doi_ten", rs.getString("nguoi_theo_doi_ten"));
                     task.put("phan_tram", rs.getString("phan_tram"));
                     task.put("phong_ban_id", rs.getString("ten_phong"));
                     task.put("muc_do_uu_tien", rs.getString("muc_do_uu_tien"));
@@ -1219,12 +1292,15 @@ public class KNCSDL {
                 .append("cv.trang_thai_duyet, cv.ly_do_duyet, cv.nhac_viec, cv.tinh_trang, ")
                 .append("ng1.ho_ten AS nguoi_giao_ten, ")
                 .append("GROUP_CONCAT(DISTINCT ng2.ho_ten ORDER BY ng2.ho_ten SEPARATOR ', ') AS nguoi_nhan_ten, ")
+                .append("GROUP_CONCAT(DISTINCT ng3.ho_ten ORDER BY ng3.ho_ten SEPARATOR ', ') AS nguoi_theo_doi_ten, ")
                 .append("MAX(td.phan_tram) AS phan_tram, ")
                 .append("pb.ten_phong AS ten_phong ")
                 .append("FROM cong_viec cv ")
                 .append("LEFT JOIN nhanvien ng1 ON cv.nguoi_giao_id = ng1.id ")
                 .append("LEFT JOIN cong_viec_nguoi_nhan cvnn ON cv.id = cvnn.cong_viec_id ")
                 .append("LEFT JOIN nhanvien ng2 ON cvnn.nhan_vien_id = ng2.id ")
+                .append("LEFT JOIN cong_viec_nguoi_theo_doi cvntd ON cv.id = cvntd.cong_viec_id ")
+                .append("LEFT JOIN nhanvien ng3 ON cvntd.nhan_vien_id = ng3.id ")
                 .append("LEFT JOIN cong_viec_tien_do td ON cv.id = td.cong_viec_id ")
                 .append("LEFT JOIN phong_ban pb ON cv.phong_ban_id = pb.id ")
                 .append("WHERE (cv.phong_ban_id = ? OR cvnn.nhan_vien_id = ?) ");
@@ -1268,6 +1344,7 @@ public class KNCSDL {
                     task.put("mo_ta", rs.getString("mo_ta"));
                     task.put("nguoi_giao_id", rs.getString("nguoi_giao_ten"));
                     task.put("nguoi_nhan_ten", rs.getString("nguoi_nhan_ten"));
+                    task.put("nguoi_theo_doi_ten", rs.getString("nguoi_theo_doi_ten"));
                     task.put("phan_tram", rs.getString("phan_tram"));
                     task.put("phong_ban_id", rs.getString("ten_phong"));
                     task.put("muc_do_uu_tien", rs.getString("muc_do_uu_tien"));
@@ -4042,6 +4119,7 @@ public class KNCSDL {
                 .append("cv.tai_lieu_cv, cv.file_tai_lieu, cv.ngay_bat_dau, cv.trang_thai_duyet, cv.ly_do_duyet, cv.ngay_gia_han, cv.han_hoan_thanh, cv.nhac_viec, ")
                 .append("ng1.ho_ten AS nguoi_giao_ten, ")
                 .append("GROUP_CONCAT(DISTINCT ng2.ho_ten ORDER BY ng2.ho_ten SEPARATOR ', ') AS nguoi_nhan_ten, ")
+                .append("GROUP_CONCAT(DISTINCT ng3.ho_ten ORDER BY ng3.ho_ten SEPARATOR ', ') AS nguoi_theo_doi_ten, ")
                 .append("MAX(td.phan_tram) AS phan_tram, ")
                 .append("da.ten_du_an AS ten_du_an, ")
                 .append("pb.ten_phong AS ten_phong ")
@@ -4049,6 +4127,8 @@ public class KNCSDL {
                 .append("LEFT JOIN nhanvien ng1 ON cv.nguoi_giao_id = ng1.id ")
                 .append("LEFT JOIN cong_viec_nguoi_nhan cvnn ON cv.id = cvnn.cong_viec_id ")
                 .append("LEFT JOIN nhanvien ng2 ON cvnn.nhan_vien_id = ng2.id ")
+                .append("LEFT JOIN cong_viec_nguoi_theo_doi cvntd ON cv.id = cvntd.cong_viec_id ")
+                .append("LEFT JOIN nhanvien ng3 ON cvntd.nhan_vien_id = ng3.id ")
                 .append("LEFT JOIN cong_viec_tien_do td ON cv.id = td.cong_viec_id ")
                 .append("LEFT JOIN phong_ban pb ON cv.phong_ban_id = pb.id ")
                 .append("LEFT JOIN du_an da ON cv.du_an_id = da.id ")
@@ -4072,6 +4152,7 @@ public class KNCSDL {
 
                     task.put("nguoi_giao_id", rs.getString("nguoi_giao_ten"));
                     task.put("nguoi_nhan_ten", rs.getString("nguoi_nhan_ten"));
+                    task.put("nguoi_theo_doi_ten", rs.getString("nguoi_theo_doi_ten"));
 
                     task.put("phan_tram", rs.getString("phan_tram"));
                     task.put("phong_ban_id", rs.getString("ten_phong"));
@@ -4131,12 +4212,15 @@ public class KNCSDL {
                 .append("cv.tai_lieu_cv, cv.file_tai_lieu, cv.han_hoan_thanh, cv.trang_thai_duyet, cv.ly_do_duyet, cv.ngay_gia_han, cv.ngay_bat_dau, cv.nhac_viec, ")
                 .append("ng1.ho_ten AS nguoi_giao_ten, ")
                 .append("GROUP_CONCAT(DISTINCT ng2.ho_ten ORDER BY ng2.ho_ten SEPARATOR ', ') AS nguoi_nhan_ten, ")
+                .append("GROUP_CONCAT(DISTINCT ng3.ho_ten ORDER BY ng3.ho_ten SEPARATOR ', ') AS nguoi_theo_doi_ten, ")
                 .append("MAX(td.phan_tram) AS phan_tram, ")
                 .append("pb.ten_phong AS ten_phong ")
                 .append("FROM cong_viec cv ")
                 .append("LEFT JOIN nhanvien ng1 ON cv.nguoi_giao_id = ng1.id ")
                 .append("LEFT JOIN cong_viec_nguoi_nhan cvnn ON cv.id = cvnn.cong_viec_id ")
                 .append("LEFT JOIN nhanvien ng2 ON cvnn.nhan_vien_id = ng2.id ")
+                .append("LEFT JOIN cong_viec_nguoi_theo_doi cvntd ON cv.id = cvntd.cong_viec_id ")
+                .append("LEFT JOIN nhanvien ng3 ON cvntd.nhan_vien_id = ng3.id ")
                 .append("LEFT JOIN cong_viec_tien_do td ON cv.id = td.cong_viec_id ")
                 .append("LEFT JOIN phong_ban pb ON cv.phong_ban_id = pb.id ")
                 .append("LEFT JOIN du_an da ON cv.du_an_id = da.id ");   // 🔥 THÊM JOIN
@@ -4171,6 +4255,7 @@ public class KNCSDL {
                     task.put("mo_ta", rs.getString("mo_ta"));
                     task.put("nguoi_giao_id", rs.getString("nguoi_giao_ten"));
                     task.put("nguoi_nhan_ten", rs.getString("nguoi_nhan_ten"));
+                    task.put("nguoi_theo_doi_ten", rs.getString("nguoi_theo_doi_ten"));
                     task.put("phan_tram", rs.getString("phan_tram"));
                     task.put("phong_ban_id", rs.getString("ten_phong"));
                     task.put("muc_do_uu_tien", rs.getString("muc_do_uu_tien"));
@@ -4643,6 +4728,7 @@ public class KNCSDL {
                 .append("cv.tai_lieu_cv, cv.file_tai_lieu, cv.ngay_bat_dau, cv.trang_thai_duyet, cv.ly_do_duyet, cv.ngay_gia_han, cv.han_hoan_thanh, ")
                 .append("ng1.ho_ten AS nguoi_giao_ten, ")
                 .append("GROUP_CONCAT(DISTINCT ng2.ho_ten ORDER BY ng2.ho_ten SEPARATOR ', ') AS nguoi_nhan_ten, ")
+                .append("GROUP_CONCAT(DISTINCT ng3.ho_ten ORDER BY ng3.ho_ten SEPARATOR ', ') AS nguoi_theo_doi_ten, ")
                 .append("MAX(td.phan_tram) AS phan_tram, ")
                 .append("da.ten_du_an AS ten_du_an, ")
                 .append("pb.ten_phong AS ten_phong ")
@@ -4650,6 +4736,8 @@ public class KNCSDL {
                 .append("LEFT JOIN nhanvien ng1 ON cv.nguoi_giao_id = ng1.id ")
                 .append("LEFT JOIN cong_viec_nguoi_nhan cvnn ON cv.id = cvnn.cong_viec_id ")
                 .append("LEFT JOIN nhanvien ng2 ON cvnn.nhan_vien_id = ng2.id ")
+                .append("LEFT JOIN cong_viec_nguoi_theo_doi cvntd ON cv.id = cvntd.cong_viec_id ")
+                .append("LEFT JOIN nhanvien ng3 ON cvntd.nhan_vien_id = ng3.id ")
                 .append("LEFT JOIN cong_viec_tien_do td ON cv.id = td.cong_viec_id ")
                 .append("LEFT JOIN phong_ban pb ON cv.phong_ban_id = pb.id ")
                 .append("LEFT JOIN du_an da ON cv.du_an_id = da.id ");
@@ -4682,6 +4770,7 @@ public class KNCSDL {
                     task.put("mo_ta", rs.getString("mo_ta"));
                     task.put("nguoi_giao_id", rs.getString("nguoi_giao_ten"));
                     task.put("nguoi_nhan_ten", rs.getString("nguoi_nhan_ten"));
+                    task.put("nguoi_theo_doi_ten", rs.getString("nguoi_theo_doi_ten"));
                     task.put("phan_tram", rs.getString("phan_tram"));
                     task.put("phong_ban_id", rs.getString("ten_phong"));
                     task.put("muc_do_uu_tien", rs.getString("muc_do_uu_tien"));
@@ -4735,12 +4824,15 @@ public class KNCSDL {
                 .append("cv.tai_lieu_cv, cv.file_tai_lieu, cv.ngay_bat_dau, cv.trang_thai_duyet, cv.ly_do_duyet, cv.ngay_gia_han, cv.han_hoan_thanh, ")
                 .append("ng1.ho_ten AS nguoi_giao_ten, ")
                 .append("GROUP_CONCAT(DISTINCT ng2.ho_ten ORDER BY ng2.ho_ten SEPARATOR ', ') AS nguoi_nhan_ten, ")
+                .append("GROUP_CONCAT(DISTINCT ng3.ho_ten ORDER BY ng3.ho_ten SEPARATOR ', ') AS nguoi_theo_doi_ten, ")
                 .append("MAX(td.phan_tram) AS phan_tram, ")
                 .append("pb.ten_phong AS ten_phong ")
                 .append("FROM cong_viec cv ")
                 .append("LEFT JOIN nhanvien ng1 ON cv.nguoi_giao_id = ng1.id ")
                 .append("LEFT JOIN cong_viec_nguoi_nhan cvnn ON cv.id = cvnn.cong_viec_id ")
                 .append("LEFT JOIN nhanvien ng2 ON cvnn.nhan_vien_id = ng2.id ")
+                .append("LEFT JOIN cong_viec_nguoi_theo_doi cvntd ON cv.id = cvntd.cong_viec_id ")
+                .append("LEFT JOIN nhanvien ng3 ON cvntd.nhan_vien_id = ng3.id ")
                 .append("LEFT JOIN cong_viec_tien_do td ON cv.id = td.cong_viec_id ")
                 .append("LEFT JOIN phong_ban pb ON cv.phong_ban_id = pb.id ")
                 .append("LEFT JOIN du_an da ON cv.du_an_id = da.id ");   // 🔥 Thêm JOIN
@@ -4778,6 +4870,7 @@ public class KNCSDL {
                     task.put("mo_ta", rs.getString("mo_ta"));
                     task.put("nguoi_giao_id", rs.getString("nguoi_giao_ten"));
                     task.put("nguoi_nhan_ten", rs.getString("nguoi_nhan_ten"));
+                    task.put("nguoi_theo_doi_ten", rs.getString("nguoi_theo_doi_ten"));
                     task.put("phan_tram", rs.getString("phan_tram"));
                     task.put("phong_ban_id", rs.getString("ten_phong"));
                     task.put("muc_do_uu_tien", rs.getString("muc_do_uu_tien"));
@@ -4846,12 +4939,15 @@ public class KNCSDL {
            cv.ngay_bat_dau, cv.han_hoan_thanh,
            ng1.ho_ten AS nguoi_giao_ten,
            GROUP_CONCAT(DISTINCT ng2.ho_ten ORDER BY ng2.ho_ten SEPARATOR ', ') AS nguoi_nhan_ten,
+           GROUP_CONCAT(DISTINCT ng3.ho_ten ORDER BY ng3.ho_ten SEPARATOR ', ') AS nguoi_theo_doi_ten,
            MAX(td.phan_tram) AS phan_tram,
            pb.ten_phong AS ten_phong
     FROM cong_viec cv
     LEFT JOIN nhanvien ng1 ON cv.nguoi_giao_id = ng1.id
     LEFT JOIN cong_viec_nguoi_nhan cvnn ON cv.id = cvnn.cong_viec_id
     LEFT JOIN nhanvien ng2 ON cvnn.nhan_vien_id = ng2.id
+    LEFT JOIN cong_viec_nguoi_theo_doi cvntd ON cv.id = cvntd.cong_viec_id
+    LEFT JOIN nhanvien ng3 ON cvntd.nhan_vien_id = ng3.id
     LEFT JOIN cong_viec_tien_do td ON cv.id = td.cong_viec_id
     LEFT JOIN phong_ban pb ON cv.phong_ban_id = pb.id
     LEFT JOIN du_an da ON cv.du_an_id = da.id
@@ -4860,7 +4956,7 @@ public class KNCSDL {
 
         // Nếu không phải ADMIN và không phải LEAD thì chỉ xem công việc liên quan
         if (!isAdmin && !isLead) {
-            sql.append(" AND (cv.phong_ban_id = ? OR cvnn.nhan_vien_id = ?) ");
+            sql.append(" AND (cv.nguoi_giao_id = ? OR cvnn.nhan_vien_id = ? OR cv.id IN (SELECT cong_viec_id FROM cong_viec_nguoi_theo_doi WHERE nhan_vien_id = ?)) ");
         }
 
         sql.append(" GROUP BY cv.id ");
@@ -4872,8 +4968,9 @@ public class KNCSDL {
             stmt.setString(3, tinhTrang);
 
             if (!isAdmin && !isLead) {
-                stmt.setInt(4, phongBanId);
+                stmt.setInt(4, userId);
                 stmt.setInt(5, userId);
+                stmt.setInt(6, userId);
             }
 
             try (ResultSet rs = stmt.executeQuery()) {
@@ -4887,6 +4984,7 @@ public class KNCSDL {
                     task.put("mo_ta", rs.getString("mo_ta"));
                     task.put("nguoi_giao_id", rs.getString("nguoi_giao_ten"));
                     task.put("nguoi_nhan_ten", rs.getString("nguoi_nhan_ten"));
+                    task.put("nguoi_theo_doi_ten", rs.getString("nguoi_theo_doi_ten"));
                     task.put("phan_tram", rs.getString("phan_tram"));
                     task.put("phong_ban_id", rs.getString("ten_phong"));
                     task.put("muc_do_uu_tien", rs.getString("muc_do_uu_tien"));

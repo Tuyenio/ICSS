@@ -294,7 +294,8 @@ document.addEventListener("DOMContentLoaded", function () {
         const hanHT = button.getAttribute("data-han") || "";
         const uuTien = button.getAttribute("data-uu-tien") || "";
         const nguoiGiao = button.getAttribute("data-ten_nguoi_giao") || "";
-        const nguoiNhan = button.getAttribute("data-ten_nguoi_nhan") || ""; // nhiều tên, ngăn cách dấu phẩy
+        const nguoiNhan = button.getAttribute("data-ten_nguoi_nhan") || "";
+        const nguoiTheoDoi = button.getAttribute("data-ten_nguoi_theo_doi") || "";
         const phongban = button.getAttribute("data-ten_phong_ban") || "";
         const trangthai = button.getAttribute("data-trang-thai") || "";
         const tailieu = button.getAttribute("data-tai_lieu_cv") || "";
@@ -488,6 +489,41 @@ document.addEventListener("DOMContentLoaded", function () {
 
         capNhatHiddenInput();
 
+        // --- Xử lý người theo dõi ---
+        const danhSachTheoDoiDiv = modal.querySelector("#danhSachNguoiTheoDoi");
+        const hiddenTheoDoi = modal.querySelector("#nguoiTheoDoiHidden");
+        if (danhSachTheoDoiDiv && hiddenTheoDoi) {
+            danhSachTheoDoiDiv.innerHTML = "";
+            hiddenTheoDoi.value = "";
+            const theoDoiArray = nguoiTheoDoi.split(",").map(x => x.trim()).filter(Boolean);
+            function capNhatHiddenTheoDoi() {
+                const tags = danhSachTheoDoiDiv.querySelectorAll("span[data-ten]");
+                const values = [];
+                tags.forEach(tag => values.push(tag.getAttribute("data-ten")));
+                hiddenTheoDoi.value = values.join(",");
+            }
+            theoDoiArray.forEach(function (ten) {
+                const tag = document.createElement("span");
+                tag.className = "badge bg-secondary d-flex align-items-center me-2";
+                tag.style.padding = "0.5em 0.75em";
+                tag.setAttribute("data-ten", ten);
+                const tenNode = document.createElement("span");
+                tenNode.textContent = ten;
+                const closeBtn = document.createElement("button");
+                closeBtn.type = "button";
+                closeBtn.className = "btn btn-sm btn-close ms-2";
+                closeBtn.setAttribute("aria-label", "Xóa");
+                closeBtn.addEventListener("click", function () {
+                    tag.remove();
+                    capNhatHiddenTheoDoi();
+                });
+                tag.appendChild(tenNode);
+                tag.appendChild(closeBtn);
+                danhSachTheoDoiDiv.appendChild(tag);
+            });
+            capNhatHiddenTheoDoi();
+        }
+
         // Mở lại tab đầu tiên khi show modal
         const tabTrigger = modal.querySelector('#tab-task-info');
         if (tabTrigger)
@@ -525,6 +561,26 @@ document.getElementById("btnOpenNguoiNhanDetail").addEventListener("click", func
     syncNguoiNhanCheckboxes("nguoiNhanHidden"); // tick theo hidden của form chi tiết
     new bootstrap.Modal(document.getElementById("modalChonNguoiNhan")).show();
 });
+
+// Người theo dõi - Create
+const btnOpenNguoiTheoDoiCreate = document.getElementById("btnOpenNguoiTheoDoiCreate");
+if (btnOpenNguoiTheoDoiCreate) {
+    btnOpenNguoiTheoDoiCreate.addEventListener("click", function () {
+        currentTarget = "theo_doi_create";
+        syncNguoiNhanCheckboxes("nguoiTheoDoiHidden2");
+        new bootstrap.Modal(document.getElementById("modalChonNguoiNhan")).show();
+    });
+}
+
+// Người theo dõi - Detail
+const btnOpenNguoiTheoDoiDetail = document.getElementById("btnOpenNguoiTheoDoiDetail");
+if (btnOpenNguoiTheoDoiDetail) {
+    btnOpenNguoiTheoDoiDetail.addEventListener("click", function () {
+        currentTarget = "theo_doi_detail";
+        syncNguoiNhanCheckboxes("nguoiTheoDoiHidden");
+        new bootstrap.Modal(document.getElementById("modalChonNguoiNhan")).show();
+    });
+}
 document.getElementById("btnOpenNguoiNhanProcess").addEventListener("click", function () {
     currentTarget = "process";
     syncNguoiNhanCheckboxes("nguoiNhanProcessHidden");
@@ -567,6 +623,12 @@ document.getElementById("btnXacNhanNguoiNhan").addEventListener("click", functio
         // NEW: khi gọi từ modal sửa bước
         danhSachDiv = document.getElementById("danhSachNguoiNhanEdit");
         hiddenInput = document.getElementById("nguoiNhanEditHidden");
+    } else if (currentTarget === "theo_doi_create") {
+        danhSachDiv = document.getElementById("danhSachNguoiTheoDoi2");
+        hiddenInput = document.getElementById("nguoiTheoDoiHidden2");
+    } else if (currentTarget === "theo_doi_detail") {
+        danhSachDiv = document.getElementById("danhSachNguoiTheoDoi");
+        hiddenInput = document.getElementById("nguoiTheoDoiHidden");
     }
 
     if (!danhSachDiv || !hiddenInput) {
@@ -800,6 +862,7 @@ function renderListViewFromJson(tasks) {
                 // 🔹 Dùng tên đầy đủ thay vì ID
                 + ' data-ten_nguoi_giao="' + (task.ten_nguoi_giao || task.nguoi_giao_id || '') + '"'
                 + ' data-ten_nguoi_nhan="' + (task.ten_nguoi_nhan || task.nguoi_nhan_ten || '') + '"'
+                + ' data-ten_nguoi_theo_doi="' + (task.nguoi_theo_doi_ten || task.ten_nguoi_theo_doi || '') + '"'
                 + ' data-ten_phong_ban="' + (task.ten_phong_ban || task.phong_ban_id || '') + '"'
                 + ' data-trang-thai="' + (task.trang_thai || '') + '"'
                 + ' data-tai_lieu_cv="' + (task.tai_lieu_cv || '') + '"'
@@ -867,6 +930,7 @@ function renderCalendarViewFromJson(tasks) {
             extendedProps: {
                 nguoiGiao: task.ten_nguoi_giao || task.nguoi_giao_ten || task.nguoi_giao_id || '',
                 nguoiNhan: task.ten_nguoi_nhan || task.nguoi_nhan_ten || task.nguoi_nhan || '',
+                nguoiTheoDoi: task.nguoi_theo_doi_ten || task.ten_nguoi_theo_doi || '',
                 phongBan: task.ten_phong_ban || task.phong_ban_ten || task.phong_ban_id || '',
                 uuTien: task.muc_do_uu_tien || '',
                 trangThai: task.trang_thai || '',

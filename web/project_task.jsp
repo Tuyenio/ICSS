@@ -1841,6 +1841,7 @@
                                                  data-uu-tien="<%= task.get("muc_do_uu_tien") %>"
                                                  data-ten_nguoi_giao="<%= task.get("nguoi_giao_id") %>"
                                                  data-ten_nguoi_nhan="<%= task.get("nguoi_nhan_ten") %>"
+                                                 data-ten_nguoi_theo_doi="<%= task.get("nguoi_theo_doi_ten") != null ? task.get("nguoi_theo_doi_ten") : "" %>"
                                                  data-ten_phong_ban="<%= task.get("phong_ban_id") %>"
                                                  data-trang-thai="<%= task.get("trang_thai") %>"
                                                  data-trang-thai-duyet="<%= trangThaiDuyet %>"
@@ -1852,7 +1853,7 @@
                                                 </div>
                                                 <% } %>
                                                 <div class="task-title"><%= task.get("ten_cong_viec") %></div>
-                                                <div class="task-meta">Người giao: <b><%= task.get("nguoi_giao_id") %></b><br>Người nhận: <b><%= task.get("nguoi_nhan_ten") %></b></div>
+                                                <div class="task-meta">Người giao: <b><%= task.get("nguoi_giao_id") %></b><br>Người nhận: <b><%= task.get("nguoi_nhan_ten") %></b><br>Người theo dõi: <b><%= task.get("nguoi_theo_doi_ten") != null ? task.get("nguoi_theo_doi_ten") : "" %></b></div>
                                                 <span class="task-priority badge <%= priorityBadge.getOrDefault(task.get("muc_do_uu_tien"), "bg-secondary") %>"><%= task.get("muc_do_uu_tien") %></span>
                                                 <span class="task-status badge <%= badgeClass.getOrDefault(status, "bg-secondary") %>"><%= trangThaiLabels.get(status) %></span>
                                                 <span class="badge <%= duyetBadgeClass %> ms-1"><%= trangThaiDuyet %></span>
@@ -1949,6 +1950,7 @@
                                                 data-uu-tien="<%= task.get("muc_do_uu_tien") %>"
                                                 data-ten_nguoi_giao="<%= task.get("nguoi_giao_id") %>"
                                                 data-ten_nguoi_nhan="<%= task.get("nguoi_nhan_ten") %>"
+                                                data-ten_nguoi_theo_doi="<%= task.get("nguoi_theo_doi_ten") != null ? task.get("nguoi_theo_doi_ten") : "" %>"
                                                 data-ten_phong_ban="<%= task.get("phong_ban_id") %>"
                                                 data-trang-thai="<%= task.get("trang_thai") %>"
                                                 data-trang-thai-duyet="<%= trangThaiDuyet %>"
@@ -2039,6 +2041,7 @@
                                          data-uu-tien="<%= task.get("muc_do_uu_tien") %>"
                                          data-ten_nguoi_giao="<%= task.get("nguoi_giao_id") %>"
                                          data-ten_nguoi_nhan="<%= task.get("nguoi_nhan_ten") %>"
+                                         data-ten_nguoi_theo_doi="<%= task.get("nguoi_theo_doi_ten") != null ? task.get("nguoi_theo_doi_ten") : "" %>"
                                          data-ten_phong_ban="<%= task.get("phong_ban_id") %>"
                                          data-trang-thai="<%= task.get("trang_thai") %>"
                                          data-tai_lieu_cv="<%= task.get("tai_lieu_cv") %>"
@@ -2058,6 +2061,7 @@
                                              data-uu-tien="<%= task.get("muc_do_uu_tien") %>"
                                              data-ten_nguoi_giao="<%= task.get("nguoi_giao_id") %>"
                                              data-ten_nguoi_nhan="<%= task.get("nguoi_nhan_ten") %>"
+                                             data-ten_nguoi_theo_doi="<%= task.get("nguoi_theo_doi_ten") != null ? task.get("nguoi_theo_doi_ten") : "" %>"
                                              data-ten_phong_ban="<%= task.get("phong_ban_id") %>"
                                              data-trang-thai="<%= task.get("trang_thai") %>"
                                              data-trang-thai-duyet="<%= task.get("trang_thai_duyet") != null ? task.get("trang_thai_duyet").toString() : "Chưa duyệt" %>"
@@ -2066,7 +2070,8 @@
 
                                             <div class="task-title"><%= task.get("ten_cong_viec") %></div>
                                             <div class="task-meta">Người giao: <b><%= task.get("nguoi_giao_id") %></b><br>
-                                                Người nhận: <b><%= task.get("nguoi_nhan_ten") %></b></div>
+                                                Người nhận: <b><%= task.get("nguoi_nhan_ten") %></b><br>
+                                                Người theo dõi: <b><%= task.get("nguoi_theo_doi_ten") != null ? task.get("nguoi_theo_doi_ten") : "" %></b></div>
 
                                             <span class="task-priority badge <%= priorityBadge.getOrDefault(task.get("muc_do_uu_tien"), "bg-secondary") %>">
                                                 <%= task.get("muc_do_uu_tien") %>
@@ -2163,6 +2168,7 @@
                                          data-uu-tien="<%= task.get("muc_do_uu_tien") %>"
                                          data-ten_nguoi_giao="<%= task.get("nguoi_giao_id") %>"
                                          data-ten_nguoi_nhan="<%= task.get("nguoi_nhan_ten") %>"
+                                         data-ten_nguoi_theo_doi="<%= task.get("nguoi_theo_doi_ten") != null ? task.get("nguoi_theo_doi_ten") : "" %>"
                                          data-ten_phong_ban="<%= task.get("phong_ban_id") %>"
                                          data-trang-thai="<%= task.get("trang_thai") %>"
                                          data-tai_lieu_cv="<%= task.get("tai_lieu_cv") %>"
@@ -2181,6 +2187,7 @@
                                              data-uu-tien="<%= task.get("muc_do_uu_tien") %>"
                                              data-ten_nguoi_giao="<%= task.get("nguoi_giao_id") %>"
                                              data-ten_nguoi_nhan="<%= task.get("nguoi_nhan_ten") %>"
+                                             data-ten_nguoi_theo_doi="<%= task.get("nguoi_theo_doi_ten") != null ? task.get("nguoi_theo_doi_ten") : "" %>"
                                              data-ten_phong_ban="<%= task.get("phong_ban_id") %>"
                                              data-trang-thai="<%= task.get("trang_thai") %>"
                                              data-trang-thai-duyet="<%= task.get("trang_thai_duyet") != null ? task.get("trang_thai_duyet").toString() : "Chưa duyệt" %>"
@@ -2190,7 +2197,8 @@
                                             <div class="task-title"><%= task.get("ten_cong_viec") %></div>
                                             <div class="task-meta">
                                                 Người giao: <b><%= task.get("nguoi_giao_id") %></b><br>
-                                                Người nhận: <b><%= task.get("nguoi_nhan_ten") %></b>
+                                                Người nhận: <b><%= task.get("nguoi_nhan_ten") %></b><br>
+                                                Người theo dõi: <b><%= task.get("nguoi_theo_doi_ten") != null ? task.get("nguoi_theo_doi_ten") : "" %></b>
                                             </div>
 
                                             <span class="task-priority badge <%= priorityBadge.getOrDefault(task.get("muc_do_uu_tien"), "bg-secondary") %>">
@@ -2311,6 +2319,7 @@
                                              data-uu-tien="<%= task.get("muc_do_uu_tien") %>"
                                              data-ten_nguoi_giao="<%= task.get("nguoi_giao_id") %>"
                                              data-ten_nguoi_nhan="<%= task.get("nguoi_nhan_ten") %>"
+                                             data-ten_nguoi_theo_doi="<%= task.get("nguoi_theo_doi_ten") != null ? task.get("nguoi_theo_doi_ten") : "" %>"
                                              data-ten_phong_ban="<%= task.get("phong_ban_id") %>"
                                              data-trang-thai="<%= task.get("trang_thai") %>"
                                              data-trang-thai-duyet="<%= trangThaiDuyet %>"
@@ -2321,7 +2330,8 @@
 
                                             <div class="task-meta">
                                                 Người giao: <b><%= task.get("nguoi_giao_id") %></b><br>
-                                                Người nhận: <b><%= task.get("nguoi_nhan_ten") %></b>
+                                                Người nhận: <b><%= task.get("nguoi_nhan_ten") %></b><br>
+                                                Người theo dõi: <b><%= task.get("nguoi_theo_doi_ten") != null ? task.get("nguoi_theo_doi_ten") : "" %></b>
                                             </div>
 
                                             <span class="task-priority badge <%= priorityBadge.getOrDefault(task.get("muc_do_uu_tien"), "bg-secondary") %>">
@@ -2432,6 +2442,14 @@
                                                 <!-- Tag tên người nhận sẽ hiển thị ở đây -->
                                             </div>
                                             <input type="hidden" name="ten_nguoi_nhan" id="nguoiNhanHidden2">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label"><b>Người theo dõi</b></label>
+                                            <button type="button" class="btn btn-outline-secondary" id="btnOpenNguoiTheoDoiCreate">
+                                                <i class="fa-solid fa-eye"></i> Thêm người theo dõi
+                                            </button>
+                                            <div id="danhSachNguoiTheoDoi2" class="d-flex flex-wrap gap-2 mt-2"></div>
+                                            <input type="hidden" name="ten_nguoi_theo_doi" id="nguoiTheoDoiHidden2">
                                         </div>
                                         <div class="mb-3">
                                             <label class="form-label"><b>Phòng ban</b></label>
@@ -2613,6 +2631,15 @@
                                                         <!-- Tag tên người nhận sẽ hiển thị ở đây -->
                                                     </div>
                                                     <input type="hidden" name="ten_nguoi_nhan" id="nguoiNhanHidden">
+                                                </div>
+
+                                                <div class="mb-2">
+                                                    <label class="form-label"><b>Người theo dõi</b></label>
+                                                    <button type="button" class="btn btn-outline-secondary btn-sm" id="btnOpenNguoiTheoDoiDetail">
+                                                        <i class="fa-solid fa-eye"></i> Thêm người theo dõi
+                                                    </button>
+                                                    <div id="danhSachNguoiTheoDoi" class="d-flex flex-wrap gap-2 mt-2"></div>
+                                                    <input type="hidden" name="ten_nguoi_theo_doi" id="nguoiTheoDoiHidden">
                                                 </div>
 
                                                 <div class="mb-2">
@@ -2882,6 +2909,7 @@
                         extendedProps: {
                             nguoiGiao: '<%= task.get("nguoi_giao_id") %>',
                             nguoiNhan: '<%= task.get("nguoi_nhan_ten") %>',
+                            nguoiTheoDoi: '<%= task.get("nguoi_theo_doi_ten") != null ? task.get("nguoi_theo_doi_ten").toString().replace("'", "\\'") : "" %>',
                             phongBan: '<%= task.get("phong_ban_id") %>',
                             uuTien: '<%= task.get("muc_do_uu_tien") %>',
                             trangThai: '<%= task.get("trang_thai") %>',
@@ -2929,6 +2957,7 @@
                             tempBtn.setAttribute('data-uu-tien', props.uuTien || '');
                             tempBtn.setAttribute('data-ten_nguoi_giao', props.nguoiGiao || '');
                             tempBtn.setAttribute('data-ten_nguoi_nhan', props.nguoiNhan || '');
+                            tempBtn.setAttribute('data-ten_nguoi_theo_doi', props.nguoiTheoDoi || '');
                             tempBtn.setAttribute('data-ten_phong_ban', props.phongBan || '');
                             tempBtn.setAttribute('data-trang-thai', props.trangThai || '');
                             tempBtn.setAttribute('data-tai_lieu_cv', props.taiLieu || '');

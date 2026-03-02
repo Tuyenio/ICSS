@@ -275,6 +275,7 @@ public class suaCongviec extends HttpServlet {
                 String uuTien = getValue(request, "muc_do_uu_tien");
                 String tenNguoiGiao = getValue(request, "ten_nguoi_giao");
                 String dsTenNguoiNhan = getValue(request, "ten_nguoi_nhan");
+                String dsTenNguoiTheoDoi = getValue(request, "ten_nguoi_theo_doi");
                 String tenPhong = getValue(request, "ten_phong_ban");
                 String trangThai = getValue(request, "trang_thai");
                 String tailieu = getValue(request, "tai_lieu_cv");
@@ -321,6 +322,23 @@ public class suaCongviec extends HttpServlet {
                         link = "dsCongviecNV?taskId=" + taskId;
                     }
                     db.insertThongBao(nhanId, tieuDeTB, noiDungTB, "Cập nhật", link);
+                }
+
+                // 4b: Cập nhật người theo dõi + thông báo
+                if (dsTenNguoiTheoDoi == null) dsTenNguoiTheoDoi = "";
+                List<Integer> danhSachIdTheoDoi = db.layIdTuDanhSachTen(dsTenNguoiTheoDoi);
+                db.capNhatDanhSachNguoiTheoDoi(taskId, danhSachIdTheoDoi);
+                for (int theoId : danhSachIdTheoDoi) {
+                    String tieuDeTBTheo = "Cập nhật công việc";
+                    String noiDungTBTheo = "Công việc bạn đang theo dõi: " + ten + " vừa được cập nhật.";
+                    String roleTheo = db.getVaiTroById(theoId);
+                    String linkTheo = "";
+                    if (roleTheo != null && (roleTheo.equalsIgnoreCase("Admin") || roleTheo.equalsIgnoreCase("Quản lý"))) {
+                        linkTheo = "dsCongviec?taskId=" + taskId;
+                    } else {
+                        linkTheo = "dsCongviecNV?taskId=" + taskId;
+                    }
+                    db.insertThongBao(theoId, tieuDeTBTheo, noiDungTBTheo, "Cập nhật", linkTheo);
                 }
 
                 // 5: Ghi lịch sử thay đổi CHI TIẾT từng trường

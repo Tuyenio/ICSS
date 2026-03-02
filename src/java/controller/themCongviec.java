@@ -32,6 +32,7 @@ public class themCongviec extends HttpServlet {
         String uuTien = getValue(request, "muc_do_uu_tien");
         String tenNguoiGiao = getValue(request, "ten_nguoi_giao");
         String dsNguoiNhan = getValue(request, "ten_nguoi_nhan");
+        String dsNguoiTheoDoi = getValue(request, "ten_nguoi_theo_doi");
         String tenPhong = getValue(request, "ten_phong_ban");
         String trangThai = "Chưa bắt đầu";
         String tailieu = getValue(request, "tai_lieu_cv"); // link driver
@@ -62,6 +63,9 @@ public class themCongviec extends HttpServlet {
             }
             if (dsNguoiNhan == null) {
                 dsNguoiNhan = request.getParameter("ten_nguoi_nhan");
+            }
+            if (dsNguoiTheoDoi == null) {
+                dsNguoiTheoDoi = request.getParameter("ten_nguoi_theo_doi");
             }
             if (tenPhong == null) {
                 tenPhong = request.getParameter("ten_phong_ban");
@@ -202,7 +206,31 @@ public class themCongviec extends HttpServlet {
                 }
             }
 
-            // === 4. Ghi log lịch sử tạo công việc ===
+            // === 4. Thêm người theo dõi + thông báo ===
+            if (dsNguoiTheoDoi != null && !dsNguoiTheoDoi.trim().isEmpty()) {
+                for (String tenTheo : dsNguoiTheoDoi.split(",")) {
+                    tenTheo = tenTheo.trim();
+                    if (tenTheo.isEmpty()) {
+                        continue;
+                    }
+                    int theoId = db.getNhanVienIdByName(tenTheo);
+                    if (theoId > 0) {
+                        db.addNguoiTheoDoi(taskId, theoId);
+                        String tieuDeTB = "Công việc mới cần theo dõi";
+                        String noiDungTB = "Bạn đang theo dõi công việc: " + ten + ". Hạn: " + han + ".";
+                        String role = db.getVaiTroById(theoId);
+                        String link = "";
+                        if (role != null && (role.equalsIgnoreCase("Admin") || role.equalsIgnoreCase("Quản lý"))) {
+                            link = "dsCongviec?taskId=" + taskId;
+                        } else {
+                            link = "dsCongviecNV?taskId=" + taskId;
+                        }
+                        db.insertThongBao(theoId, tieuDeTB, noiDungTB, "Công việc mới", link);
+                    }
+                }
+            }
+
+            // === 5. Ghi log lịch sử tạo công việc ===
             HttpSession session = request.getSession(false);
             int userId = 0;
             if (session != null && session.getAttribute("userId") != null) {
@@ -215,6 +243,9 @@ public class themCongviec extends HttpServlet {
                 String logMsg = "🆕 Tạo mới công việc: '" + ten + "' | Deadline: " + han + " | Độ ưu tiên: " + uuTien;
                 if (dsNguoiNhan != null && !dsNguoiNhan.trim().isEmpty()) {
                     logMsg += " | Người nhận: " + dsNguoiNhan;
+                }
+                if (dsNguoiTheoDoi != null && !dsNguoiTheoDoi.trim().isEmpty()) {
+                    logMsg += " | Người theo dõi: " + dsNguoiTheoDoi;
                 }
                 db.themLichSuCongViec(taskId, userId, logMsg);
             }
