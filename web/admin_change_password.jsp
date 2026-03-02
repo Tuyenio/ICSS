@@ -109,5 +109,5 @@
 
     </body>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="<%= request.getContextPath() %>/scripts/admin_change_pw.obf.js?v=20251105"></script>
+    <script src="<%= request.getContextPath() %>/scripts/admin_change_pw.js?v=<%= System.currentTimeMillis() %>"></script>
 </html>

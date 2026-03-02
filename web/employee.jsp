@@ -859,7 +859,7 @@
         <script>
             const USER_PERMISSIONS = <%= session.getAttribute("quyen") %>;
         </script>
-        <script src="<%= request.getContextPath() %>/scripts/employee.js?v=20251105"></script>
+        <script src="<%= request.getContextPath() %>/scripts/employee.js?v=<%= System.currentTimeMillis() %>"></script>
     </body>
 
 </html>

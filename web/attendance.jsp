@@ -648,7 +648,7 @@
                 }
             });
         </script>
-        <script src="<%= request.getContextPath() %>/scripts/attendance.js?v=20251105"></script>
+        <script src="<%= request.getContextPath() %>/scripts/attendance.js?v=<%= System.currentTimeMillis() %>"></script>
 
     </body>
 </html>
