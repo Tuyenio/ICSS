@@ -582,7 +582,9 @@
                                 <button class="btn-action btn-edit" onclick="event.stopPropagation(); editProject(<%= p.get("id") %>);">
                                     <i class="fa-solid fa-pen"></i> Sửa
                                 </button>
-                                <!-- Button xóa đã bị ẩn cho nhân viên -->
+                                <button class="btn-action btn-delete delete-project-btn" data-id="<%= p.get("id") %>" onclick="event.stopPropagation(); deleteProject(<%= p.get("id") %>);">
+                                    <i class="fa-solid fa-trash"></i> Xóa
+                                </button>
                             </div>
                         </div>
                         
@@ -664,7 +666,7 @@
                                             <button class="btn btn-sm btn-warning" onclick="event.stopPropagation(); editProject(<%= p.get("id") %>);">
                                                 <i class="fa-solid fa-pen"></i>
                                             </button>
-                                            <button class="btn btn-sm btn-danger delete-project-btn" data-id="<%= p.get("id") %>">
+                                            <button class="btn btn-sm btn-danger delete-project-btn" data-id="<%= p.get("id") %>" onclick="event.stopPropagation(); deleteProject(<%= p.get("id") %>);">
                                                 <i class="fa-solid fa-trash"></i>
                                             </button>
                                         </div>
@@ -791,6 +793,21 @@
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
                     </div>
+                </div>
+            </div>
+        </div>
+        <!-- Toast thông báo -->
+        <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 9999;">
+            <div id="toastSuccess" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="3000">
+                <div class="d-flex">
+                    <div class="toast-body"><i class="fa-solid fa-circle-check me-2"></i><span></span></div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            </div>
+            <div id="toastError" class="toast align-items-center text-bg-danger border-0" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="4000">
+                <div class="d-flex">
+                    <div class="toast-body"><i class="fa-solid fa-circle-xmark me-2"></i><span></span></div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
                 </div>
             </div>
         </div>

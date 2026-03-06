@@ -24,8 +24,8 @@ public class KNCSDL {
 
     public KNCSDL() throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
-        this.cn = DriverManager.getConnection(path, "root", "");
-        //this.cn = DriverManager.getConnection(path, "icssapp", "StrongPass!2025");
+        //this.cn = DriverManager.getConnection(path, "root", "");
+        this.cn = DriverManager.getConnection(path, "icssapp", "StrongPass!2025");
     }
 
     public ResultSet laydl(String email) throws SQLException {
@@ -4291,7 +4291,13 @@ public class KNCSDL {
 
     // Lấy chi tiết dự án
     public Map<String, Object> getProjectById(int id) throws SQLException {
-        String sql = "SELECT * FROM du_an WHERE id = ?";
+        String sql = "SELECT da.*, nv.ho_ten AS lead_ten, COALESCE(AVG(cvtd.phan_tram), 0) AS tien_do "
+                   + "FROM du_an da "
+                   + "LEFT JOIN nhanvien nv ON nv.id = da.lead_id "
+                   + "LEFT JOIN cong_viec cv ON cv.du_an_id = da.id "
+                   + "LEFT JOIN cong_viec_tien_do cvtd ON cvtd.cong_viec_id = cv.id "
+                   + "WHERE da.id = ? "
+                   + "GROUP BY da.id";
         try (PreparedStatement ps = cn.prepareStatement(sql)) {
             ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
@@ -4302,6 +4308,8 @@ public class KNCSDL {
                     project.put("mo_ta", rs.getString("mo_ta"));
                     project.put("muc_do_uu_tien", rs.getString("muc_do_uu_tien"));
                     project.put("lead_id", rs.getInt("lead_id"));
+                    project.put("lead_ten", rs.getString("lead_ten"));
+                    project.put("tien_do", rs.getInt("tien_do"));
                     project.put("nhom_du_an", rs.getString("nhom_du_an"));
                     project.put("trang_thai_duan", rs.getString("trang_thai_duan"));
                     project.put("phong_ban", rs.getString("phong_ban"));

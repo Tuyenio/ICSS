@@ -42,11 +42,13 @@ $(document).on("click", ".project-row", function (e) {
 // Hàm hiển thị toast
 function showToast(type, message) {
     if (type === 'success') {
-        $('#toastSuccess .toast-body').text(message);
-        $('#toastSuccess').toast('show');
+        $('#toastSuccess .toast-body span').text(message);
+        var t = new bootstrap.Toast(document.getElementById('toastSuccess'));
+        t.show();
     } else {
-        $('#toastError .toast-body').text(message);
-        $('#toastError').toast('show');
+        $('#toastError .toast-body span').text(message);
+        var t = new bootstrap.Toast(document.getElementById('toastError'));
+        t.show();
     }
 }
 
@@ -191,15 +193,16 @@ function showProjectDetail(event, projectId) {
     $.getJSON("chitietDuan", {id: projectId}, function (project) {
 
         if (project && !project.error) {
-            $("#detailTenDuAn").text(project.ten_du_an);
-            $("#detailMoTa").text(project.mo_ta ? project.mo_ta : "Chưa có mô tả");
-            $("#detailNgayBatDau").text(project.ngay_bat_dau ? project.ngay_bat_dau : "");
-            $("#detailNgayKetThuc").text(project.ngay_ket_thuc ? project.ngay_ket_thuc : "");
-            $("#detailNgayTao").text(project.ngay_tao ? project.ngay_tao : "");
-            $("#detailTongCongViec").text(project.tong_cong_viec ? project.tong_cong_viec : 0);
-            $("#detailNhomDuAn").text(project.nhom_du_an);
-            $("#detailPhongBan").text(project.phong_ban ? project.phong_ban : "Chưa phân");
-            $("#detailTongNguoi").text(project.tong_nguoi ? project.tong_nguoi : 0);
+            $("#detail_ten_du_an").text(project.ten_du_an);
+            $("#detail_mo_ta").text(project.mo_ta ? project.mo_ta : "Chưa có mô tả");
+            $("#detail_lead").text(project.lead_ten ? project.lead_ten : "Chưa có");
+            $("#detail_nhom").text(project.nhom_du_an ? project.nhom_du_an : "Chưa có");
+            $("#detail_phong_ban").text(project.phong_ban ? project.phong_ban : "Chưa phân");
+            $("#detail_trang_thai").text(project.trang_thai_duan ? project.trang_thai_duan : "");
+            $("#detail_uu_tien").text(project.muc_do_uu_tien ? project.muc_do_uu_tien : "");
+            $("#detail_ngay_bat_dau").text(project.ngay_bat_dau ? project.ngay_bat_dau : "");
+            $("#detail_ngay_ket_thuc").text(project.ngay_ket_thuc ? project.ngay_ket_thuc : "");
+            $("#detail_tien_do").text(project.tien_do !== undefined ? project.tien_do : 0);
 
             // Bootstrap 5 API để mở modal
             var modal = new bootstrap.Modal(document.getElementById("modalProjectDetail"));

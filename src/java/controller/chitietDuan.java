@@ -32,7 +32,9 @@ public class chitietDuan extends HttpServlet {
                 json.append("\"ngay_ket_thuc\":\"").append(project.get("ngay_ket_thuc")).append("\",");
                 json.append("\"ngay_tao\":\"").append(project.get("ngay_tao")).append("\",");
                 json.append("\"tong_cong_viec\":").append(project.get("tong_cong_viec")).append(",");
-                json.append("\"tong_nguoi\":").append(project.get("tong_nguoi"));
+                json.append("\"tong_nguoi\":").append(project.get("tong_nguoi")).append(",");
+                json.append("\"lead_ten\":\"").append(escapeJson(project.get("lead_ten"))).append("\",");
+                json.append("\"tien_do\":").append(project.get("tien_do") != null ? project.get("tien_do") : 0);
                 json.append("}");
 
                 out.write(json.toString());
