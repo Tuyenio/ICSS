@@ -1,3 +1,4 @@
 /dist/
 /build/
 server.txt
+push_and_deploy.py
