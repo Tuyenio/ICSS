@@ -1834,6 +1834,8 @@ public class KNCSDL {
         sql.append(" ORDER BY nv.ho_ten ");
 
         // Thực thi
+        Map<String, Map<String, Object>> existingByEmployeeDate = new HashMap<>();
+
         try (PreparedStatement stmt = cn.prepareStatement(sql.toString())) {
             for (int i = 0; i < params.size(); i++) {
                 stmt.setObject(i + 1, params.get(i));
@@ -2419,9 +2421,117 @@ public class KNCSDL {
                     record.put("luong_ngay", Math.round(luongNgay * 100.0) / 100.0);
 
                     danhSach.add(record);
+                    existingByEmployeeDate.put(nvId + "|" + ngay, record);
                 }
             }
         }
+
+        // Bổ sung các dòng nghỉ phép đã duyệt để màn quản lý chấm công hiển thị giống màn cá nhân.
+        // - Nghỉ cả ngày: thêm dòng synthetic nếu ngày đó chưa có bản ghi chấm công.
+        // - Nghỉ nửa ngày: nếu ngày đó đã có chấm công thì thêm 1 dòng nghỉ phép synthetic.
+        StringBuilder leaveSql = new StringBuilder();
+        leaveSql.append("SELECT dnp.nhan_vien_id, dnp.ngay_bat_dau, dnp.ngay_ket_thuc, dnp.so_ngay, ");
+        leaveSql.append("nv.ho_ten, nv.avatar_url, nv.ngay_vao_lam, nv.luong_co_ban, pb.ten_phong ");
+        leaveSql.append("FROM don_nghi_phep dnp ");
+        leaveSql.append("JOIN nhanvien nv ON dnp.nhan_vien_id = nv.id ");
+        leaveSql.append("LEFT JOIN phong_ban pb ON nv.phong_ban_id = pb.id ");
+        leaveSql.append("WHERE dnp.trang_thai = 'da_duyet' ");
+
+        List<Object> leaveParams = new ArrayList<>();
+        if (thang != null && !thang.isEmpty() && nam != null && !nam.isEmpty()) {
+            leaveSql.append("AND (MONTH(dnp.ngay_bat_dau) = ? OR MONTH(dnp.ngay_ket_thuc) = ?) AND YEAR(dnp.ngay_bat_dau) <= ? AND YEAR(dnp.ngay_ket_thuc) >= ? ");
+            leaveParams.add(Integer.parseInt(thang));
+            leaveParams.add(Integer.parseInt(thang));
+            leaveParams.add(Integer.parseInt(nam));
+            leaveParams.add(Integer.parseInt(nam));
+        }
+        if (phongBan != null && !phongBan.isEmpty()) {
+            leaveSql.append("AND pb.ten_phong = ? ");
+            leaveParams.add(phongBan);
+        }
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            leaveSql.append("AND (nv.ho_ten LIKE ? OR nv.email LIKE ?) ");
+            leaveParams.add("%" + keyword + "%");
+            leaveParams.add("%" + keyword + "%");
+        }
+        if (employeeId != null && !employeeId.equals("all")) {
+            leaveSql.append("AND nv.id = ? ");
+            leaveParams.add(Integer.parseInt(employeeId));
+        }
+
+        try (PreparedStatement leaveStmt = cn.prepareStatement(leaveSql.toString())) {
+            for (int i = 0; i < leaveParams.size(); i++) {
+                leaveStmt.setObject(i + 1, leaveParams.get(i));
+            }
+
+            try (ResultSet leaveRs = leaveStmt.executeQuery()) {
+                while (leaveRs.next()) {
+                    int nvId = leaveRs.getInt("nhan_vien_id");
+                    java.sql.Date startDate = leaveRs.getDate("ngay_bat_dau");
+                    java.sql.Date endDate = leaveRs.getDate("ngay_ket_thuc");
+                    double soNgay = leaveRs.getDouble("so_ngay");
+
+                    Calendar cal = Calendar.getInstance();
+                    cal.setTime(startDate);
+                    Calendar endCal = Calendar.getInstance();
+                    endCal.setTime(endDate);
+
+                    while (!cal.after(endCal)) {
+                        java.sql.Date currentDate = new java.sql.Date(cal.getTimeInMillis());
+                        String key = nvId + "|" + currentDate;
+                        Map<String, Object> existingRecord = existingByEmployeeDate.get(key);
+
+                        boolean shouldAddLeaveRow = false;
+                        if (soNgay == 0.5) {
+                            shouldAddLeaveRow = existingRecord != null;
+                        } else {
+                            shouldAddLeaveRow = existingRecord == null;
+                        }
+
+                        if (shouldAddLeaveRow) {
+                            Map<String, Object> leaveRow = new HashMap<>();
+                            leaveRow.put("id", -1);
+                            leaveRow.put("nhan_vien_id", nvId);
+                            leaveRow.put("ho_ten", leaveRs.getString("ho_ten"));
+                            leaveRow.put("avatar_url", leaveRs.getString("avatar_url"));
+                            leaveRow.put("ten_phong", leaveRs.getString("ten_phong"));
+                            leaveRow.put("ngay_vao_lam", leaveRs.getDate("ngay_vao_lam"));
+                            leaveRow.put("ngay", currentDate);
+                            leaveRow.put("check_in", null);
+                            leaveRow.put("check_out", null);
+                            leaveRow.put("so_gio_lam", 0.0);
+                            leaveRow.put("trang_thai", "Nghỉ phép");
+                            leaveRow.put("luong_co_ban", leaveRs.getDouble("luong_co_ban"));
+                            leaveRow.put("bao_cao", null);
+                            leaveRow.put("luong_ngay", 0.0);
+                            danhSach.add(leaveRow);
+                        }
+
+                        cal.add(Calendar.DAY_OF_MONTH, 1);
+                    }
+                }
+            }
+        }
+
+        danhSach.sort((a, b) -> {
+            java.sql.Date ngayA = (java.sql.Date) a.get("ngay");
+            java.sql.Date ngayB = (java.sql.Date) b.get("ngay");
+            int compareDate = ngayB.compareTo(ngayA);
+            if (compareDate != 0) return compareDate;
+
+            String tenA = String.valueOf(a.get("ho_ten"));
+            String tenB = String.valueOf(b.get("ho_ten"));
+            int compareName = tenA.compareToIgnoreCase(tenB);
+            if (compareName != 0) return compareName;
+
+            boolean leaveA = "Nghỉ phép".equals(a.get("trang_thai")) && a.get("check_in") == null && a.get("check_out") == null;
+            boolean leaveB = "Nghỉ phép".equals(b.get("trang_thai")) && b.get("check_in") == null && b.get("check_out") == null;
+            if (leaveA != leaveB) return leaveA ? -1 : 1;
+
+            Integer idA = (Integer) a.get("id");
+            Integer idB = (Integer) b.get("id");
+            return Integer.compare(idA != null ? idA : 0, idB != null ? idB : 0);
+        });
 
         return danhSach;
     }

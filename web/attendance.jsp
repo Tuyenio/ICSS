@@ -421,9 +421,11 @@
                                         </td>
                                         <td>
                                             <div class="action-buttons">
+                                                <% Integer attendanceId = (Integer) item.get("id"); %>
+                                                <% if (attendanceId != null && attendanceId > 0) { %>
                                                 <button class="btn btn-sm btn-info rounded-circle position-relative"
                                                         data-bs-toggle="modal" data-bs-target="#modalDetailAttendance"
-                                                        data-id="<%= item.get("id") %>">
+                                                        data-id="<%= attendanceId %>">
                                                     <i class="fa-solid fa-eye"></i>
                                                     <% 
                                                         String baoCao = (String) item.get("bao_cao");
@@ -438,13 +440,16 @@
                                                 </button>
                                                 <button class="btn btn-sm btn-warning rounded-circle"
                                                         data-bs-toggle="modal" data-bs-target="#modalEditAttendance"
-                                                        data-id="<%= item.get("id") %>">
+                                                        data-id="<%= attendanceId %>">
                                                     <i class="fa-solid fa-pen"></i>
                                                 </button>
                                                 <button class="btn btn-sm btn-danger rounded-circle"
-                                                        onclick="deleteAttendance('<%= item.get("id") %>');">
+                                                        onclick="deleteAttendance('<%= attendanceId %>');">
                                                     <i class="fa-solid fa-trash"></i>
                                                 </button>
+                                                <% } else { %>
+                                                <span class="text-muted">-</span>
+                                                <% } %>
                                             </div>
                                         </td>
                                     </tr>
