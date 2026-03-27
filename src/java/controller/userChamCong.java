@@ -118,6 +118,12 @@ public class userChamCong extends HttpServlet {
                     return;
                 }
 
+                // Kiểm tra nghỉ phép cả ngày
+                if (kn.coNghiPhepCaNgayHomNay(nhanVienId)) {
+                    response.getWriter().write("{\"success\": false, \"message\": \"Bạn đã đăng ký nghỉ phép hôm nay, không thể check in!\"}");
+                    return;
+                }
+
                 // Thực hiện check-in
                 boolean success = kn.checkIn(nhanVienId);
                 if (success) {
@@ -165,6 +171,12 @@ public class userChamCong extends HttpServlet {
 
                 if (daCheckIn != null && daCheckIn) {
                     response.getWriter().write("{\"success\": false, \"message\": \"Bạn đã check-in hôm nay rồi!\"}");
+                    return;
+                }
+
+                // Kiểm tra nghỉ phép cả ngày
+                if (kn.coNghiPhepCaNgayHomNay(nhanVienId)) {
+                    response.getWriter().write("{\"success\": false, \"message\": \"Bạn đã đăng ký nghỉ phép hôm nay, không thể check in!\"}");
                     return;
                 }
 

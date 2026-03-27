@@ -533,6 +533,7 @@
                                         else if ("Đi trễ".equals(trangThai)) badgeClass = "bg-warning";
                                         else if ("Vắng mặt".equals(trangThai)) badgeClass = "bg-danger";
                                         else if ("Thiếu giờ".equals(trangThai)) badgeClass = "bg-info";
+                                        else if (trangThai != null && trangThai.startsWith("Nghỉ phép")) badgeClass = "bg-warning text-dark";
                                     %>
                                     <span class="badge <%=badgeClass%>"><%=displayStatus%></span>
                                 </td>
@@ -540,6 +541,7 @@
                                     <%
                                         Integer attendanceId = (Integer) record.get("id");
                                         String baoCao = (String) record.get("bao_cao");
+                                        if (attendanceId != null && attendanceId > 0) {
                                         if (baoCao != null && !baoCao.trim().isEmpty()) {
                                     %>
                                         <button type="button" class="btn btn-sm btn-success" disabled title="Đã gửi báo cáo">
@@ -553,6 +555,7 @@
                                                 title="Gửi báo cáo">
                                             <i class="fas fa-paper-plane me-1"></i> Gửi báo cáo
                                         </button>
+                                    <% } %>
                                     <% } %>
                                 </td>
                             </tr>
