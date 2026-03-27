@@ -206,6 +206,11 @@
                 border-radius: 20px;
             }
 
+            .badge.badge-leave {
+                background-color: #adb5bd !important;
+                color: #1f2937 !important;
+            }
+
             /* Hiệu ứng loading */
             .loading-overlay {
                 position: fixed;
@@ -534,7 +539,7 @@
                                         else if ("Vắng mặt".equals(trangThai)) badgeClass = "bg-danger";
                                         else if ("Thiếu giờ".equals(trangThai)) badgeClass = "bg-info";
                                         else if (trangThai != null && trangThai.startsWith("Nghỉ phép")) {
-                                            badgeClass = "bg-secondary";
+                                            badgeClass = "badge-leave";
                                             displayStatus = "Nghỉ phép";
                                         }
                                     %>
