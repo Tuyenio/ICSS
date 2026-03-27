@@ -260,9 +260,7 @@ public class apiNghiPhep extends HttpServlet {
             Map<String, Object> nhanVien = kn.getNhanVienByEmail(email);
             Integer nguoiTaoId = ((Number) nhanVien.get("id")).intValue();
             
-            String buoiNghi = request.getParameter("buoiNghi");
-            if (buoiNghi != null && buoiNghi.trim().isEmpty()) buoiNghi = null;
-            int donId = kn.taoDonNghiPhep(nhanVienId, loaiPhep, ngayBatDau, ngayKetThuc, soNgay, lyDo, nguoiTaoId, null, buoiNghi);
+            int donId = kn.taoDonNghiPhep(nhanVienId, loaiPhep, ngayBatDau, ngayKetThuc, soNgay, lyDo, nguoiTaoId, null);
             
             // Gửi thông báo cho trưởng phòng nhân sự (ID = 12)
             if (donId > 0) {
@@ -563,10 +561,8 @@ public class apiNghiPhep extends HttpServlet {
             String tenNguoiTao = (String) nhanVien.get("ho_ten");
             
             // Tạo đơn với trạng thái đã duyệt (vì admin tạo trực tiếp)
-            String buoiNghi = request.getParameter("buoiNghi");
-            if (buoiNghi != null && buoiNghi.trim().isEmpty()) buoiNghi = null;
             int donId = kn.taoDonNghiPhepQuanLy(nhanVienId, loaiPhep, ngayBatDau, ngayKetThuc,
-                                               soNgay, lyDo, nguoiTaoId, "Được tạo bởi " + tenNguoiTao, buoiNghi);
+                                               soNgay, lyDo, nguoiTaoId, "Được tạo bởi " + tenNguoiTao);
             
             if (donId <= 0) {
                 out.print("{\"success\":false,\"message\":\"❌ Lỗi: Không thể tạo đơn.\"}");

@@ -2722,12 +2722,11 @@ public class KNCSDL {
     public List<Map<String, Object>> getLichSuChamCongUser(int nhanVienId, int thang, int nam) throws SQLException {
         List<Map<String, Object>> lichSu = new ArrayList<>();
 
-        // Bước 1: Lấy map ngày -> buoi_nghi cho các đơn nghỉ nửa ngày đã duyệt trong tháng
-        // buoi_nghi = 'sang' hoặc 'chieu'
-        Map<java.sql.Date, String> halfDayLeaveMap = new HashMap<>();
-        String halfDaySql = "SELECT ngay_bat_dau, buoi_nghi FROM don_nghi_phep "
+        // Bước 1: Lấy danh sách các ngày có đơn nghỉ nửa ngày đã duyệt trong tháng
+        // buoi_nghi tự nhận diện từ giờ check_in: trước 10:00 = 'sang', từ 10:00 trở đi = 'chieu'
+        java.util.Set<java.sql.Date> halfDayLeaveSet = new java.util.HashSet<>();
+        String halfDaySql = "SELECT ngay_bat_dau FROM don_nghi_phep "
                 + "WHERE nhan_vien_id = ? AND trang_thai = 'da_duyet' AND so_ngay = 0.5 "
-                + "AND buoi_nghi IS NOT NULL "
                 + "AND MONTH(ngay_bat_dau) = ? AND YEAR(ngay_bat_dau) = ?";
         try (PreparedStatement halfStmt = cn.prepareStatement(halfDaySql)) {
             halfStmt.setInt(1, nhanVienId);
@@ -2735,7 +2734,7 @@ public class KNCSDL {
             halfStmt.setInt(3, nam);
             try (ResultSet halfRs = halfStmt.executeQuery()) {
                 while (halfRs.next()) {
-                    halfDayLeaveMap.put(halfRs.getDate("ngay_bat_dau"), halfRs.getString("buoi_nghi"));
+                    halfDayLeaveSet.add(halfRs.getDate("ngay_bat_dau"));
                 }
             }
         }
@@ -2781,7 +2780,14 @@ public class KNCSDL {
             java.sql.Time checkIn = (java.sql.Time) record.get("check_in");
             java.sql.Time checkOut = (java.sql.Time) record.get("check_out");
             String loaiChamCong = (String) record.get("loai_cham_cong");
-            String buoiNghi = halfDayLeaveMap.get(ngay);
+            // Tự nhận diện buổi nghỉ từ giờ check_in:
+            // check_in < 10:00 => nghỉ sáng ('sang'), check_in >= 10:00 => nghỉ chiều ('chieu')
+            boolean isHalfDayLeave = halfDayLeaveSet.contains(ngay);
+            String buoiNghi = null;
+            if (isHalfDayLeave && checkIn != null) {
+                java.sql.Time muoiGio = java.sql.Time.valueOf("10:00:00");
+                buoiNghi = checkIn.before(muoiGio) ? "sang" : "chieu";
+            }
 
             String trangThai;
             if ("WFH".equalsIgnoreCase(loaiChamCong)) {
@@ -2793,26 +2799,18 @@ public class KNCSDL {
             } else if (checkIn == null) {
                 trangThai = "Vắng mặt";
             } else {
-                // Có check_in: tính trạng thái dựa trên buoi_nghi
-                // Nếu nghỉ buổi sáng (buoi_nghi='sang'), ngưỡng đi trễ là 13:00
-                // Nếu bình thường hoặc nghỉ buổi chiều, ngưỡng đi trễ là 08:05
-                java.sql.Time nguongDiTre;
+                // Có check_in: tính trạng thái
+                // Nghỉ chiều (check_in >= 10:00): ngưỡng đi trễ 13:00 (đi làm ca chiều)
+                // Còn lại: ngưỡng đi trễ 08:05:59
                 java.sql.Time nguongVeSom;
-                if ("sang".equals(buoiNghi)) {
-                    nguongDiTre = java.sql.Time.valueOf("13:00:00");
+                boolean diTre;
+                if ("chieu".equals(buoiNghi)) {
+                    // Nghỉ chiều: nhân viên đi làm ca chiều, trễ nếu sau 13:00
+                    diTre = checkIn.compareTo(java.sql.Time.valueOf("13:00:00")) > 0;
                     nguongVeSom = java.sql.Time.valueOf("17:30:00");
                 } else {
-                    nguongDiTre = java.sql.Time.valueOf("08:05:59");
-                    nguongVeSom = java.sql.Time.valueOf("17:00:00");
-                }
-                boolean diTre = checkIn.after(nguongDiTre)
-                        || checkIn.equals(nguongDiTre);
-                // Khi ngưỡng là 08:05:59, checkIn <= 08:05:59 là đúng giờ
-                // Khi ngưỡng là 13:00:00, checkIn <= 13:00:00 là đúng giờ
-                if (!"sang".equals(buoiNghi)) {
                     diTre = checkIn.compareTo(java.sql.Time.valueOf("08:05:59")) > 0;
-                } else {
-                    diTre = checkIn.compareTo(java.sql.Time.valueOf("13:00:00")) > 0;
+                    nguongVeSom = java.sql.Time.valueOf("17:00:00");
                 }
 
                 if (checkOut == null) {
@@ -2881,11 +2879,11 @@ public class KNCSDL {
      * Dùng để chặn check-in khi nghỉ cả ngày.
      */
     public boolean coNghiPhepCaNgayHomNay(int nhanVienId) throws SQLException {
-        // Nghỉ cả ngày = có đơn đã duyệt bao gồm hôm nay VÀ không phải đơn nghỉ nửa ngày có buoi_nghi
+        // Nghỉ cả ngày = có đơn đã duyệt bao gồm hôm nay VÀ không phải nghỉ nửa ngày (so_ngay = 0.5)
         String sql = "SELECT COUNT(*) FROM don_nghi_phep "
                 + "WHERE nhan_vien_id = ? AND trang_thai = 'da_duyet' "
                 + "AND CURDATE() BETWEEN ngay_bat_dau AND ngay_ket_thuc "
-                + "AND NOT (so_ngay = 0.5 AND buoi_nghi IS NOT NULL)";
+                + "AND so_ngay > 0.5";
         try (PreparedStatement stmt = cn.prepareStatement(sql)) {
             stmt.setInt(1, nhanVienId);
             try (ResultSet rs = stmt.executeQuery()) {
@@ -6644,14 +6642,9 @@ public class KNCSDL {
      */
     public int taoDonNghiPhep(int nhanVienId, String loaiPhep, java.sql.Date ngayBatDau,
             java.sql.Date ngayKetThuc, double soNgay, String lyDo, Integer nguoiTaoId, String ghiChu) throws SQLException {
-        return taoDonNghiPhep(nhanVienId, loaiPhep, ngayBatDau, ngayKetThuc, soNgay, lyDo, nguoiTaoId, ghiChu, null);
-    }
-
-    public int taoDonNghiPhep(int nhanVienId, String loaiPhep, java.sql.Date ngayBatDau,
-            java.sql.Date ngayKetThuc, double soNgay, String lyDo, Integer nguoiTaoId, String ghiChu, String buoiNghi) throws SQLException {
 
         String sql = "INSERT INTO don_nghi_phep (nhan_vien_id, loai_phep, ngay_bat_dau, ngay_ket_thuc, "
-                + "so_ngay, buoi_nghi, ly_do, trang_thai, nguoi_tao_id, ghi_chu) VALUES (?, ?, ?, ?, ?, ?, ?, 'cho_duyet', ?, ?)";
+                + "so_ngay, ly_do, trang_thai, nguoi_tao_id, ghi_chu) VALUES (?, ?, ?, ?, ?, ?, 'cho_duyet', ?, ?)";
 
         try (PreparedStatement stmt = cn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setInt(1, nhanVienId);
@@ -6659,18 +6652,13 @@ public class KNCSDL {
             stmt.setDate(3, ngayBatDau);
             stmt.setDate(4, ngayKetThuc);
             stmt.setDouble(5, soNgay);
-            if (buoiNghi != null && !buoiNghi.isEmpty()) {
-                stmt.setString(6, buoiNghi);
-            } else {
-                stmt.setNull(6, java.sql.Types.VARCHAR);
-            }
-            stmt.setString(7, lyDo);
+            stmt.setString(6, lyDo);
             if (nguoiTaoId != null) {
-                stmt.setInt(8, nguoiTaoId);
+                stmt.setInt(7, nguoiTaoId);
             } else {
-                stmt.setNull(8, java.sql.Types.INTEGER);
+                stmt.setNull(7, java.sql.Types.INTEGER);
             }
-            stmt.setString(9, ghiChu);
+            stmt.setString(8, ghiChu);
 
             int affectedRows = stmt.executeUpdate();
             if (affectedRows > 0) {
@@ -7052,14 +7040,9 @@ public class KNCSDL {
      */
     public int taoDonNghiPhepQuanLy(int nhanVienId, String loaiPhep, java.sql.Date ngayBatDau,
             java.sql.Date ngayKetThuc, double soNgay, String lyDo, Integer nguoiTaoId, String ghiChu) throws SQLException {
-        return taoDonNghiPhepQuanLy(nhanVienId, loaiPhep, ngayBatDau, ngayKetThuc, soNgay, lyDo, nguoiTaoId, ghiChu, null);
-    }
-
-    public int taoDonNghiPhepQuanLy(int nhanVienId, String loaiPhep, java.sql.Date ngayBatDau,
-            java.sql.Date ngayKetThuc, double soNgay, String lyDo, Integer nguoiTaoId, String ghiChu, String buoiNghi) throws SQLException {
 
         String sql = "INSERT INTO don_nghi_phep (nhan_vien_id, loai_phep, ngay_bat_dau, ngay_ket_thuc, "
-                + "so_ngay, buoi_nghi, ly_do, trang_thai, nguoi_duyet_id, ghi_chu, thoi_gian_duyet) VALUES (?, ?, ?, ?, ?, ?, ?, 'da_duyet', ?, ?, NOW())";
+                + "so_ngay, ly_do, trang_thai, nguoi_duyet_id, ghi_chu, thoi_gian_duyet) VALUES (?, ?, ?, ?, ?, ?, 'da_duyet', ?, ?, NOW())";
 
         try (PreparedStatement stmt = cn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setInt(1, nhanVienId);
@@ -7067,18 +7050,13 @@ public class KNCSDL {
             stmt.setDate(3, ngayBatDau);
             stmt.setDate(4, ngayKetThuc);
             stmt.setDouble(5, soNgay);
-            if (buoiNghi != null && !buoiNghi.isEmpty()) {
-                stmt.setString(6, buoiNghi);
-            } else {
-                stmt.setNull(6, java.sql.Types.VARCHAR);
-            }
-            stmt.setString(7, lyDo);
+            stmt.setString(6, lyDo);
             if (nguoiTaoId != null) {
-                stmt.setInt(8, nguoiTaoId);
+                stmt.setInt(7, nguoiTaoId);
             } else {
-                stmt.setNull(8, java.sql.Types.INTEGER);
+                stmt.setNull(7, java.sql.Types.INTEGER);
             }
-            stmt.setString(9, ghiChu);
+            stmt.setString(8, ghiChu);
 
             int affectedRows = stmt.executeUpdate();
             if (affectedRows > 0) {

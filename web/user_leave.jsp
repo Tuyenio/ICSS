@@ -536,16 +536,6 @@
                                        placeholder="VD: 1, 0.5, 2..." required>
                                 <small class="text-muted">Nhập 0.5 nếu nghỉ nửa ngày</small>
                             </div>
-                            <div class="col-md-4" id="buoiNghiDiv" style="display:none;">
-                                <label class="form-label">
-                                    <i class="fa-solid fa-sun me-2"></i>Buổi nghỉ <span class="text-danger">*</span>
-                                </label>
-                                <select class="form-select" name="buoiNghi" id="buoiNghiSelect">
-                                    <option value="">-- Chọn buổi --</option>
-                                    <option value="sang">🌅 Buổi sáng</option>
-                                    <option value="chieu">🌇 Buổi chiều</option>
-                                </select>
-                            </div>
                             <div class="col-md-12">
                                 <label class="form-label">
                                     <i class="fa-solid fa-comment-dots me-2"></i>Lý do xin nghỉ <span class="text-danger">*</span>
@@ -746,24 +736,6 @@
             
             document.querySelector('input[name="ngayBatDau"]').addEventListener('change', calcDays);
             document.querySelector('input[name="ngayKetThuc"]').addEventListener('change', calcDays);
-
-            // Hiển thị/ẩn buổi nghỉ khi soNgay = 0.5
-            const soNgayInput = document.getElementById('soNgayInput');
-            const buoiNghiDiv = document.getElementById('buoiNghiDiv');
-            const buoiNghiSelect = document.getElementById('buoiNghiSelect');
-            function toggleBuoiNghi() {
-                const val = parseFloat(soNgayInput.value);
-                if (val === 0.5) {
-                    buoiNghiDiv.style.display = '';
-                    buoiNghiSelect.required = true;
-                } else {
-                    buoiNghiDiv.style.display = 'none';
-                    buoiNghiSelect.required = false;
-                    buoiNghiSelect.value = '';
-                }
-            }
-            soNgayInput.addEventListener('input', toggleBuoiNghi);
-            soNgayInput.addEventListener('change', toggleBuoiNghi);
         });
 
         // Submit form tạo đơn
@@ -790,17 +762,6 @@
                 return;
             }
 
-            // Kiểm tra buổi nghỉ khi nghỉ nửa ngày
-            if (soNgay === 0.5 && !document.getElementById('buoiNghiSelect').value) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Thiếu thông tin!',
-                    text: 'Vui lòng chọn buổi nghỉ (sáng hoặc chiều) khi đăng ký nghỉ nửa ngày.',
-                    confirmButtonColor: '#667eea'
-                });
-                return;
-            }
-            
             // Hàm kiểm tra cuối tuần (Thứ 7 = 6, Chủ nhật = 0)
             function isCuoiTuan(dateStr) {
                 const date = new Date(dateStr);
