@@ -2338,6 +2338,7 @@ public class KNCSDL {
         }
 
         sql.append("ORDER BY cc.ngay DESC, nv.ho_ten ASC");
+        Map<String, Map<String, Object>> existingByEmployeeDate = new HashMap<>();
 
         // Tải map ngày nghỉ nửa buổi theo nhân viên để override trang_thai trong Java
         // (SQL CASE không thể tự điều chỉnh ngưỡng giờ cho ngày nghỉ nửa buổi)
