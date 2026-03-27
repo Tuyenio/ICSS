@@ -533,7 +533,10 @@
                                         else if ("Đi trễ".equals(trangThai)) badgeClass = "bg-warning";
                                         else if ("Vắng mặt".equals(trangThai)) badgeClass = "bg-danger";
                                         else if ("Thiếu giờ".equals(trangThai)) badgeClass = "bg-info";
-                                        else if (trangThai != null && trangThai.startsWith("Nghỉ phép")) badgeClass = "bg-warning text-dark";
+                                        else if (trangThai != null && trangThai.startsWith("Nghỉ phép")) {
+                                            badgeClass = "bg-secondary";
+                                            displayStatus = "Nghỉ phép";
+                                        }
                                     %>
                                     <span class="badge <%=badgeClass%>"><%=displayStatus%></span>
                                 </td>

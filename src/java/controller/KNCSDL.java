@@ -2816,7 +2816,14 @@ public class KNCSDL {
                 if (checkOut == null) {
                     trangThai = diTre ? "Đi trễ" : "Đúng giờ";
                 } else {
-                    boolean duGio = checkOut.compareTo(nguongVeSom) >= 0;
+                    double soGioLam = 0.0;
+                    Object soGioObj = record.get("so_gio_lam");
+                    if (soGioObj instanceof Number) {
+                        soGioLam = ((Number) soGioObj).doubleValue();
+                    }
+
+                    // Nếu ngày đó có đăng ký nghỉ nửa buổi, làm từ 4 giờ trở lên được tính là đủ giờ.
+                    boolean duGio = isHalfDayLeave ? (soGioLam >= 4.0) : (checkOut.compareTo(nguongVeSom) >= 0);
                     if (diTre) {
                         trangThai = duGio ? "Đi trễ" : "Thiếu giờ";
                     } else {
@@ -2837,8 +2844,7 @@ public class KNCSDL {
                 leaveRow.put("so_gio_lam", 0.0);
                 leaveRow.put("bao_cao", null);
                 leaveRow.put("loai_cham_cong", null);
-                String tenBuoi = "sang".equals(buoiNghi) ? "Buổi sáng" : "Buổi chiều";
-                leaveRow.put("trang_thai", "Nghỉ phép (" + tenBuoi + ")");
+                leaveRow.put("trang_thai", "Nghỉ phép");
 
                 if ("sang".equals(buoiNghi)) {
                     // Nghỉ sáng: dòng nghỉ phép trước, dòng check_in sau
