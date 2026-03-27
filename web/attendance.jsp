@@ -105,6 +105,11 @@
                 padding: 4px 8px;
             }
 
+            .badge.badge-leave {
+                background-color: #adb5bd !important;
+                color: #1f2937 !important;
+            }
+
             /* ==== ACTION BUTTONS ==== */
             td .btn {
                 border-radius: 50%;
@@ -407,6 +412,10 @@
                                             else if ("Đi trễ".equals(trangThai)) badgeClass = "bg-warning text-dark";
                                             else if ("Vắng mặt".equals(trangThai)) badgeClass = "bg-danger";
                                             else if ("Thiếu giờ".equals(trangThai)) badgeClass = "bg-info";
+                                            else if (trangThai != null && trangThai.startsWith("Nghỉ phép")) {
+                                                badgeClass = "badge-leave";
+                                                displayStatus = "Nghỉ phép";
+                                            }
                                             %>
                                             <span class="badge <%= badgeClass %> badge-status"><%= displayStatus %></span>
                                         </td>

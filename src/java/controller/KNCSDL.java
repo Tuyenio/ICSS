@@ -2337,6 +2337,35 @@ public class KNCSDL {
 
         sql.append("ORDER BY cc.ngay DESC, nv.ho_ten ASC");
 
+        // Tải map ngày nghỉ nửa buổi theo nhân viên để override trang_thai trong Java
+        // (SQL CASE không thể tự điều chỉnh ngưỡng giờ cho ngày nghỉ nửa buổi)
+        Map<Integer, java.util.Set<java.sql.Date>> halfDayMapByNV = new HashMap<>();
+        {
+            StringBuilder hdSql = new StringBuilder(
+                "SELECT nhan_vien_id, ngay_bat_dau FROM don_nghi_phep "
+                + "WHERE trang_thai = 'da_duyet' AND so_ngay = 0.5");
+            List<Object> hdParams = new ArrayList<>();
+            if (thang != null && !thang.isEmpty() && nam != null && !nam.isEmpty()) {
+                hdSql.append(" AND MONTH(ngay_bat_dau) = ? AND YEAR(ngay_bat_dau) = ?");
+                hdParams.add(Integer.parseInt(thang));
+                hdParams.add(Integer.parseInt(nam));
+            }
+            if (employeeId != null && !employeeId.equals("all")) {
+                hdSql.append(" AND nhan_vien_id = ?");
+                hdParams.add(Integer.parseInt(employeeId));
+            }
+            try (PreparedStatement hdStmt = cn.prepareStatement(hdSql.toString())) {
+                for (int i = 0; i < hdParams.size(); i++) hdStmt.setObject(i + 1, hdParams.get(i));
+                try (ResultSet hdRs = hdStmt.executeQuery()) {
+                    while (hdRs.next()) {
+                        int nvId = hdRs.getInt("nhan_vien_id");
+                        java.sql.Date ngayHd = hdRs.getDate("ngay_bat_dau");
+                        halfDayMapByNV.computeIfAbsent(nvId, k -> new java.util.HashSet<>()).add(ngayHd);
+                    }
+                }
+            }
+        }
+
         try (PreparedStatement stmt = cn.prepareStatement(sql.toString())) {
             for (int i = 0; i < params.size(); i++) {
                 stmt.setObject(i + 1, params.get(i));
@@ -2346,21 +2375,46 @@ public class KNCSDL {
                 while (rs.next()) {
                     Map<String, Object> record = new HashMap<>();
                     record.put("id", rs.getInt("id"));
-                    record.put("nhan_vien_id", rs.getInt("nhan_vien_id"));
+                    int nvId = rs.getInt("nhan_vien_id");
+                    record.put("nhan_vien_id", nvId);
                     record.put("ho_ten", rs.getString("ho_ten"));
                     record.put("avatar_url", rs.getString("avatar_url"));
                     record.put("ten_phong", rs.getString("ten_phong"));
                     record.put("ngay_vao_lam", rs.getDate("ngay_vao_lam"));
-                    record.put("ngay", rs.getDate("ngay"));
-                    record.put("check_in", rs.getTime("check_in"));
-                    record.put("check_out", rs.getTime("check_out"));
-                    record.put("so_gio_lam", rs.getDouble("so_gio_lam"));
-                    record.put("trang_thai", rs.getString("trang_thai"));
-                    record.put("luong_co_ban", rs.getDouble("luong_co_ban"));
+                    java.sql.Date ngay = rs.getDate("ngay");
+                    java.sql.Time checkIn = rs.getTime("check_in");
+                    java.sql.Time checkOut = rs.getTime("check_out");
+                    double soGioLam = rs.getDouble("so_gio_lam");
+                    record.put("ngay", ngay);
+                    record.put("check_in", checkIn);
+                    record.put("check_out", checkOut);
+                    record.put("so_gio_lam", soGioLam);
+
+                    // Override trang_thai cho ngày nghỉ nửa buổi (logic Java thay vì SQL cứng)
+                    String trangThai = rs.getString("trang_thai");
+                    java.util.Set<java.sql.Date> halfDays = halfDayMapByNV.get(nvId);
+                    if (halfDays != null && halfDays.contains(ngay) && checkIn != null) {
+                        java.sql.Time muoiGio = java.sql.Time.valueOf("10:00:00");
+                        // check_in < 10:00 → nghỉ sáng (đi làm sáng, về sớm); check_in >= 10:00 → nghỉ chiều (vào ca chiều)
+                        String buoiNghi = checkIn.before(muoiGio) ? "sang" : "chieu";
+                        boolean diTre = "chieu".equals(buoiNghi)
+                            ? checkIn.compareTo(java.sql.Time.valueOf("13:00:00")) > 0
+                            : checkIn.compareTo(java.sql.Time.valueOf("08:05:59")) > 0;
+                        if (checkOut == null) {
+                            trangThai = diTre ? "Đi trễ" : "Đúng giờ";
+                        } else {
+                            boolean duGio = soGioLam >= 4.0;
+                            trangThai = diTre
+                                ? (duGio ? "Đi trễ" : "Thiếu giờ")
+                                : (duGio ? "Đủ công" : "Thiếu giờ");
+                        }
+                    }
+                    record.put("trang_thai", trangThai);
+
+                    double luongCoBan = rs.getDouble("luong_co_ban");
+                    record.put("luong_co_ban", luongCoBan);
                     record.put("bao_cao", rs.getString("bao_cao"));
                     // 💰 Tính lương theo số giờ làm
-                    double luongCoBan = rs.getDouble("luong_co_ban");
-                    double soGioLam = rs.getDouble("so_gio_lam");
                     double luongNgay = (luongCoBan / 22) * (soGioLam / 8);
                     record.put("luong_ngay", Math.round(luongNgay * 100.0) / 100.0);
 
