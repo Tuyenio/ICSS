@@ -2365,29 +2365,11 @@ public class KNCSDL {
                         java.sql.Date ngayHd = hdRs.getDate("ngay_bat_dau");
                         halfDayMapByNV.computeIfAbsent(nvId, k -> new java.util.HashSet<>()).add(ngayHd);
                     }
-                    
-                        // Quy tắc mốc ngày 15:
-                        // - Vào làm <= 15: tháng vào làm được tính là tháng đủ điều kiện đầu tiên
-                        // - Vào làm > 15: tháng vào làm KHÔNG được tính, bắt đầu từ tháng kế tiếp
-                        LocalDate joinDate = ngayVaoLam.toLocalDate();
-                        YearMonth joinYm = YearMonth.from(joinDate);
-                        YearMonth previousYm = YearMonth.of(previousYear, previousMonth);
-                    
-                        boolean duDieuKienThangTruoc;
-                        if (previousYm.isBefore(joinYm)) {
-                            duDieuKienThangTruoc = false;
-                        } else if (previousYm.equals(joinYm)) {
-                            duDieuKienThangTruoc = joinDate.getDayOfMonth() <= 15;
-                        } else {
-                            duDieuKienThangTruoc = true;
-                        }
+                }
+            }
         }
-                        } else {
-                            if (monthsWorked >= 12) {
-                                logger.info("       ✗ >= 12 tháng, skip");
-                            } else {
-                                logger.info("       ✗ Chưa đủ điều kiện tháng trước theo mốc ngày 15, skip");
-                            }
+
+        try (PreparedStatement stmt = cn.prepareStatement(sql.toString())) {
             for (int i = 0; i < params.size(); i++) {
                 stmt.setObject(i + 1, params.get(i));
             }
