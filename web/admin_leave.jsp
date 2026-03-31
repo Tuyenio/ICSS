@@ -457,11 +457,7 @@
                     <div class="stat-icon"><i class="fa-solid fa-calendar-check"></i></div>
                     <div class="stat-value"><%= tongPhepConLaiAll %></div>
                     <div class="stat-label">
-                        <% if (ngayPhepNamTruoc.compareTo(BigDecimal.ZERO) > 0) { %>
-                            <%= ngayPhepNamTruoc %> (<%= namHienTai - 1 %>) + <%= ngayPhepConLai %> (<%= namHienTai %>)
-                        <% } else { %>
-                            Ngày phép còn lại (<%= namHienTai %>)
-                        <% } %>
+                        <%= ngayPhepNamTruoc %> (<%= namHienTai - 1 %>) + <%= ngayPhepConLai %> (<%= namHienTai %>)
                     </div>
                 </div>
             </div>
