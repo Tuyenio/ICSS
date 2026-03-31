@@ -470,7 +470,7 @@
                 <div class="stat-card used animate-fadeInUp delay-2">
                     <div class="stat-icon"><i class="fa-solid fa-calendar-minus"></i></div>
                     <div class="stat-value"><%= ngayPhepDaDung %>/<%= tongNgayPhep %></div>
-                    <div class="stat-label">Số ngày phép đã sử dụng năm <%= namHienTai %></div>
+                    <div class="stat-label">Số phép <%= namHienTai %> đã dùng</div>
                 </div>
             </div>
             <div class="col-md-3 col-sm-6">
