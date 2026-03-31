@@ -7049,6 +7049,7 @@ public class KNCSDL {
      * trừ phép năm hiện tại
      */
     public boolean capNhatNgayPhepDaDungUuTien(int nhanVienId, int nam, double soNgayDung) throws SQLException {
+        Logger logger = Logger.getLogger(KNCSDL.class.getName());
         try {
             String sqlGetPhep = "SELECT ngay_phep_nam_truoc, ngay_phep_da_dung, tong_ngay_phep "
                     + "FROM ngay_phep_nam WHERE nhan_vien_id = ? AND nam = ?";
@@ -7069,26 +7070,89 @@ public class KNCSDL {
                 }
             }
 
-            double phepNamTruocMoi = phepNamTruoc;
-            double phepDaDungMoi = phepDaDung; // Khởi tạo với giá trị hiện tại
+            // FIX: Nếu ngay_phep_nam_truoc = 0 nhưng năm trước còn phép (nhân viên < 12 tháng
+            // chưa được sp_cong_phep_dau_nam chuyển phép), xử lý trực tiếp từ record năm trước.
+            boolean usePrevYearRecord = false;
+            double prevYearConLai = 0.0;
+            if (phepNamTruoc == 0) {
+                String sqlPrev = "SELECT ngay_phep_con_lai FROM ngay_phep_nam WHERE nhan_vien_id = ? AND nam = ?";
+                try (PreparedStatement stmt = cn.prepareStatement(sqlPrev)) {
+                    stmt.setInt(1, nhanVienId);
+                    stmt.setInt(2, nam - 1);
+                    try (ResultSet rs = stmt.executeQuery()) {
+                        if (rs.next()) {
+                            prevYearConLai = rs.getDouble("ngay_phep_con_lai");
+                        }
+                    }
+                }
+                if (prevYearConLai > 0) {
+                    phepNamTruoc = prevYearConLai;
+                    usePrevYearRecord = true;
+                    logger.info(String.format("   ℹ️ ngay_phep_nam_truoc=0, fallback năm %d còn %.1f ngày", nam - 1, prevYearConLai));
+                }
+            }
 
-            // ✅ ƯU TIÊN TRỪ PHÉP NĂM TRƯỚC TRƯỚC
+            logger.info(String.format("📊 [capNhatNgayPhepDaDungUuTien] BEFORE - NV:%d, Year:%d, Dung:%.1f, namTruoc:%.1f, daDung:%.1f, tongPhep:%.1f, usePrevYear:%b",
+                nhanVienId, nam, soNgayDung, phepNamTruoc, phepDaDung, tongPhep, usePrevYearRecord));
+
+            if (usePrevYearRecord) {
+                // ✅ Trừ từ record năm trước trực tiếp (nhân viên < 12 tháng)
+                double fromPrevYear = Math.min(soNgayDung, prevYearConLai);
+                double fromCurrYear = soNgayDung - fromPrevYear;
+
+                // Cập nhật record năm trước: giảm ngay_phep_con_lai, tăng ngay_phep_da_dung
+                String sqlUpdatePrev = "UPDATE ngay_phep_nam SET "
+                        + "ngay_phep_da_dung = ngay_phep_da_dung + ?, "
+                        + "ngay_phep_con_lai = GREATEST(0, ngay_phep_con_lai - ?) "
+                        + "WHERE nhan_vien_id = ? AND nam = ?";
+                try (PreparedStatement stmt = cn.prepareStatement(sqlUpdatePrev)) {
+                    stmt.setDouble(1, fromPrevYear);
+                    stmt.setDouble(2, fromPrevYear);
+                    stmt.setInt(3, nhanVienId);
+                    stmt.setInt(4, nam - 1);
+                    stmt.executeUpdate();
+                    logger.info(String.format("   💾 Trừ %.1f ngày từ năm %d (record trực tiếp)", fromPrevYear, nam - 1));
+                }
+
+                // Nếu phép năm trước không đủ, phần còn lại trừ từ năm hiện tại
+                if (fromCurrYear > 0) {
+                    String sqlUpdateCurr = "UPDATE ngay_phep_nam SET "
+                            + "ngay_phep_da_dung = ngay_phep_da_dung + ?, "
+                            + "ngay_phep_con_lai = GREATEST(0, ngay_phep_con_lai - ?) "
+                            + "WHERE nhan_vien_id = ? AND nam = ?";
+                    try (PreparedStatement stmt = cn.prepareStatement(sqlUpdateCurr)) {
+                        stmt.setDouble(1, fromCurrYear);
+                        stmt.setDouble(2, fromCurrYear);
+                        stmt.setInt(3, nhanVienId);
+                        stmt.setInt(4, nam);
+                        stmt.executeUpdate();
+                        logger.info(String.format("   💾 Trừ thêm %.1f ngày từ năm %d (hiện tại)", fromCurrYear, nam));
+                    }
+                }
+                return true;
+            }
+
+            // ✅ Xử lý thông thường: dùng ngay_phep_nam_truoc trong record năm hiện tại
+            double phepNamTruocMoi = phepNamTruoc;
+            double phepDaDungMoi = phepDaDung;
+
             if (phepNamTruoc >= soNgayDung) {
-                // Phép năm trước đủ, trừ hoàn toàn từ năm trước
+                // Phép năm trước đủ: chỉ giảm ngay_phep_nam_truoc, KHÔNG đụng ngay_phep_da_dung
                 phepNamTruocMoi = phepNamTruoc - soNgayDung;
-                // ⚠️ QUAN TRỌNG: Cũng phải tính ngay_phep_da_dung!
-                phepDaDungMoi = phepDaDung + soNgayDung;
+                // phepDaDungMoi giữ nguyên — ngay_phep_con_lai không bị ảnh hưởng
+                logger.info(String.format("   ✅ Trừ toàn bộ từ phép năm trước (%.1f >= %.1f)", phepNamTruoc, soNgayDung));
             } else if (phepNamTruoc > 0) {
-                // Phép năm trước không đủ, trừ hết phép năm trước + phần còn lại từ phép năm nay
+                // Phép năm trước không đủ: trừ hết năm trước + phần còn lại từ năm nay
                 double soNgayTruPhepNay = soNgayDung - phepNamTruoc;
                 phepNamTruocMoi = 0.0;
                 phepDaDungMoi = phepDaDung + soNgayTruPhepNay;
+                logger.info(String.format("   ✅ Trừ hết phép năm trước (%.1f) + phép năm nay (%.1f)", phepNamTruoc, soNgayTruPhepNay));
             } else {
-                // Không có phép năm trước, trừ toàn bộ từ phép năm nay
+                // Không có phép năm trước: trừ toàn bộ từ phép năm nay
                 phepDaDungMoi = phepDaDung + soNgayDung;
+                logger.info(String.format("   ✅ Trừ toàn bộ từ phép năm nay (namTruoc=%.1f)", phepNamTruoc));
             }
 
-            // ✅ Tính phép năm hiện tại còn lại (KHÔNG cộng phép năm cũ)
             double phepConLaiMoi = tongPhep - phepDaDungMoi;
             if (phepConLaiMoi < 0) {
                 phepConLaiMoi = 0;
@@ -7106,11 +7170,14 @@ public class KNCSDL {
                 stmt.setDouble(3, phepConLaiMoi);
                 stmt.setInt(4, nhanVienId);
                 stmt.setInt(5, nam);
-                stmt.executeUpdate();
+                int rows = stmt.executeUpdate();
+                logger.info(String.format("💾 [AFTER] - namTruoc:%.1f, daDung:%.1f, conLai:%.1f (rows updated: %d)",
+                    phepNamTruocMoi, phepDaDungMoi, phepConLaiMoi, rows));
             }
 
             return true;
         } catch (SQLException e) {
+            logger.log(Level.SEVERE, "❌ [capNhatNgayPhepDaDungUuTien] Error: " + e.getMessage(), e);
             e.printStackTrace();
             return false;
         }
@@ -8031,11 +8098,14 @@ public class KNCSDL {
                                                 logger.info("       💾 Đã INSERT vào lich_su_cong_phep");
                                                 
                                                 // 2. Cập nhật bảng ngay_phep_nam (cho năm hiện tại)
+                                                // 🔧 FIX: Preserve ngay_phep_nam_truoc and ngay_phep_da_dung on update
                                                 String sqlUpdate = "INSERT INTO ngay_phep_nam (nhan_vien_id, nam, tong_ngay_phep, ngay_phep_da_dung, ngay_phep_con_lai, ngay_phep_nam_truoc) " +
                                                                    "VALUES (?, ?, 1.0, 0.0, 1.0, 0) " +
                                                                    "ON DUPLICATE KEY UPDATE " +
                                                                    "tong_ngay_phep = tong_ngay_phep + 1.0, " +
-                                                                   "ngay_phep_con_lai = ngay_phep_con_lai + 1.0";
+                                                                   "ngay_phep_con_lai = ngay_phep_con_lai + 1.0, " +
+                                                                   "ngay_phep_nam_truoc = ngay_phep_nam_truoc, " +
+                                                                   "ngay_phep_da_dung = ngay_phep_da_dung";
                                                 
                                                 try (PreparedStatement stmtUpdate = cn.prepareStatement(sqlUpdate)) {
                                                     stmtUpdate.setInt(1, nhanVienId);

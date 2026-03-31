@@ -360,10 +360,16 @@ public class apiNghiPhep extends HttpServlet {
                 Calendar cal = Calendar.getInstance();
                 int nam = cal.get(Calendar.YEAR);
                 
+                Logger.getLogger(apiNghiPhep.class.getName()).info(
+                    String.format("🔔 [duyetDon] Approved leave - Calling capNhatNgayPhepDaDungUuTien: NV=%d, Year=%d, Days=%.1f", 
+                        nhanVienId, nam, soNgay));
+                
                 // Gọi phương thức trừ phép với ưu tiên
                 boolean truPhepOk = kn.capNhatNgayPhepDaDungUuTien(nhanVienId, nam, soNgay);
                 
                 if (!truPhepOk) {
+                    Logger.getLogger(apiNghiPhep.class.getName()).warning(
+                        String.format("❌ [duyetDon] Failed to deduct leave for NV=%d, Year=%d", nhanVienId, nam));
                     out.print("{\"success\":false,\"message\":\"❌ Lỗi: Không thể cập nhật phép sau duyệt.\"}");
                     return;
                 }
