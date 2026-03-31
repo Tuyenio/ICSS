@@ -6929,9 +6929,14 @@ public class KNCSDL {
                 if (rs.next()) {
                     double phepNamTruoc = rs.getDouble("ngay_phep_nam_truoc");
 
-                    // Nếu record năm hiện tại chưa lưu carry-over nhưng năm trước còn phép,
-                    // trả về giá trị năm trước để UI/API luôn hiển thị đúng x(năm-1)+y(năm).
-                    if (phepNamTruoc <= 0) {
+                    // Fallback: nếu record năm nay chưa lưu carry-over nhưng năm trước còn phép,
+                    // chỉ áp dụng trong Q1 (tháng 1-3). Sau ngày 1/4 sp_xoa_phep_nam_cu đã xóa
+                    // ngay_phep_nam_truoc — không được lấy lại giá trị cũ.
+                    java.util.Calendar _nowCal = java.util.Calendar.getInstance();
+                    int _curYear = _nowCal.get(java.util.Calendar.YEAR);
+                    int _curMonth = _nowCal.get(java.util.Calendar.MONTH) + 1;
+                    boolean _isQ1 = (nam == _curYear && _curMonth <= 3);
+                    if (phepNamTruoc <= 0 && _isQ1) {
                         String prevSql = "SELECT ngay_phep_con_lai FROM ngay_phep_nam WHERE nhan_vien_id = ? AND nam = ?";
                         try (PreparedStatement prevStmt = cn.prepareStatement(prevSql)) {
                             prevStmt.setInt(1, nhanVienId);
@@ -6979,7 +6984,11 @@ public class KNCSDL {
                 if (rs.next()) {
                     double phepNamTruoc = rs.getDouble("ngay_phep_nam_truoc");
 
-                    if (phepNamTruoc <= 0) {
+                    java.util.Calendar _nowCal2 = java.util.Calendar.getInstance();
+                    int _curYear2 = _nowCal2.get(java.util.Calendar.YEAR);
+                    int _curMonth2 = _nowCal2.get(java.util.Calendar.MONTH) + 1;
+                    boolean _isQ1_2 = (nam == _curYear2 && _curMonth2 <= 3);
+                    if (phepNamTruoc <= 0 && _isQ1_2) {
                         String prevSql = "SELECT ngay_phep_con_lai FROM ngay_phep_nam WHERE nhan_vien_id = ? AND nam = ?";
                         try (PreparedStatement prevStmt = cn.prepareStatement(prevSql)) {
                             prevStmt.setInt(1, nhanVienId);
@@ -7110,9 +7119,15 @@ public class KNCSDL {
 
             // FIX: Nếu ngay_phep_nam_truoc = 0 nhưng năm trước còn phép (nhân viên < 12 tháng
             // chưa được sp_cong_phep_dau_nam chuyển phép), xử lý trực tiếp từ record năm trước.
+            // CHÚ Ý: Chỉ áp dụng fallback trong Q1 (tháng 1-3). Sau ngày 1/4, sp_xoa_phep_nam_cu
+            // đã xóa phép năm cũ — không được tính lại carry-over đã bị xóa.
+            java.util.Calendar _nowCapNhat = java.util.Calendar.getInstance();
+            int _curYearCapNhat = _nowCapNhat.get(java.util.Calendar.YEAR);
+            int _curMonthCapNhat = _nowCapNhat.get(java.util.Calendar.MONTH) + 1;
+            boolean _isQ1CapNhat = (nam == _curYearCapNhat && _curMonthCapNhat <= 3);
             boolean usePrevYearRecord = false;
             double prevYearConLai = 0.0;
-            if (phepNamTruoc == 0) {
+            if (phepNamTruoc == 0 && _isQ1CapNhat) {
                 String sqlPrev = "SELECT ngay_phep_con_lai FROM ngay_phep_nam WHERE nhan_vien_id = ? AND nam = ?";
                 try (PreparedStatement stmt = cn.prepareStatement(sqlPrev)) {
                     stmt.setInt(1, nhanVienId);
