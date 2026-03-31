@@ -2365,11 +2365,29 @@ public class KNCSDL {
                         java.sql.Date ngayHd = hdRs.getDate("ngay_bat_dau");
                         halfDayMapByNV.computeIfAbsent(nvId, k -> new java.util.HashSet<>()).add(ngayHd);
                     }
-                }
-            }
+                    
+                        // Quy tắc mốc ngày 15:
+                        // - Vào làm <= 15: tháng vào làm được tính là tháng đủ điều kiện đầu tiên
+                        // - Vào làm > 15: tháng vào làm KHÔNG được tính, bắt đầu từ tháng kế tiếp
+                        LocalDate joinDate = ngayVaoLam.toLocalDate();
+                        YearMonth joinYm = YearMonth.from(joinDate);
+                        YearMonth previousYm = YearMonth.of(previousYear, previousMonth);
+                    
+                        boolean duDieuKienThangTruoc;
+                        if (previousYm.isBefore(joinYm)) {
+                            duDieuKienThangTruoc = false;
+                        } else if (previousYm.equals(joinYm)) {
+                            duDieuKienThangTruoc = joinDate.getDayOfMonth() <= 15;
+                        } else {
+                            duDieuKienThangTruoc = true;
+                        }
         }
-
-        try (PreparedStatement stmt = cn.prepareStatement(sql.toString())) {
+                        } else {
+                            if (monthsWorked >= 12) {
+                                logger.info("       ✗ >= 12 tháng, skip");
+                            } else {
+                                logger.info("       ✗ Chưa đủ điều kiện tháng trước theo mốc ngày 15, skip");
+                            }
             for (int i = 0; i < params.size(); i++) {
                 stmt.setObject(i + 1, params.get(i));
             }
@@ -6927,6 +6945,26 @@ public class KNCSDL {
 
             try (ResultSet rs = checkStmt.executeQuery()) {
                 if (rs.next()) {
+                    double phepNamTruoc = rs.getDouble("ngay_phep_nam_truoc");
+
+                    // Nếu record năm hiện tại chưa lưu carry-over nhưng năm trước còn phép,
+                    // trả về giá trị năm trước để UI/API luôn hiển thị đúng x(năm-1)+y(năm).
+                    if (phepNamTruoc <= 0) {
+                        String prevSql = "SELECT ngay_phep_con_lai FROM ngay_phep_nam WHERE nhan_vien_id = ? AND nam = ?";
+                        try (PreparedStatement prevStmt = cn.prepareStatement(prevSql)) {
+                            prevStmt.setInt(1, nhanVienId);
+                            prevStmt.setInt(2, nam - 1);
+                            try (ResultSet prevRs = prevStmt.executeQuery()) {
+                                if (prevRs.next()) {
+                                    double prevConLai = prevRs.getDouble("ngay_phep_con_lai");
+                                    if (prevConLai > 0) {
+                                        phepNamTruoc = prevConLai;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
                     Map<String, Object> result = new HashMap<>();
                     result.put("id", rs.getInt("id"));
                     result.put("nhan_vien_id", rs.getInt("nhan_vien_id"));
@@ -6934,7 +6972,7 @@ public class KNCSDL {
                     result.put("tong_ngay_phep", rs.getBigDecimal("tong_ngay_phep"));
                     result.put("ngay_phep_da_dung", rs.getBigDecimal("ngay_phep_da_dung"));
                     result.put("ngay_phep_con_lai", rs.getBigDecimal("ngay_phep_con_lai"));
-                    result.put("ngay_phep_nam_truoc", rs.getBigDecimal("ngay_phep_nam_truoc"));
+                    result.put("ngay_phep_nam_truoc", java.math.BigDecimal.valueOf(phepNamTruoc));
                     result.put("da_cong_phep_dau_nam", rs.getInt("da_cong_phep_dau_nam"));
                     return result;
                 }
@@ -6957,6 +6995,24 @@ public class KNCSDL {
 
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
+                    double phepNamTruoc = rs.getDouble("ngay_phep_nam_truoc");
+
+                    if (phepNamTruoc <= 0) {
+                        String prevSql = "SELECT ngay_phep_con_lai FROM ngay_phep_nam WHERE nhan_vien_id = ? AND nam = ?";
+                        try (PreparedStatement prevStmt = cn.prepareStatement(prevSql)) {
+                            prevStmt.setInt(1, nhanVienId);
+                            prevStmt.setInt(2, nam - 1);
+                            try (ResultSet prevRs = prevStmt.executeQuery()) {
+                                if (prevRs.next()) {
+                                    double prevConLai = prevRs.getDouble("ngay_phep_con_lai");
+                                    if (prevConLai > 0) {
+                                        phepNamTruoc = prevConLai;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
                     Map<String, Object> result = new HashMap<>();
                     result.put("id", rs.getInt("id"));
                     result.put("nhan_vien_id", rs.getInt("nhan_vien_id"));
@@ -6964,7 +7020,7 @@ public class KNCSDL {
                     result.put("tong_ngay_phep", rs.getBigDecimal("tong_ngay_phep"));
                     result.put("ngay_phep_da_dung", rs.getBigDecimal("ngay_phep_da_dung"));
                     result.put("ngay_phep_con_lai", rs.getBigDecimal("ngay_phep_con_lai"));
-                    result.put("ngay_phep_nam_truoc", rs.getBigDecimal("ngay_phep_nam_truoc"));
+                    result.put("ngay_phep_nam_truoc", java.math.BigDecimal.valueOf(phepNamTruoc));
                     result.put("da_cong_phep_dau_nam", rs.getInt("da_cong_phep_dau_nam"));
                     return result;
                 }
@@ -8056,6 +8112,22 @@ public class KNCSDL {
                     String hoTen = rsNV.getString("ho_ten");
                     java.sql.Date ngayVaoLam = rsNV.getDate("ngay_vao_lam");
                     totalChecked++;
+
+                    // Quy tắc mốc ngày 15:
+                    // - Vào làm <= 15: tháng vào làm được tính là tháng đủ điều kiện đầu tiên
+                    // - Vào làm > 15: tháng vào làm không được tính, bắt đầu từ tháng kế tiếp
+                    LocalDate joinDate = ngayVaoLam.toLocalDate();
+                    YearMonth joinYm = YearMonth.from(joinDate);
+                    YearMonth previousYm = YearMonth.of(previousYear, previousMonth);
+
+                    boolean duDieuKienThangTruoc;
+                    if (previousYm.isBefore(joinYm)) {
+                        duDieuKienThangTruoc = false;
+                    } else if (previousYm.equals(joinYm)) {
+                        duDieuKienThangTruoc = joinDate.getDayOfMonth() <= 15;
+                    } else {
+                        duDieuKienThangTruoc = true;
+                    }
                     
                     // Tính số tháng đã làm
                     int monthsWorked = calculateMonthsDifference(ngayVaoLam, new java.sql.Date(System.currentTimeMillis()));
@@ -8063,7 +8135,7 @@ public class KNCSDL {
                     logger.info("   [" + totalChecked + "] NV ID " + nhanVienId + " (" + hoTen + ") - Ngày vào: " + ngayVaoLam + ", Tháng làm: " + monthsWorked);
                     
                     // Chỉ cộng cho nhân viên chưa đủ 12 tháng
-                    if (monthsWorked < 12) {
+                    if (monthsWorked < 12 && duDieuKienThangTruoc) {
                         logger.info("       ✓ < 12 tháng, kiểm tra lịch sử...");
                         
                         // Kiểm tra xem tháng trước (previousMonth) đã cộng chưa
@@ -8130,7 +8202,11 @@ public class KNCSDL {
                             }
                         }
                     } else {
-                        logger.info("       ✗ >= 12 tháng, skip");
+                        if (monthsWorked >= 12) {
+                            logger.info("       ✗ >= 12 tháng, skip");
+                        } else {
+                            logger.info("       ✗ Chưa đủ điều kiện tháng trước theo mốc ngày 15, skip");
+                        }
                     }
                 }
                 

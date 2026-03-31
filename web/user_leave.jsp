@@ -210,6 +210,7 @@
 
         .main-box .box-title i {
             background: var(--primary-gradient);
+            background-clip: text;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             font-size: 1.4rem;
@@ -585,6 +586,7 @@
                             <% 
                             int stt = 1;
                             for (Map<String, Object> don : dsDonNghiPhep) { 
+                                Integer donId = ((Number) don.get("id")).intValue();
                                 String trangThai = (String) don.get("trang_thai");
                                 String loaiPhep = (String) don.get("loai_phep");
                                 String lyDo = (String) don.get("ly_do");
@@ -662,13 +664,15 @@
                                 </td>
                                 <td>
                                     <button class="btn btn-sm btn-outline-primary" 
-                                            onclick="xemChiTiet('<%= don.get("id") %>')" 
+                                            data-don-id="<%= donId %>"
+                                            onclick="xemChiTiet(this.dataset.donId)" 
                                             title="Xem chi tiết">
                                         <i class="fa-solid fa-eye"></i>
                                     </button>
                                     <% if ("cho_duyet".equals(trangThai)) { %>
                                         <button class="btn btn-sm btn-outline-danger" 
-                                                onclick="xoaDon('<%= don.get("id") %>')" 
+                                                data-don-id="<%= donId %>"
+                                                onclick="xoaDon(this.dataset.donId)" 
                                                 title="Xóa đơn">
                                             <i class="fa-solid fa-trash"></i>
                                         </button>
