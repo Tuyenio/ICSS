@@ -326,6 +326,11 @@
             color: #991b1b;
         }
 
+        .badge-status.cancelled {
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+            color: #374151;
+        }
+
         /* ===== LEAVE TYPE BADGE ===== */
         .leave-type-badge {
             padding: 6px 14px;
@@ -609,6 +614,10 @@
                                     statusClass = "rejected";
                                     statusText = "Từ chối";
                                     statusIcon = "fa-circle-xmark";
+                                } else if ("da_huy".equals(trangThai)) {
+                                    statusClass = "cancelled";
+                                    statusText = "Đã hủy";
+                                    statusIcon = "fa-ban";
                                 }
                             %>
                             <tr>
@@ -934,6 +943,8 @@
                             statusBadge = '<span class="badge-status approved"><i class="fa-solid fa-circle-check"></i> Đã duyệt</span>';
                         } else if (don.trang_thai === 'tu_choi') {
                             statusBadge = '<span class="badge-status rejected"><i class="fa-solid fa-circle-xmark"></i> Từ chối</span>';
+                        } else if (don.trang_thai === 'da_huy') {
+                            statusBadge = '<span class="badge-status cancelled"><i class="fa-solid fa-ban"></i> Đã hủy</span>';
                         } else {
                             statusBadge = '<span class="badge-status pending"><i class="fa-solid fa-question"></i> ' + don.trang_thai + '</span>';
                         }
