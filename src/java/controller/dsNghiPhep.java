@@ -31,13 +31,26 @@ public class dsNghiPhep extends HttpServlet {
                 return;
             }
             
-            // Chỉ Admin và Quản lý mới được truy cập
-            if (!"Admin".equalsIgnoreCase(role) && !"Quản lý".equalsIgnoreCase(role)) {
+            KNCSDL kn = new KNCSDL();
+
+            Map<String, Object> nguoiDung = kn.getNhanVienByEmail(email);
+            String vaiTroDb = nguoiDung != null ? (String) nguoiDung.get("vai_tro") : null;
+            String chucVuDb = nguoiDung != null ? (String) nguoiDung.get("chuc_vu") : null;
+            String tenPhong = nguoiDung != null ? (String) nguoiDung.get("ten_phong") : null;
+
+            boolean laAdmin = "Admin".equalsIgnoreCase(role) || "Admin".equalsIgnoreCase(vaiTroDb);
+            boolean laQuanLy = "Quản lý".equalsIgnoreCase(role) || "Quản lý".equalsIgnoreCase(vaiTroDb);
+            boolean laTruongPhong = isTruongPhong(role) || isTruongPhong(chucVuDb);
+            boolean laTruongPhongNhanSu = laTruongPhong && isPhongNhanSu(tenPhong);
+
+            // Chỉ Admin, Quản lý và Trưởng phòng Nhân sự mới được truy cập
+            if (!laAdmin && !laQuanLy && !laTruongPhongNhanSu) {
                 response.sendRedirect("userNghiPhep");
                 return;
             }
-            
-            KNCSDL kn = new KNCSDL();
+
+            // Chỉ Admin + Trưởng phòng Nhân sự có quyền xóa đơn đã duyệt
+            boolean coQuyenXoaDonDaDuyet = laAdmin || laTruongPhongNhanSu;
             
             // Lấy tham số lọc
             String trangThai = request.getParameter("trangThai");
@@ -70,6 +83,7 @@ public class dsNghiPhep extends HttpServlet {
             request.setAttribute("trangThaiFilter", trangThai);
             request.setAttribute("thangFilter", thang);
             request.setAttribute("namFilter", nam);
+            request.setAttribute("coQuyenXoaDonDaDuyet", coQuyenXoaDonDaDuyet);
             
             request.getRequestDispatcher("leave_management.jsp").forward(request, response);
             
@@ -83,5 +97,24 @@ public class dsNghiPhep extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         doGet(request, response);
+    }
+
+    private boolean isPhongNhanSu(String tenPhong) {
+        if (tenPhong == null) {
+            return false;
+        }
+        String phongLower = tenPhong.trim().toLowerCase(Locale.ROOT);
+        return phongLower.contains("nhân sự")
+                || phongLower.contains("nhan su")
+                || phongLower.contains("nhansu");
+    }
+
+    private boolean isTruongPhong(String value) {
+        if (value == null) {
+            return false;
+        }
+        String v = value.trim().toLowerCase(Locale.ROOT);
+        return v.contains("trưởng phòng")
+                || v.contains("truong phong");
     }
 }

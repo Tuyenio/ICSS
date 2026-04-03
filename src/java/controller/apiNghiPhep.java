@@ -107,6 +107,14 @@ public class apiNghiPhep extends HttpServlet {
                 case "xoaDon":
                     xoaDon(request, response, out, kn);
                     break;
+
+                case "xoaDonDaDuyet":
+                    if (coQuyenXoaDonDaDuyet(kn, email, role)) {
+                        xoaDonDaDuyet(request, response, out, kn, email);
+                    } else {
+                        out.print("{\"success\":false,\"message\":\"Chỉ Admin hoặc Trưởng phòng Nhân sự mới có quyền xóa đơn đã duyệt\"}");
+                    }
+                    break;
                     
                 case "themNghiPhepMoi":
                     if ("Admin".equals(role) || "Quản lý".equals(role)) {
@@ -466,11 +474,107 @@ public class apiNghiPhep extends HttpServlet {
         try {
             int donId = Integer.parseInt(request.getParameter("donId"));
             int nhanVienId = Integer.parseInt(request.getParameter("nhanVienId"));
-            kn.xoaDonNghiPhep(donId, nhanVienId);
-            out.print("{\"success\":true,\"message\":\"Xóa đơn thành công\"}");
+            boolean result = kn.xoaDonNghiPhep(donId, nhanVienId);
+
+            if (result) {
+                out.print("{\"success\":true,\"message\":\"Xóa đơn thành công\"}");
+            } else {
+                out.print("{\"success\":false,\"message\":\"Không thể xóa đơn. Chỉ xóa được đơn chờ duyệt của chính bạn.\"}");
+            }
         } catch (Exception ex) {
             out.print("{\"success\":false,\"message\":\"" + escapeJson(ex.getMessage()) + "\"}");
         }
+    }
+
+    private void xoaDonDaDuyet(HttpServletRequest request, HttpServletResponse response, PrintWriter out, KNCSDL kn, String email) throws SQLException {
+        try {
+            int donId = Integer.parseInt(request.getParameter("donId"));
+
+            Map<String, Object> don = kn.getDonNghiPhepById(donId);
+            if (don == null) {
+                out.print("{\"success\":false,\"message\":\"Không tìm thấy đơn nghỉ phép\"}");
+                return;
+            }
+
+            String trangThai = (String) don.get("trang_thai");
+            if (!"da_duyet".equals(trangThai)) {
+                out.print("{\"success\":false,\"message\":\"Chỉ được xóa đơn đã duyệt\"}");
+                return;
+            }
+
+            String loaiPhep = (String) don.get("loai_phep");
+            int nhanVienId = ((Number) don.get("nhan_vien_id")).intValue();
+
+            boolean result = kn.xoaDonDaDuyetVaHoanTac(donId);
+            if (!result) {
+                out.print("{\"success\":false,\"message\":\"Không thể xóa đơn đã duyệt\"}");
+                return;
+            }
+
+            try {
+                Map<String, Object> nguoiXoa = kn.getNhanVienByEmail(email);
+                String tenNguoiXoa = nguoiXoa != null ? (String) nguoiXoa.get("ho_ten") : "Quản trị";
+                String vaiTroNguoiXoa = nguoiXoa != null ? (String) nguoiXoa.get("vai_tro") : null;
+                String vaiTroHienThi = "Admin".equalsIgnoreCase(vaiTroNguoiXoa)
+                    ? "Admin"
+                    : "Trưởng phòng Nhân sự";
+                String ngayBatDau = don.get("ngay_bat_dau") != null ? don.get("ngay_bat_dau").toString() : "";
+                String ngayKetThuc = don.get("ngay_ket_thuc") != null ? don.get("ngay_ket_thuc").toString() : "";
+                String soNgay = don.get("so_ngay") != null ? don.get("so_ngay").toString() : "";
+
+                String tieuDe = "Đơn nghỉ phép đã bị hủy";
+                String noiDung = vaiTroHienThi + " " + tenNguoiXoa + " đã xóa đơn " + loaiPhep.toLowerCase()
+                        + " từ ngày " + ngayBatDau + " đến " + ngayKetThuc + " (" + soNgay + " ngày).";
+                String loaiThongBao = "Đơn xin nghỉ phép";
+                String duongDan = "userNghiPhep";
+
+                kn.insertThongBao(nhanVienId, tieuDe, noiDung, loaiThongBao, duongDan);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+
+            String message = "✅ Xóa đơn đã duyệt thành công. Đã xóa chấm công nghỉ phép tương ứng.";
+            if ("Phép năm".equals(loaiPhep)) {
+                message = "✅ Xóa đơn đã duyệt thành công. Đã hoàn lại phép năm và xóa chấm công nghỉ phép tương ứng.";
+            }
+            out.print("{\"success\":true,\"message\":\"" + escapeJson(message) + "\"}");
+        } catch (Exception ex) {
+            out.print("{\"success\":false,\"message\":\"" + escapeJson(ex.getMessage()) + "\"}");
+        }
+    }
+
+    private boolean coQuyenXoaDonDaDuyet(KNCSDL kn, String email, String role) throws SQLException {
+        Map<String, Object> nguoiDung = kn.getNhanVienByEmail(email);
+        String vaiTroDb = nguoiDung != null ? (String) nguoiDung.get("vai_tro") : null;
+        String chucVuDb = nguoiDung != null ? (String) nguoiDung.get("chuc_vu") : null;
+        String tenPhong = nguoiDung != null ? (String) nguoiDung.get("ten_phong") : null;
+
+        boolean laAdmin = "Admin".equalsIgnoreCase(role) || "Admin".equalsIgnoreCase(vaiTroDb);
+        if (laAdmin) {
+            return true;
+        }
+
+        boolean laTruongPhong = isTruongPhong(role) || isTruongPhong(chucVuDb);
+        return laTruongPhong && isPhongNhanSu(tenPhong);
+    }
+
+    private boolean isPhongNhanSu(String tenPhong) {
+        if (tenPhong == null) {
+            return false;
+        }
+        String phongLower = tenPhong.trim().toLowerCase(Locale.ROOT);
+        return phongLower.contains("nhân sự")
+                || phongLower.contains("nhan su")
+                || phongLower.contains("nhansu");
+    }
+
+    private boolean isTruongPhong(String value) {
+        if (value == null) {
+            return false;
+        }
+        String v = value.trim().toLowerCase(Locale.ROOT);
+        return v.contains("trưởng phòng")
+                || v.contains("truong phong");
     }
 
     /**

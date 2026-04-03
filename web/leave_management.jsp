@@ -11,6 +11,7 @@
     String trangThaiFilter = (String) request.getAttribute("trangThaiFilter");
     Integer thangFilter = (Integer) request.getAttribute("thangFilter");
     Integer namFilter = (Integer) request.getAttribute("namFilter");
+    Boolean coQuyenXoaDonDaDuyetAttr = (Boolean) request.getAttribute("coQuyenXoaDonDaDuyet");
     String emailSession = (String) session.getAttribute("userEmail");
     String vaiTro = (String) session.getAttribute("vaiTro");
     
@@ -19,6 +20,7 @@
     if (thongKe == null) thongKe = new HashMap<>();
     if (dsNhanVien == null) dsNhanVien = new ArrayList<>();
     if (namFilter == null) namFilter = java.util.Calendar.getInstance().get(java.util.Calendar.YEAR);
+    boolean coQuyenXoaDonDaDuyet = coQuyenXoaDonDaDuyetAttr != null && coQuyenXoaDonDaDuyetAttr;
     
     int choDuyet = thongKe.getOrDefault("cho_duyet", 0);
     int daDuyet = thongKe.getOrDefault("da_duyet", 0);
@@ -313,6 +315,17 @@
 
         .btn-action.view:hover {
             background: #3b82f6;
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .btn-action.delete {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .btn-action.delete:hover {
+            background: #ef4444;
             color: white;
             transform: scale(1.1);
         }
@@ -682,6 +695,13 @@
                                             <i class="fa-solid fa-xmark"></i>
                                         </button>
                                     <% } %>
+                                    <% if ("da_duyet".equals(trangThai) && coQuyenXoaDonDaDuyet) { %>
+                                        <button class="btn-action delete"
+                                                onclick="xoaDonDaDuyet('<%= don.get("id") %>', '<%= tenNV != null ? tenNV.replace("'", "\\'") : "" %>')"
+                                                title="Xóa đơn đã duyệt">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    <% } %>
                                 </td>
                             </tr>
                             <% } %>
@@ -819,6 +839,8 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        const canDeleteApproved = <%= coQuyenXoaDonDaDuyet ? "true" : "false" %>;
+
         // Search filter
         document.getElementById('searchInput').addEventListener('input', function() {
             const searchTerm = this.value.toLowerCase();
@@ -964,6 +986,14 @@
                                     <i class="fa-solid fa-check me-2"></i>Duyệt đơn
                                 </button>
                             `;
+                        } else if (don.trang_thai === 'da_duyet' && canDeleteApproved) {
+                            const tenNhanVienSafe = (don.ten_nhan_vien || '').replace(/'/g, "\\'");
+                            footer = `
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                                <button type="button" class="btn btn-danger" onclick="xoaDonDaDuyet(${don.id}, '${tenNhanVienSafe}')" data-bs-dismiss="modal">
+                                    <i class="fa-solid fa-trash me-2"></i>Xóa đơn đã duyệt
+                                </button>
+                            `;
                         }
                         document.getElementById('chiTietDonFooter').innerHTML = footer;
                         
@@ -1068,6 +1098,62 @@
                         title: 'Lỗi!',
                         text: data.message,
                         confirmButtonColor: '#667eea'
+                    });
+                }
+            });
+        }
+
+        // Xóa đơn đã duyệt (Admin hoặc Trưởng phòng Nhân sự)
+        function xoaDonDaDuyet(donId, tenNhanVien) {
+            donId = parseInt(donId);
+            const tenHienThi = tenNhanVien && tenNhanVien.trim() ? tenNhanVien : 'nhân viên';
+
+            Swal.fire({
+                title: 'Xóa đơn đã duyệt?',
+                html: `Bạn sắp xóa đơn nghỉ phép của <strong>${tenHienThi}</strong>.<br><br>Hệ thống sẽ:<br>• Hoàn lại phép năm (nếu là loại Phép năm)<br>• Xóa bản ghi chấm công nghỉ phép trong thời gian đơn`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#94a3b8',
+                confirmButtonText: 'Xác nhận xóa',
+                cancelButtonText: 'Hủy'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const formData = new FormData();
+                    formData.append('action', 'xoaDonDaDuyet');
+                    formData.append('donId', donId);
+
+                    fetch('apiNghiPhep', {
+                        method: 'POST',
+                        body: new URLSearchParams(formData)
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Đã xóa!',
+                                text: data.message,
+                                confirmButtonColor: '#667eea'
+                            }).then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Lỗi!',
+                                text: data.message,
+                                confirmButtonColor: '#667eea'
+                            });
+                        }
+                    })
+                    .catch(err => {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Lỗi kết nối!',
+                            text: 'Không thể xóa đơn: ' + err,
+                            confirmButtonColor: '#667eea'
+                        });
                     });
                 }
             });

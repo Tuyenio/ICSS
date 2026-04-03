@@ -24,8 +24,8 @@ public class KNCSDL {
 
     public KNCSDL() throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
-        //this.cn = DriverManager.getConnection(path, "root", "");
-        this.cn = DriverManager.getConnection(path, "icssapp", "StrongPass!2025");
+        this.cn = DriverManager.getConnection(path, "root", "");
+        //this.cn = DriverManager.getConnection(path, "icssapp", "StrongPass!2025");
     }
 
     public ResultSet laydl(String email) throws SQLException {
@@ -7322,6 +7322,144 @@ public class KNCSDL {
             stmt.setInt(1, donId);
             stmt.setInt(2, nhanVienId);
             return stmt.executeUpdate() > 0;
+        }
+    }
+
+    /**
+     * Hoàn lại phép năm khi hủy/xóa đơn đã duyệt.
+     *
+     * Logic hoàn: ưu tiên trả về phần phép năm hiện tại đã dùng trước,
+     * phần dư sẽ cộng vào quỹ phép năm trước.
+     */
+    public boolean hoanNgayPhepDaDungUuTien(int nhanVienId, int nam, double soNgayHoan) throws SQLException {
+        if (soNgayHoan <= 0) {
+            return true;
+        }
+
+        // Đảm bảo đã có record năm phép trước khi lock/update
+        getNgayPhepNam(nhanVienId, nam);
+
+        String sqlGet = "SELECT tong_ngay_phep, ngay_phep_da_dung, ngay_phep_nam_truoc "
+                + "FROM ngay_phep_nam WHERE nhan_vien_id = ? AND nam = ? FOR UPDATE";
+
+        try (PreparedStatement getStmt = cn.prepareStatement(sqlGet)) {
+            getStmt.setInt(1, nhanVienId);
+            getStmt.setInt(2, nam);
+
+            try (ResultSet rs = getStmt.executeQuery()) {
+                if (!rs.next()) {
+                    return false;
+                }
+
+                double tongPhep = rs.getDouble("tong_ngay_phep");
+                double phepDaDung = rs.getDouble("ngay_phep_da_dung");
+                double phepNamTruoc = rs.getDouble("ngay_phep_nam_truoc");
+
+                double hoanTuPhepNamHienTai = Math.min(soNgayHoan, phepDaDung);
+                double phanConLai = soNgayHoan - hoanTuPhepNamHienTai;
+
+                double phepDaDungMoi = Math.max(0, phepDaDung - hoanTuPhepNamHienTai);
+                double phepNamTruocMoi = phepNamTruoc + Math.max(0, phanConLai);
+                double phepConLaiMoi = tongPhep - phepDaDungMoi;
+                if (phepConLaiMoi < 0) {
+                    phepConLaiMoi = 0;
+                }
+
+                String sqlUpdate = "UPDATE ngay_phep_nam SET ngay_phep_da_dung = ?, ngay_phep_con_lai = ?, ngay_phep_nam_truoc = ? "
+                        + "WHERE nhan_vien_id = ? AND nam = ?";
+
+                try (PreparedStatement updateStmt = cn.prepareStatement(sqlUpdate)) {
+                    updateStmt.setDouble(1, phepDaDungMoi);
+                    updateStmt.setDouble(2, phepConLaiMoi);
+                    updateStmt.setDouble(3, phepNamTruocMoi);
+                    updateStmt.setInt(4, nhanVienId);
+                    updateStmt.setInt(5, nam);
+                    return updateStmt.executeUpdate() > 0;
+                }
+            }
+        }
+    }
+
+    /**
+     * Xóa đơn nghỉ phép đã duyệt và hoàn tác dữ liệu liên quan:
+     * - Hoàn lại ngày phép năm (nếu là "Phép năm")
+     * - Xóa bản ghi chấm công nghỉ phép tự động (check_in/check_out NULL)
+     */
+    public boolean xoaDonDaDuyetVaHoanTac(int donId) throws SQLException {
+        boolean oldAutoCommit = cn.getAutoCommit();
+        cn.setAutoCommit(false);
+
+        try {
+            String sqlGetDon = "SELECT nhan_vien_id, loai_phep, so_ngay, ngay_bat_dau, ngay_ket_thuc "
+                    + "FROM don_nghi_phep WHERE id = ? AND trang_thai = 'da_duyet' FOR UPDATE";
+
+            int nhanVienId;
+            String loaiPhep;
+            double soNgay;
+            Date ngayBatDau;
+            Date ngayKetThuc;
+
+            try (PreparedStatement stmt = cn.prepareStatement(sqlGetDon)) {
+                stmt.setInt(1, donId);
+                try (ResultSet rs = stmt.executeQuery()) {
+                    if (!rs.next()) {
+                        cn.rollback();
+                        return false;
+                    }
+
+                    nhanVienId = rs.getInt("nhan_vien_id");
+                    loaiPhep = rs.getString("loai_phep");
+                    soNgay = rs.getDouble("so_ngay");
+                    ngayBatDau = rs.getDate("ngay_bat_dau");
+                    ngayKetThuc = rs.getDate("ngay_ket_thuc");
+                }
+            }
+
+            if ("Phép năm".equals(loaiPhep)) {
+                Calendar cal = Calendar.getInstance();
+                cal.setTime(new java.util.Date(ngayBatDau.getTime()));
+                int namPhep = cal.get(Calendar.YEAR);
+
+                boolean hoanPhepOk = hoanNgayPhepDaDungUuTien(nhanVienId, namPhep, soNgay);
+                if (!hoanPhepOk) {
+                    cn.rollback();
+                    return false;
+                }
+            }
+
+            String sqlXoaChamCong = "DELETE FROM cham_cong "
+                    + "WHERE nhan_vien_id = ? "
+                    + "AND ngay BETWEEN ? AND ? "
+                    + "AND check_in IS NULL "
+                    + "AND check_out IS NULL "
+                    + "AND (loai_cham_cong IS NULL OR loai_cham_cong = '')";
+
+            try (PreparedStatement stmt = cn.prepareStatement(sqlXoaChamCong)) {
+                stmt.setInt(1, nhanVienId);
+                stmt.setDate(2, ngayBatDau);
+                stmt.setDate(3, ngayKetThuc);
+                stmt.executeUpdate();
+            }
+
+            String sqlXoaDon = "DELETE FROM don_nghi_phep WHERE id = ? AND trang_thai = 'da_duyet'";
+            int affected;
+            try (PreparedStatement stmt = cn.prepareStatement(sqlXoaDon)) {
+                stmt.setInt(1, donId);
+                affected = stmt.executeUpdate();
+            }
+
+            if (affected <= 0) {
+                cn.rollback();
+                return false;
+            }
+
+            cn.commit();
+            return true;
+        } catch (SQLException ex) {
+            cn.rollback();
+            throw ex;
+        } finally {
+            cn.setAutoCommit(oldAutoCommit);
         }
     }
 
