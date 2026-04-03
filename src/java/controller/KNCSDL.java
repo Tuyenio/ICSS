@@ -24,8 +24,8 @@ public class KNCSDL {
 
     public KNCSDL() throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
-        //this.cn = DriverManager.getConnection(path, "root", "");
-        this.cn = DriverManager.getConnection(path, "icssapp", "StrongPass!2025");
+        this.cn = DriverManager.getConnection(path, "root", "");
+        //this.cn = DriverManager.getConnection(path, "icssapp", "StrongPass!2025");
     }
 
     public ResultSet laydl(String email) throws SQLException {
@@ -7023,7 +7023,38 @@ public class KNCSDL {
     /**
      * Hủy đơn xin nghỉ phép (chỉ hủy được đơn chờ duyệt)
      */
+    private void damBaoTrangThaiDaHuyChoDonNghiPhep() throws SQLException {
+        String sqlCheck = "SELECT COLUMN_TYPE FROM INFORMATION_SCHEMA.COLUMNS "
+                + "WHERE TABLE_SCHEMA = DATABASE() "
+                + "AND TABLE_NAME = 'don_nghi_phep' "
+                + "AND COLUMN_NAME = 'trang_thai'";
+
+        try (PreparedStatement checkStmt = cn.prepareStatement(sqlCheck);
+             ResultSet rs = checkStmt.executeQuery()) {
+            if (rs.next()) {
+                String columnType = rs.getString("COLUMN_TYPE");
+                if (columnType != null && columnType.toLowerCase(Locale.ROOT).contains("'da_huy'")) {
+                    return;
+                }
+            } else {
+                return;
+            }
+        }
+
+        String sqlAlter = "ALTER TABLE don_nghi_phep "
+                + "MODIFY COLUMN trang_thai ENUM('cho_duyet','da_duyet','tu_choi','da_huy') "
+                + "DEFAULT 'cho_duyet'";
+
+        try (PreparedStatement alterStmt = cn.prepareStatement(sqlAlter)) {
+            alterStmt.executeUpdate();
+        }
+    }
+
+    /**
+     * Hủy đơn xin nghỉ phép (chỉ hủy được đơn chờ duyệt)
+     */
     public boolean huyDonNghiPhep(int donId) throws SQLException {
+        damBaoTrangThaiDaHuyChoDonNghiPhep();
         String sql = "UPDATE don_nghi_phep SET trang_thai = 'da_huy' WHERE id = ? AND trang_thai = 'cho_duyet'";
 
         try (PreparedStatement stmt = cn.prepareStatement(sql)) {
@@ -7254,6 +7285,7 @@ public class KNCSDL {
         stats.putIfAbsent("cho_duyet", 0);
         stats.putIfAbsent("da_duyet", 0);
         stats.putIfAbsent("tu_choi", 0);
+        stats.putIfAbsent("da_huy", 0);
 
         return stats;
     }
@@ -7444,6 +7476,93 @@ public class KNCSDL {
             String sqlXoaDon = "DELETE FROM don_nghi_phep WHERE id = ? AND trang_thai = 'da_duyet'";
             int affected;
             try (PreparedStatement stmt = cn.prepareStatement(sqlXoaDon)) {
+                stmt.setInt(1, donId);
+                affected = stmt.executeUpdate();
+            }
+
+            if (affected <= 0) {
+                cn.rollback();
+                return false;
+            }
+
+            cn.commit();
+            return true;
+        } catch (SQLException ex) {
+            cn.rollback();
+            throw ex;
+        } finally {
+            cn.setAutoCommit(oldAutoCommit);
+        }
+    }
+
+    /**
+     * Hủy đơn nghỉ phép đã duyệt và hoàn tác dữ liệu liên quan:
+     * - Hoàn lại ngày phép năm (nếu là "Phép năm")
+     * - Xóa bản ghi chấm công nghỉ phép tự động (check_in/check_out NULL)
+     * - Không xóa bản ghi đơn, chỉ cập nhật trạng thái sang "da_huy"
+     */
+    public boolean huyDonDaDuyetVaHoanTac(int donId) throws SQLException {
+        damBaoTrangThaiDaHuyChoDonNghiPhep();
+
+        boolean oldAutoCommit = cn.getAutoCommit();
+        cn.setAutoCommit(false);
+
+        try {
+            String sqlGetDon = "SELECT nhan_vien_id, loai_phep, so_ngay, ngay_bat_dau, ngay_ket_thuc "
+                    + "FROM don_nghi_phep WHERE id = ? AND trang_thai = 'da_duyet' FOR UPDATE";
+
+            int nhanVienId;
+            String loaiPhep;
+            double soNgay;
+            Date ngayBatDau;
+            Date ngayKetThuc;
+
+            try (PreparedStatement stmt = cn.prepareStatement(sqlGetDon)) {
+                stmt.setInt(1, donId);
+                try (ResultSet rs = stmt.executeQuery()) {
+                    if (!rs.next()) {
+                        cn.rollback();
+                        return false;
+                    }
+
+                    nhanVienId = rs.getInt("nhan_vien_id");
+                    loaiPhep = rs.getString("loai_phep");
+                    soNgay = rs.getDouble("so_ngay");
+                    ngayBatDau = rs.getDate("ngay_bat_dau");
+                    ngayKetThuc = rs.getDate("ngay_ket_thuc");
+                }
+            }
+
+            if ("Phép năm".equals(loaiPhep)) {
+                Calendar cal = Calendar.getInstance();
+                cal.setTime(new java.util.Date(ngayBatDau.getTime()));
+                int namPhep = cal.get(Calendar.YEAR);
+
+                boolean hoanPhepOk = hoanNgayPhepDaDungUuTien(nhanVienId, namPhep, soNgay);
+                if (!hoanPhepOk) {
+                    cn.rollback();
+                    return false;
+                }
+            }
+
+            String sqlXoaChamCong = "DELETE FROM cham_cong "
+                    + "WHERE nhan_vien_id = ? "
+                    + "AND ngay BETWEEN ? AND ? "
+                    + "AND check_in IS NULL "
+                    + "AND check_out IS NULL "
+                    + "AND (loai_cham_cong IS NULL OR loai_cham_cong = '')";
+
+            try (PreparedStatement stmt = cn.prepareStatement(sqlXoaChamCong)) {
+                stmt.setInt(1, nhanVienId);
+                stmt.setDate(2, ngayBatDau);
+                stmt.setDate(3, ngayKetThuc);
+                stmt.executeUpdate();
+            }
+
+            String sqlHuyDon = "UPDATE don_nghi_phep SET trang_thai = 'da_huy' "
+                    + "WHERE id = ? AND trang_thai = 'da_duyet'";
+            int affected;
+            try (PreparedStatement stmt = cn.prepareStatement(sqlHuyDon)) {
                 stmt.setInt(1, donId);
                 affected = stmt.executeUpdate();
             }

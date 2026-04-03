@@ -115,6 +115,14 @@ public class apiNghiPhep extends HttpServlet {
                         out.print("{\"success\":false,\"message\":\"Chỉ Admin hoặc Trưởng phòng Nhân sự mới có quyền xóa đơn đã duyệt\"}");
                     }
                     break;
+
+                case "huyDonDaDuyet":
+                    if (coQuyenXoaDonDaDuyet(kn, email, role)) {
+                        huyDonDaDuyet(request, response, out, kn, email);
+                    } else {
+                        out.print("{\"success\":false,\"message\":\"Chỉ Admin hoặc Trưởng phòng Nhân sự mới có quyền hủy đơn đã duyệt\"}");
+                    }
+                    break;
                     
                 case "themNghiPhepMoi":
                     if ("Admin".equals(role) || "Quản lý".equals(role)) {
@@ -536,6 +544,64 @@ public class apiNghiPhep extends HttpServlet {
             String message = "✅ Xóa đơn đã duyệt thành công. Đã xóa chấm công nghỉ phép tương ứng.";
             if ("Phép năm".equals(loaiPhep)) {
                 message = "✅ Xóa đơn đã duyệt thành công. Đã hoàn lại phép năm và xóa chấm công nghỉ phép tương ứng.";
+            }
+            out.print("{\"success\":true,\"message\":\"" + escapeJson(message) + "\"}");
+        } catch (Exception ex) {
+            out.print("{\"success\":false,\"message\":\"" + escapeJson(ex.getMessage()) + "\"}");
+        }
+    }
+
+    private void huyDonDaDuyet(HttpServletRequest request, HttpServletResponse response, PrintWriter out, KNCSDL kn, String email) throws SQLException {
+        try {
+            int donId = Integer.parseInt(request.getParameter("donId"));
+
+            Map<String, Object> don = kn.getDonNghiPhepById(donId);
+            if (don == null) {
+                out.print("{\"success\":false,\"message\":\"Không tìm thấy đơn nghỉ phép\"}");
+                return;
+            }
+
+            String trangThai = (String) don.get("trang_thai");
+            if (!"da_duyet".equals(trangThai)) {
+                out.print("{\"success\":false,\"message\":\"Chỉ được hủy đơn đã duyệt\"}");
+                return;
+            }
+
+            String loaiPhep = (String) don.get("loai_phep");
+            int nhanVienId = ((Number) don.get("nhan_vien_id")).intValue();
+
+            boolean result = kn.huyDonDaDuyetVaHoanTac(donId);
+            if (!result) {
+                out.print("{\"success\":false,\"message\":\"Không thể hủy đơn đã duyệt\"}");
+                return;
+            }
+
+            try {
+                Map<String, Object> nguoiHuy = kn.getNhanVienByEmail(email);
+                String tenNguoiHuy = nguoiHuy != null ? (String) nguoiHuy.get("ho_ten") : "Quản trị";
+                String vaiTroNguoiHuy = nguoiHuy != null ? (String) nguoiHuy.get("vai_tro") : null;
+                String vaiTroHienThi = "Admin".equalsIgnoreCase(vaiTroNguoiHuy)
+                    ? "Admin"
+                    : "Trưởng phòng Nhân sự";
+
+                String ngayBatDau = don.get("ngay_bat_dau") != null ? don.get("ngay_bat_dau").toString() : "";
+                String ngayKetThuc = don.get("ngay_ket_thuc") != null ? don.get("ngay_ket_thuc").toString() : "";
+                String soNgay = don.get("so_ngay") != null ? don.get("so_ngay").toString() : "";
+
+                String tieuDe = "Đơn nghỉ phép đã bị hủy";
+                String noiDung = vaiTroHienThi + " " + tenNguoiHuy + " đã hủy đơn " + loaiPhep.toLowerCase()
+                        + " từ ngày " + ngayBatDau + " đến " + ngayKetThuc + " (" + soNgay + " ngày).";
+                String loaiThongBao = "Đơn xin nghỉ phép";
+                String duongDan = "userNghiPhep";
+
+                kn.insertThongBao(nhanVienId, tieuDe, noiDung, loaiThongBao, duongDan);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+
+            String message = "✅ Hủy đơn đã duyệt thành công. Đã xóa chấm công nghỉ phép tương ứng.";
+            if ("Phép năm".equals(loaiPhep)) {
+                message = "✅ Hủy đơn đã duyệt thành công. Đã hoàn lại phép năm và xóa chấm công nghỉ phép tương ứng.";
             }
             out.print("{\"success\":true,\"message\":\"" + escapeJson(message) + "\"}");
         } catch (Exception ex) {

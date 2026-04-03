@@ -290,7 +290,7 @@ CREATE TABLE `don_nghi_phep` (
   `ngay_ket_thuc` date NOT NULL COMMENT 'Ngày kết thúc nghỉ',
   `so_ngay` decimal(4,1) NOT NULL COMMENT 'Số ngày nghỉ (có thể 0.5 cho nửa ngày)',
   `ly_do` text COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Lý do xin nghỉ',
-  `trang_thai` enum('cho_duyet','da_duyet','tu_choi') COLLATE utf8mb4_unicode_ci DEFAULT 'cho_duyet' COMMENT 'Trạng thái đơn',
+  `trang_thai` enum('cho_duyet','da_duyet','tu_choi','da_huy') COLLATE utf8mb4_unicode_ci DEFAULT 'cho_duyet' COMMENT 'Trạng thái đơn',
   `ly_do_tu_choi` text COLLATE utf8mb4_unicode_ci COMMENT 'Lý do từ chối (nếu có)',
   `nguoi_duyet_id` int DEFAULT NULL COMMENT 'ID người duyệt đơn',
   `nguoi_tao_id` int DEFAULT NULL COMMENT 'ID người tạo đơn (nếu admin tạo hộ)',

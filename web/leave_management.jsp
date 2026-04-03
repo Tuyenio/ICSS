@@ -25,7 +25,8 @@
     int choDuyet = thongKe.getOrDefault("cho_duyet", 0);
     int daDuyet = thongKe.getOrDefault("da_duyet", 0);
     int tuChoi = thongKe.getOrDefault("tu_choi", 0);
-    int tongDon = choDuyet + daDuyet + tuChoi;
+    int daHuy = thongKe.getOrDefault("da_huy", 0);
+    int tongDon = choDuyet + daDuyet + tuChoi + daHuy;
 %>
 <!DOCTYPE html>
 <html lang="vi">
@@ -259,6 +260,11 @@
             color: #991b1b;
         }
 
+        .badge-status.cancelled {
+            background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%);
+            color: #374151;
+        }
+
         /* ===== LEAVE TYPE BADGE ===== */
         .leave-type-badge {
             padding: 6px 14px;
@@ -326,6 +332,17 @@
 
         .btn-action.delete:hover {
             background: #ef4444;
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .btn-action.cancel {
+            background: #fde68a;
+            color: #92400e;
+        }
+
+        .btn-action.cancel:hover {
+            background: #f59e0b;
             color: white;
             transform: scale(1.1);
         }
@@ -539,6 +556,7 @@
                             <option value="cho_duyet" <%= "cho_duyet".equals(trangThaiFilter) ? "selected" : "" %>>Chờ duyệt</option>
                             <option value="da_duyet" <%= "da_duyet".equals(trangThaiFilter) ? "selected" : "" %>>Đã duyệt</option>
                             <option value="tu_choi" <%= "tu_choi".equals(trangThaiFilter) ? "selected" : "" %>>Từ chối</option>
+                            <option value="da_huy" <%= "da_huy".equals(trangThaiFilter) ? "selected" : "" %>>Đã hủy</option>
                         </select>
                     </div>
                     <div class="col-md-2">
@@ -628,6 +646,10 @@
                                     statusClass = "rejected";
                                     statusText = "Từ chối";
                                     statusIcon = "fa-circle-xmark";
+                                } else if ("da_huy".equals(trangThai)) {
+                                    statusClass = "cancelled";
+                                    statusText = "Đã hủy";
+                                    statusIcon = "fa-ban";
                                 }
                             %>
                             <tr data-name="<%= tenNV != null ? tenNV.toLowerCase() : "" %>">
@@ -696,6 +718,11 @@
                                         </button>
                                     <% } %>
                                     <% if ("da_duyet".equals(trangThai) && coQuyenXoaDonDaDuyet) { %>
+                                        <button class="btn-action cancel"
+                                                onclick="huyDonDaDuyet('<%= don.get("id") %>', '<%= tenNV != null ? tenNV.replace("'", "\\'") : "" %>')"
+                                                title="Hủy đơn đã duyệt">
+                                            <i class="fa-solid fa-ban"></i>
+                                        </button>
                                         <button class="btn-action delete"
                                                 onclick="xoaDonDaDuyet('<%= don.get("id") %>', '<%= tenNV != null ? tenNV.replace("'", "\\'") : "" %>')"
                                                 title="Xóa đơn đã duyệt">
@@ -839,7 +866,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        const canDeleteApproved = <%= coQuyenXoaDonDaDuyet ? "true" : "false" %>;
+        const canManageApproved = <%= coQuyenXoaDonDaDuyet ? "true" : "false" %>;
 
         // Search filter
         document.getElementById('searchInput').addEventListener('input', function() {
@@ -876,6 +903,8 @@
                             statusBadge = '<span class="badge-status approved"><i class="fa-solid fa-circle-check"></i> Đã duyệt</span>';
                         } else if (don.trang_thai === 'tu_choi') {
                             statusBadge = '<span class="badge-status rejected"><i class="fa-solid fa-circle-xmark"></i> Từ chối</span>';
+                        } else if (don.trang_thai === 'da_huy') {
+                            statusBadge = '<span class="badge-status cancelled"><i class="fa-solid fa-ban"></i> Đã hủy</span>';
                         } else {
                             statusBadge = '<span class="badge-status pending"><i class="fa-solid fa-question"></i> ' + don.trang_thai + '</span>';
                         }
@@ -986,10 +1015,13 @@
                                     <i class="fa-solid fa-check me-2"></i>Duyệt đơn
                                 </button>
                             `;
-                        } else if (don.trang_thai === 'da_duyet' && canDeleteApproved) {
+                        } else if (don.trang_thai === 'da_duyet' && canManageApproved) {
                             const tenNhanVienSafe = (don.ten_nhan_vien || '').replace(/'/g, "\\'");
                             footer = `
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                                <button type="button" class="btn btn-warning" onclick="huyDonDaDuyet(${don.id}, '${tenNhanVienSafe}')" data-bs-dismiss="modal">
+                                    <i class="fa-solid fa-ban me-2"></i>Hủy đơn đã duyệt
+                                </button>
                                 <button type="button" class="btn btn-danger" onclick="xoaDonDaDuyet(${don.id}, '${tenNhanVienSafe}')" data-bs-dismiss="modal">
                                     <i class="fa-solid fa-trash me-2"></i>Xóa đơn đã duyệt
                                 </button>
@@ -1152,6 +1184,62 @@
                             icon: 'error',
                             title: 'Lỗi kết nối!',
                             text: 'Không thể xóa đơn: ' + err,
+                            confirmButtonColor: '#667eea'
+                        });
+                    });
+                }
+            });
+        }
+
+        // Hủy đơn đã duyệt (Admin hoặc Trưởng phòng Nhân sự)
+        function huyDonDaDuyet(donId, tenNhanVien) {
+            donId = parseInt(donId);
+            const tenHienThi = tenNhanVien && tenNhanVien.trim() ? tenNhanVien : 'nhân viên';
+
+            Swal.fire({
+                title: 'Hủy đơn đã duyệt?',
+                html: `Bạn sắp hủy đơn nghỉ phép của <strong>${tenHienThi}</strong>.<br><br>Hệ thống sẽ:<br>• Chuyển trạng thái đơn sang Đã hủy<br>• Hoàn lại phép năm (nếu là loại Phép năm)<br>• Xóa bản ghi chấm công nghỉ phép trong thời gian đơn`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#f59e0b',
+                cancelButtonColor: '#94a3b8',
+                confirmButtonText: 'Xác nhận hủy',
+                cancelButtonText: 'Đóng'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const formData = new FormData();
+                    formData.append('action', 'huyDonDaDuyet');
+                    formData.append('donId', donId);
+
+                    fetch('apiNghiPhep', {
+                        method: 'POST',
+                        body: new URLSearchParams(formData)
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Đã hủy!',
+                                text: data.message,
+                                confirmButtonColor: '#667eea'
+                            }).then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Lỗi!',
+                                text: data.message,
+                                confirmButtonColor: '#667eea'
+                            });
+                        }
+                    })
+                    .catch(err => {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Lỗi kết nối!',
+                            text: 'Không thể hủy đơn: ' + err,
                             confirmButtonColor: '#667eea'
                         });
                     });
