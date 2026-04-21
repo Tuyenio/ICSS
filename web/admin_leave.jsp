@@ -513,7 +513,7 @@
                                     <option value="Nghỉ khám nghĩa vụ quân sự">⚔️ Nghỉ khám nghĩa vụ quân sự</option>
                                     <option value="Nghỉ không lương">💰 Nghỉ không lương</option>
                                     <option value="Nghỉ thai sản">👶 Nghỉ thai sản</option>
-                                    <option value="Hiếu hỉ">🎊 Hiếu hỉ</option>
+                                    <option value="Nghỉ cưới/tang">💍 Nghỉ cưới/tang</option>
                                     <option value="Khác">📋 Khác</option>
                                 </select>
                             </div>
