@@ -255,8 +255,8 @@ public class apiNghiPhep extends HttpServlet {
             
             double tongPhepConLai = conLai + phepNamTruoc;
             
-            // Kiểm tra phép năm - ƯU TIÊN KIỂM TRA PHÉP NĂM TRƯỚC TRƯỚC
-            if ("Phép năm".equals(loaiPhep)) {
+            // Kiểm tra phép năm/việc riêng - ƯU TIÊN KIỂM TRA PHÉP NĂM TRƯỚC TRƯỚC
+            if ("Phép năm".equals(loaiPhep) || "Việc riêng".equals(loaiPhep)) {
                 if (soNgay > tongPhepConLai) {
                     String msg = "❌ Không đủ phép năm!\\n\\n";
                     msg += "📊 Số ngày phép của bạn:\\n";
@@ -317,8 +317,8 @@ public class apiNghiPhep extends HttpServlet {
             double soNgay = Double.parseDouble(don.get("so_ngay").toString());
             int nhanVienId = ((Number) don.get("nhan_vien_id")).intValue();
             
-            // ⚠️ KIỂM TRA TRƯỚC DUYỆT: Nếu là phép năm, kiểm tra xem phép có đủ không
-            if ("Phép năm".equals(loaiPhep)) {
+            // ⚠️ KIỂM TRA TRƯỚC DUYỆT: Nếu là phép năm/việc riêng, kiểm tra xem phép có đủ không
+            if ("Phép năm".equals(loaiPhep) || "Việc riêng".equals(loaiPhep)) {
                 Calendar cal = Calendar.getInstance();
                 int nam = cal.get(Calendar.YEAR);
                 
@@ -372,7 +372,7 @@ public class apiNghiPhep extends HttpServlet {
             
             // ✅ TRỪ PHÉP TRỰC TIẾP VÀO DATABASE (không dùng trigger)
             // Logic: Ưu tiên trừ phép năm trước trước, nếu không đủ mới trừ phép năm nay
-            if (result && "Phép năm".equals(loaiPhep)) {
+            if (result && ("Phép năm".equals(loaiPhep) || "Việc riêng".equals(loaiPhep))) {
                 Calendar cal = Calendar.getInstance();
                 int nam = cal.get(Calendar.YEAR);
                 
@@ -542,8 +542,8 @@ public class apiNghiPhep extends HttpServlet {
             }
 
             String message = "✅ Xóa đơn đã duyệt thành công. Đã xóa chấm công nghỉ phép tương ứng.";
-            if ("Phép năm".equals(loaiPhep)) {
-                message = "✅ Xóa đơn đã duyệt thành công. Đã hoàn lại phép năm và xóa chấm công nghỉ phép tương ứng.";
+            if ("Phép năm".equals(loaiPhep) || "Việc riêng".equals(loaiPhep)) {
+                message = "✅ Xóa đơn đã duyệt thành công. Đã hoàn lại ngày phép và xóa chấm công nghỉ phép tương ứng.";
             }
             out.print("{\"success\":true,\"message\":\"" + escapeJson(message) + "\"}");
         } catch (Exception ex) {
@@ -600,8 +600,8 @@ public class apiNghiPhep extends HttpServlet {
             }
 
             String message = "✅ Hủy đơn đã duyệt thành công. Đã xóa chấm công nghỉ phép tương ứng.";
-            if ("Phép năm".equals(loaiPhep)) {
-                message = "✅ Hủy đơn đã duyệt thành công. Đã hoàn lại phép năm và xóa chấm công nghỉ phép tương ứng.";
+            if ("Phép năm".equals(loaiPhep) || "Việc riêng".equals(loaiPhep)) {
+                message = "✅ Hủy đơn đã duyệt thành công. Đã hoàn lại ngày phép và xóa chấm công nghỉ phép tương ứng.";
             }
             out.print("{\"success\":true,\"message\":\"" + escapeJson(message) + "\"}");
         } catch (Exception ex) {
@@ -683,8 +683,8 @@ public class apiNghiPhep extends HttpServlet {
                 return;
             }
             
-            // Kiểm tra số ngày phép còn lại (nếu là phép năm)
-            if ("Phép năm".equals(loaiPhep)) {
+            // Kiểm tra số ngày phép còn lại (nếu là phép năm hoặc việc riêng)
+            if ("Phép năm".equals(loaiPhep) || "Việc riêng".equals(loaiPhep)) {
                 Calendar cal = Calendar.getInstance();
                 int nam = cal.get(Calendar.YEAR);
                 
@@ -747,7 +747,7 @@ public class apiNghiPhep extends HttpServlet {
             
             // ✅ TRỪ PHÉP TRỰC TIẾP VÀO DATABASE (không dùng trigger)
             // Logic: Ưu tiên trừ phép năm trước trước, nếu không đủ mới trừ phép năm nay
-            if ("Phép năm".equals(loaiPhep)) {
+            if ("Phép năm".equals(loaiPhep) || "Việc riêng".equals(loaiPhep)) {
                 Calendar cal = Calendar.getInstance();
                 int nam = cal.get(Calendar.YEAR);
                 
