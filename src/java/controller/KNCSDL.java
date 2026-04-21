@@ -7447,7 +7447,7 @@ public class KNCSDL {
                 }
             }
 
-            if ("Phép năm".equals(loaiPhep) || "Việc riêng".equals(loaiPhep)) {
+            if ("Phép năm".equals(loaiPhep)) {
                 Calendar cal = Calendar.getInstance();
                 cal.setTime(new java.util.Date(ngayBatDau.getTime()));
                 int namPhep = cal.get(Calendar.YEAR);
@@ -7533,7 +7533,7 @@ public class KNCSDL {
                 }
             }
 
-            if ("Phép năm".equals(loaiPhep) || "Việc riêng".equals(loaiPhep)) {
+            if ("Phép năm".equals(loaiPhep)) {
                 Calendar cal = Calendar.getInstance();
                 cal.setTime(new java.util.Date(ngayBatDau.getTime()));
                 int namPhep = cal.get(Calendar.YEAR);
