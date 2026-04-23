@@ -111,6 +111,19 @@ window.location.href = './apiThongbao';
                         badge.style.display = (count > 0) ? 'inline-block' : 'none';
                 }
 
+                async function fetchUnreadCount() {
+                try {
+                const url = window.contextPath + '/ApiThongbaoUnreadCount?_=' + Date.now();
+                        const res = await fetch(url, {cache: 'no-store'});
+                        if (!res.ok) return null;
+                        const txt = (await res.text()).trim();
+                        const n = parseInt(txt, 10);
+                        return Number.isNaN(n) ? null : n;
+                } catch (e) {
+                        return null;
+                }
+                }
+
                 // Optionally update notification list dropdown: implement if your dropdown has #notificationList
                 function updateDropdown(list) {
                 try {
@@ -145,8 +158,10 @@ window.location.href = './apiThongbao';
                         if (payloadHash === lastPayloadHash) return;
                         lastPayloadHash = payloadHash;
                         // badge count = number of unread (is_read === false)
-                        const unread = list.filter(it => !it.is_read);
-                        updateBadge(unread.length);
+                        const unreadCount = await fetchUnreadCount();
+                        if (unreadCount !== null) {
+                                updateBadge(unreadCount);
+                        }
                         // detect new ids (not seen before)
                         const newItems = [];
                         list.forEach(it => {

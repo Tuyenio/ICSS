@@ -11,6 +11,7 @@
     Map<String, Object> thongTinLuong = (Map<String, Object>) request.getAttribute("thongTinLuong");
     Map<String, Object> tongHopKPI = (Map<String, Object>) request.getAttribute("tongHopKPI");
     Integer soThongBaoChuaDoc = (Integer) request.getAttribute("soThongBaoChuaDoc");
+    List<Map<String, Object>> todoCongViec = (List<Map<String, Object>>) request.getAttribute("todoCongViec");
     List<Map<String, Object>> congViecSapDenHan = (List<Map<String, Object>>) request.getAttribute("congViecSapDenHan");
     Map<String, Object> thongKeTongQuan = (Map<String, Object>) request.getAttribute("thongKeTongQuan");
     Map<String, Object> thongKePhongBan = (Map<String, Object>) request.getAttribute("thongKePhongBan");
@@ -26,6 +27,7 @@
     if (thongTinLuong == null) thongTinLuong = new HashMap<>();
     if (tongHopKPI == null) tongHopKPI = new HashMap<>();
     if (soThongBaoChuaDoc == null) soThongBaoChuaDoc = 0;
+    if (todoCongViec == null) todoCongViec = new ArrayList<>();
     if (congViecSapDenHan == null) congViecSapDenHan = new ArrayList<>();
     if (thongKeTongQuan == null) thongKeTongQuan = new HashMap<>();
     if (thongKePhongBan == null) thongKePhongBan = new HashMap<>();
@@ -375,9 +377,32 @@
             <div class="alert alert-info mt-4" role="alert">
                 <i class="fa-solid fa-bell me-2"></i>
                 Bạn có <strong><%= soThongBaoChuaDoc %></strong> thông báo chưa đọc. 
-                <a href="/ICSS/apiThongbao" class="alert-link">Xem ngay</a>
+                <a href="<%= request.getContextPath() %>/apiThongbao" class="alert-link">Xem ngay</a>
             </div>
             <% } %>
+
+            <div class="card mt-4 border-0 shadow-sm">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0"><i class="fa-solid fa-list-check me-2"></i>Todo công việc của tôi</h6>
+                </div>
+                <div class="card-body">
+                    <% if (todoCongViec.isEmpty()) { %>
+                    <div class="text-muted">Không có công việc ở trạng thái Chưa bắt đầu hoặc Đang thực hiện.</div>
+                    <% } else { %>
+                    <% for (Map<String, Object> cvTodo : todoCongViec) { %>
+                    <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+                        <div>
+                            <strong><%= cvTodo.get("ten_cong_viec") %></strong>
+                            <div class="small text-muted">Hạn: <%= cvTodo.get("han_hoan_thanh") != null ? cvTodo.get("han_hoan_thanh") : "Chưa đặt" %></div>
+                        </div>
+                        <span class="badge <%= "Đang thực hiện".equals(String.valueOf(cvTodo.get("trang_thai"))) ? "bg-primary" : "bg-secondary" %>">
+                            <%= cvTodo.get("trang_thai") %>
+                        </span>
+                    </div>
+                    <% } %>
+                    <% } %>
+                </div>
+            </div>
         </div>
 
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

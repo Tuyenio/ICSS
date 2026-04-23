@@ -92,6 +92,19 @@ window.location.href = './apiThongbao';
                 badge.style.display = (count > 0) ? 'inline-block' : 'none';
         }
 
+        async function fetchUnreadCount() {
+        try {
+        const url = window.contextPath + '/ApiThongbaoUnreadCount?_=' + Date.now();
+                const res = await fetch(url, {cache: 'no-store'});
+                if (!res.ok) return null;
+                const txt = (await res.text()).trim();
+                const n = parseInt(txt, 10);
+                return Number.isNaN(n) ? null : n;
+        } catch (e) {
+                return null;
+        }
+        }
+
         function updateDropdown(list) {
         try {
         const ul = document.getElementById('notificationList');
@@ -116,8 +129,10 @@ window.location.href = './apiThongbao';
                 const payloadHash = JSON.stringify(list.map(x => x.id));
                 if (payloadHash === lastPayloadHash) return;
                 lastPayloadHash = payloadHash;
-                const unread = list.filter(it => !it.is_read);
-                updateBadge(unread.length);
+                const unreadCount = await fetchUnreadCount();
+                if (unreadCount !== null) {
+                        updateBadge(unreadCount);
+                }
                 const newItems = [];
                 list.forEach(it => { if (!seenIds.has(String(it.id))) newItems.push(it); });
                 seenIds.clear();

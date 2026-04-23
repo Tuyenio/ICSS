@@ -395,6 +395,9 @@
         <li><a href="dsPhongban" class="<%= currentPath.equals("department.jsp") ? "active" : "" %>">
                 <i class="fa-solid fa-building-user"></i><span>Phòng ban</span></a></li>
 
+        <li><a href="dsTaiSan" class="<%= currentPath.equals("asset.jsp") ? "active" : "" %>">
+            <i class="fa-solid fa-boxes-stacked"></i><span>Tài sản</span></a></li>
+
         <%
     // Kiểm tra xem trang hiện tại thuộc nhóm chấm công
     boolean isChamCongGroup =

@@ -96,6 +96,10 @@
         <servlet-class>controller.dsPhongban</servlet-class>
     </servlet>
     <servlet>
+        <servlet-name>dsTaiSan</servlet-name>
+        <servlet-class>controller.dsTaiSan</servlet-class>
+    </servlet>
+    <servlet>
         <servlet-name>apiChiTietPhongban</servlet-name>
         <servlet-class>controller.apiChiTietPhongban</servlet-class>
     </servlet>
@@ -342,6 +346,10 @@
     <servlet-mapping>
         <servlet-name>dsPhongban</servlet-name>
         <url-pattern>/dsPhongban</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>dsTaiSan</servlet-name>
+        <url-pattern>/dsTaiSan</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>apiChiTietPhongban</servlet-name>

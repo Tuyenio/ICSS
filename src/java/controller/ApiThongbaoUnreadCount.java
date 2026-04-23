@@ -18,7 +18,8 @@ public class ApiThongbaoUnreadCount extends HttpServlet {
         try {
             HttpSession session = request.getSession(false);
             if (session != null) {
-                String idStr = (String) session.getAttribute("userId");
+                Object idObj = session.getAttribute("userId");
+                String idStr = (idObj == null) ? null : idObj.toString();
                 if (idStr != null && !idStr.trim().isEmpty()) {
                     userId = Integer.parseInt(idStr.trim());
                 }

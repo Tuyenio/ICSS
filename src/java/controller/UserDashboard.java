@@ -61,6 +61,9 @@ public class UserDashboard extends HttpServlet {
             
             // 7. Lấy công việc sắp đến hạn (trong 7 ngày tới)
             List<Map<String, Object>> congViecSapDenHan = kn.getCongViecSapDenHan(nhanVienId, 7);
+
+            // 7.1 Lấy todo đơn giản cho dashboard
+            List<Map<String, Object>> todoCongViec = kn.getCongViecTodoNhanVien(nhanVienId, 10);
             
             // 8. Lấy thống kê tổng quan công ty (nếu là admin/manager)
             Map<String, Object> thongKeTongQuan = new HashMap<>();
@@ -81,6 +84,7 @@ public class UserDashboard extends HttpServlet {
             request.setAttribute("tongHopKPI", tongHopKPI);
             request.setAttribute("soThongBaoChuaDoc", soThongBaoChuaDoc);
             request.setAttribute("congViecSapDenHan", congViecSapDenHan);
+            request.setAttribute("todoCongViec", todoCongViec);
             request.setAttribute("thongKeTongQuan", thongKeTongQuan);
             request.setAttribute("thongKePhongBan", thongKePhongBan);
             request.setAttribute("thangHienTai", thangHienTai);

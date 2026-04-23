@@ -3783,6 +3783,46 @@ public class KNCSDL {
         return danhSach;
     }
 
+    // Lấy todo đơn giản cho dashboard nhân viên (chưa bắt đầu + đang thực hiện)
+    public List<Map<String, Object>> getCongViecTodoNhanVien(int nhanVienId, int limit) throws SQLException {
+        List<Map<String, Object>> danhSach = new ArrayList<>();
+
+        StringBuilder sql = new StringBuilder(
+                "SELECT DISTINCT cv.id, cv.ten_cong_viec, cv.trang_thai, cv.han_hoan_thanh, cv.muc_do_uu_tien "
+                + "FROM cong_viec cv "
+                + "JOIN cong_viec_nguoi_nhan cn ON cv.id = cn.cong_viec_id "
+                + "WHERE cn.nhan_vien_id = ? "
+                + "AND cv.trang_thai IN ('Chưa bắt đầu', 'Đang thực hiện') "
+                + "AND (cv.tinh_trang IS NULL OR cv.tinh_trang <> 'Đã xóa') "
+                + "ORDER BY FIELD(cv.trang_thai, 'Đang thực hiện', 'Chưa bắt đầu'), cv.han_hoan_thanh ASC "
+        );
+
+        if (limit > 0) {
+            sql.append("LIMIT ? ");
+        }
+
+        try (PreparedStatement stmt = cn.prepareStatement(sql.toString())) {
+            stmt.setInt(1, nhanVienId);
+            if (limit > 0) {
+                stmt.setInt(2, limit);
+            }
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> congViec = new HashMap<>();
+                    congViec.put("id", rs.getInt("id"));
+                    congViec.put("ten_cong_viec", rs.getString("ten_cong_viec"));
+                    congViec.put("trang_thai", rs.getString("trang_thai"));
+                    congViec.put("han_hoan_thanh", rs.getDate("han_hoan_thanh"));
+                    congViec.put("muc_do_uu_tien", rs.getString("muc_do_uu_tien"));
+                    danhSach.add(congViec);
+                }
+            }
+        }
+
+        return danhSach;
+    }
+
     // Lấy số thông báo chưa đọc
     public int getSoThongBaoChuaDoc(int nhanVienId) throws SQLException {
         String sql = "SELECT COUNT(*) FROM thong_bao WHERE nguoi_nhan_id = ? AND da_doc = FALSE";
@@ -3895,6 +3935,91 @@ public class KNCSDL {
             }
         }
         return ds;
+    }
+
+    public int getTongSoThongBao(Integer nguoiNhanId) throws SQLException {
+        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM thong_bao ");
+        List<Object> params = new ArrayList<>();
+
+        if (nguoiNhanId != null && nguoiNhanId > 0) {
+            sql.append("WHERE nguoi_nhan_id = ? ");
+            params.add(nguoiNhanId);
+        }
+
+        try (PreparedStatement ps = cn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        }
+
+        return 0;
+    }
+
+    public List<Map<String, Object>> getDanhSachTaiSan() throws SQLException {
+        List<Map<String, Object>> list = new ArrayList<>();
+        String sql = "SELECT id, ten_tai_san, so_luong, tinh_trang, gia_ca, bao_hanh, mo_ta, ngay_tao, ngay_cap_nhat "
+                + "FROM tai_san ORDER BY ngay_cap_nhat DESC, id DESC";
+
+        try (PreparedStatement ps = cn.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                Map<String, Object> row = new HashMap<>();
+                row.put("id", rs.getInt("id"));
+                row.put("ten_tai_san", rs.getString("ten_tai_san"));
+                row.put("so_luong", rs.getInt("so_luong"));
+                row.put("tinh_trang", rs.getString("tinh_trang"));
+                row.put("gia_ca", rs.getDouble("gia_ca"));
+                row.put("bao_hanh", rs.getString("bao_hanh"));
+                row.put("mo_ta", rs.getString("mo_ta"));
+                row.put("ngay_tao", rs.getTimestamp("ngay_tao"));
+                row.put("ngay_cap_nhat", rs.getTimestamp("ngay_cap_nhat"));
+                list.add(row);
+            }
+        }
+
+        return list;
+    }
+
+    public int themTaiSan(String tenTaiSan, int soLuong, String tinhTrang, double giaCa, String baoHanh, String moTa) throws SQLException {
+        String sql = "INSERT INTO tai_san (ten_tai_san, so_luong, tinh_trang, gia_ca, bao_hanh, mo_ta, ngay_tao, ngay_cap_nhat) "
+                + "VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())";
+        try (PreparedStatement ps = cn.prepareStatement(sql)) {
+            ps.setString(1, tenTaiSan);
+            ps.setInt(2, soLuong);
+            ps.setString(3, tinhTrang);
+            ps.setDouble(4, giaCa);
+            ps.setString(5, baoHanh);
+            ps.setString(6, moTa);
+            return ps.executeUpdate();
+        }
+    }
+
+    public int capNhatTaiSan(int id, String tenTaiSan, int soLuong, String tinhTrang, double giaCa, String baoHanh, String moTa) throws SQLException {
+        String sql = "UPDATE tai_san SET ten_tai_san = ?, so_luong = ?, tinh_trang = ?, gia_ca = ?, bao_hanh = ?, mo_ta = ?, ngay_cap_nhat = NOW() "
+                + "WHERE id = ?";
+        try (PreparedStatement ps = cn.prepareStatement(sql)) {
+            ps.setString(1, tenTaiSan);
+            ps.setInt(2, soLuong);
+            ps.setString(3, tinhTrang);
+            ps.setDouble(4, giaCa);
+            ps.setString(5, baoHanh);
+            ps.setString(6, moTa);
+            ps.setInt(7, id);
+            return ps.executeUpdate();
+        }
+    }
+
+    public int xoaTaiSan(int id) throws SQLException {
+        String sql = "DELETE FROM tai_san WHERE id = ?";
+        try (PreparedStatement ps = cn.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            return ps.executeUpdate();
+        }
     }
 
     // Đánh dấu đã đọc 1 thông báo

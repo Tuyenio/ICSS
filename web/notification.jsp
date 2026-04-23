@@ -241,6 +241,17 @@
                             <!-- NEW: Đọc tất cả -->
                             <button id="markAllBtn" class="btn btn-sm btn-outline-primary ms-3" type="button">Đọc tất cả</button>
                         </h3>
+                        <%
+                            Integer currentPage = (Integer) request.getAttribute("currentPage");
+                            Integer totalPages = (Integer) request.getAttribute("totalPages");
+                            Integer totalItems = (Integer) request.getAttribute("totalItems");
+                            Integer pageSize = (Integer) request.getAttribute("pageSize");
+                            if (currentPage == null || currentPage < 1) currentPage = 1;
+                            if (totalPages == null || totalPages < 1) totalPages = 1;
+                            if (totalItems == null || totalItems < 0) totalItems = 0;
+                            if (pageSize == null || pageSize < 1) pageSize = 10;
+                        %>
+                        <div class="text-muted small mt-2 mb-2">Tổng thông báo: <strong><%= totalItems %></strong> - <%= pageSize %> thông báo/trang</div>
                         <ul class="list-group" id="adminNotificationList">
                             <%
                                 List ds = (List) request.getAttribute("dsThongBao");
@@ -305,6 +316,23 @@
                                     }
                                 %>
                         </ul>
+                        <% if (totalPages > 1) { %>
+                        <nav class="mt-3" aria-label="Phân trang thông báo">
+                            <ul class="pagination justify-content-center mb-0">
+                                <li class="page-item <%= currentPage <= 1 ? "disabled" : "" %>">
+                                    <a class="page-link" href="apiThongbao?page=<%= currentPage - 1 %>">Trước</a>
+                                </li>
+                                <% for (int i = 1; i <= totalPages; i++) { %>
+                                <li class="page-item <%= i == currentPage ? "active" : "" %>">
+                                    <a class="page-link" href="apiThongbao?page=<%= i %>"><%= i %></a>
+                                </li>
+                                <% } %>
+                                <li class="page-item <%= currentPage >= totalPages ? "disabled" : "" %>">
+                                    <a class="page-link" href="apiThongbao?page=<%= currentPage + 1 %>">Sau</a>
+                                </li>
+                            </ul>
+                        </nav>
+                        <% } %>
                     </div>
                 </div>
             </div>

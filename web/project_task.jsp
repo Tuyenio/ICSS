@@ -2519,12 +2519,14 @@
                                                     </div>
                                                     <div class="col-md-4 mb-2">
                                                         <label class="form-label"><b>Trạng thái</b></label>
-                                                        <select class="form-select" name="trang_thai">
+                                                        <select class="form-select" name="trang_thai" disabled>
                                                             <option>Chưa bắt đầu</option>
                                                             <option>Đang thực hiện</option>
                                                             <option>Đã hoàn thành</option>
                                                             <option>Trễ hạn</option>
                                                         </select>
+                                                        <input type="hidden" name="trang_thai" value="">
+                                                        <small class="text-muted">Trạng thái được cập nhật theo công việc con</small>
                                                     </div>
                                                 </div>
 

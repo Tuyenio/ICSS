@@ -281,6 +281,11 @@ public class suaCongviec extends HttpServlet {
                 String tailieu = getValue(request, "tai_lieu_cv");
                 String file = getValue(request, "files");
 
+                if (trangThai == null || trangThai.trim().isEmpty()) {
+                    Object trangThaiCu = taskCu.get("trang_thai");
+                    trangThai = (trangThaiCu == null) ? "Chưa bắt đầu" : String.valueOf(trangThaiCu);
+                }
+
                 int giaoId;
                 if (isNumeric(tenNguoiGiao)) {
                     giaoId = Integer.parseInt(tenNguoiGiao);
