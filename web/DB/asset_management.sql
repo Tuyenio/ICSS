@@ -1,6 +1,3 @@
--- Tao bang quan ly tai san cho ICSS
--- Chay file nay tren server database cua ban
-
 CREATE TABLE IF NOT EXISTS tai_san (
     id INT AUTO_INCREMENT PRIMARY KEY,
     ten_tai_san VARCHAR(255) NOT NULL,

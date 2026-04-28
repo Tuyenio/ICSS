@@ -3230,8 +3230,7 @@ public class KNCSDL {
     // Check-out
     public boolean checkOut(int nhanVienId) throws SQLException {
         String sql = "UPDATE cham_cong SET check_out = CURRENT_TIME "
-                + "WHERE nhan_vien_id = ? AND ngay = CURDATE() AND check_in IS NOT NULL "
-                + "AND (loai_cham_cong IS NULL OR loai_cham_cong <> 'WFH')";
+                + "WHERE nhan_vien_id = ? AND ngay = CURDATE() AND check_in IS NOT NULL";
 
         try (PreparedStatement stmt = cn.prepareStatement(sql)) {
             stmt.setInt(1, nhanVienId);
