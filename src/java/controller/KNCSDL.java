@@ -1375,7 +1375,7 @@ public class KNCSDL {
     }
 
     public Map<String, String> login(String email, String password) throws SQLException {
-        String sql = "SELECT * FROM nhanvien WHERE email = ? AND mat_khau = ?";
+        String sql = "SELECT * FROM nhanvien WHERE email = ? AND mat_khau = ? AND trang_thai_lam_viec = 'Đang làm'";
         try (PreparedStatement stmt = cn.prepareStatement(sql)) {
             stmt.setString(1, email);
             stmt.setString(2, password);
@@ -1418,6 +1418,16 @@ public class KNCSDL {
             }
         }
         return null;
+    }
+
+    public boolean isEmployeeActive(int userId) throws SQLException {
+        String sql = "SELECT 1 FROM nhanvien WHERE id = ? AND trang_thai_lam_viec = 'Đang làm'";
+        try (PreparedStatement ps = cn.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        }
     }
 
     // Lấy danh sách tất cả phòng ban

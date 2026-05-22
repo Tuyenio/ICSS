@@ -159,6 +159,25 @@ public class AuthFilter implements Filter {
                             String chucVu = parts[4];
                             String avatar = parts[5];
                             
+                            // ✅ Kiểm tra trạng thái nhân viên trước khi phục hồi session
+                            try {
+                                int userIdInt = Integer.parseInt(id);
+                                KNCSDL dbCheck = new KNCSDL();
+                                boolean isActive = dbCheck.isEmployeeActive(userIdInt);
+                                dbCheck.close();
+                                if (!isActive) {
+                                    // Nhân viên đã nghỉ việc → xóa cookie và từ chối
+                                    Cookie expiredCookie = new Cookie("ICSS_USER", "");
+                                    expiredCookie.setMaxAge(0);
+                                    expiredCookie.setPath("/");
+                                    res.addCookie(expiredCookie);
+                                    return false;
+                                }
+                            } catch (Exception e) {
+                                System.err.println("Error checking employee status from cookie: " + e.getMessage());
+                                return false;
+                            }
+                            
                             // ✅ Tạo session mới từ cookie data
                             HttpSession session = req.getSession(true);
                             session.setAttribute("userId", id);
