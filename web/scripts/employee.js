@@ -292,14 +292,6 @@ $(document).on('click', '.delete-emp-btn', function () {
     });
 });
 
-// Submit form thêm/sửa
-$('#employeeForm').on('submit', function (e) {
-    e.preventDefault();
-    // TODO: AJAX submit form
-    $('#modalEmployee').modal('hide');
-    $('#toastSuccess').toast('show');
-});
-
 // Toast init
 document.querySelectorAll('.toast').forEach(toastEl => {
     const toast = bootstrap.Toast.getOrCreateInstance(toastEl, {delay: 2000});

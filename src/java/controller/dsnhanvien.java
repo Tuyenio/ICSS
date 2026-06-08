@@ -68,10 +68,15 @@ public class dsnhanvien extends HttpServlet {
         String vaiTro = request.getParameter("vai_tro");
         String avatar = request.getParameter("avatar_url");
 
-        int sophongban = Integer.parseInt(phongban);
         boolean success = false;
 
         try {
+            if (phongban == null || phongban.trim().isEmpty()) {
+                response.setStatus(400);
+                response.getWriter().write("{\"status\":\"error\", \"message\":\"Thiếu thông tin phòng ban.\"}");
+                return;
+            }
+            int sophongban = Integer.parseInt(phongban);
             KNCSDL kn = new KNCSDL(); // Khởi tạo lớp xử lý CSDL
             String tenPhongBan = kn.getPhongNameById(sophongban);
             if (id != null && !id.isEmpty()) {
