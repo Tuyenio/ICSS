@@ -293,11 +293,16 @@ public class suaCongviec extends HttpServlet {
                     giaoId = db.getNhanVienIdByName(tenNguoiGiao);
                 }
 
-                int phongId;
+                Integer phongId;
                 if (isNumeric(tenPhong)) {
                     phongId = Integer.parseInt(tenPhong);
                 } else {
-                    phongId = db.getPhongIdByName(tenPhong);
+                    int found = db.getPhongIdByName(tenPhong);
+                    phongId = (found > 0) ? found : null;
+                }
+                if (phongId == null || phongId <= 0) {
+                    Object oldPhong = taskCu != null ? taskCu.get("phong_ban_id") : null;
+                    phongId = (oldPhong instanceof Integer && (Integer) oldPhong > 0) ? (Integer) oldPhong : null;
                 }
 
                 // 2: Cập nhật task

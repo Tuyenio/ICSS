@@ -1585,8 +1585,14 @@ $('#formAddProcessStep').on('submit', function (e) {
         data: formData,
         processData: false,
         contentType: false,
-        success: function (newStepId) {
-            step.id = newStepId;
+        dataType: 'json',
+        success: function (response) {
+            if (!response || !response.success) {
+                showToast('error', 'Thêm bước thất bại: ' + (response && response.message ? response.message : 'Lỗi không xác định'));
+                return;
+            }
+            step.id = response.id;
+            if (response.fileTaiLieu) step.fileTaiLieu = response.fileTaiLieu;
             processSteps.push(step);
             renderProcessSteps();
             $('#modalAddProcessStep').modal('hide');

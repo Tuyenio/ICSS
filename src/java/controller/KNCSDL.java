@@ -691,7 +691,7 @@ public class KNCSDL {
     }
 
     public void updateTask(int id, String ten, String moTa, String ngaybd, String han, String uuTien,
-            int giaoId, int phongBanId, String trangThai, String tailieu, String file) throws SQLException {
+            int giaoId, Integer phongBanId, String trangThai, String tailieu, String file) throws SQLException {
         String sql = "UPDATE cong_viec SET ten_cong_viec=?, mo_ta=?, ngay_bat_dau=?, han_hoan_thanh=?, muc_do_uu_tien=?, "
                 + "nguoi_giao_id=?, phong_ban_id=?, trang_thai=?, tai_lieu_cv=?, file_tai_lieu=? WHERE id=?";
 
@@ -702,7 +702,11 @@ public class KNCSDL {
             stmt.setDate(4, java.sql.Date.valueOf(han));
             stmt.setString(5, uuTien);
             stmt.setInt(6, giaoId);
-            stmt.setInt(7, phongBanId);
+            if (phongBanId == null || phongBanId <= 0) {
+                stmt.setNull(7, java.sql.Types.INTEGER);
+            } else {
+                stmt.setInt(7, phongBanId);
+            }
             stmt.setString(8, trangThai);
             stmt.setString(9, tailieu);
             stmt.setString(10, file);
