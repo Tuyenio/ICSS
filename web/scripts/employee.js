@@ -236,11 +236,9 @@ $(document).on('click', '.edit-emp-btn', function () {
         $('#modalEmployee').modal('show');
     }
 
-    if (CURRENT_USER_CHUCVU.toLowerCase().includes('trưởng phòng')) {
-        $('#empRole').prop('disabled', true); // Không cho chỉnh vai trò nếu người đăng nhập là Trưởng phòng
-    } else {
-        $('#empRole').prop('disabled', false);
-    }
+    // Chỉ Admin hoặc Quản lý mới được đổi vai trò
+    const canChangeRole = ['admin', 'quản lý'].includes(CURRENT_USER_VAITRO.toLowerCase());
+    $('#empRole').prop('disabled', !canChangeRole);
 
     // Nếu phòng ban đã load, thì điền luôn
     if (window.phongBanLoaded) {

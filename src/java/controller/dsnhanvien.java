@@ -80,6 +80,10 @@ public class dsnhanvien extends HttpServlet {
             KNCSDL kn = new KNCSDL(); // Khởi tạo lớp xử lý CSDL
             String tenPhongBan = kn.getPhongNameById(sophongban);
             if (id != null && !id.isEmpty()) {
+                // Nếu vai_tro không được gửi lên (select disabled), giữ nguyên giá trị cũ từ DB
+                if (vaiTro == null || vaiTro.trim().isEmpty()) {
+                    vaiTro = kn.getVaiTroById(Integer.parseInt(id));
+                }
                 // Cập nhật nhân viên
                 success = kn.capNhatNhanVien(Integer.parseInt(id), hoTen, email, matKhau, sdt, gioiTinh,
                         ngaySinh, ngayVaoLam, tenPhongBan, chucVu, trangThai, vaiTro, avatar);
