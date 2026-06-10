@@ -116,52 +116,39 @@
 
                                     // ✅ Sự kiện click Check-in
                                     $('#btnCheckIn').click(function () {
-                                        Swal.fire({
-                                            title: 'Xác nhận check-in?',
-                                            text: 'Bạn có chắc chắn muốn check-in không?',
-                                            icon: 'question',
-                                            showCancelButton: true,
-                                            confirmButtonColor: '#3085d6',
-                                            cancelButtonColor: '#d33',
-                                            confirmButtonText: 'Có, check-in!',
-                                            cancelButtonText: 'Hủy'
-                                        }).then(function (result) {
-                                            if (result.isConfirmed) {
-                                                if (navigator.geolocation) {
-                                                    navigator.geolocation.getCurrentPosition(
-                                                            function (position) {
-                                                                var userLat = position.coords.latitude;
-                                                                var userLng = position.coords.longitude;
-                                                                var distance = calculateDistance(userLat, userLng, companyLat, companyLng);
+                                        if (navigator.geolocation) {
+                                            navigator.geolocation.getCurrentPosition(
+                                                    function (position) {
+                                                        var userLat = position.coords.latitude;
+                                                        var userLng = position.coords.longitude;
+                                                        var distance = calculateDistance(userLat, userLng, companyLat, companyLng);
 
-                                                                if (distance <= ALLOWED_RADIUS_METERS || currentUserEmail === 'minhthang@gmail.com' || currentUserEmail === 'kwanganh03@gmail.com') {
-                                                                    performCheckIn();
-                                                                } else {
-                                                                    Swal.fire({
-                                                                        icon: 'warning',
-                                                                        title: 'Quá xa vị trí công ty!',
-                                                                        text: 'Khoảng cách hiện tại là ' + Math.round(distance) +
-                                                                                ' m, vượt quá giới hạn ' + ' 100 ' + ' m.'
-                                                                    });
-                                                                }
-                                                            },
-                                                            function (error) {
-                                                                Swal.fire({
-                                                                    icon: 'error',
-                                                                    title: 'Không thể lấy vị trí!',
-                                                                    text: 'Vui lòng bật GPS và cho phép truy cập vị trí để check-in.'
-                                                                });
-                                                            }
-                                                    );
-                                                } else {
-                                                    Swal.fire({
-                                                        icon: 'error',
-                                                        title: 'Trình duyệt không hỗ trợ định vị!',
-                                                        text: 'Thiết bị của bạn không hỗ trợ lấy vị trí.'
-                                                    });
-                                                }
-                                            }
-                                        });
+                                                        if (distance <= ALLOWED_RADIUS_METERS || currentUserEmail === 'minhthang@gmail.com' || currentUserEmail === 'kwanganh03@gmail.com') {
+                                                            performCheckIn();
+                                                        } else {
+                                                            Swal.fire({
+                                                                icon: 'warning',
+                                                                title: 'Quá xa vị trí công ty!',
+                                                                text: 'Khoảng cách hiện tại là ' + Math.round(distance) +
+                                                                        ' m, vượt quá giới hạn ' + ' 100 ' + ' m.'
+                                                            });
+                                                        }
+                                                    },
+                                                    function (error) {
+                                                        Swal.fire({
+                                                            icon: 'error',
+                                                            title: 'Không thể lấy vị trí!',
+                                                            text: 'Vui lòng bật GPS và cho phép truy cập vị trí để check-in.'
+                                                        });
+                                                    }
+                                            );
+                                        } else {
+                                            Swal.fire({
+                                                icon: 'error',
+                                                title: 'Trình duyệt không hỗ trợ định vị!',
+                                                text: 'Thiết bị của bạn không hỗ trợ lấy vị trí.'
+                                            });
+                                        }
                                     });
 
                                     // ✅ Sự kiện click Check-out
@@ -184,20 +171,7 @@
 
                                     // ✅ Sự kiện click Check-in WFH
                                     $('#btnCheckInWFH').click(function () {
-                                        Swal.fire({
-                                            title: 'Xác nhận check-in Work From Home?',
-                                            text: 'Bạn có muốn check-in Work From Home ngày hôm nay không?',
-                                            icon: 'question',
-                                            showCancelButton: true,
-                                            confirmButtonColor: '#3085d6',
-                                            cancelButtonColor: '#d33',
-                                            confirmButtonText: 'Đồng ý',
-                                            cancelButtonText: 'Hủy'
-                                        }).then(function (result) {
-                                            if (result.isConfirmed) {
-                                                performCheckInWFH();
-                                            }
-                                        });
+                                        performCheckInWFH();
                                     });
                                 });
 
