@@ -1,5 +1,15 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="java.util.*, controller.TaiLieu, controller.NhomTaiLieu, jakarta.servlet.http.HttpSession" %>
+<%!
+private static String esc(String s) {
+    if (s == null) return "";
+    return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;").replace("'", "&#39;");
+}
+private static String escJsAttr(String s) {
+    if (s == null) return "";
+    return s.replace("&", "&amp;").replace("\\", "\\\\").replace("'", "\\'").replace("\n", "\\n").replace("\r", "\\r").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;");
+}
+%>
 <%
     // Kiểm tra đăng nhập
     HttpSession sess = request.getSession(false);
@@ -360,14 +370,14 @@
             <!-- Success/Error Messages -->
             <% if (success != null) { %>
             <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <i class="fa-solid fa-circle-check me-2"></i><%= success %>
+                <i class="fa-solid fa-circle-check me-2"></i><%= esc(success) %>
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
             <% } %>
 
             <% if (error != null) { %>
             <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <i class="fa-solid fa-circle-exclamation me-2"></i><%= error %>
+                <i class="fa-solid fa-circle-exclamation me-2"></i><%= esc(error) %>
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
             <% } %>
@@ -377,7 +387,7 @@
             <div class="breadcrumb-custom">
                 <a href="dsTailieu"><i class="fa-solid fa-home me-2"></i>Trang chủ</a>
                 <span class="mx-2">/</span>
-                <span class="text-muted"><%= nhomHienTai.getTenNhom() %></span>
+                <span class="text-muted"><%= esc(nhomHienTai.getTenNhom()) %></span>
             </div>
 
             <!-- Search trong nhóm -->
@@ -386,8 +396,8 @@
                     <input type="hidden" name="nhomId" value="<%= nhomId %>">
                     <div class="col-md-10">
                         <input type="text" name="search" class="form-control" 
-                               placeholder="Tìm kiếm tài liệu trong <%= nhomHienTai.getTenNhom() %>..." 
-                               value="<%= currentSearch != null ? currentSearch : "" %>">
+                               placeholder="Tìm kiếm tài liệu trong <%= esc(nhomHienTai.getTenNhom()) %>..."
+                               value="<%= esc(currentSearch) %>">
                     </div>
                     <div class="col-md-2">
                         <button type="submit" class="btn btn-primary-custom w-100">
@@ -413,13 +423,13 @@
                 <div class="col-md-6 col-lg-4">
                     <div class="group-card" onclick="window.location.href = 'dsTailieu?nhomId=<%= nhom.getId() %>'">
                         <div class="d-flex align-items-start">
-                            <div class="group-icon-box me-3" style="background: <%= nhom.getMauSac() %>15;">
-                                <i class="fa-solid <%= nhom.getIcon() %>" style="color: <%= nhom.getMauSac() %>"></i>
+                            <div class="group-icon-box me-3" style="background: <%= esc(nhom.getMauSac()) %>15;">
+                                <i class="fa-solid <%= esc(nhom.getIcon()) %>" style="color: <%= esc(nhom.getMauSac()) %>"></i>
                             </div>
                             <div class="flex-grow-1">
-                                <div class="group-title"><%= nhom.getTenNhom() %></div>
+                                <div class="group-title"><%= esc(nhom.getTenNhom()) %></div>
                                 <% if (nhom.getMoTa() != null && !nhom.getMoTa().isEmpty()) { %>
-                                <p class="text-muted small mb-2"><%= nhom.getMoTa() %></p>
+                                <p class="text-muted small mb-2"><%= esc(nhom.getMoTa()) %></p>
                                 <% } %>
                                 <div class="group-meta">
                                     <span class="badge bg-primary"><%= nhom.getSoLuongTaiLieu() %> tài liệu</span>
@@ -430,10 +440,10 @@
                                     <i class="fa-solid fa-ellipsis-vertical"></i>
                                 </button>
                                 <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item" href="#" onclick="editGroup(<%= nhom.getId() %>, '<%= nhom.getTenNhom().replace("'", "\\'") %>', '<%= nhom.getMoTa() != null ? nhom.getMoTa().replace("'", "\\'") : "" %>', '<%= nhom.getIcon() %>', '<%= nhom.getMauSac() %>', <%= nhom.getThuTu() %>, '<%= nhom.getDoiTuongXem() != null ? nhom.getDoiTuongXem() : "Tất cả" %>'); return false;">
+                                    <li><a class="dropdown-item" href="#" onclick="editGroup(<%= nhom.getId() %>, '<%= escJsAttr(nhom.getTenNhom()) %>', '<%= escJsAttr(nhom.getMoTa()) %>', '<%= escJsAttr(nhom.getIcon()) %>', '<%= escJsAttr(nhom.getMauSac()) %>', <%= nhom.getThuTu() %>, '<%= escJsAttr(nhom.getDoiTuongXem() != null ? nhom.getDoiTuongXem() : "Tất cả") %>'); return false;">
                                             <i class="fa-solid fa-pen-to-square me-2"></i>Sửa
                                         </a></li>
-                                    <li><a class="dropdown-item text-danger" href="#" onclick="confirmDeleteGroup(<%= nhom.getId() %>, '<%= nhom.getTenNhom() %>'); return false;">
+                                    <li><a class="dropdown-item text-danger" href="#" onclick="confirmDeleteGroup(<%= nhom.getId() %>, '<%= escJsAttr(nhom.getTenNhom()) %>'); return false;">
                                             <i class="fa-solid fa-trash me-2"></i>Xóa
                                         </a></li>
                                 </ul>
@@ -460,26 +470,26 @@
                     <div class="document-card">
                         <div class="row align-items-center">
                             <div class="col-auto">
-                                <div class="file-icon-box" style="background: <%= doc.getFileIconColor() %>15;">
-                                    <i class="fa-solid <%= doc.getFileIcon() %>" style="color: <%= doc.getFileIconColor() %>"></i>
+                                <div class="file-icon-box" style="background: <%= esc(doc.getFileIconColor()) %>15;">
+                                    <i class="fa-solid <%= esc(doc.getFileIcon()) %>" style="color: <%= esc(doc.getFileIconColor()) %>"></i>
                                 </div>
                             </div>
                             <div class="col">
-                                <div class="doc-title"><%= doc.getTenTaiLieu() %></div>
+                                <div class="doc-title"><%= esc(doc.getTenTaiLieu()) %></div>
                                 <div class="doc-meta">
                                     <% if (doc.getLoaiTaiLieu() != null) { %>
-                                    <span class="badge-custom bg-primary me-2"><%= doc.getLoaiTaiLieu() %></span>
+                                    <span class="badge-custom bg-primary me-2"><%= esc(doc.getLoaiTaiLieu()) %></span>
                                     <% } %>
-                                    <i class="fa-solid fa-user me-1"></i><%= doc.getTenNguoiTao() != null ? doc.getTenNguoiTao() : "Không rõ" %>
+                                    <i class="fa-solid fa-user me-1"></i><%= esc(doc.getTenNguoiTao() != null ? doc.getTenNguoiTao() : "Không rõ") %>
                                     <span class="mx-2">•</span>
-                                    <i class="fa-solid fa-calendar me-1"></i><%= doc.getNgayTao() %>
+                                    <i class="fa-solid fa-calendar me-1"></i><%= esc(String.valueOf(doc.getNgayTao())) %>
                                 </div>
                                 <% if (doc.getMoTa() != null && !doc.getMoTa().isEmpty()) { %>
-                                <p class="text-muted small mt-2 mb-0"><%= doc.getMoTa() %></p>
+                                <p class="text-muted small mt-2 mb-0"><%= esc(doc.getMoTa()) %></p>
                                 <% } %>
                                 <div class="mt-2">
                                     <small class="text-muted">
-                                        <i class="fa-solid fa-database me-1"></i><%= doc.getFileSizeFormatted() %>
+                                        <i class="fa-solid fa-database me-1"></i><%= esc(doc.getFileSizeFormatted()) %>
                                         <span class="mx-2">•</span>
                                         <i class="fa-solid fa-eye me-1"></i><%= doc.getLuotXem() %> lượt xem
                                         <span class="mx-2">•</span>
@@ -493,13 +503,13 @@
                                        class="btn btn-action btn-success" title="Tải xuống">
                                         <i class="fa-solid fa-download"></i>
                                     </a>
-                                    <button type="button" class="btn btn-action btn-warning" 
-                                            onclick="editDocument(<%= doc.getId() %>, '<%= doc.getTenTaiLieu().replace("'", "\\'") %>', '<%= doc.getLoaiTaiLieu() != null ? doc.getLoaiTaiLieu() : "" %>', '<%= doc.getMoTa() != null ? doc.getMoTa().replace("'", "\\'") : "" %>')"
+                                    <button type="button" class="btn btn-action btn-warning"
+                                            onclick="editDocument(<%= doc.getId() %>, '<%= escJsAttr(doc.getTenTaiLieu()) %>', '<%= escJsAttr(doc.getLoaiTaiLieu() != null ? doc.getLoaiTaiLieu() : "") %>', '<%= escJsAttr(doc.getMoTa() != null ? doc.getMoTa() : "") %>')"
                                             title="Chỉnh sửa">
                                         <i class="fa-solid fa-pen-to-square"></i>
                                     </button>
-                                    <button type="button" class="btn btn-action btn-danger" 
-                                            onclick="confirmDelete(<%= doc.getId() %>, '<%= doc.getTenTaiLieu() %>', <%= nhomId %>)"
+                                    <button type="button" class="btn btn-action btn-danger"
+                                            onclick="confirmDelete(<%= doc.getId() %>, '<%= escJsAttr(doc.getTenTaiLieu()) %>', <%= nhomId %>)"
                                             title="Xóa">
                                         <i class="fa-solid fa-trash"></i>
                                     </button>
@@ -781,6 +791,11 @@
         </div>
 
         <script>
+            function escHtml(s) {
+                if (!s) return '';
+                return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+            }
+
             // Update icon preview function
             function updateIconPreview(selectId, previewId, colorId) {
                 const select = document.getElementById(selectId);
@@ -836,7 +851,7 @@
             function confirmDeleteGroup(id, ten) {
                 Swal.fire({
                     title: 'Xác nhận xóa?',
-                    html: 'Bạn có chắc muốn xóa nhóm <strong>"' + ten + '"</strong>?<br><small class="text-muted">Các tài liệu trong nhóm sẽ không bị xóa</small>',
+                    html: 'Bạn có chắc muốn xóa nhóm <strong>"' + escHtml(ten) + '"</strong>?<br><small class="text-muted">Các tài liệu trong nhóm sẽ không bị xóa</small>',
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#dc3545',
@@ -863,7 +878,7 @@
             function confirmDelete(id, ten, nhomId) {
                 Swal.fire({
                     title: 'Xác nhận xóa?',
-                    html: 'Bạn có chắc muốn xóa tài liệu <strong>"' + ten + '"</strong>?',
+                    html: 'Bạn có chắc muốn xóa tài liệu <strong>"' + escHtml(ten) + '"</strong>?',
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#dc3545',
