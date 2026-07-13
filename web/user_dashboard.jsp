@@ -185,6 +185,51 @@
         <%@ include file="sidebarnv.jsp" %>
         <%@ include file="user_header.jsp" %>
         <div class="main-content">
+            <!-- Thanh chấm công nhanh -->
+            <%
+                boolean ccDaCheckIn = Boolean.TRUE.equals(chamCongHomNay.get("da_check_in"));
+                boolean ccDaCheckOut = Boolean.TRUE.equals(chamCongHomNay.get("da_check_out"));
+                Object ccGioVao = chamCongHomNay.get("check_in");
+                Object ccGioRa = chamCongHomNay.get("check_out");
+            %>
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body d-flex flex-wrap align-items-center justify-content-between gap-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="fa-solid fa-calendar-check fa-lg text-primary"></i>
+                        <span class="fw-semibold">Chấm công hôm nay</span>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-2">
+                        <% if (ccGioVao != null) { %>
+                        <span class="badge bg-success"><i class="fa-solid fa-clock"></i> Vào: <%= ccGioVao %></span>
+                        <% } else { %>
+                        <span class="badge bg-secondary"><i class="fa-solid fa-clock"></i> Chưa check-in</span>
+                        <% } %>
+
+                        <% if (ccGioRa != null) { %>
+                        <span class="badge bg-danger"><i class="fa-solid fa-clock"></i> Ra: <%= ccGioRa %></span>
+                        <% } else { %>
+                        <span class="badge bg-secondary"><i class="fa-solid fa-clock"></i> Chưa check-out</span>
+                        <% } %>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-2">
+                        <button class="btn btn-success" id="btnCheckIn" <%= ccDaCheckIn ? "disabled" : "" %>>
+                            <i class="fa-solid fa-right-to-bracket"></i> Check-in
+                        </button>
+                        <button class="btn btn-info text-white" id="btnCheckInWFH" <%= ccDaCheckIn ? "disabled" : "" %>>
+                            <i class="fa-solid fa-house"></i> WFH
+                        </button>
+                        <button class="btn btn-danger" id="btnCheckOut" <%= ccDaCheckOut ? "disabled" : "" %>>
+                            <i class="fa-solid fa-right-from-bracket"></i> Check-out
+                        </button>
+                        <a href="userChamCong" class="btn btn-outline-secondary">
+                            <i class="fa-solid fa-list"></i> Chi tiết
+                        </a>
+                    </div>
+                </div>
+            </div>
+
             <!-- Thống kê tổng quan công ty (chỉ cho Admin/Manager) -->
             <% if ("Admin".equals(vaiTro) || "Quản lý".equals(vaiTro)) { %>
             <div class="row mb-4">
@@ -408,7 +453,110 @@
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
         <script src="<%= request.getContextPath() %>/scripts/user_db.js?v=<%= System.currentTimeMillis() %>"></script>
-        
+
+        <!-- Chấm công nhanh: check-in / WFH / check-out -->
+        <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script>
+            (function () {
+                // Toạ độ công ty + bán kính cho phép check-in (giống trang userChamCong)
+                var companyLat = 20.980189371343553;
+                var companyLng = 105.81390992866262;
+                var ALLOWED_RADIUS_METERS = 250;
+
+                function distanceInMeters(lat1, lon1, lat2, lon2) {
+                    var R = 6371e3;
+                    var dPhi = (lat2 - lat1) * Math.PI / 180;
+                    var dLambda = (lon2 - lon1) * Math.PI / 180;
+                    var a = Math.sin(dPhi / 2) * Math.sin(dPhi / 2)
+                            + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180)
+                            * Math.sin(dLambda / 2) * Math.sin(dLambda / 2);
+                    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+                }
+
+                function guiChamCong(action, btn, tieuDe) {
+                    btn.prop('disabled', true);
+                    $.ajax({
+                        url: './userChamCong',
+                        type: 'POST',
+                        data: {action: action},
+                        dataType: 'json',
+                        success: function (res) {
+                            if (res.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: tieuDe + ' thành công!',
+                                    text: res.message,
+                                    showConfirmButton: false,
+                                    timer: 1800
+                                }).then(function () {
+                                    location.reload();
+                                });
+                            } else {
+                                Swal.fire({icon: 'error', title: 'Không thực hiện được', text: res.message});
+                                btn.prop('disabled', false);
+                            }
+                        },
+                        error: function () {
+                            Swal.fire({icon: 'error', title: 'Lỗi kết nối!', text: 'Không thể kết nối đến server. Vui lòng thử lại!'});
+                            btn.prop('disabled', false);
+                        }
+                    });
+                }
+
+                $(function () {
+                    // Check-in tại văn phòng: bắt buộc ở trong bán kính cho phép
+                    $('#btnCheckIn').on('click', function () {
+                        var btn = $(this);
+                        if (!navigator.geolocation) {
+                            Swal.fire({icon: 'error', title: 'Trình duyệt không hỗ trợ định vị!',
+                                text: 'Thiết bị của bạn không hỗ trợ lấy vị trí.'});
+                            return;
+                        }
+                        btn.prop('disabled', true);
+                        navigator.geolocation.getCurrentPosition(function (pos) {
+                            var d = distanceInMeters(pos.coords.latitude, pos.coords.longitude, companyLat, companyLng);
+                            if (d <= ALLOWED_RADIUS_METERS) {
+                                guiChamCong('checkin', btn, 'Check-in');
+                            } else {
+                                Swal.fire({icon: 'warning', title: 'Quá xa vị trí công ty!',
+                                    text: 'Khoảng cách hiện tại là ' + Math.round(d) + ' m, vượt quá giới hạn '
+                                            + ALLOWED_RADIUS_METERS + ' m.'});
+                                btn.prop('disabled', false);
+                            }
+                        }, function () {
+                            Swal.fire({icon: 'error', title: 'Không thể lấy vị trí!',
+                                text: 'Vui lòng bật GPS và cho phép truy cập vị trí để check-in.'});
+                            btn.prop('disabled', false);
+                        });
+                    });
+
+                    // Check-in WFH: không cần định vị
+                    $('#btnCheckInWFH').on('click', function () {
+                        guiChamCong('checkin_wfh', $(this), 'Check-in WFH');
+                    });
+
+                    $('#btnCheckOut').on('click', function () {
+                        var btn = $(this);
+                        Swal.fire({
+                            title: 'Xác nhận check-out?',
+                            text: 'Bạn có chắc chắn muốn check-out không?',
+                            icon: 'question',
+                            showCancelButton: true,
+                            confirmButtonColor: '#3085d6',
+                            cancelButtonColor: '#d33',
+                            confirmButtonText: 'Có, check-out!',
+                            cancelButtonText: 'Hủy'
+                        }).then(function (result) {
+                            if (result.isConfirmed) {
+                                guiChamCong('checkout', btn, 'Check-out');
+                            }
+                        });
+                    });
+                });
+            })();
+        </script>
+
     </body>
 
 </html>
