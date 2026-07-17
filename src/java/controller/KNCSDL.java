@@ -4195,12 +4195,22 @@ public class KNCSDL {
     }
 
     public boolean capNhatChamCong(int id, String checkIn, String checkOut) throws SQLException {
-        String sql = "UPDATE cham_cong SET check_in = ?, check_out = ? WHERE id = ?";
-        try (PreparedStatement stmt = cn.prepareStatement(sql)) {
-            stmt.setString(1, checkIn);
-            stmt.setString(2, checkOut);
-            stmt.setInt(3, id);  // Chỉ có 3 tham số, index cuối là 3
-            return stmt.executeUpdate() > 0;
+        String sql;
+        if (checkOut == null || checkOut.trim().isEmpty()) {
+            sql = "UPDATE cham_cong SET check_in = ? WHERE id = ?";
+            try (PreparedStatement stmt = cn.prepareStatement(sql)) {
+                stmt.setString(1, checkIn);
+                stmt.setInt(2, id);
+                return stmt.executeUpdate() > 0;
+            }
+        } else {
+            sql = "UPDATE cham_cong SET check_in = ?, check_out = ? WHERE id = ?";
+            try (PreparedStatement stmt = cn.prepareStatement(sql)) {
+                stmt.setString(1, checkIn);
+                stmt.setString(2, checkOut);
+                stmt.setInt(3, id);
+                return stmt.executeUpdate() > 0;
+            }
         }
     }
 
@@ -8548,7 +8558,10 @@ public class KNCSDL {
                                         logger.info("       ✅ Tháng " + previousMonth + " chưa cộng, thực hiện INSERT...");
                                         
                                         // Thêm record vào lich_su_cong_phep
-                                        String sqlInsert = "INSERT INTO lich_su_cong_phep (nhan_vien_id, nam, thang, so_ngay_cong, loai_cong, ly_do, ngay_cong) VALUES (?, ?, ?, 1.0, 'hang_thang', ?, NOW())";
+                                        // INSERT IGNORE + UNIQUE KEY(nhan_vien_id,nam,thang,loai_cong):
+                                        // chống cộng trùng do race condition (2 request đồng thời cùng qua check count==0).
+                                        // Chỉ khi INSERT thực sự thành công (rows>0) mới cộng vào aggregate.
+                                        String sqlInsert = "INSERT IGNORE INTO lich_su_cong_phep (nhan_vien_id, nam, thang, so_ngay_cong, loai_cong, ly_do, ngay_cong) VALUES (?, ?, ?, 1.0, 'hang_thang', ?, NOW())";
                                         
                                         try (PreparedStatement stmtInsert = cn.prepareStatement(sqlInsert)) {
                                             String lyDo = "Cộng 1 ngày phép hàng tháng cho tháng " + previousMonth + "/" + previousYear;
@@ -8655,17 +8668,18 @@ public class KNCSDL {
                 int nhanVienId = rsNV.getInt("id");
                 java.sql.Date ngayVaoLam = rsNV.getDate("ngay_vao_lam");
                 
-                // Tính số tháng đã làm
-                int monthsWorked = calculateMonthsDifference(ngayVaoLam, today);
-                
-                // Lấy ngày và tháng vào làm
-                Calendar calVao = Calendar.getInstance();
-                calVao.setTime(ngayVaoLam);
-                int dayVao = calVao.get(Calendar.DAY_OF_MONTH);
-                int monthVao = calVao.get(Calendar.MONTH) + 1;
-                
-                // Kiểm tra xem hôm nay có phải là ngày anniversary (đủ 12 tháng)
-                if (monthsWorked >= 12 && currentDay == dayVao && currentMonth == monthVao) {
+                // Ngày tròn 12 tháng làm việc (anniversary) = ngày vào làm + 12 tháng
+                java.time.LocalDate joinLd = ngayVaoLam.toLocalDate();
+                java.time.LocalDate anniversaryLd = joinLd.plusMonths(12);
+                java.time.LocalDate todayLd = java.time.LocalDate.now();
+                int dayVao = joinLd.getDayOfMonth();
+                int monthVao = joinLd.getMonthValue();
+
+                // Fire khi ĐÃ tới hoặc qua ngày tròn 12 tháng (không cần truy cập đúng ngày anniversary).
+                // Trước đây điều kiện là currentDay==dayVao && currentMonth==monthVao nên nếu không có ai
+                // truy cập đúng hôm đó thì khoản bù bị bỏ lỡ vĩnh viễn. Guard countAnniversary==0 bên dưới
+                // đảm bảo mỗi năm chỉ bù đúng 1 lần.
+                if (!todayLd.isBefore(anniversaryLd)) {
                     logger.info("✅ NV ID " + nhanVienId + " - Hôm nay là ngày Anniversary (đủ 12 tháng)! Ngày vào: " + dayVao + "/" + monthVao);
                     
                     // Kiểm tra xem năm này đã cộng anniversary chưa
@@ -8707,8 +8721,23 @@ public class KNCSDL {
                                                         stmtInsertAni.setDouble(4, soNgayConLai);
                                                         stmtInsertAni.setString(5, lyDo);
                                                         stmtInsertAni.executeUpdate();
-                                                        
+
                                                         logger.info("💾 Đã lưu Anniversary bonus cho NV ID " + nhanVienId + " - " + soNgayConLai + " ngày");
+                                                    }
+
+                                                    // Cập nhật aggregate ngay_phep_nam: nâng tổng lên 12, tính lại còn lại,
+                                                    // và đánh dấu da_cong_phep_dau_nam=1 để NGỪNG cộng hàng tháng.
+                                                    // (Trước đây anniversary chỉ ghi ledger, KHÔNG cập nhật bảng hiển thị
+                                                    //  nên số ngày phép trên giao diện không bao giờ tăng.)
+                                                    String sqlUpdAgg = "UPDATE ngay_phep_nam SET tong_ngay_phep = 12.0, "
+                                                            + "ngay_phep_con_lai = 12.0 - ngay_phep_da_dung, "
+                                                            + "da_cong_phep_dau_nam = 1 "
+                                                            + "WHERE nhan_vien_id = ? AND nam = ?";
+                                                    try (PreparedStatement stmtUpdAgg = cn.prepareStatement(sqlUpdAgg)) {
+                                                        stmtUpdAgg.setInt(1, nhanVienId);
+                                                        stmtUpdAgg.setInt(2, currentYear);
+                                                        stmtUpdAgg.executeUpdate();
+                                                        logger.info("💾 Đã cập nhật aggregate ngay_phep_nam = 12 cho NV ID " + nhanVienId);
                                                     }
                                                 } else {
                                                     logger.info("⏭️ NV ID " + nhanVienId + " - Đã cộng đủ 12 ngày rồi, không cộng thêm");
