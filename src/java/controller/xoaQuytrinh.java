@@ -155,6 +155,10 @@ public class xoaQuytrinh extends HttpServlet {
                 // Xử lý từng file
                 for (Part filePart : fileParts) {
                     String originalFileName = Paths.get(filePart.getSubmittedFileName()).getFileName().toString();
+                    // ✅ Bảo mật: chỉ chấp nhận đuôi file hợp lệ, bỏ qua file nguy hiểm (jsp/php/...)
+                    if (!UploadSecurity.extAllowed(originalFileName)) {
+                        continue;
+                    }
                     String destFileName = sanitizeFileName(originalFileName);
 
                     File destFile = new File(uploadPath, destFileName);

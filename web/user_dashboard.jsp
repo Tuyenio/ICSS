@@ -220,6 +220,9 @@
                         <button class="btn btn-info text-white" id="btnCheckInWFH" <%= ccDaCheckIn ? "disabled" : "" %>>
                             <i class="fa-solid fa-house"></i> WFH
                         </button>
+                        <button class="btn btn-primary" id="btnCheckInCongTac" <%= ccDaCheckIn ? "disabled" : "" %>>
+                            <i class="fa-solid fa-briefcase"></i> Đi công tác
+                        </button>
                         <button class="btn btn-danger" id="btnCheckOut" <%= ccDaCheckOut ? "disabled" : "" %>>
                             <i class="fa-solid fa-right-from-bracket"></i> Check-out
                         </button>
@@ -534,6 +537,11 @@
                     // Check-in WFH: không cần định vị
                     $('#btnCheckInWFH').on('click', function () {
                         guiChamCong('checkin_wfh', $(this), 'Check-in WFH');
+                    });
+
+                    // Check-in Đi công tác: không cần định vị (giống WFH)
+                    $('#btnCheckInCongTac').on('click', function () {
+                        guiChamCong('checkin_congtac', $(this), 'Check-in Đi công tác');
                     });
 
                     $('#btnCheckOut').on('click', function () {

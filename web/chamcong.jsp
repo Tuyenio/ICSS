@@ -492,9 +492,13 @@
                                             <%=chamCongHomNay.get("da_check_out") != null && (Boolean)chamCongHomNay.get("da_check_out") ? "disabled" : ""%>>
                                         <i class="fa-solid fa-sign-out-alt"></i> Check-out
                                     </button>
-                                    <button class="btn btn-info" id="btnCheckInWFH"
+                                    <button class="btn btn-info me-2" id="btnCheckInWFH"
                                             <%=chamCongHomNay.get("da_check_in") != null && (Boolean)chamCongHomNay.get("da_check_in") ? "disabled" : ""%>>
                                         <i class="fa-solid fa-home"></i> WFH
+                                    </button>
+                                    <button class="btn btn-primary" id="btnCheckInCongTac"
+                                            <%=chamCongHomNay.get("da_check_in") != null && (Boolean)chamCongHomNay.get("da_check_in") ? "disabled" : ""%>>
+                                        <i class="fa-solid fa-briefcase"></i> Đi công tác
                                     </button>
                                 </div>
                             </div>
@@ -580,6 +584,7 @@
                                                 String displayStatus = (trangThai != null && !trangThai.isEmpty()) ? trangThai : "Nghỉ phép";
 
                                                 if ("WFH".equals(trangThai)) badgeClass = "bg-success";
+                                                else if ("Công tác".equals(trangThai)) badgeClass = "bg-primary";
                                                 else if ("Đủ công".equals(trangThai) || "Đúng giờ".equals(trangThai)) badgeClass = "bg-success";
                                                 else if ("Đi trễ".equals(trangThai)) badgeClass = "bg-warning";
                                                 else if ("Vắng mặt".equals(trangThai)) badgeClass = "bg-danger";

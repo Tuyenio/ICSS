@@ -152,6 +152,10 @@ public class apiTaskSteps extends HttpServlet {
             // Xử lý từng file mới upload
             for (Part filePart : fileParts) {
                 String originalFileName = Paths.get(filePart.getSubmittedFileName()).getFileName().toString();
+                // ✅ Bảo mật: chỉ chấp nhận đuôi file hợp lệ, bỏ qua file nguy hiểm (jsp/php/...)
+                if (!UploadSecurity.extAllowed(originalFileName)) {
+                    continue;
+                }
                 String destFileName = sanitizeFileName(originalFileName);
                 
                 // Thêm timestamp nếu file đã tồn tại

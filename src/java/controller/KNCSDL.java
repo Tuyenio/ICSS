@@ -2295,8 +2295,9 @@ public class KNCSDL {
 
         // 🧠 Phân loại trạng thái chi tiết hơn
         sql.append("CASE ");
-        // ✅ Ưu tiên WFH
+        // ✅ Ưu tiên WFH / Công tác
         sql.append("  WHEN cc.loai_cham_cong = 'WFH' THEN 'WFH' ");
+        sql.append("  WHEN cc.loai_cham_cong = 'Công tác' THEN 'Công tác' ");
         // ✅ Nghỉ phép chỉ áp dụng khi không có check_in/check_out
         sql.append("  WHEN cc.check_in IS NULL AND cc.check_out IS NULL AND EXISTS ( ");
         sql.append("    SELECT 1 FROM don_nghi_phep dnp ");
@@ -2557,8 +2558,9 @@ public class KNCSDL {
 
         String sql = "SELECT ngay, check_in, check_out, "
             + "CASE "
-            // ✅ Ưu tiên WFH
+            // ✅ Ưu tiên WFH / Công tác
             + "  WHEN loai_cham_cong = 'WFH' THEN 'WFH' "
+            + "  WHEN loai_cham_cong = 'Công tác' THEN 'Công tác' "
             // ✅ Nghỉ phép chỉ khi không có check_in/check_out
             + "  WHEN check_in IS NULL AND check_out IS NULL AND EXISTS ( "
             + "    SELECT 1 FROM don_nghi_phep dnp "
@@ -2971,6 +2973,8 @@ public class KNCSDL {
             String trangThai;
             if ("WFH".equalsIgnoreCase(loaiChamCong)) {
                 trangThai = "WFH";
+            } else if ("Công tác".equalsIgnoreCase(loaiChamCong)) {
+                trangThai = "Công tác";
             } else if (checkIn == null && checkOut == null) {
                 // Kiểm tra có đơn nghỉ phép đã duyệt không
                 boolean coNghiPhep = kiemTraCoNghiPhepTrongNgay(nhanVienId, ngay);
@@ -3173,10 +3177,10 @@ public class KNCSDL {
 
     // Check-in
     public boolean checkIn(int nhanVienId) throws SQLException {
-        // Kiểm tra đã check-in hôm nay chưa và có phải WFH không
+        // Kiểm tra đã check-in hôm nay chưa và có phải WFH/Công tác không
         String checkSql = "SELECT loai_cham_cong FROM cham_cong WHERE nhan_vien_id = ? AND ngay = CURDATE() LIMIT 1";
         boolean exists = false;
-        boolean isWFH = false;
+        boolean isRemote = false;
 
         try (PreparedStatement checkStmt = cn.prepareStatement(checkSql)) {
             checkStmt.setInt(1, nhanVienId);
@@ -3184,13 +3188,13 @@ public class KNCSDL {
                 if (rs.next()) {
                     exists = true;
                     String loaiChamCong = rs.getString("loai_cham_cong");
-                    isWFH = "WFH".equalsIgnoreCase(loaiChamCong);
+                    isRemote = "WFH".equalsIgnoreCase(loaiChamCong) || "Công tác".equalsIgnoreCase(loaiChamCong);
                 }
             }
         }
 
-        // Nếu đã check-in WFH thì không cho check-in thường
-        if (isWFH) {
+        // Nếu đã check-in WFH/Công tác thì không cho check-in thường
+        if (isRemote) {
             return false;
         }
 
@@ -3233,6 +3237,37 @@ public class KNCSDL {
         } else {
             // Tạo record mới với loai_cham_cong = 'WFH'
             sql = "INSERT INTO cham_cong (nhan_vien_id, ngay, check_in, loai_cham_cong) VALUES (?, CURDATE(), CURRENT_TIME, 'WFH')";
+        }
+
+        try (PreparedStatement stmt = cn.prepareStatement(sql)) {
+            stmt.setInt(1, nhanVienId);
+            return stmt.executeUpdate() > 0;
+        }
+    }
+
+    // Check-in Đi công tác (logic giống WFH, loai_cham_cong = 'Công tác')
+    public boolean checkInCongTac(int nhanVienId) throws SQLException {
+        // Kiểm tra đã check-in hôm nay chưa
+        String checkSql = "SELECT COUNT(*) FROM cham_cong WHERE nhan_vien_id = ? AND ngay = CURDATE()";
+        boolean exists = false;
+
+        try (PreparedStatement checkStmt = cn.prepareStatement(checkSql)) {
+            checkStmt.setInt(1, nhanVienId);
+            try (ResultSet rs = checkStmt.executeQuery()) {
+                if (rs.next() && rs.getInt(1) > 0) {
+                    exists = true;
+                }
+            }
+        }
+
+        String sql;
+        if (exists) {
+            // Cập nhật check-in Công tác, reset check_out, đánh dấu loai_cham_cong = 'Công tác'
+            sql = "UPDATE cham_cong SET check_in = CURRENT_TIME, check_out = NULL, loai_cham_cong = 'Công tác' "
+                    + "WHERE nhan_vien_id = ? AND ngay = CURDATE()";
+        } else {
+            // Tạo record mới với loai_cham_cong = 'Công tác'
+            sql = "INSERT INTO cham_cong (nhan_vien_id, ngay, check_in, loai_cham_cong) VALUES (?, CURDATE(), CURRENT_TIME, 'Công tác')";
         }
 
         try (PreparedStatement stmt = cn.prepareStatement(sql)) {
@@ -4252,9 +4287,10 @@ public class KNCSDL {
         }
 
         String sql;
-        if ("WFH".equals(trangThai)) {
-            // Nếu là WFH, lưu check_in và loai_cham_cong = 'WFH', không cần check_out
-            sql = "INSERT INTO cham_cong (nhan_vien_id, ngay, check_in, loai_cham_cong) VALUES (?, ?, CURRENT_TIME, 'WFH')";
+        boolean isRemote = "WFH".equals(trangThai) || "Công tác".equals(trangThai);
+        if (isRemote) {
+            // Nếu là WFH/Công tác, lưu check_in và loai_cham_cong tương ứng, không cần check_out
+            sql = "INSERT INTO cham_cong (nhan_vien_id, ngay, check_in, loai_cham_cong) VALUES (?, ?, CURRENT_TIME, ?)";
         } else {
             // Bình thường: thêm check_in, check_out, và loai_cham_cong = 'office'
             sql = "INSERT INTO cham_cong (nhan_vien_id, ngay, check_in, check_out, loai_cham_cong) VALUES (?, ?, ?, ?, 'office')";
@@ -4263,8 +4299,10 @@ public class KNCSDL {
         try (PreparedStatement stmt = cn.prepareStatement(sql)) {
             stmt.setInt(1, nhanVienId);
             stmt.setString(2, ngay);
-            
-            if (!("WFH".equals(trangThai))) {
+
+            if (isRemote) {
+                stmt.setString(3, trangThai);
+            } else {
                 stmt.setString(3, checkIn);
                 stmt.setString(4, checkOut);
             }

@@ -42,11 +42,24 @@ public class UploadServlet extends HttpServlet {
 
             for (Part part : request.getParts()) {
                 if (part.getName().equals("files") && part.getSize() > 0) {
-                    String fileName = part.getSubmittedFileName();
+                    String originalName = part.getSubmittedFileName();
+
+                    // ✅ Bảo mật: chặn path traversal + kiểm tra đuôi file (whitelist)
+                    if (!UploadSecurity.extAllowed(originalName)) {
+                        result.append("<li>")
+                              .append(UploadSecurity.baseName(originalName))
+                              .append(" ❌ bị từ chối: ")
+                              .append(UploadSecurity.rejectMessage())
+                              .append("</li>");
+                        continue;
+                    }
+
+                    // Tên lưu trữ an toàn, duy nhất (chỉ basename, không traversal)
+                    String storedName = UploadSecurity.safeStorageName(originalName);
 
                     // Lưu file vật lý
                     try (InputStream fileContent = part.getInputStream();
-                         FileOutputStream fos = new FileOutputStream(uploadPath + File.separator + fileName)) {
+                         FileOutputStream fos = new FileOutputStream(uploadPath + File.separator + storedName)) {
                         byte[] buffer = new byte[1024];
                         int bytesRead;
                         while ((bytesRead = fileContent.read(buffer)) != -1) {
@@ -56,15 +69,16 @@ public class UploadServlet extends HttpServlet {
 
                     // Lưu vào DB
                     String nguoiTaiLen = request.getRemoteUser(); // Hoặc request.getParameter(...)
-                    String filePath = uploadPath + File.separator + fileName; // Đường dẫn tuyệt đối
+                    String filePath = uploadPath + File.separator + storedName; // Đường dẫn tuyệt đối
+                    String displayName = UploadSecurity.sanitizedOriginalName(originalName);
 
-                    pstmt.setString(1, fileName);
+                    pstmt.setString(1, displayName);
                     pstmt.setString(2, filePath); // Hoặc chỉ lưu tên nếu muốn
                     pstmt.setString(3, (nguoiTaiLen != null) ? nguoiTaiLen : "anonymous");
                     pstmt.executeUpdate();
 
                     result.append("<li>")
-                          .append(fileName)
+                          .append(displayName)
                           .append(" ✅ đã được tải lên và lưu.</li>");
                 }
             }

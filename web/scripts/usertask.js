@@ -240,6 +240,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 document.querySelector('#modalTaskDetail select[name="ten_phong_ban"]').innerHTML = finalHTML;
                 document.querySelector('#taskForm select[name="ten_phong_ban"]').innerHTML = finalHTML;
                 document.querySelector('#phongban select[name="ten_phong_ban"]').innerHTML = finalHTML;
+                // Khôi phục bộ lọc/tìm kiếm từ URL sau khi options phòng ban sẵn sàng
+                restoreTaskFilterFromUrl();
             });
     // Load danh sách nhân viên (giao & nhận)
     fetch('./apiNhanvien')
@@ -743,12 +745,65 @@ $('#taskForm').on('submit', function (e) {
     });
 });
 
+// ====== GIỮ TRẠNG THÁI TÌM KIẾM/LỌC TRÊN URL ======
+// Lưu bộ lọc hiện tại vào URL (history.replaceState) để reload sau khi lưu không mất tìm kiếm
+function updateTaskFilterUrl() {
+    var params = new URLSearchParams(window.location.search);
+    var keyword = $('#phongban input[name="keyword"]').val() || '';
+    var phongBan = $('#phongban select[name="ten_phong_ban"]').val() || '';
+    var trangThai = $('#phongban select[name="trangThai"]').val() || '';
+    if (keyword) { params.set('keyword', keyword); } else { params.delete('keyword'); }
+    if (phongBan) { params.set('phong_ban', phongBan); } else { params.delete('phong_ban'); }
+    if (trangThai) { params.set('trang_thai', trangThai); } else { params.delete('trang_thai'); }
+    var qs = params.toString();
+    history.replaceState(null, '', window.location.pathname + (qs ? '?' + qs : ''));
+}
+
+// Xóa bộ lọc khỏi URL (khi bấm nút hủy lọc)
+function clearTaskFilterUrl() {
+    var params = new URLSearchParams(window.location.search);
+    params.delete('keyword');
+    params.delete('phong_ban');
+    params.delete('trang_thai');
+    var qs = params.toString();
+    history.replaceState(null, '', window.location.pathname + (qs ? '?' + qs : ''));
+}
+
+// Khôi phục bộ lọc từ URL và áp dụng lại (gọi sau khi load xong options phòng ban)
+function restoreTaskFilterFromUrl() {
+    var params = new URLSearchParams(window.location.search);
+    var keyword = params.get('keyword') || '';
+    var phongBan = params.get('phong_ban') || '';
+    var trangThai = params.get('trang_thai') || '';
+    if (!keyword && !phongBan && !trangThai) {
+        return;
+    }
+    $('#phongban input[name="keyword"]').val(keyword);
+    if (phongBan) {
+        $('#phongban select[name="ten_phong_ban"]').val(phongBan);
+    }
+    if (trangThai) {
+        $('#phongban select[name="trangThai"]').val(trangThai);
+    }
+    $('#btnFilter').trigger('click');
+}
+
+// Enter trong ô tìm kiếm = bấm nút Lọc
+$(document).on('keydown', '#phongban input[name="keyword"]', function (e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        $('#btnFilter').trigger('click');
+    }
+});
+
 // ====== LỌC CÔNG VIỆC ======
 $('#btnFilter').on('click', function (e) {
     e.preventDefault();
 
     var $btn = $(this);
     var keyword = $('input[name="keyword"]').val() || '';
+    // Lưu trạng thái lọc vào URL để không mất khi reload sau khi lưu
+    updateTaskFilterUrl();
     var phongBan = $('select[name="ten_phong_ban"]').val() || '';
     var trangThai = $('select[name="trangThai"]').val() || '';
     var projectId = $('input[name="du_an_id"]').val() || '';
@@ -833,6 +888,9 @@ $('#btnClearFilter').on('click', function (e) {
 
     // Show toast notification
     showToast('info', 'Đang hủy bộ lọc...');
+
+    // Xóa trạng thái lọc khỏi URL trước khi reload
+    clearTaskFilterUrl();
 
     // Reload page to return to initial state (this preserves all tabs and data)
     setTimeout(function () {

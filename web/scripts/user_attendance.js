@@ -173,6 +173,11 @@
                                     $('#btnCheckInWFH').click(function () {
                                         performCheckInWFH();
                                     });
+
+                                    // ✅ Sự kiện click Check-in Đi công tác
+                                    $('#btnCheckInCongTac').click(function () {
+                                        performCheckInCongTac();
+                                    });
                                 });
 
                                 // ✅ Gọi AJAX Check-in
@@ -300,6 +305,49 @@
                                                 text: 'Không thể kết nối đến server. Vui lòng thử lại!'
                                             });
                                             $('#btnCheckInWFH').prop('disabled', false);
+                                        }
+                                    });
+                                }
+
+                                // ✅ Gọi AJAX Check-in Đi công tác (logic giống WFH)
+                                function performCheckInCongTac() {
+                                    showLoading();
+                                    $('#btnCheckInCongTac').prop('disabled', true);
+
+                                    $.ajax({
+                                        url: './userChamCong',
+                                        type: 'POST',
+                                        data: {action: 'checkin_congtac'},
+                                        dataType: 'json',
+                                        success: function (response) {
+                                            hideLoading();
+                                            if (response.success) {
+                                                Swal.fire({
+                                                    icon: 'success',
+                                                    title: 'Check-in Đi công tác thành công!',
+                                                    text: response.message,
+                                                    showConfirmButton: false,
+                                                    timer: 2000
+                                                }).then(function () {
+                                                    location.reload();
+                                                });
+                                            } else {
+                                                Swal.fire({
+                                                    icon: 'error',
+                                                    title: 'Lỗi check-in Đi công tác!',
+                                                    text: response.message
+                                                });
+                                                $('#btnCheckInCongTac').prop('disabled', false);
+                                            }
+                                        },
+                                        error: function () {
+                                            hideLoading();
+                                            Swal.fire({
+                                                icon: 'error',
+                                                title: 'Lỗi kết nối!',
+                                                text: 'Không thể kết nối đến server. Vui lòng thử lại!'
+                                            });
+                                            $('#btnCheckInCongTac').prop('disabled', false);
                                         }
                                     });
                                 }

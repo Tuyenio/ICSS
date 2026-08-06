@@ -579,7 +579,7 @@
                     </div>
                     <div class="col-md-3">
                         <label class="form-label small">Tìm kiếm</label>
-                        <input type="text" class="form-control" id="searchInput" placeholder="Tìm theo tên nhân viên...">
+                        <input type="text" class="form-control" id="searchInput" name="search" placeholder="Tìm theo tên nhân viên...">
                     </div>
                     <div class="col-md-2">
                         <button type="submit" class="btn btn-primary-gradient w-100">
@@ -868,11 +868,11 @@
     <script>
         const canManageApproved = <%= coQuyenXoaDonDaDuyet ? "true" : "false" %>;
 
-        // Search filter
-        document.getElementById('searchInput').addEventListener('input', function() {
-            const searchTerm = this.value.toLowerCase();
+        // Search filter (lọc client-side theo tên)
+        function applySearchFilter() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
             const rows = document.querySelectorAll('#tableNghiPhep tbody tr');
-            
+
             rows.forEach(row => {
                 const name = row.getAttribute('data-name') || '';
                 if (name.includes(searchTerm)) {
@@ -881,11 +881,48 @@
                     row.style.display = 'none';
                 }
             });
+        }
+
+        document.getElementById('searchInput').addEventListener('input', function() {
+            applySearchFilter();
+
+            // Lưu từ khóa vào URL để không mất tìm kiếm khi trang reload (sau duyệt/sửa/xóa đơn)
+            const params = new URLSearchParams(window.location.search);
+            if (this.value) {
+                params.set('search', this.value);
+            } else {
+                params.delete('search');
+            }
+            const qs = params.toString();
+            history.replaceState(null, '', window.location.pathname + (qs ? '?' + qs : ''));
         });
 
-        // Filter by status
+        // Enter trong ô tìm kiếm: chỉ áp dụng lọc, không submit form (submit sẽ tải lại trang)
+        document.getElementById('searchInput').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                applySearchFilter();
+            }
+        });
+
+        // Khôi phục từ khóa tìm kiếm từ URL sau khi trang reload
+        document.addEventListener('DOMContentLoaded', function() {
+            const params = new URLSearchParams(window.location.search);
+            const search = params.get('search');
+            if (search) {
+                document.getElementById('searchInput').value = search;
+                applySearchFilter();
+            }
+        });
+
+        // Filter by status (giữ lại từ khóa tìm kiếm hiện tại)
         function filterByStatus(status) {
-            window.location.href = 'dsNghiPhep?trangThai=' + status;
+            let url = 'dsNghiPhep?trangThai=' + status;
+            const search = document.getElementById('searchInput').value;
+            if (search) {
+                url += '&search=' + encodeURIComponent(search);
+            }
+            window.location.href = url;
         }
 
         // Xem chi tiết

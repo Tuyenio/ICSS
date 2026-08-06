@@ -139,6 +139,30 @@ public class dsChamCong extends HttpServlet {
         }
     }
 
+    // Xây dựng URL redirect giữ lại trạng thái lọc/tìm kiếm hiện tại
+    private String buildRedirectUrl(HttpServletRequest req) {
+        StringBuilder url = new StringBuilder("dsChamCong");
+        StringBuilder query = new StringBuilder();
+        String[] filterParams = {"keyword", "phong_ban", "month_filter"};
+        for (String param : filterParams) {
+            String value = req.getParameter(param);
+            if (value != null && !value.trim().isEmpty()) {
+                if (query.length() > 0) {
+                    query.append("&");
+                }
+                try {
+                    query.append(param).append("=").append(java.net.URLEncoder.encode(value, "UTF-8"));
+                } catch (java.io.UnsupportedEncodingException e) {
+                    // UTF-8 luôn được hỗ trợ
+                }
+            }
+        }
+        if (query.length() > 0) {
+            url.append("?").append(query);
+        }
+        return url.toString();
+    }
+
     private void handleEditAttendance(HttpServletRequest req, HttpServletResponse resp)
             throws IOException {
         try {
@@ -150,7 +174,7 @@ public class dsChamCong extends HttpServlet {
             boolean updated = kn.capNhatChamCong(id, checkIn, checkOut);
 
             if (updated) {
-                resp.sendRedirect("dsChamCong");
+                resp.sendRedirect(buildRedirectUrl(req));
             } else {
                 resp.getWriter().println("<h3 style='color:red'>❌ Không thể cập nhật chấm công</h3>");
             }
@@ -174,7 +198,7 @@ public class dsChamCong extends HttpServlet {
             boolean success = kn.themChamCong(nhanVienId, ngay, checkIn, checkOut, trangThai);
 
             if (success) {
-                resp.sendRedirect("dsChamCong"); // load lại danh sách
+                resp.sendRedirect(buildRedirectUrl(req)); // load lại danh sách, giữ trạng thái lọc
             } else {
                 resp.getWriter().println("<h3 style='color:red'>❌ Không thể thêm chấm công (đã tồn tại?)</h3>");
             }

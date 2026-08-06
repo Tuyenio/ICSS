@@ -470,6 +470,19 @@ $('#keywordFilter').on('input', function () {
     }
 });
 
+// Ô tìm kiếm trong tab dự án: dùng chung logic lọc với #keywordFilter
+$('#keywordProjectFilter').on('input', function () {
+    $('#keywordFilter').val($(this).val()).trigger('input');
+});
+
+// Enter trong các ô tìm kiếm: chỉ áp dụng lọc (đã lọc realtime), không submit
+$('#keywordFilter, #keywordProjectFilter').on('keydown', function (e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        $(this).trigger('input');
+    }
+});
+
 // Status filter
 $('#trangThaiFilter').change(function () {
     var selectedStatus = $(this).val();

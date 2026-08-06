@@ -23,6 +23,15 @@ public class UploadExcelServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         Part filePart = request.getPart("excelFile");
+
+        // ✅ Bảo mật: chỉ chấp nhận file Excel (.xls/.xlsx)
+        String excelName = (filePart != null) ? filePart.getSubmittedFileName() : null;
+        String excelExt = (excelName != null) ? UploadSecurity.extension(UploadSecurity.baseName(excelName)) : "";
+        if (!"xls".equals(excelExt) && !"xlsx".equals(excelExt)) {
+            response.sendRedirect("dsCongviec?import=fail");
+            return;
+        }
+
         InputStream inputStream = filePart.getInputStream();
 
         try (Workbook workbook = WorkbookFactory.create(inputStream)) {

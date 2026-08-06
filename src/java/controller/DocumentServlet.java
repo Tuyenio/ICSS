@@ -218,6 +218,14 @@ public class DocumentServlet extends HttpServlet {
         .get(filePart.getSubmittedFileName())
         .getFileName()
         .toString();
+
+        // ✅ Bảo mật: kiểm tra đuôi file (whitelist) — chặn webshell jsp/php/...
+        if (!UploadSecurity.extAllowed(originalFileName)) {
+            request.setAttribute("error", UploadSecurity.rejectMessage());
+            handleListDocuments(request, response);
+            return;
+        }
+
         String fileExtension = getFileExtension(originalFileName);
 
         // Tạo tên file lưu: giữ tên gốc (còn dấu) nhưng loại bỏ ký tự bất hợp pháp

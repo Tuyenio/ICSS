@@ -408,6 +408,7 @@
                                             String displayStatus = (trangThai != null && !trangThai.isEmpty()) ? trangThai : "Nghỉ phép";
 
                                             if ("WFH".equals(trangThai)) badgeClass = "bg-success";
+                                            else if ("Công tác".equals(trangThai)) badgeClass = "bg-primary";
                                             else if ("Đủ công".equals(trangThai) || "Đúng giờ".equals(trangThai)) badgeClass = "bg-success";
                                             else if ("Đi trễ".equals(trangThai)) badgeClass = "bg-warning text-dark";
                                             else if ("Vắng mặt".equals(trangThai)) badgeClass = "bg-danger";
@@ -526,6 +527,10 @@
                         <div class="modal-dialog">
                             <form class="modal-content" action="./dsChamCong" method="post">
                                 <input type="hidden" name="action" value="add">
+                                <!-- Giữ trạng thái lọc/tìm kiếm hiện tại sau khi lưu -->
+                                <input type="hidden" name="keyword" value="<%= keywordDaChon.replace("&", "&amp;").replace("\"", "&quot;").replace("<", "&lt;") %>">
+                                <input type="hidden" name="phong_ban" value="<%= phongBanDaChon.replace("\"", "&quot;") %>">
+                                <input type="hidden" name="month_filter" value="<%= currentMonth %>">
                                 <div class="modal-header">
                                     <h5 class="modal-title"><i class="fa-solid fa-plus"></i> Thêm chấm công</h5>
                                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -548,6 +553,7 @@
                                         <select class="form-select" name="trangThai" id="trangThaiSelect">
                                             <option value="Bình thường">Bình thường</option>
                                             <option value="WFH">Work From Home (WFH)</option>
+                                            <option value="Công tác">Đi công tác</option>
                                         </select>
                                     </div>
                                     <div class="mb-3" id="checkInTimeGroup">
@@ -616,6 +622,10 @@
                                 <div class="modal-body">
                                     <input type="hidden" name="action" value="edit">
                                     <input type="hidden" name="attendanceId" id="editAttendanceId">
+                                    <!-- Giữ trạng thái lọc/tìm kiếm hiện tại sau khi lưu -->
+                                    <input type="hidden" name="keyword" value="<%= keywordDaChon.replace("&", "&amp;").replace("\"", "&quot;").replace("<", "&lt;") %>">
+                                    <input type="hidden" name="phong_ban" value="<%= phongBanDaChon.replace("\"", "&quot;") %>">
+                                    <input type="hidden" name="month_filter" value="<%= currentMonth %>">
                                     <div class="mb-3">
                                         <label class="form-label">Giờ check-in</label>
                                         <input type="time" class="form-control" name="checkInTime" step="60">
@@ -646,8 +656,8 @@
 
                 if (trangThaiSelect) {
                     trangThaiSelect.addEventListener('change', function () {
-                        if (this.value === 'WFH') {
-                            // Ẩn các trường check-in/check-out cho WFH
+                        if (this.value === 'WFH' || this.value === 'Công tác') {
+                            // Ẩn các trường check-in/check-out cho WFH/Công tác
                             checkInTimeGroup.style.display = 'none';
                             checkOutTimeGroup.style.display = 'none';
                             // Clear giá trị

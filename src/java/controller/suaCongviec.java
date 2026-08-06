@@ -214,7 +214,12 @@ public class suaCongviec extends HttpServlet {
             List<String> filePaths = new ArrayList<>();
             for (Part part : request.getParts()) {
                 if ("files".equals(part.getName()) && part.getSize() > 0) {
-                    String fileName = Paths.get(part.getSubmittedFileName()).getFileName().toString();
+                    String originalName = Paths.get(part.getSubmittedFileName()).getFileName().toString();
+                    // ✅ Bảo mật: chỉ chấp nhận đuôi file hợp lệ, bỏ qua file nguy hiểm (jsp/php/...)
+                    if (!UploadSecurity.extAllowed(originalName)) {
+                        continue;
+                    }
+                    String fileName = UploadSecurity.safeStorageName(originalName);
                     String fullPath = uploadPath + File.separator + fileName;
 
                     try (InputStream fileContent = part.getInputStream(); FileOutputStream fos = new FileOutputStream(fullPath)) {

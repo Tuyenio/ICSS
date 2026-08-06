@@ -752,6 +752,8 @@ private static String escJsAttr(String s) {
                         <% if (nhomId != null) { %>
                         <input type="hidden" name="nhomId" value="<%= nhomId %>">
                         <% } %>
+                        <!-- Giữ trạng thái tìm kiếm sau khi lưu -->
+                        <input type="hidden" name="search" value="<%= esc(currentSearch) %>">
                         <div class="modal-body">
                             <div class="mb-3">
                                 <label class="form-label">Tên tài liệu <span class="text-danger">*</span></label>
@@ -887,7 +889,8 @@ private static String escJsAttr(String s) {
                     cancelButtonText: 'Hủy'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        window.location.href = 'deleteTailieu?id=' + id + '&nhomId=' + nhomId;
+                        window.location.href = 'deleteTailieu?id=' + id + '&nhomId=' + nhomId
+                                + '&search=' + encodeURIComponent('<%= escJsAttr(currentSearch) %>');
                     }
                 });
             }

@@ -192,6 +192,34 @@ public class userChamCong extends HttpServlet {
                     response.getWriter().write("{\"success\": false, \"message\": \"Lỗi check-in WFH, vui lòng thử lại!\"}");
                 }
 
+            } else if ("checkin_congtac".equals(action)) {
+                // Kiểm tra đã check-in hôm nay chưa
+                Map<String, Object> chamCongHomNay = kn.getChamCongHomNay(nhanVienId);
+                Boolean daCheckIn = (Boolean) chamCongHomNay.get("da_check_in");
+
+                if (daCheckIn != null && daCheckIn) {
+                    response.getWriter().write("{\"success\": false, \"message\": \"Bạn đã check-in hôm nay rồi!\"}");
+                    return;
+                }
+
+                // Kiểm tra nghỉ phép cả ngày
+                if (kn.coNghiPhepCaNgayHomNay(nhanVienId)) {
+                    response.getWriter().write("{\"success\": false, \"message\": \"Bạn đã đăng ký nghỉ phép hôm nay, không thể check in!\"}");
+                    return;
+                }
+
+                // Thực hiện check-in Đi công tác
+                boolean success = kn.checkInCongTac(nhanVienId);
+                if (success) {
+                    // Lấy thời gian check-in vừa thực hiện
+                    java.time.ZonedDateTime now = java.time.ZonedDateTime.now(java.time.ZoneId.of("Asia/Ho_Chi_Minh"));
+                    String checkInTime = now.toLocalTime().toString();
+
+                    response.getWriter().write("{\"success\": true, \"message\": \"Check-in Đi công tác thành công lúc " + checkInTime + "!\"}");
+                } else {
+                    response.getWriter().write("{\"success\": false, \"message\": \"Lỗi check-in Đi công tác, vui lòng thử lại!\"}");
+                }
+
             } else if ("send_report".equals(action)) {
                 // Xử lý gửi báo cáo
                 String attendanceIdStr = request.getParameter("attendanceId");

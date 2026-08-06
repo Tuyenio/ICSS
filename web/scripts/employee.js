@@ -77,8 +77,35 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 // Gán flag đã load xong
                 window.phongBanLoaded = true;
+
+                // Khôi phục trạng thái lọc từ URL sau khi options phòng ban sẵn sàng
+                restoreFilterFromUrl();
             });
 });
+
+// Lưu trạng thái lọc vào URL để không bị mất khi reload (sau khi lưu/sửa nhân viên)
+function updateFilterUrl() {
+    const params = new URLSearchParams();
+    if ($('#searchName').val()) params.set('keyword', $('#searchName').val());
+    if ($('#filterDepartment').val()) params.set('phong_ban', $('#filterDepartment').val());
+    if ($('#filterStatus').val()) params.set('trang_thai', $('#filterStatus').val());
+    if ($('#filterRole').val()) params.set('vai_tro', $('#filterRole').val());
+    const qs = params.toString();
+    history.replaceState(null, '', location.pathname + (qs ? '?' + qs : ''));
+}
+
+// Khôi phục trạng thái lọc từ URL (gọi sau khi danh sách phòng ban đã load)
+function restoreFilterFromUrl() {
+    const params = new URLSearchParams(location.search);
+    if (!params.get('keyword') && !params.get('phong_ban') && !params.get('trang_thai') && !params.get('vai_tro')) {
+        return;
+    }
+    $('#searchName').val(params.get('keyword') || '');
+    $('#filterDepartment').val(params.get('phong_ban') || '');
+    $('#filterStatus').val(params.get('trang_thai') || '');
+    $('#filterRole').val(params.get('vai_tro') || '');
+    $('#btnFilter').trigger('click');
+}
 
 //AJAX loc
 $('#btnFilter').on('click', function () {
@@ -86,6 +113,8 @@ $('#btnFilter').on('click', function () {
     const phongBan = $('#filterDepartment').val();
     const trangThai = $('#filterStatus').val();
     const vaiTro = $('#filterRole').val();
+
+    updateFilterUrl();
 
     $.ajax({
         url: './locNhanvien',
@@ -104,10 +133,12 @@ $('#btnFilter').on('click', function () {
         }
     });
 });
-// AJAX tìm kiếm realtime
-$('#searchName, #filterDepartment, #filterStatus, #filterRole').on('input change', function () {
-    // TODO: AJAX load lại bảng nhân viên theo filter
-    // $.get('api/employee', {...}, function(data){ ... });
+// Enter trong ô tìm kiếm = bấm nút Lọc
+$('#searchName').on('keydown', function (e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        $('#btnFilter').trigger('click');
+    }
 });
 
 function getBadgeClass(status) {

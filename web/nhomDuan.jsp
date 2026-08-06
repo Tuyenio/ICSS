@@ -989,6 +989,14 @@
                     filterProjects();
                 });
 
+                // Enter trong ô tìm kiếm: chỉ áp dụng lọc, không làm gì khác
+                $('#searchInput').on('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        filterProjects();
+                    }
+                });
+
                 // Status filter
                 $('#statusFilter').on('change', function() {
                     filterProjects();
@@ -1004,11 +1012,37 @@
                     filterProjects();
                 });
 
+                // Khôi phục bộ lọc/tìm kiếm từ URL sau khi trang reload (sau khi thêm việc/bước quy trình)
+                (function restoreFilterFromUrl() {
+                    var params = new URLSearchParams(window.location.search);
+                    var search = params.get('search') || '';
+                    var status = params.get('status') || '';
+                    var group = params.get('group') || '';
+                    var department = params.get('department') || '';
+                    if (!search && !status && !group && !department) {
+                        return;
+                    }
+                    $('#searchInput').val(search);
+                    if (status) $('#statusFilter').val(status);
+                    if (group) $('#groupFilter').val(group);
+                    if (department) $('#departmentFilter').val(department);
+                    filterProjects();
+                })();
+
                 function filterProjects() {
                     var searchText = $('#searchInput').val().toLowerCase();
                     var statusFilter = $('#statusFilter').val();
                     var groupFilter = $('#groupFilter').val();
                     var departmentFilter = $('#departmentFilter').val();
+
+                    // Lưu bộ lọc vào URL để không mất khi trang reload
+                    var params = new URLSearchParams(window.location.search);
+                    if (searchText) { params.set('search', $('#searchInput').val()); } else { params.delete('search'); }
+                    if (statusFilter) { params.set('status', statusFilter); } else { params.delete('status'); }
+                    if (groupFilter) { params.set('group', groupFilter); } else { params.delete('group'); }
+                    if (departmentFilter) { params.set('department', departmentFilter); } else { params.delete('department'); }
+                    var qs = params.toString();
+                    history.replaceState(null, '', window.location.pathname + (qs ? '?' + qs : ''));
 
                     $('.project-tree').each(function() {
                         var $project = $(this);

@@ -149,6 +149,10 @@ public class themCongviec extends HttpServlet {
                     }
 
                     String origName = part.getSubmittedFileName();
+                    // ✅ Bảo mật: chỉ chấp nhận đuôi file hợp lệ, bỏ qua file nguy hiểm (jsp/php/...)
+                    if (!UploadSecurity.extAllowed(origName)) {
+                        continue;
+                    }
                     String safeName = makeSafeFileName(origName);
                     // đảm bảo tên duy nhất tránh đè
                     String uniqueName = System.currentTimeMillis() + "_" + UUID.randomUUID().toString() + "_" + safeName;

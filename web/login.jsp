@@ -2,14 +2,23 @@
     <%@ page import="java.sql.*, java.util.*" %>
         <%@ page import="controller.KNCSDL" %>
             <%@ page import="controller.CookieUtil" %>
+            <%@ page import="controller.LoginThrottle" %>
 
                 <%! boolean loginSuccess=false; String redirectUrl="" ; %>
-                    <% String errorMsg="" ; if ("POST".equalsIgnoreCase(request.getMethod())) { String
-                        email=request.getParameter("email"); String password=request.getParameter("password"); try {
+                    <% String errorMsg="" ; if ("POST".equalsIgnoreCase(request.getMethod())) {
+                        String email=request.getParameter("email"); String password=request.getParameter("password");
+                        String ipAddr = request.getHeader("X-Forwarded-For");
+                        if (ipAddr != null && !ipAddr.isEmpty()) { ipAddr = ipAddr.split(",")[0].trim(); } else { ipAddr = request.getRemoteAddr(); }
+                        long lockSec = LoginThrottle.lockedSeconds(email, ipAddr);
+                        if (lockSec > 0) {
+                            errorMsg = "Bạn đã nhập sai quá nhiều lần. Vui lòng thử lại sau " + ((lockSec + 59) / 60) + " phút.";
+                        } else {
+                        try {
                         KNCSDL db=new KNCSDL(); Map<String, String> user = db.login(email, password);
                         db.close();
 
                         if (user != null) {
+                        LoginThrottle.reset(email, ipAddr);
                         String id = user.get("id");
                         String hoten = user.get("ho_ten");
                         String vaiTro = user.get("vai_tro");
@@ -46,8 +55,8 @@
                                 json.append(","); } json.append("]"); session.setAttribute("quyen", json.toString()); if
                                 ("Admin".equalsIgnoreCase(vaiTro) || "Quản lý" .equalsIgnoreCase(vaiTro)) {
                                 response.sendRedirect("index.jsp"); } else { response.sendRedirect("./userDashboard"); }
-                                return; } else { errorMsg="Tài khoản hoặc mật khẩu không đúng!" ; } } catch (Exception
-                                e) { errorMsg="Lỗi hệ thống: " + e.getMessage(); } } %>
+                                return; } else { LoginThrottle.recordFailure(email, ipAddr); errorMsg="Tài khoản hoặc mật khẩu không đúng!" ; } } catch (Exception
+                                e) { errorMsg="Lỗi hệ thống: " + e.getMessage(); } } } %>
 
                                 <!DOCTYPE html>
                                 <html lang="vi">
