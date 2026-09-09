@@ -90,4 +90,5 @@
 <script>
     window.contextPath = '<%= request.getContextPath() %>';
 </script>
+<script src="<%= request.getContextPath() %>/scripts/notification-popup.js?v=<%= System.currentTimeMillis() %>"></script>
 <script src="<%= request.getContextPath() %>/scripts/header.js?v=<%= System.currentTimeMillis() %>"></script>

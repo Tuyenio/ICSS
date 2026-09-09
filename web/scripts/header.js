@@ -52,15 +52,8 @@ var pageTitleEl = document.getElementById('pageTitle');
         pageTitleEl.innerHTML = PAGE_TITLE;
         }
 
-// Nhảy sang trang thông báo khi bấm chuông
-(function () {
-var bell = document.getElementById('adminNotificationBell');
-        if (bell) {
-bell.onclick = function () {
-window.location.href = './apiThongbao';
-        };
-        }
-})();
+// Bấm chuông = mở popup thông báo ngay tại header (scripts/notification-popup.js).
+// Điều hướng sang ./apiThongbao chỉ xảy ra khi bấm nút "Xem tất cả" trong popup.
 
         (function () {
         const POLL_INTERVAL = 7000; // ms, adjust
@@ -127,6 +120,9 @@ window.location.href = './apiThongbao';
                 // Optionally update notification list dropdown: implement if your dropdown has #notificationList
                 function updateDropdown(list) {
                 try {
+                if (window.icssNotiPopup && window.icssNotiPopup.render) {
+                        window.icssNotiPopup.render(list);
+                }
                 const ul = document.getElementById('notificationList');
                         if (!ul) return;
                         ul.innerHTML = '';

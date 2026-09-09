@@ -52,15 +52,8 @@ var pageTitleEl = document.getElementById('pageTitle');
         pageTitleEl.innerHTML = PAGE_TITLE;
         }
 
-// Nhảy sang trang thông báo khi bấm chuông
-(function () {
-var bell = document.getElementById('notificationBell');
-        if (bell) {
-bell.onclick = function () {
-window.location.href = './apiThongbao';
-        };
-        }
-})();
+// Bấm chuông = mở popup thông báo ngay tại header (scripts/notification-popup.js).
+// Điều hướng sang ./apiThongbao chỉ xảy ra khi bấm nút "Xem tất cả" trong popup.
         (function () {
         const POLL_INTERVAL = 7000;
                 const LIMIT = 8;
@@ -107,6 +100,9 @@ window.location.href = './apiThongbao';
 
         function updateDropdown(list) {
         try {
+        if (window.icssNotiPopup && window.icssNotiPopup.render) {
+                window.icssNotiPopup.render(list);
+        }
         const ul = document.getElementById('notificationList');
                 if (!ul) return;
                 ul.innerHTML = '';
