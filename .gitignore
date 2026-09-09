@@ -6,3 +6,5 @@ new-server.txt
 new-server-mysql.txt
 push_and_deploy.py
 /convert-project/
+.deploy-libs/
+.deploy-classes/

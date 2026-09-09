@@ -56,7 +56,7 @@ public class locNhanvien extends HttpServlet {
                 int stt = 1;
                 for (Map<String, Object> nv : danhSach) {
                     String hoTen = str(nv.get("ho_ten"));
-                    String trangThai = str(nv.get("trang_thai_lam_viec"));
+                    String trangThaiNV = str(nv.get("trang_thai_lam_viec"));
                     String vaiTroNV = str(nv.get("vai_tro"));
 
                     out.println("<tr>");
@@ -70,7 +70,7 @@ public class locNhanvien extends HttpServlet {
                     out.println("<td>" + esc(str(nv.get("ten_phong_ban"))) + "</td>");
                     out.println("<td>" + esc(str(nv.get("chuc_vu"))) + "</td>");
                     out.println("<td>" + esc(str(nv.get("ngay_vao_lam"))) + "</td>");
-                    out.println("<td><span class='badge " + badgeTrangThai(trangThai) + "'>" + esc(trangThai) + "</span></td>");
+                    out.println("<td><span class='badge " + badgeTrangThai(trangThaiNV) + "'>" + esc(trangThaiNV) + "</span></td>");
                     out.println("<td><span class='badge " + badgeVaiTro(vaiTroNV) + "'>" + esc(vaiTroNV) + "</span></td>");
                     out.println("<td class='action-btns'>");
                     out.println("<button class='btn btn-sm btn-warning edit-emp-btn' data-id='" + esc(str(nv.get("id"))) + "'"
@@ -83,7 +83,7 @@ public class locNhanvien extends HttpServlet {
                             + " data-startdate='" + esc(str(nv.get("ngay_vao_lam"))) + "'"
                             + " data-phong-ban-id='" + esc(str(nv.get("phong_ban_id"))) + "'"
                             + " data-position='" + esc(str(nv.get("chuc_vu"))) + "'"
-                            + " data-status='" + esc(trangThai) + "'"
+                            + " data-status='" + esc(trangThaiNV) + "'"
                             + " data-role='" + esc(vaiTroNV) + "'"
                             + " data-avatar='" + esc(str(nv.get("avatar_url"))) + "'>");
                     out.println("<i class='fa-solid fa-pen'></i></button>");
