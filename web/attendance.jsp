@@ -633,6 +633,7 @@
                                     <div class="mb-3">
                                         <label class="form-label">Giờ check-out</label>
                                         <input type="time" class="form-control" name="checkOutTime" step="60">
+                                        <div class="form-text">Để trống nếu nhân viên chưa check-out.</div>
                                     </div>
                                 </div>
                                 <div class="modal-footer">

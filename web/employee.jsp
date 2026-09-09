@@ -3,6 +3,15 @@
 
 <%
     List<Map<String, Object>> danhSach = (List<Map<String, Object>>) request.getAttribute("danhSach");
+
+    // Mặc định chỉ hiện nhân viên "Đang làm" (ẩn người đã nghỉ việc).
+    // "all" = người dùng chủ động chọn "Tất cả trạng thái".
+    String trangThaiFilter = request.getParameter("trang_thai");
+    if (trangThaiFilter == null) {
+        trangThaiFilter = "Đang làm";
+    } else if ("all".equals(trangThaiFilter)) {
+        trangThaiFilter = "";
+    }
 %>
 <!DOCTYPE html>
 <html lang="vi">
@@ -178,6 +187,105 @@
                 }
             }
 
+            /* ==== HỒ SƠ NHÂN VIÊN (modal chi tiết) ==== */
+            .profile-card {
+                border: 1px solid #e2e8f0;
+                border-radius: 16px;
+                overflow: hidden;
+                background: #fff;
+            }
+            .profile-hero {
+                display: flex;
+                align-items: center;
+                gap: 18px;
+                padding: 22px 24px;
+                background: linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%);
+                color: #fff;
+            }
+            .profile-avatar {
+                width: 92px;
+                height: 92px;
+                object-fit: cover;
+                border-radius: 50%;
+                border: 3px solid rgba(255,255,255,0.85);
+                box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+                background: #fff;
+                flex-shrink: 0;
+            }
+            .profile-hero-text h5 {
+                font-weight: 700;
+                letter-spacing: 0.2px;
+            }
+            .profile-sub {
+                font-size: 0.88rem;
+                opacity: 0.9;
+                word-break: break-all;
+            }
+            .profile-badges {
+                margin-top: 10px;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            .profile-badges .badge {
+                font-size: 0.78rem;
+                padding: 6px 12px;
+                border-radius: 999px;
+            }
+            .profile-grid {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 12px;
+                padding: 20px 24px 24px;
+                background: #f8fafc;
+            }
+            .profile-item {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                background: #fff;
+                border: 1px solid #e2e8f0;
+                border-radius: 12px;
+                padding: 12px 14px;
+                transition: box-shadow 0.2s ease, transform 0.2s ease;
+            }
+            .profile-item:hover {
+                box-shadow: 0 4px 12px rgba(15,23,42,0.08);
+                transform: translateY(-1px);
+            }
+            .profile-icon {
+                width: 38px;
+                height: 38px;
+                border-radius: 10px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                flex-shrink: 0;
+            }
+            .profile-label {
+                font-size: 0.75rem;
+                text-transform: uppercase;
+                letter-spacing: 0.4px;
+                color: #64748b;
+            }
+            .profile-value {
+                font-weight: 600;
+                color: #1e293b;
+                word-break: break-word;
+            }
+            @media (max-width: 576px) {
+                .profile-hero {
+                    flex-direction: column;
+                    text-align: center;
+                }
+                .profile-badges {
+                    justify-content: center;
+                }
+                .profile-grid {
+                    grid-template-columns: 1fr;
+                }
+            }
+
             /* ==== PERMISSIONS TAB ==== */
             .permissions-container {
                 max-height: 500px;
@@ -303,10 +411,10 @@
                             </div>
                             <div class="col-md-2">
                                 <select class="form-select" id="filterStatus">
-                                    <option value="">Tất cả trạng thái</option>
-                                    <option value="Đang làm">Đang làm</option>
-                                    <option value="Tạm nghỉ">Tạm nghỉ</option>
-                                    <option value="Nghỉ việc">Nghỉ việc</option>
+                                    <option value="" <%= trangThaiFilter.isEmpty() ? "selected" : "" %>>Tất cả trạng thái</option>
+                                    <option value="Đang làm" <%= "Đang làm".equals(trangThaiFilter) ? "selected" : "" %>>Đang làm</option>
+                                    <option value="Tạm nghỉ" <%= "Tạm nghỉ".equals(trangThaiFilter) ? "selected" : "" %>>Tạm nghỉ</option>
+                                    <option value="Nghỉ việc" <%= "Nghỉ việc".equals(trangThaiFilter) ? "selected" : "" %>>Nghỉ việc</option>
                                 </select>
                             </div>
                             <div class="col-md-2">
@@ -347,11 +455,25 @@
                                     <%
                                     if (danhSach != null && !danhSach.isEmpty()) {
                                         int stt = 1;
+                                        int soDong = 0;
                                         for (Map<String, Object> nv : danhSach) {
+                                            String ttNV = nv.get("trang_thai_lam_viec") != null ? nv.get("trang_thai_lam_viec").toString() : "";
+                                            if (!trangThaiFilter.isEmpty() && !trangThaiFilter.equals(ttNV)) {
+                                                continue;
+                                            }
+                                            soDong++;
                                     %>
                                     <tr>
                                         <td><%= stt++ %></td>
-                                        <td><img src="<%= nv.get("avatar_url") %>" class="rounded-circle" width="36"></td>
+                                        <%
+                                            String avatarNV = nv.get("avatar_url") != null ? nv.get("avatar_url").toString().trim() : "";
+                                            if (avatarNV.isEmpty()) {
+                                                String tenNV = nv.get("ho_ten") != null ? nv.get("ho_ten").toString().trim() : "";
+                                                avatarNV = "https://ui-avatars.com/api/?name="
+                                                        + java.net.URLEncoder.encode(tenNV.isEmpty() ? "User" : tenNV, "UTF-8");
+                                            }
+                                        %>
+                                        <td><img src="<%= avatarNV %>" class="rounded-circle" width="36" alt="avatar"></td>
                                         <td><a href="#" class="emp-detail-link fw-semibold text-primary" data-email="<%= nv.get("email") %>"> <%= nv.get("ho_ten") %></a></td>
                                         <td><%= nv.get("email") %></td>
                                         <td><%= nv.get("so_dien_thoai") %></td>
@@ -411,10 +533,17 @@
                                     </tr>
                                     <%
                                             }
+                                            if (soDong == 0) {
+                                    %>
+                                    <tr>
+                                        <td colspan="13" style="text-align:center;">Không có dữ liệu phù hợp</td>
+                                    </tr>
+                                    <%
+                                            }
                                         } else {
                                     %>
                                     <tr>
-                                        <td colspan="10" style="text-align:center;">Không có dữ liệu</td>
+                                        <td colspan="13" style="text-align:center;">Không có dữ liệu</td>
                                     </tr>
                                     <%
                                         }
@@ -540,21 +669,63 @@
                                     </ul>
                                     <div class="tab-content" id="empDetailTabContent">
                                         <div class="tab-pane fade show active" id="tabInfo" role="tabpanel">
-                                            <div class="row">
-                                                <div class="col-md-3 text-center">
-                                                    <img id="avatarPreview" src="" class="rounded-circle mb-2" width="100">
-                                                    <div class="fw-bold emp-name">Nguyễn Văn A</div>
-                                                    <div class="text-muted small emp-email">nguyenvana@email.com</div>
+                                            <div class="profile-card">
+                                                <div class="profile-hero">
+                                                    <img id="empDetailAvatar" src="" class="profile-avatar" alt="Avatar">
+                                                    <div class="profile-hero-text">
+                                                        <h5 class="emp-name mb-1">—</h5>
+                                                        <div class="profile-sub">
+                                                            <i class="fa-solid fa-envelope me-1"></i><span class="emp-email">—</span>
+                                                        </div>
+                                                        <div class="profile-badges">
+                                                            <span class="emp-status badge"></span>
+                                                            <span class="emp-role badge"></span>
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                                <div class="col-md-9">
-                                                    <b>SĐT:</b> <span class="emp-phone"></span><br>
-                                                    <b>Giới tính:</b> <span class="emp-gender"></span><br>
-                                                    <b>Ngày sinh:</b> <span class="emp-birth"></span><br>
-                                                    <b>Phòng ban:</b> <span class="emp-dept"></span><br>
-                                                    <b>Chức vụ:</b> <span class="emp-position"></span><br>
-                                                    <b>Ngày vào làm:</b> <span class="emp-start"></span><br>
-                                                    <b>Trạng thái:</b> <span class="emp-status badge"></span><br>
-                                                    <b>Vai trò:</b> <span class="emp-role badge"></span>
+                                                <div class="profile-grid">
+                                                    <div class="profile-item">
+                                                        <span class="profile-icon bg-primary-subtle text-primary"><i class="fa-solid fa-phone"></i></span>
+                                                        <div>
+                                                            <div class="profile-label">Số điện thoại</div>
+                                                            <div class="profile-value emp-phone">—</div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="profile-item">
+                                                        <span class="profile-icon bg-info-subtle text-info"><i class="fa-solid fa-venus-mars"></i></span>
+                                                        <div>
+                                                            <div class="profile-label">Giới tính</div>
+                                                            <div class="profile-value emp-gender">—</div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="profile-item">
+                                                        <span class="profile-icon bg-warning-subtle text-warning"><i class="fa-solid fa-cake-candles"></i></span>
+                                                        <div>
+                                                            <div class="profile-label">Ngày sinh</div>
+                                                            <div class="profile-value emp-birth">—</div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="profile-item">
+                                                        <span class="profile-icon bg-success-subtle text-success"><i class="fa-solid fa-building"></i></span>
+                                                        <div>
+                                                            <div class="profile-label">Phòng ban</div>
+                                                            <div class="profile-value emp-dept">—</div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="profile-item">
+                                                        <span class="profile-icon bg-danger-subtle text-danger"><i class="fa-solid fa-briefcase"></i></span>
+                                                        <div>
+                                                            <div class="profile-label">Chức vụ</div>
+                                                            <div class="profile-value emp-position">—</div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="profile-item">
+                                                        <span class="profile-icon bg-secondary-subtle text-secondary"><i class="fa-solid fa-calendar-check"></i></span>
+                                                        <div>
+                                                            <div class="profile-label">Ngày vào làm</div>
+                                                            <div class="profile-value emp-start">—</div>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>

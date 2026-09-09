@@ -278,6 +278,7 @@ public class KNCSDL {
             nv.put("gioi_tinh", rs.getString("gioi_tinh"));
             nv.put("ngay_sinh", rs.getString("ngay_sinh"));
             nv.put("ngay_vao_lam", rs.getString("ngay_vao_lam"));
+            nv.put("phong_ban_id", rs.getString("phong_ban_id"));
             nv.put("ten_phong_ban", rs.getString("ten_phong_ban"));
             nv.put("chuc_vu", rs.getString("chuc_vu"));
             nv.put("trang_thai_lam_viec", rs.getString("trang_thai_lam_viec"));
@@ -348,6 +349,7 @@ public class KNCSDL {
                     nv.put("gioi_tinh", rs.getString("gioi_tinh"));
                     nv.put("ngay_sinh", rs.getString("ngay_sinh"));
                     nv.put("ngay_vao_lam", rs.getString("ngay_vao_lam"));
+                    nv.put("phong_ban_id", rs.getString("phong_ban_id"));
                     nv.put("ten_phong_ban", rs.getString("ten_phong_ban"));
                     nv.put("chuc_vu", rs.getString("chuc_vu"));
                     nv.put("trang_thai_lam_viec", rs.getString("trang_thai_lam_viec"));
@@ -4230,22 +4232,24 @@ public class KNCSDL {
     }
 
     public boolean capNhatChamCong(int id, String checkIn, String checkOut) throws SQLException {
-        String sql;
-        if (checkOut == null || checkOut.trim().isEmpty()) {
-            sql = "UPDATE cham_cong SET check_in = ? WHERE id = ?";
-            try (PreparedStatement stmt = cn.prepareStatement(sql)) {
-                stmt.setString(1, checkIn);
-                stmt.setInt(2, id);
-                return stmt.executeUpdate() > 0;
-            }
+        // Ô giờ để trống = "chưa chấm" => ghi NULL, KHÔNG để MySQL tự ép thành 00:00:00.
+        // Nhờ vậy sửa giờ check-in của người chưa check-out không sinh ra check_out 00:00,
+        // đồng thời xoá được các bản ghi 00:00:00 sai từ trước bằng cách xoá trắng ô giờ.
+        String sql = "UPDATE cham_cong SET check_in = ?, check_out = ? WHERE id = ?";
+        try (PreparedStatement stmt = cn.prepareStatement(sql)) {
+            setTimeOrNull(stmt, 1, checkIn);
+            setTimeOrNull(stmt, 2, checkOut);
+            stmt.setInt(3, id);
+            return stmt.executeUpdate() > 0;
+        }
+    }
+
+    // Gán giờ dạng "HH:mm" / "HH:mm:ss"; rỗng hoặc null => NULL
+    private void setTimeOrNull(PreparedStatement stmt, int index, String time) throws SQLException {
+        if (time == null || time.trim().isEmpty()) {
+            stmt.setNull(index, java.sql.Types.TIME);
         } else {
-            sql = "UPDATE cham_cong SET check_in = ?, check_out = ? WHERE id = ?";
-            try (PreparedStatement stmt = cn.prepareStatement(sql)) {
-                stmt.setString(1, checkIn);
-                stmt.setString(2, checkOut);
-                stmt.setInt(3, id);
-                return stmt.executeUpdate() > 0;
-            }
+            stmt.setString(index, time.trim());
         }
     }
 
@@ -4267,8 +4271,8 @@ public class KNCSDL {
         try (PreparedStatement stmt = cn.prepareStatement(sql)) {
             stmt.setInt(1, nhanVienId);
             stmt.setString(2, ngay);
-            stmt.setString(3, checkIn);
-            stmt.setString(4, checkOut);
+            setTimeOrNull(stmt, 3, checkIn);
+            setTimeOrNull(stmt, 4, checkOut);
             return stmt.executeUpdate() > 0;
         }
     }
@@ -4303,8 +4307,8 @@ public class KNCSDL {
             if (isRemote) {
                 stmt.setString(3, trangThai);
             } else {
-                stmt.setString(3, checkIn);
-                stmt.setString(4, checkOut);
+                setTimeOrNull(stmt, 3, checkIn);
+                setTimeOrNull(stmt, 4, checkOut);
             }
             
             return stmt.executeUpdate() > 0;

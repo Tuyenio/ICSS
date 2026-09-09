@@ -88,7 +88,8 @@ function updateFilterUrl() {
     const params = new URLSearchParams();
     if ($('#searchName').val()) params.set('keyword', $('#searchName').val());
     if ($('#filterDepartment').val()) params.set('phong_ban', $('#filterDepartment').val());
-    if ($('#filterStatus').val()) params.set('trang_thai', $('#filterStatus').val());
+    // 'all' = chủ động xem tất cả trạng thái; không có tham số = mặc định "Đang làm"
+    params.set('trang_thai', $('#filterStatus').val() || 'all');
     if ($('#filterRole').val()) params.set('vai_tro', $('#filterRole').val());
     const qs = params.toString();
     history.replaceState(null, '', location.pathname + (qs ? '?' + qs : ''));
@@ -102,7 +103,8 @@ function restoreFilterFromUrl() {
     }
     $('#searchName').val(params.get('keyword') || '');
     $('#filterDepartment').val(params.get('phong_ban') || '');
-    $('#filterStatus').val(params.get('trang_thai') || '');
+    const trangThai = params.get('trang_thai');
+    $('#filterStatus').val(trangThai === 'all' ? '' : (trangThai || 'Đang làm'));
     $('#filterRole').val(params.get('vai_tro') || '');
     $('#btnFilter').trigger('click');
 }
@@ -181,27 +183,33 @@ $(document).on('click', '.emp-detail-link', function (e) {
             // Lưu employee ID vào modal để sử dụng cho phân quyền
             $('#modalEmpDetail').data('employee-id', data.id);
 
-            // Gán dữ liệu vào modal
-            $('#modalEmpDetail .emp-name').text(data.ho_ten);
-            $('#modalEmpDetail .emp-email').text(data.email);
-            $('#modalEmpDetail .emp-phone').text(data.so_dien_thoai);
-            $('#modalEmpDetail .emp-gender').text(data.gioi_tinh);
-            $('#modalEmpDetail .emp-birth').text(data.ngay_sinh);
-            $('#modalEmpDetail .emp-dept').text(data.ten_phong_ban);
-            $('#modalEmpDetail .emp-position').text(data.chuc_vu);
-            $('#modalEmpDetail .emp-start').text(data.ngay_vao_lam);
+            // Gán dữ liệu vào modal ('—' khi trống cho gọn UI)
+            const show = v => (v !== null && v !== undefined && String(v).trim() !== '') ? v : '—';
+            $('#modalEmpDetail .emp-name').text(show(data.ho_ten));
+            $('#modalEmpDetail .emp-email').text(show(data.email));
+            $('#modalEmpDetail .emp-phone').text(show(data.so_dien_thoai));
+            $('#modalEmpDetail .emp-gender').text(show(data.gioi_tinh));
+            $('#modalEmpDetail .emp-birth').text(show(data.ngay_sinh));
+            $('#modalEmpDetail .emp-dept').text(show(data.ten_phong_ban));
+            $('#modalEmpDetail .emp-position').text(show(data.chuc_vu));
+            $('#modalEmpDetail .emp-start').text(show(data.ngay_vao_lam));
 
             const avatarUrl = data.avatar_url && data.avatar_url.trim() !== ''
                     ? data.avatar_url
                     : 'https://ui-avatars.com/api/?name=' + encodeURIComponent(data.ho_ten || 'User');
 
-            $('#modalEmpDetail #avatarPreview').attr('src', avatarUrl);
+            $('#empDetailAvatar')
+                    .attr('src', avatarUrl)
+                    .off('error')
+                    .on('error', function () {
+                        this.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(data.ho_ten || 'User');
+                    });
 
             // Xử lý badge màu trạng thái
             const statusClass = getBadgeClass(data.trang_thai_lam_viec);
             $('#modalEmpDetail .emp-status')
                     .text(data.trang_thai_lam_viec)
-                    .removeClass('bg-success bg-warning bg-danger bg-secondary')
+                    .removeClass('bg-success bg-warning bg-danger bg-info bg-secondary text-white text-dark')
                     .addClass(statusClass);
 
             // Xử lý badge màu vai trò
