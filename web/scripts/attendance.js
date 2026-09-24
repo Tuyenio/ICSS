@@ -2,6 +2,30 @@ function hasPermission(code) {
     return USER_PERMISSIONS && USER_PERMISSIONS.includes(code);
 }
 
+// Ép các ô giờ check-in/check-out luôn hiển thị & nhận nhập theo định dạng 24h (HH:mm),
+// vì <input type="time"> hiển thị 12h/24h tuỳ locale hệ điều hành của trình duyệt (không kiểm soát được bằng HTML/CSS).
+function attachTime24Mask(input) {
+    input.addEventListener('input', function () {
+        const digits = input.value.replace(/\D/g, '').slice(0, 4);
+        input.value = digits.length > 2 ? digits.slice(0, 2) + ':' + digits.slice(2) : digits;
+    });
+    input.addEventListener('blur', function () {
+        const val = input.value.trim();
+        if (val === '') {
+            return;
+        }
+        const match = val.match(/^(\d{1,2}):?(\d{0,2})$/);
+        if (!match) {
+            input.value = '';
+            return;
+        }
+        let hh = Math.min(parseInt(match[1], 10) || 0, 23);
+        let mm = match[2] ? Math.min(parseInt(match[2], 10) || 0, 59) : 0;
+        input.value = String(hh).padStart(2, '0') + ':' + String(mm).padStart(2, '0');
+    });
+}
+document.querySelectorAll('.time24-input').forEach(attachTime24Mask);
+
 document.addEventListener("DOMContentLoaded", function () {
 
     if (!hasPermission("xem_chamcong")) {

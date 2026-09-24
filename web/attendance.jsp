@@ -558,11 +558,11 @@
                                     </div>
                                     <div class="mb-3" id="checkInTimeGroup">
                                         <label class="form-label">Giờ check-in</label>
-                                        <input type="time" class="form-control" name="checkInTime" step="60">
+                                        <input type="text" class="form-control time24-input" name="checkInTime" placeholder="HH:mm" maxlength="5" autocomplete="off" pattern="^([01]\d|2[0-3]):[0-5]\d$">
                                     </div>
                                     <div class="mb-3" id="checkOutTimeGroup">
                                         <label class="form-label">Giờ check-out</label>
-                                        <input type="time" class="form-control" name="checkOutTime" step="60">
+                                        <input type="text" class="form-control time24-input" name="checkOutTime" placeholder="HH:mm" maxlength="5" autocomplete="off" pattern="^([01]\d|2[0-3]):[0-5]\d$">
                                     </div>
                                 </div>
                                 <div class="modal-footer">
@@ -628,11 +628,11 @@
                                     <input type="hidden" name="month_filter" value="<%= currentMonth %>">
                                     <div class="mb-3">
                                         <label class="form-label">Giờ check-in</label>
-                                        <input type="time" class="form-control" name="checkInTime" step="60">
+                                        <input type="text" class="form-control time24-input" name="checkInTime" placeholder="HH:mm" maxlength="5" autocomplete="off" pattern="^([01]\d|2[0-3]):[0-5]\d$">
                                     </div>
                                     <div class="mb-3">
                                         <label class="form-label">Giờ check-out</label>
-                                        <input type="time" class="form-control" name="checkOutTime" step="60">
+                                        <input type="text" class="form-control time24-input" name="checkOutTime" placeholder="HH:mm" maxlength="5" autocomplete="off" pattern="^([01]\d|2[0-3]):[0-5]\d$">
                                         <div class="form-text">Để trống nếu nhân viên chưa check-out.</div>
                                     </div>
                                 </div>

@@ -2359,14 +2359,19 @@ public class KNCSDL {
 
         // Tải map ngày nghỉ nửa buổi theo nhân viên để override trang_thai trong Java
         // (SQL CASE không thể tự điều chỉnh ngưỡng giờ cho ngày nghỉ nửa buổi)
+        // Bao gồm cả đơn nhiều ngày dư 0.5 (VD 1.5, 2.5 ngày...): nửa ngày đó
+        // chỉ có thể rơi vào ngày ĐẦU hoặc ngày CUỐI của đơn (xem coNghiPhepCaNgayHomNay),
+        // nên cả 2 ngày đó đều được coi là "có thể nghỉ nửa buổi" - ngày nào thực sự
+        // có check_in thì mới áp dụng ngưỡng đi trễ nới hơn cho ngày đó.
         Map<Integer, java.util.Set<java.sql.Date>> halfDayMapByNV = new HashMap<>();
         {
             StringBuilder hdSql = new StringBuilder(
-                "SELECT nhan_vien_id, ngay_bat_dau FROM don_nghi_phep "
-                + "WHERE trang_thai = 'da_duyet' AND so_ngay = 0.5");
+                "SELECT nhan_vien_id, ngay_bat_dau, ngay_ket_thuc, so_ngay FROM don_nghi_phep "
+                + "WHERE trang_thai = 'da_duyet' AND so_ngay - FLOOR(so_ngay) = 0.5");
             List<Object> hdParams = new ArrayList<>();
             if (thang != null && !thang.isEmpty() && nam != null && !nam.isEmpty()) {
-                hdSql.append(" AND MONTH(ngay_bat_dau) = ? AND YEAR(ngay_bat_dau) = ?");
+                hdSql.append(" AND (MONTH(ngay_bat_dau) = ? OR MONTH(ngay_ket_thuc) = ?) AND YEAR(ngay_bat_dau) = ?");
+                hdParams.add(Integer.parseInt(thang));
                 hdParams.add(Integer.parseInt(thang));
                 hdParams.add(Integer.parseInt(nam));
             }
@@ -2379,8 +2384,21 @@ public class KNCSDL {
                 try (ResultSet hdRs = hdStmt.executeQuery()) {
                     while (hdRs.next()) {
                         int nvId = hdRs.getInt("nhan_vien_id");
-                        java.sql.Date ngayHd = hdRs.getDate("ngay_bat_dau");
-                        halfDayMapByNV.computeIfAbsent(nvId, k -> new java.util.HashSet<>()).add(ngayHd);
+                        java.sql.Date ngayBatDau = hdRs.getDate("ngay_bat_dau");
+                        java.sql.Date ngayKetThuc = hdRs.getDate("ngay_ket_thuc");
+                        double soNgay = hdRs.getDouble("so_ngay");
+                        long soNgayLich = ngayKetThuc.toLocalDate().toEpochDay()
+                                - ngayBatDau.toLocalDate().toEpochDay() + 1;
+
+                        java.util.Set<java.sql.Date> set = halfDayMapByNV.computeIfAbsent(nvId, k -> new java.util.HashSet<>());
+                        if (soNgayLich <= 1) {
+                            // Đơn nghỉ nửa ngày đơn lẻ (so_ngay = 0.5)
+                            set.add(ngayBatDau);
+                        } else if (Math.abs(soNgay - (soNgayLich - 0.5)) < 0.01) {
+                            // Đơn nhiều ngày dư đúng 0.5 -> nửa ngày rơi vào ngày đầu HOẶC ngày cuối
+                            set.add(ngayBatDau);
+                            set.add(ngayKetThuc);
+                        }
                     }
                 }
             }
@@ -2907,17 +2925,32 @@ public class KNCSDL {
 
         // Bước 1: Lấy danh sách các ngày có đơn nghỉ nửa ngày đã duyệt trong tháng
         // buoi_nghi tự nhận diện từ giờ check_in: trước 10:00 = 'sang', từ 10:00 trở đi = 'chieu'
+        // Bao gồm cả đơn nhiều ngày dư 0.5 (VD 1.5, 2.5 ngày...): nửa ngày đó chỉ có thể
+        // rơi vào ngày ĐẦU hoặc ngày CUỐI của đơn (xem coNghiPhepCaNgayHomNay) nên cả 2
+        // ngày đó đều được coi là "có thể nghỉ nửa buổi".
         java.util.Set<java.sql.Date> halfDayLeaveSet = new java.util.HashSet<>();
-        String halfDaySql = "SELECT ngay_bat_dau FROM don_nghi_phep "
-                + "WHERE nhan_vien_id = ? AND trang_thai = 'da_duyet' AND so_ngay = 0.5 "
-                + "AND MONTH(ngay_bat_dau) = ? AND YEAR(ngay_bat_dau) = ?";
+        String halfDaySql = "SELECT ngay_bat_dau, ngay_ket_thuc, so_ngay FROM don_nghi_phep "
+                + "WHERE nhan_vien_id = ? AND trang_thai = 'da_duyet' AND so_ngay - FLOOR(so_ngay) = 0.5 "
+                + "AND (MONTH(ngay_bat_dau) = ? OR MONTH(ngay_ket_thuc) = ?) AND YEAR(ngay_bat_dau) = ?";
         try (PreparedStatement halfStmt = cn.prepareStatement(halfDaySql)) {
             halfStmt.setInt(1, nhanVienId);
             halfStmt.setInt(2, thang);
-            halfStmt.setInt(3, nam);
+            halfStmt.setInt(3, thang);
+            halfStmt.setInt(4, nam);
             try (ResultSet halfRs = halfStmt.executeQuery()) {
                 while (halfRs.next()) {
-                    halfDayLeaveSet.add(halfRs.getDate("ngay_bat_dau"));
+                    java.sql.Date ngayBatDau = halfRs.getDate("ngay_bat_dau");
+                    java.sql.Date ngayKetThuc = halfRs.getDate("ngay_ket_thuc");
+                    double soNgay = halfRs.getDouble("so_ngay");
+                    long soNgayLich = ngayKetThuc.toLocalDate().toEpochDay()
+                            - ngayBatDau.toLocalDate().toEpochDay() + 1;
+
+                    if (soNgayLich <= 1) {
+                        halfDayLeaveSet.add(ngayBatDau);
+                    } else if (Math.abs(soNgay - (soNgayLich - 0.5)) < 0.01) {
+                        halfDayLeaveSet.add(ngayBatDau);
+                        halfDayLeaveSet.add(ngayKetThuc);
+                    }
                 }
             }
         }
