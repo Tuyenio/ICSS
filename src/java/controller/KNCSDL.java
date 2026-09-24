@@ -3065,22 +3065,69 @@ public class KNCSDL {
     }
 
     /**
-     * Kiểm tra nhân viên có đơn nghỉ phép CẢ NGÀY hôm nay không
-     * (Nghỉ phép cả ngày = không phải nghỉ nửa ngày có buoi_nghi)
+     * Kiểm tra nhân viên có đơn nghỉ phép CẢ NGÀY hôm nay không.
      * Dùng để chặn check-in khi nghỉ cả ngày.
+     *
+     * Đơn nghỉ nhiều ngày có dư 0.5 (VD 1.5 ngày qua 2 ngày lịch, 2.5 ngày qua
+     * 3 ngày lịch...) chỉ có ĐÚNG 1 ngày là nửa ngày, nhưng schema không lưu
+     * ngày/buổi nào là nửa ngày. Quy ước xử lý: ngày đầu và ngày cuối của đơn
+     * đều được phép checkin (vì nửa ngày chỉ có thể rơi vào 1 trong 2 ngày
+     * này), nhưng cả đơn chỉ được dùng nửa ngày đó 1 lần — checkin ở ngày đầu
+     * hoặc ngày cuối rồi thì ngày còn lại (đầu/cuối) bị chặn; các ngày ở giữa
+     * luôn là ngày nghỉ cả ngày nên luôn bị chặn.
      */
     public boolean coNghiPhepCaNgayHomNay(int nhanVienId) throws SQLException {
-        // Nghỉ cả ngày = có đơn đã duyệt bao gồm hôm nay VÀ không phải nghỉ nửa ngày (so_ngay = 0.5)
-        String sql = "SELECT COUNT(*) FROM don_nghi_phep "
+        String sql = "SELECT ngay_bat_dau, ngay_ket_thuc, so_ngay, CURDATE() AS hom_nay "
+                + "FROM don_nghi_phep "
                 + "WHERE nhan_vien_id = ? AND trang_thai = 'da_duyet' "
-                + "AND CURDATE() BETWEEN ngay_bat_dau AND ngay_ket_thuc "
-                + "AND so_ngay > 0.5";
+                + "AND CURDATE() BETWEEN ngay_bat_dau AND ngay_ket_thuc";
         try (PreparedStatement stmt = cn.prepareStatement(sql)) {
             stmt.setInt(1, nhanVienId);
             try (ResultSet rs = stmt.executeQuery()) {
-                return rs.next() && rs.getInt(1) > 0;
+                while (rs.next()) {
+                    Date ngayBatDau = rs.getDate("ngay_bat_dau");
+                    Date ngayKetThuc = rs.getDate("ngay_ket_thuc");
+                    Date homNay = rs.getDate("hom_nay");
+                    double soNgay = rs.getDouble("so_ngay");
+
+                    long soNgayLich = ngayKetThuc.toLocalDate().toEpochDay()
+                            - ngayBatDau.toLocalDate().toEpochDay() + 1;
+                    boolean coNuaNgayLe = soNgayLich >= 2
+                            && Math.abs(soNgay - (soNgayLich - 0.5)) < 0.01;
+
+                    if (!coNuaNgayLe) {
+                        // Nghỉ trọn các ngày trong khoảng (hoặc đơn nửa ngày 1-ngày) -> giữ nguyên logic cũ
+                        if (soNgay > 0.5) {
+                            return true;
+                        }
+                        continue;
+                    }
+
+                    boolean laNgayDau = homNay.equals(ngayBatDau);
+                    boolean laNgayCuoi = homNay.equals(ngayKetThuc);
+
+                    if (!laNgayDau && !laNgayCuoi) {
+                        // Ngày giữa của đơn nhiều ngày có nửa ngày lẻ -> luôn nghỉ cả ngày
+                        return true;
+                    }
+
+                    // Hôm nay là ngày đầu hoặc ngày cuối -> cả đơn chỉ được checkin 1 trong 2 ngày này
+                    Date ngayConLai = laNgayDau ? ngayKetThuc : ngayBatDau;
+                    String checkSql = "SELECT check_in FROM cham_cong WHERE nhan_vien_id = ? AND ngay = ?";
+                    try (PreparedStatement checkStmt = cn.prepareStatement(checkSql)) {
+                        checkStmt.setInt(1, nhanVienId);
+                        checkStmt.setDate(2, ngayConLai);
+                        try (ResultSet checkRs = checkStmt.executeQuery()) {
+                            if (checkRs.next() && checkRs.getTime("check_in") != null) {
+                                // Đã dùng nửa ngày ở ngày đầu/cuối còn lại rồi
+                                return true;
+                            }
+                        }
+                    }
+                }
             }
         }
+        return false;
     }
 
     // Lấy thống kê chấm công cá nhân
