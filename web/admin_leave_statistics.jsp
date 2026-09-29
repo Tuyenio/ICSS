@@ -207,6 +207,34 @@
             white-space: nowrap;
         }
 
+        .table thead th.sortable {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .table thead th.sortable:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .table thead th.sortable::after {
+            content: '\f0dc';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            margin-left: 6px;
+            font-size: 0.75em;
+            opacity: 0.45;
+        }
+
+        .table thead th.sortable.asc::after {
+            content: '\f0de';
+            opacity: 1;
+        }
+
+        .table thead th.sortable.desc::after {
+            content: '\f0dd';
+            opacity: 1;
+        }
+
         .table tbody td {
             padding: 14px 12px;
             vertical-align: middle;
@@ -408,15 +436,15 @@
                 <table class="table table-hover">
                     <thead>
                         <tr>
-                            <th>STT</th>
-                            <th>Nhân viên</th>
-                            <th>Phòng ban</th>
-                            <th class="hide-on-tablet">Ngày vào làm</th>
-                            <th class="text-center">Tổng phép <%= nam %></th>
-                            <th class="text-center hide-on-1200">Đã dùng</th>
-                            <th class="text-center">Phép <%= nam %></th>
-                            <th class="text-center">Còn lại <%= (nam - 1) %></th>
-                            <th class="text-center">Tổng còn</th>
+                            <th class="sortable" data-type="num" title="Bấm để sắp xếp">STT</th>
+                            <th class="sortable" data-type="text" title="Bấm để sắp xếp">Nhân viên</th>
+                            <th class="sortable" data-type="text" title="Bấm để sắp xếp">Phòng ban</th>
+                            <th class="sortable hide-on-tablet" data-type="num" title="Bấm để sắp xếp">Ngày vào làm</th>
+                            <th class="sortable text-center" data-type="num" title="Bấm để sắp xếp">Tổng phép <%= nam %></th>
+                            <th class="sortable text-center hide-on-1200" data-type="num" title="Bấm để sắp xếp">Đã dùng</th>
+                            <th class="sortable text-center" data-type="num" title="Bấm để sắp xếp">Phép <%= nam %></th>
+                            <th class="sortable text-center" data-type="num" title="Bấm để sắp xếp">Còn lại <%= (nam - 1) %></th>
+                            <th class="sortable text-center" data-type="num" title="Bấm để sắp xếp">Tổng còn</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -434,10 +462,18 @@
                                 double conLai = ((Number) nv.getOrDefault("ngay_phep_con_lai", 0)).doubleValue();
                                 double namTruoc = ((Number) nv.getOrDefault("ngay_phep_nam_truoc", 0)).doubleValue();
                                 double tongCon = conLai + namTruoc;
+                                Object ngayVaoLamSort = nv.get("ngay_vao_lam");
+                                long ngayVaoLamMs = 0;
+                                if (ngayVaoLamSort instanceof java.util.Date) {
+                                    ngayVaoLamMs = ((java.util.Date) ngayVaoLamSort).getTime();
+                                }
+                                String hoTenSort = String.valueOf(nv.get("ho_ten")).replace("&", "&amp;").replace("\"", "&quot;").replace("<", "&lt;");
+                                Object pbSort = nv.get("ten_phong_ban");
+                                String pbSortStr = (pbSort != null ? String.valueOf(pbSort) : "Chưa có").replace("&", "&amp;").replace("\"", "&quot;").replace("<", "&lt;");
                         %>
                         <tr>
-                            <td><%= stt++ %></td>
-                            <td>
+                            <td data-v="<%= stt %>"><%= stt++ %></td>
+                            <td data-v="<%= hoTenSort %>">
                                 <div class="employee-info">
                                     <img src="<%= avatarUrl %>" alt="Avatar" class="employee-avatar" onerror="this.src='Img/default-avatar.png'">
                                     <div class="employee-details">
@@ -446,8 +482,8 @@
                                     </div>
                                 </div>
                             </td>
-                            <td><%= nv.get("ten_phong_ban") != null ? nv.get("ten_phong_ban") : "Chưa có" %></td>
-                            <td class="hide-on-tablet">
+                            <td data-v="<%= pbSortStr %>"><%= nv.get("ten_phong_ban") != null ? nv.get("ten_phong_ban") : "Chưa có" %></td>
+                            <td class="hide-on-tablet" data-v="<%= ngayVaoLamMs %>">
                                 <%
                                     Object ngayVaoLamObj = nv.get("ngay_vao_lam");
                                     if (ngayVaoLamObj != null) {
@@ -462,27 +498,27 @@
                                     }
                                 %>
                             </td>
-                            <td class="text-center">
+                            <td class="text-center" data-v="<%= tongPhep %>">
                                 <span class="badge badge-primary"><%= df.format(tongPhep) %> ngày</span>
                             </td>
-                            <td class="text-center hide-on-1200">
+                            <td class="text-center hide-on-1200" data-v="<%= daDung %>">
                                 <span class="leave-detail <%= (daDung > 0) ? "negative" : "neutral" %>">
                                     <%= df.format(daDung) %> ngày
                                 </span>
                             </td>
-                            <td class="text-center">
+                            <td class="text-center" data-v="<%= conLai %>">
                                 <span class="leave-detail <%= (conLai > 0) ? "positive" : "neutral" %>">
                                     <%= df.format(conLai) %> ngày
                                 </span>
                             </td>
-                            <td class="text-center">
+                            <td class="text-center" data-v="<%= namTruoc %>">
                                 <% if (namTruoc > 0) { %>
                                     <span class="badge badge-info"><%= df.format(namTruoc) %> ngày</span>
                                 <% } else { %>
                                     <span class="text-muted">0 ngày</span>
                                 <% } %>
                             </td>
-                            <td class="text-center">
+                            <td class="text-center" data-v="<%= tongCon %>">
                                 <span class="badge badge-success" style="font-size: 1rem;">
                                     <strong><%= df.format(tongCon) %> ngày</strong>
                                 </span>
@@ -512,6 +548,33 @@
             $('#yearSelect').on('change', function() {
                 const year = $(this).val();
                 window.location.href = 'adminLeaveStats?nam=' + year;
+            });
+
+            // Click tiêu đề cột để sắp xếp; click lần 2 đảo chiều
+            const collator = new Intl.Collator('vi', { sensitivity: 'base', numeric: true });
+            $('.table thead th.sortable').on('click', function() {
+                const $th = $(this);
+                const idx = $th.index();
+                const isNum = $th.data('type') === 'num';
+                const dir = $th.hasClass('asc') ? -1 : 1;
+
+                $th.siblings('.sortable').removeClass('asc desc');
+                $th.removeClass('asc desc').addClass(dir === 1 ? 'asc' : 'desc');
+
+                const $tbody = $th.closest('table').find('tbody');
+                const rows = $tbody.children('tr').filter(function() {
+                    return $(this).children('td[data-v]').length > 0;
+                }).get();
+
+                rows.sort(function(a, b) {
+                    const va = $(a).children('td').eq(idx).attr('data-v');
+                    const vb = $(b).children('td').eq(idx).attr('data-v');
+                    const cmp = isNum ? (parseFloat(va) || 0) - (parseFloat(vb) || 0)
+                                      : collator.compare(va, vb);
+                    return cmp * dir;
+                });
+
+                $.each(rows, function(_, r) { $tbody.append(r); });
             });
         });
     </script>
