@@ -1,49 +1,49 @@
 {
+  "id": "/ICSS/",
   "name": "ICSS Smart Dashboard",
   "short_name": "ICSS",
   "description": "Nền tảng quản lý công việc, dự án và nhân sự nội bộ ICSS.",
+  "lang": "vi",
   "start_url": "/ICSS/",
   "scope": "/ICSS/",
   "display": "standalone",
-  "orientation": "portrait",
-  "background_color": "#ffffff",
-  "theme_color": "#1a73e8",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#f5f7fa",
+  "theme_color": "#667eea",
+  "categories": ["business", "productivity"],
   "icons": [
     {
       "src": "icons/logo192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "icons/logo512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     }
   ],
   "shortcuts": [
     {
-      "name": "Đăng nhập ICSS",
-      "short_name": "Login",
-      "url": "/ICSS/login.jsp",
-      "icons": [
-        {
-          "src": "icons/logo192.png",
-          "sizes": "192x192",
-          "type": "image/png"
-        }
-      ]
+      "name": "Chấm công",
+      "short_name": "Chấm công",
+      "url": "/ICSS/userChamCong",
+      "icons": [{ "src": "icons/logo192.png", "sizes": "192x192", "type": "image/png" }]
     },
     {
-      "name": "Bảng điều khiển",
-      "short_name": "Dashboard",
-      "url": "/ICSS/index.jsp",
-      "icons": [
-        {
-          "src": "icons/logo512.png",
-          "sizes": "512x512",
-          "type": "image/png"
-        }
-      ]
+      "name": "Nghỉ phép",
+      "short_name": "Nghỉ phép",
+      "url": "/ICSS/userNghiPhep",
+      "icons": [{ "src": "icons/logo192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Công việc của tôi",
+      "short_name": "Công việc",
+      "url": "/ICSS/dsCongviecNV",
+      "icons": [{ "src": "icons/logo192.png", "sizes": "192x192", "type": "image/png" }]
     }
   ]
 }

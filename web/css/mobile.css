@@ -1,0 +1,321 @@
+/* Lớp responsive dùng chung cho mobile + PWA. Nạp qua pwa_head.jspf. */
+
+html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+}
+
+.mobile-nav-toggle,
+.mobile-nav-backdrop {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    html,
+    body {
+        overflow-x: hidden;
+        max-width: 100%;
+    }
+
+    body {
+        -webkit-tap-highlight-color: rgba(102, 126, 234, 0.15);
+    }
+
+    img,
+    video,
+    canvas,
+    iframe {
+        max-width: 100%;
+    }
+
+    /* ===== Sidebar thành ngăn kéo trượt ===== */
+    html body .sidebar,
+    html body .sidebar:hover {
+        width: 272px !important;
+        max-width: 85vw;
+        transform: translateX(-105%);
+        transition: transform 0.28s ease !important;
+        z-index: 1050 !important;
+        padding-top: env(safe-area-inset-top);
+        padding-bottom: env(safe-area-inset-bottom);
+        overscroll-behavior: contain;
+    }
+
+    html body .sidebar.mobile-open {
+        transform: translateX(0);
+    }
+
+    html body .sidebar .sidebar-nav a span {
+        opacity: 1 !important;
+    }
+
+    html body .sidebar .sidebar-nav a,
+    html body .sidebar:hover .sidebar-nav a {
+        justify-content: flex-start;
+        padding: 14px 20px !important;
+        margin: 0 10px !important;
+    }
+
+    html body .sidebar-toggle-btn {
+        display: none !important;
+    }
+
+    .mobile-nav-backdrop {
+        display: block;
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.5);
+        z-index: 1045;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.28s ease, visibility 0.28s ease;
+    }
+
+    .mobile-nav-backdrop.show {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    body.mobile-nav-locked {
+        overflow: hidden;
+    }
+
+    /* ===== Nội dung chiếm toàn bộ chiều ngang ===== */
+    html body .main-content,
+    html body .header {
+        margin-left: 0 !important;
+        width: auto !important;
+        max-width: 100% !important;
+    }
+
+    html body .main-content {
+        padding: 12px 12px calc(16px + env(safe-area-inset-bottom)) !important;
+    }
+
+    /* Flex item mặc định không co nhỏ hơn nội dung (bảng rộng) → đẩy tràn cả trang */
+    html body .d-flex > .flex-grow-1,
+    html body .d-flex > .main-content {
+        min-width: 0;
+    }
+
+    /* Hàng nút / badge / tiêu đề + nút: cho xuống dòng thay vì tràn */
+    html body .main-content .d-flex:has(> .btn + .btn),
+    html body .main-content .d-flex:has(> .badge + .badge),
+    html body .main-content .d-flex.justify-content-between:has(> .btn),
+    html body .main-content .d-flex.justify-content-between:has(> .filter-section),
+    html body .main-content .d-flex:has(> h2, > h3, > h4, > h5) {
+        flex-wrap: wrap;
+        row-gap: 8px;
+    }
+
+    /* ===== Header gọn ===== */
+    html body .header {
+        min-height: 56px !important;
+        height: auto !important;
+        padding: calc(6px + env(safe-area-inset-top)) 10px 6px !important;
+        gap: 8px;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        align-items: center !important;
+    }
+
+    html body .header > :first-child {
+        min-width: 0;
+        flex: 1 1 auto;
+        gap: 10px !important;
+    }
+
+    html body .header > :last-child {
+        flex: 0 0 auto;
+        margin: 0 !important;
+        width: auto !important;
+    }
+
+    html body .header #pageTitle {
+        font-size: 1.05rem !important;
+        display: block;
+        max-width: 48vw;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    html body .header .gap-4 {
+        gap: 6px !important;
+    }
+
+    html body .header .dropdown-toggle {
+        padding: 4px !important;
+    }
+
+    html body .header .dropdown-toggle > span,
+    html body .header .dropdown-toggle::after {
+        display: none !important;
+    }
+
+    html body .header .avatar {
+        width: 36px !important;
+        height: 36px !important;
+    }
+
+    html body .header .notification-bell {
+        padding: 8px !important;
+    }
+
+    html body .header .notification-bell .fs-4 {
+        font-size: 1.15rem !important;
+    }
+
+    .mobile-nav-toggle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 auto;
+        width: 40px;
+        height: 40px;
+        border: 1px solid rgba(102, 126, 234, 0.25);
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.7);
+        color: #4f46e5;
+        font-size: 1.15rem;
+        cursor: pointer;
+    }
+
+    .mobile-nav-toggle.floating {
+        position: fixed;
+        top: calc(10px + env(safe-area-inset-top));
+        left: 10px;
+        z-index: 1040;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+    }
+
+    /* ===== Bảng: cuộn ngang thay vì tràn trang ===== */
+    .table-responsive,
+    .mobile-table-wrap {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+        max-width: 100%;
+    }
+
+    .mobile-table-wrap > table {
+        min-width: 100%;
+    }
+
+    html body .table tbody tr:hover {
+        transform: none !important;
+    }
+
+    /* ===== Form: cỡ chữ 16px để iOS không tự phóng to khi nhập ===== */
+    input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]),
+    select,
+    textarea {
+        font-size: 16px !important;
+    }
+
+    /* ===== Modal & hộp thoại ===== */
+    html body .modal-dialog {
+        max-width: calc(100vw - 16px) !important;
+        margin: 8px auto !important;
+    }
+
+    html body .modal-content {
+        border-radius: 16px;
+    }
+
+    html body .modal-footer {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    html body .modal-footer > .btn {
+        flex: 1 1 auto;
+        margin: 0;
+    }
+
+    html body .swal2-popup {
+        width: calc(100vw - 24px) !important;
+        max-width: 480px;
+        padding: 1.25em 1em !important;
+    }
+
+    html body .dropdown-menu {
+        max-width: calc(100vw - 20px);
+    }
+
+    /* ===== Tiêu đề trang, khối nội dung ===== */
+    html body .page-header {
+        padding: 18px !important;
+        border-radius: 16px !important;
+        margin-bottom: 16px !important;
+    }
+
+    html body .page-header h2,
+    html body .main-content h2 {
+        font-size: 1.25rem !important;
+    }
+
+    html body .main-box,
+    html body .card {
+        border-radius: 14px;
+    }
+
+    html body .main-box {
+        padding: 16px !important;
+    }
+
+    html body .row {
+        --bs-gutter-x: 0.75rem;
+    }
+
+    html body .nav-tabs,
+    html body .nav-pills {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+
+    html body .nav-tabs .nav-link,
+    html body .nav-pills .nav-link {
+        white-space: nowrap;
+    }
+
+    html body .btn-group {
+        flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 768px) {
+    /* Thẻ thống kê: 2 cột thay vì xếp chồng 1 cột */
+    html body .row > [class*="col-"]:has(> .stat-card) {
+        flex: 0 0 50%;
+        max-width: 50%;
+    }
+
+    html body .stat-card {
+        padding: 14px 10px !important;
+        border-radius: 14px !important;
+    }
+
+    html body .stat-card .stat-icon {
+        font-size: 1.6rem !important;
+        margin-bottom: 4px !important;
+    }
+
+    html body .stat-card .stat-value {
+        font-size: 1.4rem !important;
+    }
+
+    html body .stat-card .stat-label {
+        font-size: 0.8rem !important;
+    }
+}
+
+/* Khi chạy như app đã cài (PWA) */
+@media (display-mode: standalone) {
+    html,
+    body {
+        overscroll-behavior-y: none;
+    }
+}
