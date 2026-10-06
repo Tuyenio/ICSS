@@ -31,14 +31,14 @@
         function open() {
             sidebar.classList.add('mobile-open');
             backdrop.classList.add('show');
-            document.body.classList.add('mobile-nav-locked');
+            document.documentElement.classList.add('mobile-nav-locked');
             toggle.setAttribute('aria-expanded', 'true');
         }
 
         function close() {
             sidebar.classList.remove('mobile-open');
             backdrop.classList.remove('show');
-            document.body.classList.remove('mobile-nav-locked');
+            document.documentElement.classList.remove('mobile-nav-locked');
             toggle.setAttribute('aria-expanded', 'false');
         }
 
@@ -60,6 +60,8 @@
         window.addEventListener('resize', function () {
             if (!isMobile()) close();
         });
+
+        window.addEventListener('pageshow', close);
 
         // Vuốt sang trái trên ngăn kéo để đóng
         var startX = null;

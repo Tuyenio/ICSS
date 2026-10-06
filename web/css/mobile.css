@@ -11,9 +11,10 @@ html {
 }
 
 @media (max-width: 768px) {
+    /* clip (không phải hidden): hidden trên cả html lẫn body biến body thành vùng cuộn riêng, chặn cuộn trang */
     html,
     body {
-        overflow-x: hidden;
+        overflow-x: clip;
         max-width: 100%;
     }
 
@@ -76,7 +77,7 @@ html {
         visibility: visible;
     }
 
-    body.mobile-nav-locked {
+    html.mobile-nav-locked {
         overflow: hidden;
     }
 
@@ -419,13 +420,5 @@ html {
 
     html body .stat-card .stat-label {
         font-size: 0.8rem !important;
-    }
-}
-
-/* Khi chạy như app đã cài (PWA) */
-@media (display-mode: standalone) {
-    html,
-    body {
-        overscroll-behavior-y: none;
     }
 }
