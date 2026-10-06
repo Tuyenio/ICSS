@@ -573,7 +573,7 @@
                 </div>
             <% } else { %>
                 <div class="table-responsive">
-                    <table class="table table-modern">
+                    <table data-mobile-cards data-mobile-title="2" data-mobile-hide="1" class="table table-modern">
                         <thead>
                             <tr>
                                 <th>#</th>

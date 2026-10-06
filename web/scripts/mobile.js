@@ -80,19 +80,49 @@
         wrap.appendChild(table);
     }
 
+    // Bảng có data-mobile-cards: trên mobile mỗi dòng thành 1 thẻ, mỗi ô hiển thị "Nhãn: giá trị".
+    // data-mobile-title="2": cột làm tiêu đề thẻ; data-mobile-hide="1,2": cột ẩn trên mobile (đánh số từ 1).
+    function labelCardTable(table) {
+        var labels = Array.prototype.map.call(table.querySelectorAll('thead th'), function (th) {
+            return th.textContent.replace(/\s+/g, ' ').trim();
+        });
+        var titleCol = parseInt(table.getAttribute('data-mobile-title'), 10) || 0;
+        var hide = (table.getAttribute('data-mobile-hide') || '').split(',').map(function (s) {
+            return parseInt(s, 10);
+        });
+        table.querySelectorAll('tbody > tr').forEach(function (tr) {
+            var col = 0;
+            Array.prototype.forEach.call(tr.children, function (td) {
+                col += 1;
+                if (td.hasAttribute('colspan') && parseInt(td.getAttribute('colspan'), 10) > 1) {
+                    td.classList.add('mc-full');
+                    return;
+                }
+                td.setAttribute('data-label', labels[col - 1] || '');
+                td.classList.toggle('mc-title', col === titleCol);
+                td.classList.toggle('mc-hide', hide.indexOf(col) !== -1);
+            });
+        });
+    }
+
     function setupTables() {
         var root = document.querySelector('.main-content') || document.body;
         root.querySelectorAll('table').forEach(wrapTable);
+        root.querySelectorAll('table[data-mobile-cards]').forEach(labelCardTable);
 
         if (!('MutationObserver' in window)) return;
         new MutationObserver(function (mutations) {
+            var cardTables = [];
             mutations.forEach(function (m) {
+                var t = m.target.closest && m.target.closest('table[data-mobile-cards]');
+                if (t && cardTables.indexOf(t) === -1) cardTables.push(t);
                 m.addedNodes.forEach(function (node) {
                     if (node.nodeType !== 1) return;
                     if (node.tagName === 'TABLE') wrapTable(node);
                     else if (node.querySelectorAll) node.querySelectorAll('table').forEach(wrapTable);
                 });
             });
+            cardTables.forEach(labelCardTable);
         }).observe(root, { childList: true, subtree: true });
     }
 

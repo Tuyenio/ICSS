@@ -365,7 +365,7 @@
                             </div>
                         </form>
                         <div class="table-responsive">
-                            <table class="table table-bordered align-middle table-hover">
+                            <table data-mobile-cards data-mobile-title="3" data-mobile-hide="1,2" class="table table-bordered align-middle table-hover">
                                 <thead class="table-light">
                                     <tr>
                                         <th>#</th>

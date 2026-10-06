@@ -176,6 +176,179 @@
             .stat-card:hover .stat-icon {
                 transform: scale(1.1);
             }
+
+            /* ===== Chấm công hôm nay ===== */
+            .cc-card {
+                border-radius: 16px;
+            }
+
+            .cc-card .card-body {
+                padding: 18px 20px;
+            }
+
+            .cc-head {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 12px;
+                margin-bottom: 14px;
+            }
+
+            .cc-title {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                min-width: 0;
+            }
+
+            .cc-title-icon {
+                flex: 0 0 auto;
+                width: 42px;
+                height: 42px;
+                border-radius: 12px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                background: linear-gradient(135deg, #667eea, #764ba2);
+                color: #fff;
+                font-size: 1.1rem;
+            }
+
+            .cc-date {
+                font-size: 0.85rem;
+                color: #64748b;
+            }
+
+            .cc-detail-link {
+                flex: 0 0 auto;
+                font-size: 0.9rem;
+                font-weight: 600;
+                color: #4f46e5;
+                text-decoration: none;
+                white-space: nowrap;
+            }
+
+            .cc-detail-link i {
+                font-size: 0.75rem;
+                margin-left: 2px;
+            }
+
+            .cc-body {
+                display: flex;
+                align-items: stretch;
+                gap: 16px;
+            }
+
+            .cc-times {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+                flex: 0 0 300px;
+            }
+
+            .cc-time {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                gap: 2px;
+                padding: 10px 14px;
+                border-radius: 12px;
+                background: #f1f5f9;
+                border: 1px solid #e2e8f0;
+            }
+
+            .cc-time-label {
+                font-size: 0.8rem;
+                color: #64748b;
+                white-space: nowrap;
+            }
+
+            .cc-time-value {
+                font-size: 1.35rem;
+                font-weight: 700;
+                color: #94a3b8;
+                font-variant-numeric: tabular-nums;
+            }
+
+            .cc-time.is-in {
+                background: #ecfdf5;
+                border-color: #a7f3d0;
+            }
+
+            .cc-time.is-in .cc-time-value {
+                color: #059669;
+            }
+
+            .cc-time.is-out {
+                background: #fef2f2;
+                border-color: #fecaca;
+            }
+
+            .cc-time.is-out .cc-time-value {
+                color: #dc2626;
+            }
+
+            .cc-actions {
+                flex: 1 1 auto;
+                display: grid;
+                grid-template-columns: repeat(4, 1fr);
+                gap: 10px;
+            }
+
+            .cc-btn {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                gap: 4px;
+                min-height: 64px;
+                border-radius: 12px;
+                font-weight: 600;
+                font-size: 0.9rem;
+                line-height: 1.2;
+            }
+
+            .cc-btn i {
+                font-size: 1.15rem;
+            }
+
+            .cc-btn:disabled {
+                opacity: 0.4;
+            }
+
+            @media (max-width: 992px) {
+                .cc-body {
+                    flex-direction: column;
+                    gap: 12px;
+                }
+
+                .cc-times {
+                    flex: none;
+                }
+            }
+
+            @media (max-width: 576px) {
+                .cc-card .card-body {
+                    padding: 14px;
+                }
+
+                .cc-actions {
+                    grid-template-columns: repeat(3, 1fr);
+                    gap: 8px;
+                }
+
+                .cc-btn-out {
+                    grid-column: 1 / -1;
+                    flex-direction: row;
+                    min-height: 48px;
+                    gap: 8px;
+                }
+
+                .cc-btn {
+                    min-height: 60px;
+                    font-size: 0.85rem;
+                }
+            }
         </style>
         <script>
             var USER_PAGE_TITLE = '<i class="fa-solid fa-chart-line me-2"></i>Dashboard';
@@ -192,56 +365,68 @@
                 boolean ccDaCheckOut = Boolean.TRUE.equals(chamCongHomNay.get("da_check_out"));
                 Object ccGioVao = chamCongHomNay.get("check_in");
                 Object ccGioRa = chamCongHomNay.get("check_out");
+                String ccVaoStr = ccGioVao != null ? String.valueOf(ccGioVao) : null;
+                String ccRaStr = ccGioRa != null ? String.valueOf(ccGioRa) : null;
+                if (ccVaoStr != null && ccVaoStr.length() >= 5) ccVaoStr = ccVaoStr.substring(0, 5);
+                if (ccRaStr != null && ccRaStr.length() >= 5) ccRaStr = ccRaStr.substring(0, 5);
+                java.time.LocalDate ccHomNay = java.time.LocalDate.now(java.time.ZoneId.of("Asia/Ho_Chi_Minh"));
+                String[] ccThu = {"Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ nhật"};
+                String ccNgayStr = ccThu[ccHomNay.getDayOfWeek().getValue() - 1] + ", "
+                        + ccHomNay.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"));
             %>
-            <div class="card border-0 shadow-sm mb-4">
-                <div class="card-body d-flex flex-wrap align-items-center justify-content-between gap-3">
-                    <div class="d-flex align-items-center gap-2">
-                        <i class="fa-solid fa-calendar-check fa-lg text-primary"></i>
-                        <span class="fw-semibold">Chấm công hôm nay</span>
-                    </div>
-
-                    <div class="d-flex align-items-center gap-2">
-                        <% if (ccGioVao != null) { %>
-                        <span class="badge bg-success"><i class="fa-solid fa-clock"></i> Vào: <%= ccGioVao %></span>
-                        <% } else { %>
-                        <span class="badge bg-secondary"><i class="fa-solid fa-clock"></i> Chưa check-in</span>
-                        <% } %>
-
-                        <% if (ccGioRa != null) { %>
-                        <span class="badge bg-danger"><i class="fa-solid fa-clock"></i> Ra: <%= ccGioRa %></span>
-                        <% } else { %>
-                        <span class="badge bg-secondary"><i class="fa-solid fa-clock"></i> Chưa check-out</span>
-                        <% } %>
-                    </div>
-
-                    <div class="d-flex align-items-center gap-2">
-                        <button class="btn btn-success" id="btnCheckIn" <%= ccDaCheckIn ? "disabled" : "" %>>
-                            <i class="fa-solid fa-right-to-bracket"></i> Check-in
-                        </button>
-                        <button class="btn btn-info text-white" id="btnCheckInWFH" <%= ccDaCheckIn ? "disabled" : "" %>>
-                            <i class="fa-solid fa-house"></i> WFH
-                        </button>
-                        <button class="btn btn-primary" id="btnCheckInCongTac" <%= ccDaCheckIn ? "disabled" : "" %>>
-                            <i class="fa-solid fa-briefcase"></i> Đi công tác
-                        </button>
-                        <button class="btn btn-danger" id="btnCheckOut" <%= ccDaCheckOut ? "disabled" : "" %>>
-                            <i class="fa-solid fa-right-from-bracket"></i> Check-out
-                        </button>
-                        <a href="userChamCong" class="btn btn-outline-secondary">
-                            <i class="fa-solid fa-list"></i> Chi tiết
+            <div class="card border-0 shadow-sm mb-4 cc-card">
+                <div class="card-body">
+                    <div class="cc-head">
+                        <div class="cc-title">
+                            <span class="cc-title-icon"><i class="fa-solid fa-calendar-check"></i></span>
+                            <div>
+                                <div class="fw-bold">Chấm công hôm nay</div>
+                                <div class="cc-date"><%= ccNgayStr %></div>
+                            </div>
+                        </div>
+                        <a href="userChamCong" class="cc-detail-link">
+                            Chi tiết <i class="fa-solid fa-chevron-right"></i>
                         </a>
+                    </div>
+
+                    <div class="cc-body">
+                        <div class="cc-times">
+                            <div class="cc-time <%= ccVaoStr != null ? "is-in" : "" %>">
+                                <span class="cc-time-label"><i class="fa-solid fa-right-to-bracket"></i> Giờ vào</span>
+                                <span class="cc-time-value"><%= ccVaoStr != null ? ccVaoStr : "--:--" %></span>
+                            </div>
+                            <div class="cc-time <%= ccRaStr != null ? "is-out" : "" %>">
+                                <span class="cc-time-label"><i class="fa-solid fa-right-from-bracket"></i> Giờ ra</span>
+                                <span class="cc-time-value"><%= ccRaStr != null ? ccRaStr : "--:--" %></span>
+                            </div>
+                        </div>
+
+                        <div class="cc-actions">
+                            <button class="btn btn-success cc-btn" id="btnCheckIn" <%= ccDaCheckIn ? "disabled" : "" %>>
+                                <i class="fa-solid fa-location-dot"></i><span>Check-in</span>
+                            </button>
+                            <button class="btn btn-info text-white cc-btn" id="btnCheckInWFH" <%= ccDaCheckIn ? "disabled" : "" %>>
+                                <i class="fa-solid fa-house"></i><span>WFH</span>
+                            </button>
+                            <button class="btn btn-primary cc-btn" id="btnCheckInCongTac" <%= ccDaCheckIn ? "disabled" : "" %>>
+                                <i class="fa-solid fa-briefcase"></i><span>Công tác</span>
+                            </button>
+                            <button class="btn btn-danger cc-btn cc-btn-out" id="btnCheckOut" <%= ccDaCheckOut ? "disabled" : "" %>>
+                                <i class="fa-solid fa-right-from-bracket"></i><span>Check-out</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- Thống kê tổng quan công ty (chỉ cho Admin/Manager) -->
             <% if ("Admin".equals(vaiTro) || "Quản lý".equals(vaiTro)) { %>
-            <div class="row mb-4">
+            <div class="row g-3 mb-4">
                 <div class="col-12">
                     <h5 class="mb-3"><i class="fa-solid fa-chart-bar me-2"></i>Thống kê tổng quan công ty</h5>
                 </div>
-                <div class="col-md-3">
-                    <div class="card text-center border-0 shadow-sm">
+                <div class="col-6 col-md-3">
+                    <div class="card text-center border-0 shadow-sm h-100">
                         <div class="card-body">
                             <i class="fa-solid fa-users fa-2x text-primary mb-2"></i>
                             <h3 class="text-primary"><%= thongKeTongQuan.getOrDefault("tong_nhan_vien", 0) %></h3>
@@ -249,8 +434,8 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3">
-                    <div class="card text-center border-0 shadow-sm">
+                <div class="col-6 col-md-3">
+                    <div class="card text-center border-0 shadow-sm h-100">
                         <div class="card-body">
                             <i class="fa-solid fa-building fa-2x text-info mb-2"></i>
                             <h3 class="text-info"><%= thongKeTongQuan.getOrDefault("tong_phong_ban", 0) %></h3>
@@ -258,8 +443,8 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3">
-                    <div class="card text-center border-0 shadow-sm">
+                <div class="col-6 col-md-3">
+                    <div class="card text-center border-0 shadow-sm h-100">
                         <div class="card-body">
                             <i class="fa-solid fa-tasks fa-2x text-success mb-2"></i>
                             <h3 class="text-success"><%= thongKeTongQuan.getOrDefault("tong_cong_viec", 0) %></h3>
@@ -267,8 +452,8 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3">
-                    <div class="card text-center border-0 shadow-sm">
+                <div class="col-6 col-md-3">
+                    <div class="card text-center border-0 shadow-sm h-100">
                         <div class="card-body">
                             <i class="fa-solid fa-chart-line fa-2x text-warning mb-2"></i>
                             <h3 class="text-warning"><%= thongKeTongQuan.getOrDefault("ty_le_hoan_thanh", 0.0) %>%</h3>

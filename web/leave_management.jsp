@@ -598,7 +598,7 @@
                 </div>
             <% } else { %>
                 <div class="table-responsive">
-                    <table class="table table-modern" id="tableNghiPhep">
+                    <table data-mobile-cards data-mobile-title="2" data-mobile-hide="1" class="table table-modern" id="tableNghiPhep">
                         <thead>
                             <tr>
                                 <th>#</th>

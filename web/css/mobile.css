@@ -205,6 +205,116 @@ html {
         transform: none !important;
     }
 
+    /* ===== Bảng dạng thẻ (table[data-mobile-cards]) ===== */
+    html body table[data-mobile-cards],
+    html body table[data-mobile-cards] > tbody,
+    html body table[data-mobile-cards] > tbody > tr,
+    html body table[data-mobile-cards] > tbody > tr > td {
+        display: block;
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+
+    html body table[data-mobile-cards] {
+        border: 0 !important;
+        background: transparent !important;
+        margin: 0 !important;
+    }
+
+    html body table[data-mobile-cards] > thead {
+        display: none !important;
+    }
+
+    html body .table-responsive:has(> table[data-mobile-cards]),
+    html body .mobile-table-wrap:has(> table[data-mobile-cards]) {
+        overflow: visible !important;
+        box-shadow: none !important;
+        border: 0 !important;
+        background: transparent !important;
+    }
+
+    html body table[data-mobile-cards] > tbody > tr {
+        background: #fff !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 14px;
+        padding: 4px 14px;
+        margin-bottom: 12px;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+    }
+
+    html body table[data-mobile-cards] > tbody > tr > td {
+        line-height: 1.9;
+        max-width: none !important;
+        padding: 9px 0 !important;
+        border: 0 !important;
+        border-bottom: 1px dashed #e9eef5 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        text-align: right !important;
+        font-size: 0.92rem;
+    }
+
+    html body table[data-mobile-cards] > tbody > tr > td:last-child {
+        border-bottom: 0 !important;
+    }
+
+    html body table[data-mobile-cards] > tbody > tr > td::before {
+        content: attr(data-label);
+        float: left;
+        margin-right: 12px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #64748b;
+        text-align: left;
+    }
+
+    html body table[data-mobile-cards] > tbody > tr > td::after {
+        content: "";
+        display: table;
+        clear: both;
+    }
+
+    html body table[data-mobile-cards] > tbody > tr > td[data-label=""]::before {
+        content: none;
+    }
+
+    html body table[data-mobile-cards] > tbody > tr > td.mc-title {
+        text-align: left !important;
+        font-size: 1rem;
+        font-weight: 700;
+        color: #1e293b;
+        padding: 12px 0 10px !important;
+        border-bottom: 1px solid #e2e8f0 !important;
+    }
+
+    html body table[data-mobile-cards] > tbody > tr > td.mc-title::before {
+        content: none;
+    }
+
+    html body table[data-mobile-cards] > tbody > tr > td.mc-hide {
+        display: none !important;
+    }
+
+    html body table[data-mobile-cards] > tbody > tr > td.mc-full {
+        text-align: center !important;
+        border-bottom: 0 !important;
+        padding: 16px 0 !important;
+    }
+
+    html body table[data-mobile-cards] > tbody > tr > td.mc-full::before {
+        content: none;
+    }
+
+    html body table[data-mobile-cards] .text-truncate {
+        max-width: 60vw !important;
+        vertical-align: top;
+    }
+
+    html body table[data-mobile-cards] td > .btn,
+    html body table[data-mobile-cards] td > .btn-group {
+        margin: 0;
+    }
+
     /* ===== Form: cỡ chữ 16px để iOS không tự phóng to khi nhập ===== */
     input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]),
     select,

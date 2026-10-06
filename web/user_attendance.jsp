@@ -513,7 +513,7 @@
                 </div>
 
                 <div class="table-responsive">
-                    <table class="table table-bordered align-middle table-hover">
+                    <table data-mobile-cards data-mobile-title="1" class="table table-bordered align-middle table-hover">
                         <thead class="table-light">
                             <tr>
                                 <th>Ngày</th>
