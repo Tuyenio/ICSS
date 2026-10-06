@@ -32,6 +32,17 @@ public class CookieUtil {
     private static final int TAG_LENGTH_BITS = 128; // tag 128-bit
     private static final SecureRandom RANDOM = new SecureRandom();
 
+    public static final String REMEMBER_COOKIE = "ICSS_USER";
+    private static final int REMEMBER_MAX_AGE = 365 * 24 * 60 * 60;
+
+    /** Ghi cookie đăng nhập lâu dài (1 năm), HttpOnly, SameSite=Lax, Secure khi chạy HTTPS. */
+    public static void addRememberCookie(jakarta.servlet.http.HttpServletRequest req,
+            jakarta.servlet.http.HttpServletResponse res, String encryptedValue) {
+        boolean https = req.isSecure() || "https".equalsIgnoreCase(req.getHeader("X-Forwarded-Proto"));
+        res.addHeader("Set-Cookie", REMEMBER_COOKIE + "=" + encryptedValue + "; Max-Age=" + REMEMBER_MAX_AGE
+                + "; Path=/; HttpOnly; SameSite=Lax" + (https ? "; Secure" : ""));
+    }
+
     /** Suy ra khóa AES-256 từ biến môi trường; null nếu chưa cấu hình. */
     private static SecretKeySpec keySpec() {
         String secret = System.getenv("ICSS_COOKIE_SECRET");

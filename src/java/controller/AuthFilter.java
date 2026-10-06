@@ -61,7 +61,18 @@ public class AuthFilter implements Filter {
         HttpSession session = req.getSession(false);
 
         if (uri.startsWith(req.getContextPath() + "/api/")) {
+            if (session == null || session.getAttribute("vaiTro") == null) {
+                restoreSessionFromCookie(req, res);
+            }
             chain.doFilter(request, response);
+            return;
+        }
+
+        // Mở lại trang đăng nhập khi cookie còn hợp lệ → vào thẳng hệ thống
+        if (uri.endsWith("login.jsp") && "GET".equalsIgnoreCase(req.getMethod())
+                && (session == null || session.getAttribute("vaiTro") == null)
+                && restoreSessionFromCookie(req, res)) {
+            res.sendRedirect(req.getContextPath() + "/");
             return;
         }
 
@@ -178,6 +189,9 @@ public class AuthFilter implements Filter {
                                 return false;
                             }
                             
+                            // Gia hạn cookie (sliding) để dùng thường xuyên thì không bao giờ hết hạn
+                            CookieUtil.addRememberCookie(req, res, cookie.getValue());
+
                             // ✅ Tạo session mới từ cookie data
                             HttpSession session = req.getSession(true);
                             session.setAttribute("userId", id);

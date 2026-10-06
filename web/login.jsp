@@ -35,12 +35,7 @@
                         "|" + chucVu + "|" + avatar);
 
                         if (userDataEncrypted != null) {
-                        Cookie userCookie = new Cookie("ICSS_USER", userDataEncrypted);
-                        userCookie.setMaxAge(7 * 24 * 60 * 60);
-                        userCookie.setHttpOnly(true);
-                        userCookie.setSecure(false);
-                        userCookie.setPath("/");
-                        response.addCookie(userCookie);
+                        CookieUtil.addRememberCookie(request, response, userDataEncrypted);
                         }
 
                         int userIdInt = Integer.parseInt(id);
