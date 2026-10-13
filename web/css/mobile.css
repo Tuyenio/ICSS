@@ -10,7 +10,7 @@ html {
     display: none;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 768px), (hover: none) and (pointer: coarse) and (max-width: 1024px) {
     /* clip (không phải hidden): hidden trên cả html lẫn body biến body thành vùng cuộn riêng, chặn cuộn trang */
     html,
     body {
@@ -37,6 +37,16 @@ html {
         transform: translateX(-105%);
         transition: transform 0.28s ease !important;
         z-index: 1050 !important;
+        /* 100vh trên iOS Safari cao hơn vùng nhìn thấy → mục cuối bị thanh công cụ che */
+        top: 0 !important;
+        bottom: 0 !important;
+        height: auto !important;
+        min-height: 0 !important;
+        max-height: none !important;
+        /* nền đặc: backdrop-filter + transform trên iOS Safari dễ render trong suốt, lộ trang phía sau */
+        background: linear-gradient(145deg, #0f172a 0%, #1e293b 35%, #334155 70%, #1e293b 100%) !important;
+        -webkit-backdrop-filter: none !important;
+        backdrop-filter: none !important;
         padding-top: env(safe-area-inset-top);
         padding-bottom: env(safe-area-inset-bottom);
         overscroll-behavior: contain;
@@ -82,8 +92,10 @@ html {
     }
 
     /* ===== Nội dung chiếm toàn bộ chiều ngang ===== */
+    /* header.js/user_header.js chèn .header:hover { margin-left: 240px !important } — trên iOS hover bị "dính" khi chạm */
     html body .main-content,
-    html body .header {
+    html body .header,
+    html body .header:hover {
         margin-left: 0 !important;
         width: auto !important;
         max-width: 100% !important;
@@ -397,7 +409,7 @@ html {
     }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 768px), (hover: none) and (pointer: coarse) and (max-width: 1024px) {
     /* Thẻ thống kê: 2 cột thay vì xếp chồng 1 cột */
     html body .row > [class*="col-"]:has(> .stat-card) {
         flex: 0 0 50%;

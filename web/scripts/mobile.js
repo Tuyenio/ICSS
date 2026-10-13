@@ -1,8 +1,9 @@
 (function () {
-    var MOBILE_MAX = 768;
+    // Khớp với media query trong css/mobile.css
+    var MOBILE_MQ = window.matchMedia('(max-width: 768px), (hover: none) and (pointer: coarse) and (max-width: 1024px)');
 
     function isMobile() {
-        return window.innerWidth <= MOBILE_MAX;
+        return MOBILE_MQ.matches;
     }
 
     function setupNavDrawer() {
